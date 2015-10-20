@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
-    <height>486</height>
+    <width>973</width>
+    <height>844</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>160</x>
       <y>0</y>
       <width>99</width>
       <height>27</height>
@@ -43,7 +43,7 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>270</x>
       <y>0</y>
       <width>99</width>
       <height>27</height>
@@ -63,18 +63,90 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCustomPlot" name="customPlot" native="true">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>150</x>
       <y>50</y>
-      <width>531</width>
-      <height>371</height>
+      <width>791</width>
+      <height>531</height>
      </rect>
     </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Espectro Energía</string>
+     </attribute>
+     <widget class="QCustomPlot" name="espEnergia" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>741</width>
+        <height>461</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Histograma Posición</string>
+     </attribute>
+     <widget class="QCustomPlot" name="histPosicion" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>741</width>
+        <height>461</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>Espectro Cabezal</string>
+     </attribute>
+     <widget class="QCustomPlot" name="espCabezal" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>741</width>
+        <height>461</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_6">
+     <attribute name="title">
+      <string>Espectro PMTs</string>
+     </attribute>
+     <widget class="QCustomPlot" name="espPMTs" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>741</width>
+        <height>461</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -82,8 +154,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>680</width>
-     <height>25</height>
+     <width>973</width>
+     <height>27</height>
     </rect>
    </property>
   </widget>

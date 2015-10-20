@@ -11,33 +11,29 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+    ui->espEnergia->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                     QCP::iSelectPlottables  );
-    ui->customPlot->xAxis->setRange(-8, 8);
-    ui->customPlot->yAxis->setRange(-5, 5);
-    ui->customPlot->axisRect()->setupFullAxesBox();
+    ui->espEnergia->xAxis->setRange(-8, 8);
+    ui->espEnergia->yAxis->setRange(-5, 5);
+    ui->espEnergia->axisRect()->setupFullAxesBox();
 
-    ui->customPlot->plotLayout()->insertRow(0);
-    ui->customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->customPlot, "Multi MCA"));
-    ui->customPlot->xAxis->setLabel("Energia");
-    ui->customPlot->yAxis->setLabel("Cuentas");
+    ui->espEnergia->plotLayout()->insertRow(0);
+    ui->espEnergia->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->espEnergia, "Multi MCA"));
+    ui->espEnergia->xAxis->setLabel("Energia");
+    ui->espEnergia->yAxis->setLabel("Cuentas");
 
-    ui->customPlot->legend->setVisible(true);
+    ui->espEnergia->legend->setVisible(true);
     QFont legendFont = font();
     legendFont.setPointSize(10);
-    ui->customPlot->legend->setFont(legendFont);
-    ui->customPlot->legend->setSelectedFont(legendFont);
-    ui->customPlot->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
-
+    ui->espEnergia->legend->setFont(legendFont);
+    ui->espEnergia->legend->setSelectedFont(legendFont);
+    ui->espEnergia->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
 }
-
-
-
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    serial.close();         //libero el puerto cuando cierro el programa
+    serial.close();  //libero el puerto cuando cierro el programa
 }
 
 void MainWindow::recibirdatosSerie()
@@ -71,8 +67,9 @@ void MainWindow::on_pushButton_clicked()
             serial.setFlowControl(QSerialPort::NoFlowControl);
             serial.flush();
             connect(&serial,SIGNAL(readyRead()),this,SLOT(recibirdatosSerie()));
+            ui->pushButton->setText("Desconectar");
         }
-        ui->pushButton->setText("Desconectar");
+
     }
 
     delete mbox;
@@ -102,10 +99,10 @@ void MainWindow::Graficaalgo(){
       x[i] = i/50.0; // x goes from 0 to 2
       y[i] = x[i]*x[i];  // let's plot a quadratic function
     }
-    ui->customPlot->addGraph();
-    ui->customPlot->graph(0)->setData(x, y);
+    ui->espEnergia->addGraph();
+    ui->espEnergia->graph(0)->setData(x, y);
 
-    ui->customPlot->xAxis->setRange(0, 2);
-    ui->customPlot->yAxis->setRange(0, 2);
+    ui->espEnergia->xAxis->setRange(0, 2);
+    ui->espEnergia->yAxis->setRange(0, 2);
 
 }
