@@ -23,6 +23,16 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_pushButton_4_clicked();
+
+    void on_pushButton_offset_clicked();
+
+    void on_pushButton_hv_clicked();
+
+    void on_pushButton_energia_clicked();
+
+    void on_pushButton_posicion_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

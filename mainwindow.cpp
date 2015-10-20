@@ -106,3 +106,40 @@ void MainWindow::Graficaalgo(){
     ui->espEnergia->yAxis->setRange(0, 2);
 
 }
+
+
+void MainWindow::on_pushButton_offset_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
+                                                    QDir::homePath(),
+                                                    tr("Texto (*.txt)"));
+    ui->textBrowser_offset->setText(fileName);
+}
+
+void MainWindow::on_pushButton_hv_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
+                                                    QDir::homePath(),
+                                                    tr("Texto (*.txt)"));
+    ui->textBrowser_hv->setText(fileName);
+}
+
+
+
+void MainWindow::on_pushButton_energia_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
+                                                    QDir::homePath(),
+                                                    tr("Texto (*.txt)"));
+    ui->textBrowser_energia->setText(fileName);
+}
+
+
+
+void MainWindow::on_pushButton_posicion_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
+                                                    QDir::homePath(),
+                                                    tr("Texto (*.txt)"));
+    ui->textBrowser_posicion->setText(fileName);
+}
