@@ -143,3 +143,42 @@ void MainWindow::on_pushButton_posicion_clicked()
                                                     tr("Texto (*.txt)"));
     ui->textBrowser_posicion->setText(fileName);
 }
+
+void MainWindow::on_pushButton_salir_clicked()
+{
+    QApplication::quit();
+}
+
+
+void MainWindow::SetLabelState(bool state, QLabel *label)
+{
+    QPalette palette;
+
+    if (!state)
+    {
+        palette.setColor(QPalette::Background,Qt::green);
+        label->setPalette(palette);
+    }
+    else
+    {
+        palette.setColor(QPalette::Background,Qt::red);
+        label->setPalette(palette);
+    }
+    return;
+}
+
+
+/* TOMARLOS COMO EJEMPLO PARA LOS ESTADOS EN EL CABEZAL */
+
+void MainWindow::on_pushButton_4_clicked()
+{
+      SetLabelState(true,ui->label_cabezal_estado);
+
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    SetLabelState(false,ui->label_cabezal_estado);
+}
+
+/*********************************************************/
