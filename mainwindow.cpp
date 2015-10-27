@@ -11,23 +11,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->espEnergia->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+    ui->espCabezal->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                     QCP::iSelectPlottables  );
-    ui->espEnergia->xAxis->setRange(-8, 8);
-    ui->espEnergia->yAxis->setRange(-5, 5);
-    ui->espEnergia->axisRect()->setupFullAxesBox();
+    ui->espCabezal->xAxis->setRange(-8, 8);
+    ui->espCabezal->yAxis->setRange(-5, 5);
+    ui->espCabezal->axisRect()->setupFullAxesBox();
 
-    ui->espEnergia->plotLayout()->insertRow(0);
-    ui->espEnergia->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->espEnergia, "Multi MCA"));
-    ui->espEnergia->xAxis->setLabel("Energia");
-    ui->espEnergia->yAxis->setLabel("Cuentas");
+    ui->espCabezal->plotLayout()->insertRow(0);
+    ui->espCabezal->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->espCabezal, "Multi MCA"));
+    ui->espCabezal->xAxis->setLabel("Energia");
+    ui->espCabezal->yAxis->setLabel("Cuentas");
 
-    ui->espEnergia->legend->setVisible(true);
+    ui->espCabezal->legend->setVisible(true);
     QFont legendFont = font();
     legendFont.setPointSize(10);
-    ui->espEnergia->legend->setFont(legendFont);
-    ui->espEnergia->legend->setSelectedFont(legendFont);
-    ui->espEnergia->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
+    ui->espCabezal->legend->setFont(legendFont);
+    ui->espCabezal->legend->setSelectedFont(legendFont);
+    ui->espCabezal->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
+
 }
 
 MainWindow::~MainWindow()
@@ -99,48 +100,37 @@ void MainWindow::Graficaalgo(){
       x[i] = i/50.0; // x goes from 0 to 2
       y[i] = x[i]*x[i];  // let's plot a quadratic function
     }
-    ui->espEnergia->addGraph();
-    ui->espEnergia->graph(0)->setData(x, y);
+    ui->espCabezal->addGraph();
+    ui->espCabezal->graph(0)->setData(x, y);
 
-    ui->espEnergia->xAxis->setRange(0, 2);
-    ui->espEnergia->yAxis->setRange(0, 2);
+    ui->espCabezal->xAxis->setRange(0, 2);
+    ui->espCabezal->yAxis->setRange(0, 2);
 
 }
 
 
 void MainWindow::on_pushButton_offset_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    QDir::homePath(),
-                                                    tr("Texto (*.txt)"));
+    QString fileName = OpenConfigurationFile();
     ui->textBrowser_offset->setText(fileName);
 }
 
 void MainWindow::on_pushButton_hv_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    QDir::homePath(),
-                                                    tr("Texto (*.txt)"));
+    QString fileName = OpenConfigurationFile();
     ui->textBrowser_hv->setText(fileName);
 }
 
-
-
 void MainWindow::on_pushButton_energia_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    QDir::homePath(),
-                                                    tr("Texto (*.txt)"));
+    QString fileName = OpenConfigurationFile();
     ui->textBrowser_energia->setText(fileName);
 }
 
 
-
 void MainWindow::on_pushButton_posicion_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    QDir::homePath(),
-                                                    tr("Texto (*.txt)"));
+    QString fileName = OpenConfigurationFile();
     ui->textBrowser_posicion->setText(fileName);
 }
 
@@ -149,6 +139,18 @@ void MainWindow::on_pushButton_salir_clicked()
     QApplication::quit();
 }
 
+void MainWindow::on_pushButton_salir_graficos_clicked()
+{
+     QApplication::quit();
+}
+
+QString MainWindow::OpenConfigurationFile()
+{
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
+                                                    QDir::homePath(),
+                                                    tr("Texto (*.txt)"));
+    return filename;
+}
 
 void MainWindow::SetLabelState(bool state, QLabel *label)
 {
@@ -182,3 +184,6 @@ void MainWindow::on_pushButton_5_clicked()
 }
 
 /*********************************************************/
+
+
+
