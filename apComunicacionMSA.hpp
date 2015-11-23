@@ -1,6 +1,8 @@
 #ifndef COMUNICACIONMSA_H
 #define COMUNICACIONMSA_H
 
+#include <QtSerialPort>
+
 
 namespace ap {
 
@@ -8,6 +10,8 @@ namespace ap {
     {
     public:
         ComunicacionMSA();
+     //   void Init(string port);
+        bool InitVars();
         void Abort();
 
     public:
@@ -28,25 +32,26 @@ namespace ap {
         };
 
     private:
-        int CantCanales;
+        bool Cancelar = false;                              //Cancela un procedimiento asincrónico
+/*        int CantCanales;
         int MINCANAL;
         int MAXCANAL;
         const int HVMAXVALUE = 4096;
         int LengthEncabezadoMCA;
         int LengthDatosMCA;
-        bool Cancelar = false;                              //Cancela un procedimiento asincrónico
         int LevelOpen = 0;
+        QSerialPort SerialPortMCA;*/
 
-    public:
-        int pmtCount = 0;          // Cantidad de PMTs
+    public:        
+ /*       int pmtCount = 0;          // Cantidad de PMTs
         const string CMD_HARDRESET = "@00690?";
-        UInt32[][] Multicanal;
-        UInt32[] LastCanal;
-        double MulticanalTiempoMedicion = 0;
-        int[] pmtTemp;
-        int[] pmtHV;
-        int[] pmtPick;
-        float[] pmtTarget;
+       // UInt32[][] Multicanal;
+       // UInt32[] LastCanal;
+       // double MulticanalTiempoMedicion = 0;
+       // int[] pmtTemp;
+       // int[] pmtHV;
+       // int[] pmtPick;
+       // float[] pmtTarget;
         string OpcionesCalibracionTipo = "ctromasa";         //Opciones para la Calibración
         int OpcionesCalibracionTiempo = 10000;
         int OpcionesCalibracionPMT;
@@ -61,7 +66,7 @@ namespace ap {
         bool MedicionEspectroSuccess;
         string sErrorLevel = "";
         string LastError;                                 //Variable pública para indicar el texto del último error
-        int ErrorLevel = 0;                                  //Indica el error con un número.
+        int ErrorLevel = 0;                                  //Indica el error con un número.*/
 
     };
 

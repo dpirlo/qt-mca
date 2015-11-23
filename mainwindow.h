@@ -21,10 +21,11 @@ private slots:
     void Graficaalgo();
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
-    void on_pushButton_offset_clicked();
+    void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
-    void on_pushButton_posicion_clicked();
+    void on_pushButton_posicion_X_clicked();
+    void on_pushButton_posicion_Y_clicked();
     void on_pushButton_salir_graficos_clicked();
     void on_pushButton_salir_clicked();
     void SetLabelState(bool state, QLabel *label);
@@ -34,8 +35,6 @@ private slots:
     /* EJEMPLOS, luego eliminarlos */
     void on_pushButton_4_clicked();
     void on_pushButton_5_clicked();
-
-
 
 private:
     Ui::MainWindow *ui;

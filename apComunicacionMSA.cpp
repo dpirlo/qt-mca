@@ -1,5 +1,6 @@
 #include "apComunicacionMSA.hpp"
 
+using namespace ap;
 
 ComunicacionMSA::ComunicacionMSA()
 {
@@ -11,34 +12,33 @@ void ComunicacionMSA::Abort()
     Cancelar = true;
 }
 
-void ComunicacionMSA::Init(string port)
+/*void ComunicacionMSA::Init(string port)
 {
     bool ret = true;
     pmtCount = 0;
     InitVars();
 
-    SerialPortMCA = new SerialPort(port);
-    SerialPortMCA.ReadTimeout = 2000;
-    SerialPortMCA.WriteTimeout = 2000;
-    SerialPortMCA.BaudRate = 921600;
+    SerialPortMCA.setPortName(port);
+    SerialPortMCA.TimeoutError = 2000;
+    SerialPortMCA.setBaudRate(921600,QSerialPort::AllDirections);
 
     try
     {
-      if (!OpenPort())
+      if (!SerialPortMCA.isOpen())
          {
          SetError("No se puede abrir el puerto en Init()");
          ret = false;
-          }
-          else
-          {
-          ///Comando de Inicialización
-          ///Se envía el comando de incialización: "@0064010;\r"
-          ///y se debe recibir la respuesta "@0064020;\r"
-          SerialPortMCA.DiscardInBuffer();
-          SerialPortMCA.NewLine = Convert.ToString('\r'); //Defino el Enter para fin de recepcion
-          SerialPortMCA.ReadExisting();
-          SerialPortMCA.WriteLine("@0064010;");
-
+         }
+         else
+         {
+         ///Comando de Inicialización
+         ///Se envía el comando de incialización: "@0064010;\r"
+         ///y se debe recibir la respuesta "@0064020;\r"
+         SerialPortMCA.flush();
+         //SerialPortMCA.NewLine = Convert.ToString('\r'); //Defino el Enter para fin de recepcion //OJO con el retorno
+         SerialPortMCA.readAll();
+         SerialPortMCA.writeData("@0064010;",);//ver el maxSize
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           string strTramaRecepcion;
           ///Utilizando el metodo ReadLine() para recibir los datos, se finaliza
           ///la recepción con el caracter de retorno de carro '\r'.
@@ -91,4 +91,4 @@ bool ComunicacionMSA::InitVars()
           Multicanal[i] = new UInt32[CantCanales];
 
      return true;
-}
+}*/
