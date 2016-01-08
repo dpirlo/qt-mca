@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include "./qcustomplot.h"
+#include "apComunicacionMCA.hpp"
+
+using namespace ap;
 namespace Ui {
 class MainWindow;
 }
@@ -16,7 +19,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
+    int on_pushButton_clicked();
     void recibirdatosSerie();
     void Graficaalgo();
     void on_pushButton_2_clicked();
@@ -38,6 +41,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    ComunicacionMCA mca;
 };
 
 #endif // MAINWINDOW_H

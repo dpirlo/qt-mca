@@ -11,30 +11,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->espCabezal->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-                                    QCP::iSelectPlottables  );
-    ui->espCabezal->xAxis->setRange(-8, 8);
-    ui->espCabezal->yAxis->setRange(-5, 5);
-    ui->espCabezal->axisRect()->setupFullAxesBox();
-
-    ui->espCabezal->plotLayout()->insertRow(0);
-    ui->espCabezal->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->espCabezal, "Multi MCA"));
-    ui->espCabezal->xAxis->setLabel("Energia");
-    ui->espCabezal->yAxis->setLabel("Cuentas");
-
-    ui->espCabezal->legend->setVisible(true);
-    QFont legendFont = font();
-    legendFont.setPointSize(10);
-    ui->espCabezal->legend->setFont(legendFont);
-    ui->espCabezal->legend->setSelectedFont(legendFont);
-    ui->espCabezal->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
-
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
-    serial.close();  //libero el puerto cuando cierro el programa
+    delete ui;    
+    mca.portDisconnect();
 }
 
 void MainWindow::recibirdatosSerie()
@@ -43,53 +25,39 @@ void MainWindow::recibirdatosSerie()
      ui->textEdit->append(QString::fromUtf8(data));
 }
 
-void MainWindow::on_pushButton_clicked()
+int MainWindow::on_pushButton_clicked()
 {
 
     QMessageBox *mbox = new QMessageBox(this);
-    if(serial.isOpen())
-    {
-        serial.close();
-        ui->pushButton->setText("Conectar");
-        disconnect(&serial,SIGNAL(readyRead()));
-    }
-    else
-    {
-        serial.setPortName("/dev/ttyUSB0");
-        if (!serial.open(QIODevice::ReadWrite)){
-            mbox->setText("No se pudo abrir el puerto");
-            mbox->exec();
-            
-        }
-        else
-        {
-            serial.setParity(QSerialPort::NoParity);
-            serial.setDataBits(QSerialPort::Data8);
-            serial.setBaudRate(921600,QSerialPort::AllDirections);
-            serial.setFlowControl(QSerialPort::NoFlowControl);
-            serial.flush();
-            connect(&serial,SIGNAL(readyRead()),this,SLOT(recibirdatosSerie()));
-            ui->pushButton->setText("Desconectar");
-        }
 
+    try{
+        mca.portConnect("/dev/ttyUSB1",115200);
     }
+    catch(boost::system::system_error e)
+        {
+        mbox->setText(e.what());
+        mbox->exec();
+        return -1;
+        }
 
     delete mbox;
+    return 0;
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    if(serial.isOpen())
-    {
-        QString msg = "Hola!!!";
-        serial.write(msg.toUtf8());
-        connect(&serial,SIGNAL(readyRead()),this,SLOT(Graficaalgo()));
-    }
+    unsigned char w = {2};
+    unsigned char c;
+
+    mca.portWrite(w);
+
+    c=mca.portRead(); //TODO: Ojo que bloquea, implemetar timeout
+    std::cout<<c<<std::endl;
 }
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    ui->textEdit->clear();
+    ui->textEdit->clear();    
 }
 
 

@@ -100,7 +100,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -873,7 +873,7 @@
        <rect>
         <x>816</x>
         <y>503</y>
-        <width>111</width>
+        <width>161</width>
         <height>78</height>
        </rect>
       </property>
