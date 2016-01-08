@@ -15,10 +15,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    apComunicacionMCA.cpp
 
 HEADERS  += mainwindow.h \
-    qcustomplot.h
+    qcustomplot.h \
+    apComunicacionMCA.hpp
 
+LIBS += -lboost_system
 
 FORMS    += mainwindow.ui
