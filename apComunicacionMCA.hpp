@@ -1,8 +1,20 @@
 #ifndef COMUNICACIONMCA_H
 #define COMUNICACIONMCA_H
 
-#include <QtSerialPort>
+#include <QtSerialPort> //TODO: Volar en el caso que no se utilice
+#include <boost/asio/serial_port.hpp>
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
 
+using namespace boost;
+using namespace boost::asio;
+
+#define SERIAL_PORT_READ_BUF_SIZE 1
+
+typedef shared_ptr<serial_port> serial_port_ptr;
 
 namespace ap {
 
@@ -10,32 +22,16 @@ namespace ap {
     {
     public:
         ComunicacionMCA();
-        void Abort();
-
-    public:
-        struct FrameMetaData
-        {
-            double TotalTime;    //Tiempo total de la medición
-            int HV;              //HV del pmt
-            int ADC_Offset;      //Offset del ADC
-            int ADC_Var;         //Varianza del ADC
-            int Temp;            //Temperatura del PMT
-        };
-        enum CALLBACKCODES
-        {
-            START = 0,
-            WAIT = 1,
-            FINISH = 2,
-            TEXT = 3
-        };
+        int portConnect(const char *tty_port_name, int baud_rate);
+        int portDisconnect();
+        bool portWrite(unsigned char msg);
+        unsigned char portRead();
+        ~ComunicacionMCA();
 
     private:
-        bool Cancelar = false;                              //Cancela un procedimiento asincrónico
-
-
-    public:        
-
-      };
+        io_service io;
+        serial_port_ptr port;
+    };
 
 }
 
