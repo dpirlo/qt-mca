@@ -1,7 +1,6 @@
 #ifndef COMUNICACIONMCA_H
 #define COMUNICACIONMCA_H
 
-#include <QtSerialPort> //TODO: Volar en el caso que no se utilice
 #include <boost/asio/serial_port.hpp>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -11,6 +10,7 @@
 
 using namespace boost;
 using namespace boost::asio;
+using namespace boost::system;
 
 #define SERIAL_PORT_READ_BUF_SIZE 1
 
@@ -22,10 +22,11 @@ namespace ap {
     {
     public:
         ComunicacionMCA();
-        int portConnect(const char *tty_port_name, int baud_rate);
-        int portDisconnect();
-        bool portWrite(unsigned char msg);
-        unsigned char portRead();
+        error_code portConnect(const char *tty_port_name, int baud_rate);
+        error_code portDisconnect();
+        size_t portWrite(unsigned char msg, int buffer_size);
+        size_t portRead(unsigned char *msg);
+        bool isPortOpen();
         ~ComunicacionMCA();
 
     private:

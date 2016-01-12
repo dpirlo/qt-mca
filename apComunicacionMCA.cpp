@@ -9,34 +9,38 @@ ComunicacionMCA::ComunicacionMCA()
 
 ComunicacionMCA::~ComunicacionMCA()
 {
-
+   portDisconnect();
 }
 
-int ComunicacionMCA::portConnect(const char *tty_port_name, int baud_rate)
+error_code ComunicacionMCA::portConnect(const char *tty_port_name, int baud_rate)
 {
+    error_code error_code;
     port=serial_port_ptr(new serial_port(io));
-    port->open(tty_port_name);
+    port->open(tty_port_name, error_code);
     port->set_option(serial_port_base::baud_rate(baud_rate));
-    return 0;
+    return error_code;
 }
 
-int ComunicacionMCA::portDisconnect()
+error_code ComunicacionMCA::portDisconnect()
 {
+    error_code error_code;
     if (port->is_open())
-        port->close();
-    return 0;
+        port->close(error_code);
+
+    return error_code;
 }
 
-
-bool ComunicacionMCA::portWrite(unsigned char msg)
+size_t ComunicacionMCA::portWrite(unsigned char msg, int buffer_size)
 {
-    port->write_some(buffer(&msg,1));
-    return true;
+    return port->write_some(buffer(&msg,buffer_size));
 }
 
-unsigned char ComunicacionMCA::portRead()
+size_t ComunicacionMCA::portRead(unsigned char *msg)
 {
-    unsigned char msg;
-    port->read_some(buffer(&msg,1));
-    return msg;
+    return port->read_some(buffer(&msg,1));
+}
+
+bool ComunicacionMCA::isPortOpen()
+{
+    return port->is_open();
 }
