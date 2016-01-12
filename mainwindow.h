@@ -20,8 +20,6 @@ public:
 
 private slots:
     int on_pushButton_clicked();
-    void recibirdatosSerie();
-    void Graficaalgo();
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
     void on_pushButton_triple_ventana_clicked();

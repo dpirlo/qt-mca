@@ -1,10 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QMessageBox"
-#include <QtSerialPort>
+#include <QString>
 
-
-QSerialPort serial;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,68 +13,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;    
-    mca.portDisconnect();
+    delete ui;
 }
 
-void MainWindow::recibirdatosSerie()
-{
-     QByteArray data = serial.readAll();
-     ui->textEdit->append(QString::fromUtf8(data));
-}
-
-int MainWindow::on_pushButton_clicked()
-{
-
-    QMessageBox *mbox = new QMessageBox(this);
-
-    try{
-        mca.portConnect("/dev/ttyUSB1",115200);
-    }
-    catch(boost::system::system_error e)
-        {
-        mbox->setText(e.what());
-        mbox->exec();
-        return -1;
-        }
-
-    delete mbox;
-    return 0;
-}
-
-void MainWindow::on_pushButton_2_clicked()
-{
-    unsigned char w = {2};
-    unsigned char c;
-
-    mca.portWrite(w);
-
-    c=mca.portRead(); //TODO: Ojo que bloquea, implemetar timeout
-    std::cout<<c<<std::endl;
-}
 
 void MainWindow::on_pushButton_3_clicked()
 {
     ui->textEdit->clear();    
 }
-
-
-void MainWindow::Graficaalgo(){
-
-    QVector<double> x(101), y(101); // initialize with entries 0..100
-    for (int i=0; i<101; ++i)
-    {
-      x[i] = i/50.0; // x goes from 0 to 2
-      y[i] = x[i]*x[i];  // let's plot a quadratic function
-    }
-    ui->espCabezal->addGraph();
-    ui->espCabezal->graph(0)->setData(x, y);
-
-    ui->espCabezal->xAxis->setRange(0, 2);
-    ui->espCabezal->yAxis->setRange(0, 2);
-
-}
-
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
@@ -160,3 +104,36 @@ void MainWindow::on_pushButton_5_clicked()
 
 /*********************************************************/
 
+/* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
+
+int MainWindow::on_pushButton_clicked()
+{
+
+    QMessageBox *mbox = new QMessageBox(this);
+
+    try{
+        mca.portConnect("/dev/ttyUSB1",115200);
+    }
+    catch(boost::system::system_error e)
+        {
+        mbox->setText(e.what());
+        mbox->exec();
+        return -1;
+        }
+
+    delete mbox;
+    return 0;
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    unsigned char w = {2};
+    unsigned char c;
+
+    mca.portWrite(w,1);
+
+    mca.portRead(&c); //TODO: Ojo que bloquea, implemetar timeout
+    std::cout<<c<<std::endl;
+}
+
+/*********************************************************/
