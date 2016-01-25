@@ -7,7 +7,9 @@
 #include <boost/system/system_error.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <iostream>
 
+using namespace std;
 using namespace boost;
 using namespace boost::asio;
 using namespace boost::system;
@@ -24,8 +26,8 @@ namespace ap {
         ComunicacionMCA();
         error_code portConnect(const char *tty_port_name, int baud_rate);
         error_code portDisconnect();
-        size_t portWrite(unsigned char msg, int buffer_size);
-        size_t portRead(unsigned char *msg);
+        size_t portWrite(string *msg);
+        size_t portRead(string *msg, int buffer_size);
         bool isPortOpen();
         ~ComunicacionMCA();
 

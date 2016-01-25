@@ -30,14 +30,21 @@ error_code ComunicacionMCA::portDisconnect()
     return error_code;
 }
 
-size_t ComunicacionMCA::portWrite(unsigned char msg, int buffer_size)
+size_t ComunicacionMCA::portWrite(string *msg)
 {
-    return port->write_some(buffer(&msg,buffer_size));
+    char c_msg[msg->size()+1];
+    strcpy(c_msg, msg->c_str());
+    size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()+1));
+    return bytes_transferred;
 }
 
-size_t ComunicacionMCA::portRead(unsigned char *msg)
+size_t ComunicacionMCA::portRead(string *msg, int buffer_size)
 {
-    return port->read_some(buffer(&msg,1));
+    char c_msg[buffer_size];
+    size_t bytes_transferred = port->read_some(boost::asio::buffer(c_msg,buffer_size));
+    msg->assign(c_msg);
+
+    return bytes_transferred;
 }
 
 bool ComunicacionMCA::isPortOpen()
