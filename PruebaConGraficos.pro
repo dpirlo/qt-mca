@@ -9,7 +9,7 @@ QT       += serialport
 QT       += printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = PruebaConGraficos
+TARGET = qt-mca
 TEMPLATE = app
 
 
@@ -25,3 +25,9 @@ HEADERS  += mainwindow.h \
 LIBS += -lboost_system
 
 FORMS    += mainwindow.ui
+
+CONFIG(debug, debug|release) {
+    DESTDIR = build/debug
+} else {
+    DESTDIR = build/release
+}
