@@ -3,6 +3,10 @@
 #include "QMessageBox"
 #include <QString>
 
+/* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
+#include <QtSerialPort>
+QSerialPort serial;
+/*********************************************************/
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    serial.close();         //EJEMPLO: Libero el puerto cuando cierro el programa
 }
 
 
@@ -112,7 +117,7 @@ int MainWindow::on_pushButton_clicked()
     QMessageBox *mbox = new QMessageBox(this);
 
     try{
-        mca.portConnect("/dev/ttyUSB1",115200);
+        mca.portConnect("/dev/ttyUSB0",115200);
     }
     catch(boost::system::system_error e)
         {
@@ -127,13 +132,64 @@ int MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    unsigned char w = {2};
-    unsigned char c;
+    QMessageBox *mbox = new QMessageBox(this);
+    string sended = "Bueno, ya tamo che!";
+    string received;
 
-    mca.portWrite(w,1);
+    mca.portWrite(&sended);
+    mca.portRead(&received,sended.size()); //TODO: Ojo que bloquea, implemetar timeout
+    cout<<received<<endl;
+    mbox->setText(QString::fromStdString(received));
+    mbox->exec();
+}
 
-    mca.portRead(&c); //TODO: Ojo que bloquea, implemetar timeout
-    std::cout<<c<<std::endl;
+void MainWindow::on_pushButton_7_clicked()
+{
+    QMessageBox *mbox = new QMessageBox(this);
+       if(serial.isOpen())
+       {
+           serial.close();
+           ui->pushButton_7->setText("Connect");
+           disconnect(&serial,SIGNAL(readyRead()));
+       }
+       else
+       {
+           serial.setPortName("/dev/ttyUSB0");
+           if (!serial.open(QIODevice::ReadWrite)){
+               mbox->setText("No se pudo abrir el puerto");
+               mbox->exec();
+           }
+           else
+           {
+               serial.setParity(QSerialPort::NoParity);
+               serial.setDataBits(QSerialPort::Data8);
+               serial.setBaudRate(115200,QSerialPort::AllDirections);
+               serial.setFlowControl(QSerialPort::NoFlowControl);
+               serial.setStopBits(QSerialPort::OneStop);
+               serial.flush();
+               connect(&serial,SIGNAL(readyRead()),this,SLOT(recibirdatosSerie()));
+           }
+           ui->pushButton_7->setText("Disconnect");
+       }
+
+       delete mbox;
+}
+
+void MainWindow::on_pushButton_8_clicked()
+{
+
+    if(serial.isOpen())
+    {
+        QString msg = "12345";
+        serial.write(msg.toUtf8());
+        connect(&serial,SIGNAL(readyRead()),this,SLOT(showNormal()));
+    }
+}
+
+void MainWindow::recibirdatosSerie()
+{
+     QByteArray data = serial.readAll();
+     ui->textEdit->append(QString::fromUtf8(data));
 }
 
 /*********************************************************/

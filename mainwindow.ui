@@ -816,7 +816,7 @@
       <property name="geometry">
        <rect>
         <x>826</x>
-        <y>603</y>
+        <y>600</y>
         <width>99</width>
         <height>27</height>
        </rect>
@@ -829,7 +829,7 @@
       <property name="geometry">
        <rect>
         <x>826</x>
-        <y>643</y>
+        <y>630</y>
         <width>99</width>
         <height>27</height>
        </rect>
@@ -842,7 +842,7 @@
       <property name="geometry">
        <rect>
         <x>826</x>
-        <y>683</y>
+        <y>660</y>
         <width>99</width>
         <height>27</height>
        </rect>
@@ -988,6 +988,32 @@
        </property>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pushButton_7">
+      <property name="geometry">
+       <rect>
+        <x>830</x>
+        <y>700</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Connect</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_8">
+      <property name="geometry">
+       <rect>
+        <x>930</x>
+        <y>700</y>
+        <width>41</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Send</string>
+      </property>
+     </widget>
      <zorder>tabWidget</zorder>
      <zorder>frame_2</zorder>
      <zorder>textEdit</zorder>
@@ -997,6 +1023,8 @@
      <zorder>pushButton_salir</zorder>
      <zorder>frame</zorder>
      <zorder>frame_4</zorder>
+     <zorder>pushButton_7</zorder>
+     <zorder>pushButton_8</zorder>
     </widget>
     <widget class="QWidget" name="tab_4">
      <property name="sizePolicy">
