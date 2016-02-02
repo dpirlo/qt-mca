@@ -34,7 +34,7 @@ size_t ComunicacionMCA::portWrite(string *msg)
 {
     char c_msg[msg->size()+1];
     strcpy(c_msg, msg->c_str());
-    size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()+1));
+    size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
     return bytes_transferred;
 }
 
