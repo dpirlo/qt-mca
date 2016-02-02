@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->comboBox_port->addItems(availablePortsName());
+
 }
 
 MainWindow::~MainWindow()
@@ -21,7 +23,6 @@ MainWindow::~MainWindow()
     serial.close();         //EJEMPLO: Libero el puerto cuando cierro el programa
 }
 
-
 void MainWindow::on_pushButton_3_clicked()
 {
     ui->textEdit->clear();    
@@ -29,32 +30,32 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
-    QString fileName = OpenConfigurationFile();
+    QString fileName = openConfigurationFile();
     ui->textBrowser_triple_ventana->setText(fileName);
 }
 
 void MainWindow::on_pushButton_hv_clicked()
 {
-    QString fileName = OpenConfigurationFile();
+    QString fileName = openConfigurationFile();
     ui->textBrowser_hv->setText(fileName);
 }
 
 void MainWindow::on_pushButton_energia_clicked()
 {
-    QString fileName = OpenConfigurationFile();
+    QString fileName = openConfigurationFile();
     ui->textBrowser_energia->setText(fileName);
 }
 
 
 void MainWindow::on_pushButton_posicion_X_clicked()
 {
-    QString fileName = OpenConfigurationFile();
+    QString fileName = openConfigurationFile();
     ui->textBrowser_posicion_X->setText(fileName);
 }
 
 void MainWindow::on_pushButton_posicion_Y_clicked()
 {
-    QString fileName = OpenConfigurationFile();
+    QString fileName = openConfigurationFile();
     ui->textBrowser_posicion_Y->setText(fileName);
 }
 
@@ -68,7 +69,13 @@ void MainWindow::on_pushButton_salir_graficos_clicked()
      QApplication::quit();
 }
 
-QString MainWindow::OpenConfigurationFile()
+/* Métodos generales del entorno gráfico */
+
+/**
+ * @brief MainWindow::openConfigurationFile
+ * @return
+ */
+QString MainWindow::openConfigurationFile()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
                                                     QDir::homePath(),
@@ -76,7 +83,12 @@ QString MainWindow::OpenConfigurationFile()
     return filename;
 }
 
-void MainWindow::SetLabelState(bool state, QLabel *label)
+/**
+ * @brief MainWindow::SetLabelState
+ * @param state
+ * @param label
+ */
+void MainWindow::setLabelState(bool state, QLabel *label)
 {
     QPalette palette;
 
@@ -93,18 +105,42 @@ void MainWindow::SetLabelState(bool state, QLabel *label)
     return;
 }
 
+/**
+ * @brief MainWindow::availablePortsName
+ * @return
+ */
+QStringList MainWindow::availablePortsName()
+{
+
+    QStringList portsName;
+
+    QDir dir("/dev/");
+    QStringList filters;
+
+    filters << "ttyUSB*";
+    dir.setNameFilters(filters);
+    dir.setFilter(QDir::Files | QDir::System);
+    QFileInfoList list = dir.entryInfoList();
+
+    for (int i=0; i< list.size(); i++)
+    {
+        portsName.append(list.at(i).canonicalFilePath ());
+    }
+
+    return portsName;
+}
 
 /* TOMARLOS COMO EJEMPLO PARA LOS ESTADOS EN EL CABEZAL */
 
 void MainWindow::on_pushButton_4_clicked()
 {
-      SetLabelState(true,ui->label_cabezal_estado);
+      setLabelState(true,ui->label_cabezal_estado);
 
 }
 
 void MainWindow::on_pushButton_5_clicked()
 {
-    SetLabelState(false,ui->label_cabezal_estado);
+      setLabelState(false,ui->label_cabezal_estado);
 }
 
 /*********************************************************/
@@ -117,13 +153,16 @@ int MainWindow::on_pushButton_clicked()
     QMessageBox *mbox = new QMessageBox(this);
 
     try{
-        mca.portConnect("/dev/ttyUSB0",115200);
+        QString port_name=ui->comboBox_port->currentText();
+        mca.portConnect(port_name.toStdString().c_str(), 115200);
+        mbox->setText("Conectado al puerto: " + port_name);
+        mbox->exec();
     }
     catch(boost::system::system_error e)
         {
-        mbox->setText(e.what());
-        mbox->exec();
-        return -1;
+            mbox->setText(e.what());
+            mbox->exec();
+            return -1;
         }
 
     delete mbox;
@@ -133,11 +172,12 @@ int MainWindow::on_pushButton_clicked()
 void MainWindow::on_pushButton_2_clicked()
 {
     QMessageBox *mbox = new QMessageBox(this);
-    string sended = "Bueno, ya tamo che!";
+    string sended = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
     string received;
 
     mca.portWrite(&sended);
-    mca.portRead(&received,sended.size()); //TODO: Ojo que bloquea, implemetar timeout
+    //mca.portRead(&received,sended.size()); //TODO: Ojo que bloquea, implemetar timeout
+
     cout<<received<<endl;
     mbox->setText(QString::fromStdString(received));
     mbox->exec();

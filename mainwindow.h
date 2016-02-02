@@ -29,16 +29,19 @@ private slots:
     void on_pushButton_posicion_Y_clicked();
     void on_pushButton_salir_graficos_clicked();
     void on_pushButton_salir_clicked();
-    void SetLabelState(bool state, QLabel *label);
-    QString OpenConfigurationFile();
-
 
     /* EJEMPLOS, luego eliminarlos */
     void on_pushButton_4_clicked();
     void on_pushButton_5_clicked();
-
     void on_pushButton_7_clicked();
     void on_pushButton_8_clicked();
+
+private:
+    QString openConfigurationFile();
+    QStringList availablePortsName();
+    void setLabelState(bool state, QLabel *label);
+
+    /* EJEMPLOS, luego eliminarlos */
     void recibirdatosSerie();
 
 private:
