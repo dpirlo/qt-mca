@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1029</width>
-    <height>923</height>
+    <width>1031</width>
+    <height>962</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>1122</width>
-    <height>923</height>
+    <height>962</height>
    </size>
   </property>
   <property name="baseSize">
@@ -53,7 +53,7 @@
       <x>10</x>
       <y>0</y>
       <width>1001</width>
-      <height>851</height>
+      <height>891</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -91,7 +91,7 @@
       <property name="geometry">
        <rect>
         <x>9</x>
-        <y>273</y>
+        <y>310</y>
         <width>791</width>
         <height>531</height>
        </rect>
@@ -458,7 +458,7 @@
         <x>10</x>
         <y>10</y>
         <width>791</width>
-        <height>251</height>
+        <height>281</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -734,7 +734,7 @@
          <x>694</x>
          <y>95</y>
          <width>81</width>
-         <height>141</height>
+         <height>171</height>
         </rect>
        </property>
        <property name="text">
@@ -827,6 +827,42 @@
         <string>Obtener rutas</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>7</x>
+         <y>243</y>
+         <width>121</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Tiempos Cabezal:</string>
+       </property>
+      </widget>
+      <widget class="QTextBrowser" name="textBrowser_tiempos_cabezal">
+       <property name="geometry">
+        <rect>
+         <x>123</x>
+         <y>243</y>
+         <width>481</width>
+         <height>21</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_tiempos_cabezal">
+       <property name="geometry">
+        <rect>
+         <x>613</x>
+         <y>243</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Abrir</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QPushButton" name="pushButton_2">
       <property name="geometry">
@@ -844,8 +880,8 @@
      <widget class="QPushButton" name="pushButton_salir">
       <property name="geometry">
        <rect>
-        <x>840</x>
-        <y>770</y>
+        <x>850</x>
+        <y>810</y>
         <width>95</width>
         <height>31</height>
        </rect>
@@ -1225,7 +1261,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1029</width>
+     <width>1031</width>
      <height>27</height>
     </rect>
    </property>

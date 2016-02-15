@@ -32,16 +32,19 @@ private slots:
 
     void on_pushButton_obtener_rutas_clicked();
 
+    void on_pushButton_tiempos_cabezal_clicked();
+
 private:
     QString openConfigurationFile();
-    int parseConfigurationFile(QString delimiter, QVector<QVector<QStringRef> > *parameters);
+    int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     void setLabelState(bool state, QLabel *label);
 
 private:
     Ui::MainWindow *ui;
     ComunicacionMCA mca;
-    QString coefT, hvtable, coefx, coefy, coefest, coefT;
+    QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
+    int AT, LowLimit;
 };
 
 #endif // MAINWINDOW_H

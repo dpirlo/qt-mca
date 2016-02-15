@@ -46,6 +46,12 @@ void MainWindow::on_pushButton_posicion_Y_clicked()
     ui->textBrowser_posicion_Y->setText(fileName);
 }
 
+void MainWindow::on_pushButton_tiempos_cabezal_clicked()
+{
+    QString fileName = openConfigurationFile();
+    ui->textBrowser_tiempos_cabezal->setText(fileName);
+}
+
 void MainWindow::on_pushButton_salir_clicked()
 {
     mca.portDisconnect();
@@ -60,37 +66,84 @@ void MainWindow::on_pushButton_salir_graficos_clicked()
 
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
-    QSettings settings(QString(".//config.ini"), QSettings::IniFormat);
+    string initfile=".//config.ini";
+    QString filename=QString::fromStdString(initfile);
+    parseConfigurationFile(filename);
+
+    ui->textBrowser_triple_ventana->setText(coefest);
+    ui->textBrowser_hv->setText(hvtable);
+    ui->textBrowser_energia->setText(coefenerg);
+    ui->textBrowser_posicion_X->setText(coefx);
+    ui->textBrowser_posicion_Y->setText(coefy);
+    ui->textBrowser_tiempos_cabezal->setText(coefT);
+
+    ui->plainTextEdit_alta->document()->setPlainText(QString::number(AT));
+    ui->plainTextEdit_limiteinferior->document()->setPlainText(QString::number(LowLimit));
+}
+
+int MainWindow::on_pushButton_conectar_clicked()
+{
+
+    QMessageBox *mbox = new QMessageBox(this);
+
+    if(mca.isPortOpen())
+    {
+        ui->pushButton_conectar->setText("Connect");
+        mca.portDisconnect();
+    }
+    else
+    {
+        ui->pushButton_conectar->setText("Disconnect");
+        try{
+            QString port_name=ui->comboBox_port->currentText();
+            mca.portConnect(port_name.toStdString().c_str(), 115200);
+            mbox->setText("Conectado al puerto: " + port_name);
+            mbox->exec();
+        }
+        catch(boost::system::system_error e)
+            {
+            mbox->setText(e.what());
+            mbox->exec();
+            return -1;
+        }
+    }
+
+    delete mbox;
+    return ComunicacionMCA::OK;
+}
+
+/* Métodos generales del entorno gráfico */
+
+int MainWindow::parseConfigurationFile(QString filename)
+{
+    QMessageBox *mbox = new QMessageBox(this);
+
+    QFile configfile(filename);
+    if (!configfile.open(QIODevice::ReadOnly)) {
+        filename=openConfigurationFile();
+        configfile.setFileName(filename);
+        if (!configfile.open(QIODevice::ReadOnly)){
+            qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
+            mbox->setText("No se puede abrir el archivo de configuración");
+            mbox->exec();
+            return ComunicacionMCA::FILE_NOT_FOUND;
+        }
+    }
+
+    QSettings settings(filename, QSettings::IniFormat);
+
+    /* Paths to the configuration files */
     coefT = settings.value("Paths/coefT", "US").toString();
+    coefenerg = settings.value("Paths/coefenerg", "US").toString();
     hvtable = settings.value("Paths/hvtable", "US").toString();
     coefx = settings.value("Paths/coefx", "US").toString();
     coefy = settings.value("Paths/coefy", "US").toString();
     coefest = settings.value("Paths/coefest", "US").toString();
     coefT = settings.value("Paths/coefT", "US").toString();
-}
 
-/* Métodos generales del entorno gráfico */
-
-int MainWindow::parseConfigurationFile(QString delimiter,QVector< QVector <QStringRef> > * parameters)
-{
-
-    QFile configfile(".//config.ini");
-    if (!configfile.open(QIODevice::ReadOnly)) {
-        QString filename=openConfigurationFile();
-        configfile.setFileName(filename);
-        if(!configfile.open(QIODevice::ReadOnly)) {
-           qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
-           return ComunicacionMCA::FILE_NOT_FOUND;
-        }
-    }
-
-    QTextStream in(&configfile);    
-
-    while(!in.atEnd()) {
-       QString line = in.readLine();
-       QVector<QStringRef> fields=line.splitRef(delimiter);
-       parameters->append(fields);
-    }
+    /* Parameters */
+    AT = settings.value("SetUp/AT", "US").toInt();
+    LowLimit = settings.value("SetUp/LowLimit", "US").toInt();
 
     configfile.close();
 
@@ -105,7 +158,7 @@ QString MainWindow::openConfigurationFile()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
                                                     QDir::homePath(),
-                                                    tr("Texto (*.txt, *.ini)"));
+                                                    tr("Texto (*.ini)"));
     return filename;
 }
 
@@ -156,36 +209,6 @@ QStringList MainWindow::availablePortsName()
     return portsName;
 }
 
-int MainWindow::on_pushButton_conectar_clicked()
-{
-
-    QMessageBox *mbox = new QMessageBox(this);
-
-    if(mca.isPortOpen())
-    {
-        ui->pushButton_conectar->setText("Connect");
-        mca.portDisconnect();
-    }
-    else
-    {
-        ui->pushButton_conectar->setText("Disconnect");
-        try{
-            QString port_name=ui->comboBox_port->currentText();
-            mca.portConnect(port_name.toStdString().c_str(), 115200);
-            mbox->setText("Conectado al puerto: " + port_name);
-            mbox->exec();
-        }
-        catch(boost::system::system_error e)
-            {
-            mbox->setText(e.what());
-            mbox->exec();
-            return -1;
-        }
-    }
-
-    delete mbox;
-    return ComunicacionMCA::OK;
-}
 
 /* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
 
@@ -203,5 +226,7 @@ void MainWindow::on_pushButton_2_clicked()
     mbox->exec();
 }
 /*********************************************************/
+
+
 
 
