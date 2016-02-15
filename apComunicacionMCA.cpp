@@ -4,7 +4,7 @@ using namespace ap;
 
 ComunicacionMCA::ComunicacionMCA()
 {
-
+   portInit();
 }
 
 ComunicacionMCA::~ComunicacionMCA()
@@ -12,10 +12,14 @@ ComunicacionMCA::~ComunicacionMCA()
    portDisconnect();
 }
 
+void ComunicacionMCA::portInit()
+{
+    port=serial_port_ptr(new serial_port(io));
+}
+
 error_code ComunicacionMCA::portConnect(const char *tty_port_name, int baud_rate)
 {
-    error_code error_code;
-    port=serial_port_ptr(new serial_port(io));
+    error_code error_code;    
     port->open(tty_port_name, error_code);
     port->set_option(serial_port_base::baud_rate(baud_rate));
     return error_code;

@@ -24,6 +24,7 @@ namespace ap {
     {
     public:
         ComunicacionMCA();
+        void portInit();
         error_code portConnect(const char *tty_port_name, int baud_rate);
         error_code portDisconnect();
         size_t portWrite(string *msg);
@@ -34,6 +35,10 @@ namespace ap {
     private:
         io_service io;
         serial_port_ptr port;
+
+    public:
+        static const int OK=0000;
+        static const int FILE_NOT_FOUND=0001;
     };
 
 }
