@@ -29,15 +29,25 @@ private slots:
     void on_pushButton_posicion_Y_clicked();
     void on_pushButton_salir_graficos_clicked();
     void on_pushButton_salir_clicked();
-
     void on_pushButton_obtener_rutas_clicked();
-
     void on_pushButton_tiempos_cabezal_clicked();
+    void on_pushButton_configurar_clicked();
+
+    void on_pushButton_hv_set_clicked();
+
+    void on_pushButton_hv_on_clicked();
+
+    void on_pushButton_hv_off_clicked();
+
+    void on_pushButton_hv_estado_clicked();
+
+    void on_pushButton_adquirir_clicked();
 
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
+    QString getHead();
     void setLabelState(bool state, QLabel *label);
 
 private:

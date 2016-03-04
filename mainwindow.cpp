@@ -66,7 +66,7 @@ void MainWindow::on_pushButton_salir_graficos_clicked()
 
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
-    string initfile=".//config.ini";
+    string initfile=".//config_cabs.ini";
     QString filename=QString::fromStdString(initfile);
     parseConfigurationFile(filename);
 
@@ -104,7 +104,7 @@ int MainWindow::on_pushButton_conectar_clicked()
             {
             mbox->setText(e.what());
             mbox->exec();
-            return -1;
+            return ComunicacionMCA::FAILED;
         }
     }
 
@@ -112,8 +112,80 @@ int MainWindow::on_pushButton_conectar_clicked()
     return ComunicacionMCA::OK;
 }
 
+void MainWindow::on_pushButton_configurar_clicked()
+{
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHead());
+
+    /** TODO:
+     * Implementar una función que realice el seteo de los HV a los PMTs en función del cabezal seleccionado
+     * Ver de obtener todos los path, de los seis cabezales, solo de un .ini
+     */
+    cout<<mca.getHeader_MCAE()<<endl;
+}
+
+void MainWindow::on_pushButton_hv_set_clicked()
+{
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
+
+    /** TODO:
+     * Seteo de HV a la tensión indicada.
+     * El seteo se debe realizar de manera escalonada
+     */
+    cout<<mca.getHeader_MCAE()<<endl;
+
+}
+
+void MainWindow::on_pushButton_hv_on_clicked()
+{
+    /** TODO:
+     * Ver el tamaño de la trama
+     */
+
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
+    mca.setTrama_MCAE(mca.getHeader_MCAE()+mca.getHV_ON()+mca.getEnd_HV());
+    cout<<mca.getTrama_MCAE()<<endl;
+}
+
+void MainWindow::on_pushButton_hv_off_clicked()
+{
+    /** TODO:
+     * Ver el tamaño de la trama
+     */
+
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
+    mca.setTrama_MCAE(mca.getHeader_MCAE()+mca.getHV_OFF()+mca.getEnd_HV());
+    cout<<mca.getTrama_MCAE()<<endl;
+}
+
+void MainWindow::on_pushButton_hv_estado_clicked()
+{
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString()+mca.getFunCHV());
+
+    /** TODO:
+     * Obtener estado de la fuente HV y mostrarlo en el label
+     */
+    cout<<mca.getHeader_MCAE()<<endl;
+}
+
+void MainWindow::on_pushButton_adquirir_clicked()
+{
+    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString()+mca.getFunCSP3());
+
+    /** TODO:
+     * Adquirir los datos MCA y parsear la trama.
+     */
+    cout<<mca.getHeader_MCAE()<<endl;
+}
+
+
 /* Métodos generales del entorno gráfico */
 
+
+/**
+ * @brief MainWindow::parseConfigurationFile
+ * @param filename
+ * @return
+ */
 int MainWindow::parseConfigurationFile(QString filename)
 {
     QMessageBox *mbox = new QMessageBox(this);
@@ -132,18 +204,22 @@ int MainWindow::parseConfigurationFile(QString filename)
 
     QSettings settings(filename, QSettings::IniFormat);
 
-    /* Paths to the configuration files */
-    coefT = settings.value("Paths/coefT", "US").toString();
-    coefenerg = settings.value("Paths/coefenerg", "US").toString();
-    hvtable = settings.value("Paths/hvtable", "US").toString();
-    coefx = settings.value("Paths/coefx", "US").toString();
-    coefy = settings.value("Paths/coefy", "US").toString();
-    coefest = settings.value("Paths/coefest", "US").toString();
-    coefT = settings.value("Paths/coefT", "US").toString();
-
     /* Parameters */
     AT = settings.value("SetUp/AT", "US").toInt();
     LowLimit = settings.value("SetUp/LowLimit", "US").toInt();
+
+    /* Paths to the configuration files */
+
+    QString head= getHead();
+    QString root=settings.value("Paths/root", "US").toString();
+
+    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
+    coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
+    hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
+    coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
+    coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
+    coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
+    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
 
     configfile.close();
 
@@ -209,6 +285,12 @@ QStringList MainWindow::availablePortsName()
     return portsName;
 }
 
+QString MainWindow::getHead()
+{
+    QString head=ui->comboBox_select_cabezal->currentText();
+    return head;
+}
+
 
 /* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
 
@@ -225,8 +307,4 @@ void MainWindow::on_pushButton_2_clicked()
     mbox->setText(QString::fromStdString(received));
     mbox->exec();
 }
-/*********************************************************/
-
-
-
-
+/**********************************************************/
