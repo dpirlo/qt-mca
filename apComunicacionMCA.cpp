@@ -5,11 +5,30 @@ using namespace ap;
 ComunicacionMCA::ComunicacionMCA()
 {
    portInit();
+   setStrings();
 }
 
 ComunicacionMCA::~ComunicacionMCA()
 {
    portDisconnect();
+}
+
+bool ComunicacionMCA::isPortOpen()
+{
+    return port->is_open();
+}
+
+void ComunicacionMCA::setStrings()
+{
+   /*Funciones trama MCAE*/
+   FunCHead="01";
+   FunCSP3="02";
+   FunCHV="03";
+   Head_MCAE="#C";
+   End_MCA="/r";
+   End_HV="/r/n";
+   HV_OFF="$SET,STA,OFF";
+   HV_ON="$SET,STA,ON";
 }
 
 void ComunicacionMCA::portInit()
@@ -51,7 +70,5 @@ size_t ComunicacionMCA::portRead(string *msg, int buffer_size)
     return bytes_transferred;
 }
 
-bool ComunicacionMCA::isPortOpen()
-{
-    return port->is_open();
-}
+
+
