@@ -1,5 +1,5 @@
-#ifndef COMUNICACIONMCA_H
-#define COMUNICACIONMCA_H
+#ifndef APMCAE_H
+#define APMCAE_H
 
 #include <boost/asio/serial_port.hpp>
 #include <boost/asio.hpp>
@@ -8,6 +8,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <iostream>
+#include "apExceptions.hpp"
 
 using namespace std;
 using namespace boost;
@@ -20,20 +21,25 @@ typedef shared_ptr<serial_port> serial_port_ptr;
 
 namespace ap {
 
-    class ComunicacionMCA
+    class MCAE
     {
     public:
-        ComunicacionMCA();
+        MCAE();
         void setStrings();
         void portInit();
         error_code portConnect(const char *tty_port_name, int baud_rate);
         error_code portDisconnect();
         size_t portWrite(string *msg);
         size_t portRead(string *msg, int buffer_size);
+        size_t portRead(char *c_msg);
+        string portReadMCAELine();
+        string portReadPSOCLine();
         bool isPortOpen();
-        ~ComunicacionMCA();
-
+        ~MCAE();
     private:
+        /* Pruebas*/
+
+    protected:
         io_service io;
         serial_port_ptr port;
 
@@ -62,6 +68,8 @@ namespace ap {
         string getHV_ON() const { return HV_ON; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
+        serial_port_ptr getPort() const { return port; }
+
     };
 
 }
@@ -80,4 +88,4 @@ const int TIMEOUTRX = 200;
 
 */
 
-#endif // COMUNICACIONMCA_H
+#endif // APMCAE_H
