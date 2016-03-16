@@ -84,8 +84,6 @@ void MainWindow::on_pushButton_obtener_rutas_clicked()
 int MainWindow::on_pushButton_conectar_clicked()
 {
 
-    QMessageBox *mbox = new QMessageBox(this);
-
     if(mca.isPortOpen())
     {
         ui->pushButton_conectar->setText("Connect");
@@ -96,20 +94,17 @@ int MainWindow::on_pushButton_conectar_clicked()
         ui->pushButton_conectar->setText("Disconnect");
         try{
             QString port_name=ui->comboBox_port->currentText();
-            mca.portConnect(port_name.toStdString().c_str(), 115200);
-            mbox->setText("Conectado al puerto: " + port_name);
-            mbox->exec();
+            mca.portConnect(port_name.toStdString().c_str(), 921600);
+            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
         }
         catch(boost::system::system_error e)
             {
-            mbox->setText(e.what());
-            mbox->exec();
-            return ComunicacionMCA::FAILED;
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ")+tr(e.what()));;
+            return MCAE::FAILED;
         }
     }
 
-    delete mbox;
-    return ComunicacionMCA::OK;
+    return MCAE::OK;
 }
 
 void MainWindow::on_pushButton_configurar_clicked()
@@ -188,17 +183,14 @@ void MainWindow::on_pushButton_adquirir_clicked()
  */
 int MainWindow::parseConfigurationFile(QString filename)
 {
-    QMessageBox *mbox = new QMessageBox(this);
-
     QFile configfile(filename);
     if (!configfile.open(QIODevice::ReadOnly)) {
         filename=openConfigurationFile();
         configfile.setFileName(filename);
         if (!configfile.open(QIODevice::ReadOnly)){
             qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
-            mbox->setText("No se puede abrir el archivo de configuración");
-            mbox->exec();
-            return ComunicacionMCA::FILE_NOT_FOUND;
+            QMessageBox::critical(this,tr("Atención"),tr("No se puede abrir el archivo de configuración."));
+            return MCAE::FILE_NOT_FOUND;
         }
     }
 
@@ -223,7 +215,7 @@ int MainWindow::parseConfigurationFile(QString filename)
 
     configfile.close();
 
-    return ComunicacionMCA::OK;
+    return MCAE::OK;
 }
 
 /**
@@ -294,17 +286,25 @@ QString MainWindow::getHead()
 
 /* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
 
-void MainWindow::on_pushButton_2_clicked()
-{
-    QMessageBox *mbox = new QMessageBox(this);
-    string sended = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-    string received;
+void MainWindow::on_pushButton_clicked()
+{   
+   TimeOutReadMCAE read_timeout(mca.getPort(),500);
 
-    mca.portWrite(&sended);
-    //mca.portRead(&received,sended.size()); //TODO: Ojo que bloquea, implemetar timeout
+   QString sended = ui->plainTextEdit->toPlainText();
+   string sended_ss=sended.toStdString()+mca.getEnd_MCA();
+   size_t bytes = mca.portWrite(&sended_ss);
 
-    cout<<received<<endl;
-    mbox->setText(QString::fromStdString(received));
-    mbox->exec();
+   string msg;
+   try{
+        read_timeout.ReadString(&msg);
+   }
+   catch( Exceptions & ex ){
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+
+   }
+
+   ui->label_12->setText(QString::fromStdString(msg));
+
 }
+
 /**********************************************************/

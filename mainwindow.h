@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include "./qcustomplot.h"
-#include "apComunicacionMCA.hpp"
+#include "apMCAE.hpp"
+#include "apTimeOutReadMCAE.hpp"
 #include <QString>
 
 using namespace ap;
@@ -20,8 +21,7 @@ public:
     ~MainWindow();
 
 private slots:
-    int on_pushButton_conectar_clicked();
-    void on_pushButton_2_clicked(); // Enviar
+    int on_pushButton_conectar_clicked();    
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
@@ -32,16 +32,12 @@ private slots:
     void on_pushButton_obtener_rutas_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
     void on_pushButton_configurar_clicked();
-
     void on_pushButton_hv_set_clicked();
-
     void on_pushButton_hv_on_clicked();
-
     void on_pushButton_hv_off_clicked();
-
     void on_pushButton_hv_estado_clicked();
-
     void on_pushButton_adquirir_clicked();
+    void on_pushButton_clicked();
 
 private:
     QString openConfigurationFile();
@@ -52,7 +48,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    ComunicacionMCA mca;
+    MCAE mca;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int AT, LowLimit;
 };

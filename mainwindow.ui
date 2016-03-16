@@ -428,6 +428,11 @@
          <string>6</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>7</string>
+        </property>
+       </item>
       </widget>
       <widget class="QLabel" name="label_5">
        <property name="geometry">
@@ -909,31 +914,6 @@ Tensión: </string>
       <zorder>pushButton_hv_off</zorder>
       <zorder>pushButton_hv_estado</zorder>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="geometry">
-       <rect>
-        <x>810</x>
-        <y>811</y>
-        <width>99</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <underline>false</underline>
-        <strikeout>false</strikeout>
-       </font>
-      </property>
-      <property name="text">
-       <string>Enviar</string>
-      </property>
-      <property name="shortcut">
-       <string/>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButton_salir">
       <property name="geometry">
        <rect>
@@ -1073,11 +1053,9 @@ Tensión: </string>
      </widget>
      <zorder>tabWidget</zorder>
      <zorder>frame_2</zorder>
-     <zorder>pushButton_2</zorder>
      <zorder>pushButton_salir</zorder>
      <zorder>frame</zorder>
      <zorder>frame_4</zorder>
-     <zorder>label_cabezal_estado</zorder>
     </widget>
     <widget class="QWidget" name="tab_4">
      <property name="sizePolicy">
@@ -1311,6 +1289,55 @@ Tensión: </string>
      <attribute name="title">
       <string>Pruebas por cabezal</string>
      </attribute>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>90</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Send</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>170</y>
+        <width>601</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>90</y>
+        <width>551</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>220</y>
+        <width>601</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
