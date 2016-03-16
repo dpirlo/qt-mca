@@ -16,11 +16,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     qcustomplot.cpp \
-    apComunicacionMCA.cpp
+    apMCAE.cpp \
+    apTimeOutReadMCAE.cpp \
+    apExceptions.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
-    apComunicacionMCA.hpp
+    apMCAE.hpp \
+    apTimeOutReadMCAE.hpp \
+    apExceptions.hpp
 
 LIBS += -lboost_system
 
