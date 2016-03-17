@@ -9,7 +9,7 @@ QT       += serialport
 QT       += printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = qt-mca
+TARGET = qt-arpet
 TEMPLATE = app
 
 
@@ -17,13 +17,11 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     qcustomplot.cpp \
     apMCAE.cpp \
-    apTimeOutReadMCAE.cpp \
     apExceptions.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
     apMCAE.hpp \
-    apTimeOutReadMCAE.hpp \
     apExceptions.hpp
 
 LIBS += -lboost_system
