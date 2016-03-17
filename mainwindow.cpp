@@ -4,9 +4,11 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
+    TimeOut(500),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    arpet=shared_ptr<MCAE>(new MCAE(TimeOut));
     ui->comboBox_port->addItems(availablePortsName());
 }
 
@@ -54,13 +56,13 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 
 void MainWindow::on_pushButton_salir_clicked()
 {
-    mca.portDisconnect();
+    arpet->portDisconnect();
     QApplication::quit();
 }
 
 void MainWindow::on_pushButton_salir_graficos_clicked()
 {
-    mca.portDisconnect();
+    arpet->portDisconnect();
     QApplication::quit();
 }
 
@@ -84,17 +86,17 @@ void MainWindow::on_pushButton_obtener_rutas_clicked()
 int MainWindow::on_pushButton_conectar_clicked()
 {
 
-    if(mca.isPortOpen())
+    if(arpet->isPortOpen())
     {
         ui->pushButton_conectar->setText("Connect");
-        mca.portDisconnect();
+        arpet->portDisconnect();
     }
     else
     {
         ui->pushButton_conectar->setText("Disconnect");
         try{
             QString port_name=ui->comboBox_port->currentText();
-            mca.portConnect(port_name.toStdString().c_str(), 921600);
+            arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
         }
         catch(boost::system::system_error e)
@@ -109,24 +111,24 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 void MainWindow::on_pushButton_configurar_clicked()
 {
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHead());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHead());
 
     /** TODO:
      * Implementar una función que realice el seteo de los HV a los PMTs en función del cabezal seleccionado
      * Ver de obtener todos los path, de los seis cabezales, solo de un .ini
      */
-    cout<<mca.getHeader_MCAE()<<endl;
+    cout<<arpet->getHeader_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
 
     /** TODO:
      * Seteo de HV a la tensión indicada.
      * El seteo se debe realizar de manera escalonada
      */
-    cout<<mca.getHeader_MCAE()<<endl;
+    cout<<arpet->getHeader_MCAE()<<endl;
 
 }
 
@@ -136,9 +138,9 @@ void MainWindow::on_pushButton_hv_on_clicked()
      * Ver el tamaño de la trama
      */
 
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
-    mca.setTrama_MCAE(mca.getHeader_MCAE()+mca.getHV_ON()+mca.getEnd_HV());
-    cout<<mca.getTrama_MCAE()<<endl;
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_ON()+arpet->getEnd_HV());
+    cout<<arpet->getTrama_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_hv_off_clicked()
@@ -147,29 +149,29 @@ void MainWindow::on_pushButton_hv_off_clicked()
      * Ver el tamaño de la trama
      */
 
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString() + mca.getFunCHV());
-    mca.setTrama_MCAE(mca.getHeader_MCAE()+mca.getHV_OFF()+mca.getEnd_HV());
-    cout<<mca.getTrama_MCAE()<<endl;
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_OFF()+arpet->getEnd_HV());
+    cout<<arpet->getTrama_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString()+mca.getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString()+arpet->getFunCHV());
 
     /** TODO:
      * Obtener estado de la fuente HV y mostrarlo en el label
      */
-    cout<<mca.getHeader_MCAE()<<endl;
+    cout<<arpet->getHeader_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-    mca.setHeader_MCAE(mca.getHead_MCAE() + getHead().toStdString()+mca.getFunCSP3());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString()+arpet->getFunCSP3());
 
     /** TODO:
      * Adquirir los datos MCA y parsear la trama.
      */
-    cout<<mca.getHeader_MCAE()<<endl;
+    cout<<arpet->getHeader_MCAE()<<endl;
 }
 
 
@@ -288,19 +290,18 @@ QString MainWindow::getHead()
 
 void MainWindow::on_pushButton_clicked()
 {   
-   TimeOutReadMCAE read_timeout(mca.getPort(),500);
+  // TimeOutReadMCAE read_timeout(arpet->getPort(),500);
 
    QString sended = ui->plainTextEdit->toPlainText();
-   string sended_ss=sended.toStdString()+mca.getEnd_MCA();
-   size_t bytes = mca.portWrite(&sended_ss);
+   string sended_ss=sended.toStdString()+arpet->getEnd_MCA();
+   size_t bytes = arpet->portWrite(&sended_ss);
 
    string msg;
    try{
-        read_timeout.ReadString(&msg);
+        arpet->ReadString(&msg,'\r');
    }
    catch( Exceptions & ex ){
         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-
    }
 
    ui->label_12->setText(QString::fromStdString(msg));

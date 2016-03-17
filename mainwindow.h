@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include "./qcustomplot.h"
 #include "apMCAE.hpp"
-#include "apTimeOutReadMCAE.hpp"
+#include "apTimeOutManagerMCAE.hpp"
 #include <QString>
 
 using namespace ap;
@@ -48,9 +48,9 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    MCAE mca;
+    shared_ptr<MCAE> arpet;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    int AT, LowLimit;
+    int AT, LowLimit, TimeOut;
 };
 
 #endif // MAINWINDOW_H
