@@ -24,16 +24,19 @@ namespace ap {
     class MCAE
     {
     public:
-        MCAE();
-        void setStrings();
-        void portInit();
-        error_code portConnect(const char *tty_port_name, int baud_rate);
+        MCAE(size_t timeout);
+        void setStrings();        
+        error_code portConnect(const char *tty_port_name);
         error_code portDisconnect();
         size_t portWrite(string *msg);
         size_t portRead(string *msg, int buffer_size);
         size_t portRead(char *c_msg);
         string portReadMCAELine();
         string portReadPSOCLine();
+        void ReadComplete(const boost::system::error_code& error, size_t bytes_transferred);
+        void TimeOut(const boost::system::error_code& error);
+        bool ReadOneChar(char& val);
+        void ReadString(string *msg, char delimeter);
         bool isPortOpen();
         ~MCAE();
     private:
@@ -53,6 +56,10 @@ namespace ap {
         string Head_MCAE, End_MCA, End_HV, Head_MCA;
         string Header_MCAE, Trama_MCAE;
         string HV_OFF, HV_ON;
+        size_t timeout;
+        bool read_error;
+        deadline_timer timer;
+        int PortBaudRate;
 
     public:
         string getFunCHead() const { return FunCHead; }
@@ -80,9 +87,6 @@ string tramaRx_Init_Head = "@0064020<", tramaRx_Init_Slaves = "@0064310>", trama
 string tramaHV_ON = "$SET,STA,ON", tramaHV_OFF = "$SET,S,OFF", tramaHV_SET = "$SET,VCO,", tramaHV_STATUS = "$TEMP", tramaRx_HV = "DEPENDE LA CANTIDAD DE SENSORES";
 string largo_trama_set_HV = "0003", largo_trama_status_hv ="0061";
 
-string tramaMCA;
-string Encabezado_MCA = "#C";
-string fin_de_Trama_MCA = Convert.ToString('\r'), fin_de_Trama_HV = Convert.ToString('\r') + Convert.ToString('\n');
 int timeoutRx = 0;
 const int TIMEOUTRX = 200;
 
