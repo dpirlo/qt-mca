@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include "./qcustomplot.h"
 #include "apMCAE.hpp"
-#include "apTimeOutManagerMCAE.hpp"
 #include <QString>
 
 using namespace ap;
@@ -45,6 +44,8 @@ private:
     QStringList availablePortsName();
     QString getHead();
     void setLabelState(bool state, QLabel *label);
+    string ReadString();
+    size_t SendString(string msg, string end);
 
 private:
     Ui::MainWindow *ui;

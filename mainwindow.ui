@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab_3">
      <property name="sizePolicy">
@@ -1307,8 +1307,8 @@ Tensión: </string>
        <rect>
         <x>130</x>
         <y>170</y>
-        <width>601</width>
-        <height>41</height>
+        <width>771</width>
+        <height>191</height>
        </rect>
       </property>
       <property name="text">

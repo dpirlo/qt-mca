@@ -4,7 +4,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    TimeOut(500),
+    TimeOut(1000),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -285,26 +285,45 @@ QString MainWindow::getHead()
     return head;
 }
 
+string MainWindow::ReadString()
+{
+    string msg;
+    try{
+         arpet->portReadString(&msg,'\r');
+    }
+    catch( Exceptions & ex ){
+         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
+    return msg;
+}
+
+size_t MainWindow::SendString(string msg, string end)
+{
+    size_t bytes_transfered = 0;
+
+    try{
+        string sended=msg + end;
+        bytes_transfered = arpet->portWrite(&sended);
+    }
+    catch(boost::system::system_error e){
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ") + tr(e.what()));;
+    }
+
+    return bytes_transfered;
+}
+
 
 /* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
 
 void MainWindow::on_pushButton_clicked()
 {   
-  // TimeOutReadMCAE read_timeout(arpet->getPort(),500);
-
    QString sended = ui->plainTextEdit->toPlainText();
-   string sended_ss=sended.toStdString()+arpet->getEnd_MCA();
-   size_t bytes = arpet->portWrite(&sended_ss);
 
-   string msg;
-   try{
-        arpet->ReadString(&msg,'\r');
-   }
-   catch( Exceptions & ex ){
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-   }
+   SendString(sended.toStdString(),arpet->getEnd_MCA());
+   string msg=ReadString();
+   QString q_msg=QString::fromStdString(msg);
 
-   ui->label_12->setText(QString::fromStdString(msg));
+   ui->label_12->setText(q_msg);
 
 }
 
