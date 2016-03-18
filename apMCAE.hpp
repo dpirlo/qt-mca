@@ -33,11 +33,12 @@ namespace ap {
         size_t portRead(char *c_msg);
         string portReadMCAELine();
         string portReadPSOCLine();
-        void ReadComplete(const boost::system::error_code& error, size_t bytes_transferred);
-        void TimeOut(const boost::system::error_code& error);
-        bool ReadOneChar(char& val);
-        void ReadString(string *msg, char delimeter);
+        void portReadComplete(const boost::system::error_code& error, size_t bytes_transferred);
+        void portTimeOut(const boost::system::error_code& error);
+        bool portReadOneChar(char& val);
+        void portReadString(string *msg, char delimeter);
         bool isPortOpen();
+        error_code portFlush();
         ~MCAE();
     private:
         /* Pruebas*/

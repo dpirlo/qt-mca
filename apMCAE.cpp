@@ -114,7 +114,7 @@ string MCAE::portReadPSOCLine() {
   return msg;
 }
 
-void MCAE::ReadComplete(const boost::system::error_code& error,
+void MCAE::portReadComplete(const boost::system::error_code& error,
                         size_t bytes_transferred)
 {
     read_error = (error || bytes_transferred == 0);
@@ -122,25 +122,25 @@ void MCAE::ReadComplete(const boost::system::error_code& error,
 }
 
 
-void MCAE::TimeOut(const boost::system::error_code& error)
+void MCAE::portTimeOut(const boost::system::error_code& error)
 {
     if (error) { return; }
     port->cancel();
 }
 
 
-bool MCAE::ReadOneChar(char& val)
+bool MCAE::portReadOneChar(char& val)
 {
    char c;
    val = c = '\0';
 
    port->get_io_service().reset();
    port->async_read_some(boost::asio::buffer(&c, 1),
-                                          boost::bind(&MCAE::ReadComplete, this,
+                                          boost::bind(&MCAE::portReadComplete, this,
                                                       boost::asio::placeholders::error,
                                                       boost::asio::placeholders::bytes_transferred));
    timer.expires_from_now(boost::posix_time::milliseconds(timeout));
-   timer.async_wait(boost::bind(&MCAE::TimeOut,
+   timer.async_wait(boost::bind(&MCAE::portTimeOut,
                     this, boost::asio::placeholders::error));
 
    port->get_io_service().run();
@@ -151,10 +151,10 @@ bool MCAE::ReadOneChar(char& val)
    return !read_error;
 }
 
-void MCAE::ReadString(string *msg, char delimeter)
+void MCAE::portReadString(string *msg, char delimeter)
 {
     char c;
-    while (ReadOneChar(c) && c != delimeter) {
+    while (portReadOneChar(c) && c != delimeter) {
         msg->push_back(c);
         }
 
@@ -162,6 +162,20 @@ void MCAE::ReadString(string *msg, char delimeter)
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
+    portFlush();// Para usar cuando adquirimos en RAW
+
 }
+
+error_code MCAE::portFlush()
+{
+    error_code ec;
+
+    const bool isFlushed =! ::tcflush(port->native(), TCIOFLUSH);
+    if (!isFlushed)
+        ec = error_code(errno,error::get_system_category());
+
+    return ec;
+}
+
 
 
