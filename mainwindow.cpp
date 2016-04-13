@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setFixedSize(this->maximumSize());
     arpet=shared_ptr<MCAE>(new MCAE(TimeOut));
     ui->comboBox_port->addItems(availablePortsName());
 }
@@ -306,7 +307,7 @@ size_t MainWindow::SendString(string msg, string end)
         bytes_transfered = arpet->portWrite(&sended);
     }
     catch(boost::system::system_error e){
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ") + tr(e.what()));;
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ") + tr(e.what()));
     }
 
     return bytes_transfered;
@@ -319,7 +320,32 @@ void MainWindow::on_pushButton_clicked()
 {   
    QString sended = ui->plainTextEdit->toPlainText();
 
-   SendString(sended.toStdString(),arpet->getEnd_MCA());
+   size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+   //string msg=ReadString();
+
+//   cout<<bytes<<endl;
+
+//   for (int i=0;i<20;i++){arpet->data[i]='0';}
+
+
+//   cout<<"ANTES DE LEER"<<endl;
+//   cout<<arpet->data<<endl;
+//   cout<<arpet->data[1]<<endl;
+//   cout<<arpet->data[8]<<endl;
+//   cout<<arpet->data[11]<<endl;
+//   cout<<arpet->data[15]<<endl;
+//   cout<<arpet->data[19]<<endl;
+
+//   arpet->portReadCharArray(20);
+
+//   cout<<"DESPUES DE LEER"<<endl;
+//   cout<<arpet->data<<endl;
+//   cout<<arpet->data[1]<<endl;
+//   cout<<arpet->data[8]<<endl;
+//   cout<<arpet->data[11]<<endl;
+//   cout<<arpet->data[15]<<endl;
+//   cout<<arpet->data[19]<<endl;
+
    string msg=ReadString();
    QString q_msg=QString::fromStdString(msg);
 
@@ -327,4 +353,70 @@ void MainWindow::on_pushButton_clicked()
 
 }
 
+void MainWindow::on_pushButton_2_clicked()
+{
+   arpet->portFlush();
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    QString sended="#C701090009@0064010;";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    QString sended="#C702090009@0064010;";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    QString sended="#C702071552@01650<";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    QString sended="#C702071552@02650=";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
+
+void MainWindow::on_pushButton_7_clicked()
+{
+    QString sended="#C701071552@01650<";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
 /**********************************************************/
+
+
