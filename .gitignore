@@ -2,3 +2,7 @@
 *.o
 build/
 Makefile
+moc_mainwindow.cpp
+moc_qcustomplot.cpp
+ui_mainwindow.h
+
