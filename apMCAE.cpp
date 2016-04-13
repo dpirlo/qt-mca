@@ -13,11 +13,17 @@ MCAE::MCAE(size_t timeout)
      FunCSP3("02"),
      FunCHV("03"),
      Head_MCAE("#C"),
+     Head_MCA("@"),
      End_MCA("\r"),
      End_HV("\r\n"),
      HV_OFF("$SET,STA,OFF"),
-     HV_ON("$SET,STA,ON")
+     HV_ON("$SET,STA,ON"),
+     Checksum_Table("0123456789:;<=>?")
 {
+    /*PRUEBAS*/
+    getMCA(9);
+    string data="@1065";
+    getMCAFormatStream(data);
 
 }
 
@@ -162,8 +168,20 @@ void MCAE::portReadString(string *msg, char delimeter)
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
-    portFlush();// Para usar cuando adquirimos en RAW
+}
 
+bool MCAE::portReadCharArray(int nbytes)
+{
+    try
+        {
+           port->read_some(boost::asio::buffer(data, nbytes));
+        }
+        catch (const boost::system::system_error &ex)
+        {
+            std::cout << "Error: " << ex.what() << "\n";
+            return false;
+        }
+    return true;
 }
 
 error_code MCAE::portFlush()
@@ -177,5 +195,124 @@ error_code MCAE::portFlush()
     return ec;
 }
 
+int MCAE::convertHexToDec(string hex_number_s)
+{
+    bool ok;
+    QString hex_number = QString::fromStdString(hex_number_s);
+    int dec_number = hex_number.toInt(&ok,16);
+
+    return dec_number;
+}
+
+string MCAE::convertDecToHex(int dec_number)
+{
+    QByteArray hex_number = QByteArray::number(dec_number,16);
+
+    return QString(hex_number).toStdString();
+}
+
+int MCAE::getMCACheckSum(string data_function, string data_pmt)
+{
+    int sum_of_elements=0;
+    for(unsigned int i = 0; i < data_function.length(); ++i)
+    {
+             string token(1, data_function.at(i));
+             sum_of_elements = sum_of_elements + atoi(token.c_str());
+    }
+
+    string data_pmt_hex=convertDecToHex(atoi(data_pmt.c_str()));
+    if (data_pmt_hex.length()==1) data_pmt_hex="0" + data_pmt_hex;
+    string pmt_1(1,data_pmt_hex.at(0));
+    string pmt_2(1,data_pmt_hex.at(1));
+
+    sum_of_elements = sum_of_elements + convertHexToDec(pmt_1) + convertHexToDec(pmt_2);
+
+    cout<<data_pmt_hex<<endl;
+    cout<<sum_of_elements<<endl;
+
+    return sum_of_elements;
+}
+
+MCAE::string_code MCAE::getMCAStringValues(std::string const& inString)
+{
+    if (inString == "a") return a;
+    if (inString == "b") return b;
+    if (inString == "c") return c;
+    if (inString == "d") return d;
+    if (inString == "e") return e;
+    if (inString == "f") return f;
+}
+
+string MCAE::convertMCAFormatStream(string data_with_cs)
+{
+    /* Formato de data con checksum:
+     * @ddcc--...--ss
+     */
+
+    size_t pos = 0;
+
+    while (pos < data_with_cs.length())
+    {
+        string token = data_with_cs.substr(pos, 1);
+        switch (getMCAStringValues(token)) {
+        case a:
+            data_with_cs.replace(pos,token.length(),":");
+            break;
+        case b:
+            data_with_cs.replace(pos,token.length(),";");
+            break;
+        case c:
+            data_with_cs.replace(pos,token.length(),"<");
+            break;
+        case d:
+            data_with_cs.replace(pos,token.length(),"=");
+            break;
+        case e:
+            data_with_cs.replace(pos,token.length(),">");
+            break;
+        case f:
+            data_with_cs.replace(pos,token.length(),"?");
+            break;
+        default:
+            break;
+        }
+        pos++;
+    }
+
+    return data_with_cs;
+}
 
 
+string MCAE::getMCAFormatStream(string data)
+{
+    /* Formato de data sin checksum:
+     * @ddcc--...--
+     */
+
+    string data_function=data.substr(3,data.length());
+    string data_pmt=data.substr(1,2);
+    int data_pmt_int=atoi(data_pmt.c_str());
+    string checksum=convertDecToHex(getMCACheckSum(data_function,data_pmt));
+    if (checksum.length()==1) checksum="0" + checksum;
+
+    string data_plus_checksum = convertDecToHex(data_pmt_int) + data_function + checksum;
+    if (convertDecToHex(data_pmt_int).length()==1) data_plus_checksum = "0" + data_plus_checksum;
+    data_plus_checksum=Head_MCA + data_plus_checksum;
+
+    string data_plus_checksum_mca_format=convertMCAFormatStream(data_plus_checksum);
+
+    return data_plus_checksum_mca_format;
+}
+
+string MCAE::getMCA(int pmt)
+{
+    int sum=pmt+6+5;
+    string checksum=convertDecToHex(sum);
+    string trama_mca=getHead_MCA()+"09"+"65"+checksum;
+
+
+
+    setTrama_MCA(trama_mca);
+
+    return MCA;
+}

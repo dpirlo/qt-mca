@@ -8,6 +8,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <iostream>
+#include <vector>
 #include "apExceptions.hpp"
 
 using namespace std;
@@ -37,11 +38,23 @@ namespace ap {
         void portTimeOut(const boost::system::error_code& error);
         bool portReadOneChar(char& val);
         void portReadString(string *msg, char delimeter);
+        int convertHexToDec(string hex_number);
+        string convertDecToHex(int dec_number);
         bool isPortOpen();
+        string getMCA(int pmt);
         error_code portFlush();
+        int getMCACheckSum(string data_function, string data_pmt);
+        string getMCAFormatStream(string data);
+        string convertMCAFormatStream(string data_with_cs);
+        string_code getMCAStringValues(std::string const& inString);
         ~MCAE();
+        /* Pruebas*/
+
+        bool portReadCharArray(int nbytes);
+        char * data;
     private:
         /* Pruebas*/
+
 
     protected:
         io_service io;
@@ -53,10 +66,13 @@ namespace ap {
         static const int FILE_NOT_FOUND=0002;
         
     private:
+        enum string_code {a,b,c,d,e,f};
         string FunCHead, FunCSP3, FunCHV;
         string Head_MCAE, End_MCA, End_HV, Head_MCA;
-        string Header_MCAE, Trama_MCAE;
+        string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
+        string init_MCA,MCA,HV;
+        const char* Checksum_Table;
         size_t timeout;
         bool read_error;
         deadline_timer timer;
@@ -73,10 +89,12 @@ namespace ap {
         string getTrama_MCAE() const { return Trama_MCAE; }
         string getHeader_MCAE() const { return Header_MCAE; }
         string getHV_OFF() const { return HV_OFF; }
-        string getHV_ON() const { return HV_ON; }
+        string getHV_ON() const { return HV_ON; }        
         void setHeader_MCAE(string data) { Header_MCAE=data; }
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
+        void setTrama_MCA(string data){ Trama_MCA=data; }
         serial_port_ptr getPort() const { return port; }
+
 
     };
 
