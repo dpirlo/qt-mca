@@ -11,12 +11,23 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setFixedSize(this->maximumSize());
     arpet=shared_ptr<MCAE>(new MCAE(TimeOut));
     ui->comboBox_port->addItems(availablePortsName());
+    manageHeadCheckBox("config",false);
+    manageHeadCheckBox("graph",false);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;   
 }
+
+void MainWindow::checkCombosStatus()
+{
+     QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
+     QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
+     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
+}
+
+/* Pestaña: "Configuración" */
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
@@ -112,7 +123,7 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 void MainWindow::on_pushButton_configurar_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHead());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHead());
 
     /** TODO:
      * Implementar una función que realice el seteo de los HV a los PMTs en función del cabezal seleccionado
@@ -123,7 +134,7 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
 
     /** TODO:
      * Seteo de HV a la tensión indicada.
@@ -139,7 +150,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
      * Ver el tamaño de la trama
      */
 
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
     arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_ON()+arpet->getEnd_HV());
     cout<<arpet->getTrama_MCAE()<<endl;
 }
@@ -150,14 +161,14 @@ void MainWindow::on_pushButton_hv_off_clicked()
      * Ver el tamaño de la trama
      */
 
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString() + arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
     arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_OFF()+arpet->getEnd_HV());
     cout<<arpet->getTrama_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString()+arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString()+arpet->getFunCHV());
 
     /** TODO:
      * Obtener estado de la fuente HV y mostrarlo en el label
@@ -165,14 +176,72 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     cout<<arpet->getHeader_MCAE()<<endl;
 }
 
+void MainWindow::setHeadModeConfig(int index)
+{
+    setHeadMode(index,"config");
+}
+
+
+/* Pestaña: "Gráficos" */
+
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead().toStdString()+arpet->getFunCSP3());
 
-    /** TODO:
-     * Adquirir los datos MCA y parsear la trama.
-     */
-    cout<<arpet->getHeader_MCAE()<<endl;
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString()+arpet->getFunCSP3());
+    string pmt=ui->textEdit_pmt->toPlainText().toStdString();
+
+    arpet->setMCAEStream(pmt,"07","1552",arpet->getData_MCA());
+
+    size_t bytes=SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+
+    ui->label_21->setText(q_msg);
+
+    cout<<arpet->getTrama_MCAE()<<endl;
+}
+
+void MainWindow::on_pushButton_decrease_clicked()
+{
+    QString pmt=ui->textEdit_pmt->toPlainText();
+    if (pmt.toInt()>1)
+    {
+        int pmt_decrease=pmt.toInt()-1;
+        ui->textEdit_pmt->setText(QString::number(pmt_decrease));
+    }
+}
+
+void MainWindow::on_pushButton_increase_clicked()
+{
+    QString pmt=ui->textEdit_pmt->toPlainText();
+    if (pmt.toInt()<48)
+    {
+        int pmt_increase=pmt.toInt()+1;
+        ui->textEdit_pmt->setText(QString::number(pmt_increase));
+    }
+}
+
+void MainWindow::setHeadModeGraph(int index)
+{
+    setHeadMode(index,"graph");
+}
+
+void MainWindow::setAdquireMode(int index)
+{
+    switch (index) {
+    case MONOMODE:
+        ui->pushButton_increase->show();
+        ui->textEdit_pmt->show();
+        ui->pushButton_decrease->show();
+        break;
+    case MULTIMODE:
+        ui->pushButton_increase->hide();
+        ui->textEdit_pmt->hide();
+        ui->pushButton_decrease->hide();
+    default:
+        break;
+    }
 }
 
 
@@ -205,7 +274,7 @@ int MainWindow::parseConfigurationFile(QString filename)
 
     /* Paths to the configuration files */
 
-    QString head= getHead();
+    QString head= getHead("config");
     QString root=settings.value("Paths/root", "US").toString();
 
     coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
@@ -280,9 +349,25 @@ QStringList MainWindow::availablePortsName()
     return portsName;
 }
 
-QString MainWindow::getHead()
+QString MainWindow::getHead(string tab)
 {
-    QString head=ui->comboBox_select_cabezal->currentText();
+    QString head;
+    if (tab=="graph")
+    {
+        if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
+        {
+           head=ui->comboBox_head_select_graph->currentText();
+        }
+    }
+    else if (tab=="config")
+    {
+        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+        {
+           head=ui->comboBox_head_select_config->currentText();
+        }
+    }
+    else head="";
+
     return head;
 }
 
@@ -313,6 +398,87 @@ size_t MainWindow::SendString(string msg, string end)
     return bytes_transfered;
 }
 
+void MainWindow::manageHeadCheckBox(string tab, bool show)
+{
+    if (tab=="config")
+    {
+        if (show)
+        {
+            ui->checkBox_8->show();
+            ui->checkBox_9->show();
+            ui->checkBox_10->show();
+            ui->checkBox_11->show();
+            ui->checkBox_12->show();
+            ui->checkBox_13->show();
+            ui->checkBox_14->show();
+        }
+        else
+        {
+            ui->checkBox_8->hide();
+            ui->checkBox_9->hide();
+            ui->checkBox_10->hide();
+            ui->checkBox_11->hide();
+            ui->checkBox_12->hide();
+            ui->checkBox_13->hide();
+            ui->checkBox_14->hide();
+        }
+    }
+    else if(tab=="graph")
+    {
+        if (show)
+        {
+            ui->checkBox_1->show();
+            ui->checkBox_2->show();
+            ui->checkBox_3->show();
+            ui->checkBox_4->show();
+            ui->checkBox_5->show();
+            ui->checkBox_6->show();
+            ui->checkBox_7->show();
+        }
+        else
+        {
+            ui->checkBox_1->hide();
+            ui->checkBox_2->hide();
+            ui->checkBox_3->hide();
+            ui->checkBox_4->hide();
+            ui->checkBox_5->hide();
+            ui->checkBox_6->hide();
+            ui->checkBox_7->hide();
+        }
+
+    }
+    else return;
+}
+
+void MainWindow::manageHeadComboBox(string tab, bool show)
+{
+    if (tab=="config"){
+        if (show) ui->comboBox_head_select_config->show();
+        else ui->comboBox_head_select_config->hide();
+    }
+    else if(tab=="graph")
+    {
+        if (show) ui->comboBox_head_select_graph->show();
+        else ui->comboBox_head_select_graph->hide();
+    }
+    else return;
+}
+
+
+void MainWindow::setHeadMode(int index, string tab)
+{
+    switch (index) {
+    case MONOHEAD:
+        manageHeadComboBox(tab, true);
+        manageHeadCheckBox(tab, false);
+        break;
+    case MULTIHEAD:
+        manageHeadComboBox(tab, false);
+        manageHeadCheckBox(tab, true);
+    default:
+        break;
+    }
+}
 
 /* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
 
@@ -418,5 +584,7 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_20->setText(sended);
 }
 /**********************************************************/
+
+
 
 

@@ -2,9 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "./qcustomplot.h"
+#include "qcustomplot.h"
 #include "apMCAE.hpp"
 #include <QString>
+
+#define MULTIHEAD 1
+#define MONOHEAD 0
+#define MULTIMODE 1
+#define MONOMODE 0
 
 using namespace ap;
 namespace Ui {
@@ -17,9 +22,15 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    /* Pruebas */
+    void checkCombosStatus();
     ~MainWindow();
 
 private slots:
+    void setHeadMode(int index, string tab);
+    void setHeadModeConfig(int index);
+    void setHeadModeGraph(int index);
+    void setAdquireMode(int index);
     int on_pushButton_conectar_clicked();    
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
@@ -37,6 +48,8 @@ private slots:
     void on_pushButton_hv_estado_clicked();
     void on_pushButton_adquirir_clicked();
     void on_pushButton_clicked();
+    void on_pushButton_decrease_clicked();
+    void on_pushButton_increase_clicked();
 
     /*Buttons de prueba*/
     void on_pushButton_2_clicked();
@@ -50,16 +63,20 @@ private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
-    QString getHead();
+    QString getHead(string tab);
     void setLabelState(bool state, QLabel *label);
     string ReadString();
     size_t SendString(string msg, string end);
+    void manageHeadCheckBox(string tab, bool show);
+    void manageHeadComboBox(string tab, bool show);
+
 
 private:
     Ui::MainWindow *ui;
     shared_ptr<MCAE> arpet;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    int AT, LowLimit, TimeOut;
+    int  AT, LowLimit;
+    int TimeOut;
 };
 
 #endif // MAINWINDOW_H
