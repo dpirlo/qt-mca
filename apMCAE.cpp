@@ -6,8 +6,7 @@ MCAE::MCAE(size_t timeout)
     :port(serial_port_ptr(new serial_port(io))),
      timeout(timeout),
      read_error(true),
-     timer(port->get_io_service()),
-     PortBaudRate(921600),
+     timer(port->get_io_service()),     
      /*Funciones trama MCAE*/
      FunCHead("01"),
      FunCSP3("02"),
@@ -18,13 +17,12 @@ MCAE::MCAE(size_t timeout)
      End_HV("\r\n"),
      HV_OFF("$SET,STA,OFF"),
      HV_ON("$SET,STA,ON"),
-     Checksum_Table("0123456789:;<=>?")
+     PortBaudRate(921600),
+     Init_MCA("64"),
+     Data_MCA("65"),
+     SetHV_MCA("68")
 {
     /*PRUEBAS*/
-    getMCA(9);
-    string data="@1065";
-    getMCAFormatStream(data);
-
 }
 
 MCAE::~MCAE()
@@ -227,20 +225,18 @@ int MCAE::getMCACheckSum(string data_function, string data_pmt)
 
     sum_of_elements = sum_of_elements + convertHexToDec(pmt_1) + convertHexToDec(pmt_2);
 
-    cout<<data_pmt_hex<<endl;
-    cout<<sum_of_elements<<endl;
-
     return sum_of_elements;
 }
 
-MCAE::string_code MCAE::getMCAStringValues(std::string const& inString)
+MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
 {
-    if (inString == "a") return a;
-    if (inString == "b") return b;
-    if (inString == "c") return c;
-    if (inString == "d") return d;
-    if (inString == "e") return e;
-    if (inString == "f") return f;
+    if (in_string == "a") return a;
+    if (in_string == "b") return b;
+    if (in_string == "c") return c;
+    if (in_string == "d") return d;
+    if (in_string == "e") return e;
+    if (in_string == "f") return f;
+    else return no_value;
 }
 
 string MCAE::convertMCAFormatStream(string data_with_cs)
@@ -297,22 +293,24 @@ string MCAE::getMCAFormatStream(string data)
 
     string data_plus_checksum = convertDecToHex(data_pmt_int) + data_function + checksum;
     if (convertDecToHex(data_pmt_int).length()==1) data_plus_checksum = "0" + data_plus_checksum;
-    data_plus_checksum=Head_MCA + data_plus_checksum;
+    data_plus_checksum = Head_MCA + data_plus_checksum;
 
     string data_plus_checksum_mca_format=convertMCAFormatStream(data_plus_checksum);
 
     return data_plus_checksum_mca_format;
 }
 
-string MCAE::getMCA(int pmt)
+void MCAE::setMCAStream(string pmt, string function)
 {
-    int sum=pmt+6+5;
-    string checksum=convertDecToHex(sum);
-    string trama_mca=getHead_MCA()+"09"+"65"+checksum;
+    if (pmt.length()==1) pmt="0" + pmt;
+    string stream_wo_cs="@"+pmt+function;
+    setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 
+}
 
-
-    setTrama_MCA(trama_mca);
-
-    return MCA;
+void MCAE::setMCAEStream(string pmt,string size_sended, string size_received, string function)
+{
+    setMCAStream(pmt, function);
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
+    setTrama_MCAE(stream);
 }
