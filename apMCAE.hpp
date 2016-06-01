@@ -17,6 +17,7 @@ using namespace boost::asio;
 using namespace boost::system;
 
 #define SERIAL_PORT_READ_BUF_SIZE 1
+#define CHANNELS 1024
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -32,6 +33,7 @@ namespace ap {
         void setStrings();        
         error_code portConnect(const char *tty_port_name);
         error_code portDisconnect();
+        bool isPortOpen();
         size_t portWrite(string *msg);
         size_t portRead(string *msg, int buffer_size);
         size_t portRead(char *c_msg);
@@ -41,9 +43,10 @@ namespace ap {
         void portTimeOut(const boost::system::error_code& error);
         bool portReadOneChar(char& val);
         void portReadString(string *msg, char delimeter);
+        void portReadBufferString(string *msg, int buffer_size);
         int convertHexToDec(string hex_number);
         string convertDecToHex(int dec_number);
-        bool isPortOpen();
+        QByteArray getReverse(QByteArray seq);
         void setMCAStream(string pmt, string function);
         void setMCAEStream(string pmt, string size_sended, string size_received, string function);
         error_code portFlush();
@@ -51,6 +54,8 @@ namespace ap {
         string getMCAFormatStream(string data);
         string convertMCAFormatStream(string data_with_cs);
         MCAE::string_code getMCAStringValues(string const& in_string);
+        void getMCASplitData(string msg_data, int channels);
+        void getMCAHitsData(QByteArray data_mca);
         ~MCAE();
 
         /* Pruebas*/
@@ -77,12 +82,14 @@ namespace ap {
         string Head_MCAE, End_MCA, End_HV;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
-        string init_MCA,MCA,HV;
+        string init_MCA,MCA, HV;
         size_t timeout;       
         bool read_error;
         deadline_timer timer;
         int PortBaudRate;
         string Head_MCA;
+        double frame, time_mca, HV_pmt, offset, var, temp;
+        vector<int> hits_mca, channels_id;
 
     public:
         string getFunCHead() const { return FunCHead; }
@@ -104,6 +111,14 @@ namespace ap {
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
         serial_port_ptr getPort() const { return port; }
+        double getFrameMCA() const { return frame; }
+        double getTimeMCA() const { return time_mca; }
+        double getHVMCA() const { return HV_pmt; }
+        double getOffSetMCA() const { return offset; }
+        double getVarMCA() const { return var; }
+        double getTempMCA() const { return temp; }
+        vector<int> getChannels() const { return channels_id; }
+        vector<int> getHitsMCA() const { return hits_mca; }
     };
 
 }

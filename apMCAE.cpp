@@ -168,6 +168,21 @@ void MCAE::portReadString(string *msg, char delimeter)
     }
 }
 
+void MCAE::portReadBufferString(string *msg, int buffer_size)
+{
+    char c;
+    int buffer=1;
+    while (portReadOneChar(c) && buffer <= buffer_size) {
+        msg->push_back(c);
+        buffer++;
+        }
+
+    if (buffer <= buffer_size) {
+        Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
+        throw exception_timeout;
+    }
+}
+
 bool MCAE::portReadCharArray(int nbytes)
 {
     try
@@ -184,7 +199,7 @@ bool MCAE::portReadCharArray(int nbytes)
 
 error_code MCAE::portFlush()
 {
-    error_code ec;
+    error_code ec;    
 
     const bool isFlushed =! ::tcflush(port->native(), TCIOFLUSH);
     if (!isFlushed)
@@ -209,13 +224,64 @@ string MCAE::convertDecToHex(int dec_number)
     return QString(hex_number).toStdString();
 }
 
+QByteArray MCAE::getReverse(QByteArray seq)
+{
+    QByteArray reverse;
+    for( QByteArray::const_iterator i = seq.constEnd(); i !=seq.constBegin(); )
+    {
+        --i;
+        reverse += *i;
+    }
+
+    return reverse;
+}
+
+void MCAE::getMCASplitData(string msg_data, int channels)
+{
+    int size_block=6*channels;
+    QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
+
+    /* Adquisición de los bytes en raw data */
+    QByteArray frame_bytes = q_msg_data.left(4);
+    QByteArray time_mca_bytes = getReverse(q_msg_data.mid(5, 5));
+    QByteArray HV_pmt_bytes = getReverse(q_msg_data.mid(9, 2));
+    QByteArray offset_bytes = q_msg_data.mid(11, 1);
+    QByteArray var_bytes = q_msg_data.mid(12, 2);
+    QByteArray temp_bytes = q_msg_data.mid(14, 2);
+    QByteArray data_mca_bytes = q_msg_data.right(size_block);
+
+    /* Conversión de raw data a double */
+    frame=frame_bytes.toDouble();
+    time_mca=time_mca_bytes.toDouble();
+    HV_pmt=HV_pmt_bytes.toDouble();
+    offset=offset_bytes.toDouble();
+    var=var_bytes.toDouble();
+    temp=temp_bytes.toDouble();
+
+    /* Parseo de datos de la trama que contiene las cuentas por canal */
+    getMCAHitsData(data_mca_bytes);
+
+}
+
+void MCAE::getMCAHitsData(QByteArray data_mca)
+{
+    int channel, hits;
+    for(unsigned int i = 0; i < data_mca.length(); i+=6)
+    {
+        channel=getReverse(data_mca.mid(i,2)).toInt();
+        hits=getReverse(data_mca.mid(i+2,4)).toInt();
+        channels_id.push_back(channel);
+        hits_mca.push_back(hits);
+    }
+}
+
 int MCAE::getMCACheckSum(string data_function, string data_pmt)
 {
     int sum_of_elements=0;
     for(unsigned int i = 0; i < data_function.length(); ++i)
     {
-             string token(1, data_function.at(i));
-             sum_of_elements = sum_of_elements + atoi(token.c_str());
+        string token(1, data_function.at(i));
+        sum_of_elements = sum_of_elements + atoi(token.c_str());
     }
 
     string data_pmt_hex=convertDecToHex(atoi(data_pmt.c_str()));
