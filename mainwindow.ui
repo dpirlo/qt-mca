@@ -74,9 +74,9 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
-    <widget class="QWidget" name="tab_3">
+    <widget class="QWidget" name="config">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -92,12 +92,12 @@
      <attribute name="title">
       <string>Configuración</string>
      </attribute>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="frame_status">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>350</y>
-        <width>501</width>
+        <width>491</width>
         <height>191</height>
        </rect>
       </property>
@@ -148,8 +148,8 @@
       <widget class="QLabel" name="label_16">
        <property name="geometry">
         <rect>
-         <x>16</x>
-         <y>147</y>
+         <x>18</x>
+         <y>150</y>
          <width>66</width>
          <height>21</height>
         </rect>
@@ -191,7 +191,7 @@
         <string>Cabezal:</string>
        </property>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>120</x>
@@ -312,219 +312,39 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QLabel" name="label_29">
-          <property name="font">
-           <font>
-            <pointsize>19</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>7</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QLabel" name="label_camilla_estado">
+       <property name="geometry">
+        <rect>
+         <x>107</x>
+         <y>148</y>
+         <width>58</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>106</x>
-         <y>57</y>
-         <width>381</width>
-         <height>121</height>
+         <y>53</y>
+         <width>371</width>
+         <height>91</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_cabezal_estado">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_cabezal_estado_2">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="2">
          <widget class="QLabel" name="label_cabezal_estado_3">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="label_cabezal_estado_4">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
-         <widget class="QLabel" name="label_cabezal_estado_5">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5">
-         <widget class="QLabel" name="label_cabezal_estado_6">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="6">
-         <widget class="QLabel" name="label_cabezal_estado_7">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_pmt_estado">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label_pmt_estado_2">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="label_pmt_estado_3">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="label_pmt_estado_4">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="4">
-         <widget class="QLabel" name="label_pmt_estado_5">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QLabel" name="label_pmt_estado_6">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="6">
-         <widget class="QLabel" name="label_pmt_estado_7">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_hv_estado">
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -549,8 +369,73 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QLabel" name="label_hv_estado_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_cabezal_estado">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_pmt_estado">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="label_pmt_estado_5">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="label_cabezal_estado_4">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_hv_estado">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="label_pmt_estado_6">
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -564,6 +449,84 @@
         </item>
         <item row="2" column="3">
          <widget class="QLabel" name="label_hv_estado_4">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="label_pmt_estado_3">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="label_hv_estado_3">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="label_pmt_estado_4">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QLabel" name="label_cabezal_estado_5">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_pmt_estado_2">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QLabel" name="label_cabezal_estado_6">
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -601,99 +564,8 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="6">
-         <widget class="QLabel" name="label_hv_estado_7">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_camilla_estado">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLabel" name="label_camilla_estado_2">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QLabel" name="label_camilla_estado_3">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QLabel" name="label_camilla_estado_4">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="4">
-         <widget class="QLabel" name="label_camilla_estado_5">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5">
-         <widget class="QLabel" name="label_camilla_estado_6">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="6">
-         <widget class="QLabel" name="label_camilla_estado_7">
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_cabezal_estado_2">
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -707,49 +579,16 @@
         </item>
        </layout>
       </widget>
+      <zorder>layoutWidget</zorder>
+      <zorder>layoutWidget</zorder>
       <zorder>label_14</zorder>
       <zorder>label_15</zorder>
       <zorder>label_16</zorder>
-      <zorder>label_cabezal_estado</zorder>
       <zorder>label_camilla_estado</zorder>
-      <zorder>label_hv_estado</zorder>
-      <zorder>label_pmt_estado</zorder>
       <zorder>label_17</zorder>
       <zorder>label_18</zorder>
-      <zorder>label_camilla_estado_2</zorder>
-      <zorder>label_pmt_estado_2</zorder>
-      <zorder>label_hv_estado_2</zorder>
-      <zorder>label_cabezal_estado_2</zorder>
-      <zorder>label_pmt_estado_3</zorder>
-      <zorder>label_hv_estado_3</zorder>
-      <zorder>label_cabezal_estado_3</zorder>
-      <zorder>label_camilla_estado_3</zorder>
-      <zorder>label_pmt_estado_4</zorder>
-      <zorder>label_hv_estado_4</zorder>
-      <zorder>label_cabezal_estado_4</zorder>
-      <zorder>label_camilla_estado_4</zorder>
-      <zorder>label_pmt_estado_5</zorder>
-      <zorder>label_hv_estado_5</zorder>
-      <zorder>label_cabezal_estado_5</zorder>
-      <zorder>label_camilla_estado_5</zorder>
-      <zorder>label_pmt_estado_6</zorder>
-      <zorder>label_hv_estado_6</zorder>
-      <zorder>label_cabezal_estado_6</zorder>
-      <zorder>label_camilla_estado_6</zorder>
-      <zorder>label_camilla_estado_7</zorder>
-      <zorder>label_cabezal_estado_7</zorder>
-      <zorder>label_pmt_estado_7</zorder>
-      <zorder>label_hv_estado_7</zorder>
-      <zorder>label_5</zorder>
-      <zorder>label_24</zorder>
-      <zorder>label_25</zorder>
-      <zorder>label_26</zorder>
-      <zorder>label_27</zorder>
-      <zorder>label_28</zorder>
-      <zorder>label_29</zorder>
-      <zorder></zorder>
      </widget>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="frame_hv_com_head">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1037,7 +876,7 @@
         <rect>
          <x>250</x>
          <y>12</y>
-         <width>99</width>
+         <width>131</width>
          <height>27</height>
         </rect>
        </property>
@@ -1237,9 +1076,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>249</x>
+          <x>254</x>
           <y>8</y>
-          <width>40</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1253,9 +1092,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>289</x>
+          <x>302</x>
           <y>8</y>
-          <width>41</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1269,9 +1108,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>409</x>
+          <x>444</x>
           <y>8</y>
-          <width>41</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1285,9 +1124,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>329</x>
+          <x>349</x>
           <y>8</y>
-          <width>41</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1301,9 +1140,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>369</x>
+          <x>397</x>
           <y>8</y>
-          <width>41</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1317,9 +1156,9 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>449</x>
+          <x>492</x>
           <y>8</y>
-          <width>41</width>
+          <width>39</width>
           <height>26</height>
          </rect>
         </property>
@@ -1338,22 +1177,6 @@ Tensión: </string>
         </property>
         <property name="text">
          <string>Cabezales:</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_14">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>490</x>
-          <y>9</y>
-          <width>41</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>7</string>
         </property>
        </widget>
        <widget class="QComboBox" name="comboBox_head_mode_select_config">
@@ -1382,8 +1205,8 @@ Tensión: </string>
         </property>
         <property name="geometry">
          <rect>
-          <x>320</x>
-          <y>6</y>
+          <x>324</x>
+          <y>7</y>
           <width>141</width>
           <height>29</height>
          </rect>
@@ -1419,11 +1242,6 @@ Tensión: </string>
         <item>
          <property name="text">
           <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
          </property>
         </item>
        </widget>
@@ -1473,11 +1291,11 @@ Tensión: </string>
        <string>Salir</string>
       </property>
      </widget>
-     <zorder>frame_2</zorder>
+     <zorder>frame_status</zorder>
      <zorder>pushButton_salir</zorder>
-     <zorder>frame</zorder>
+     <zorder>frame_hv_com_head</zorder>
     </widget>
-    <widget class="QWidget" name="tab_4">
+    <widget class="QWidget" name="graph">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -1506,7 +1324,7 @@ Tensión: </string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -1517,11 +1335,11 @@ Tensión: </string>
       <property name="tabBarAutoHide">
        <bool>false</bool>
       </property>
-      <widget class="QWidget" name="tab_18">
+      <widget class="QWidget" name="tab_esp_1">
        <attribute name="title">
         <string>Espectro Cabezal</string>
        </attribute>
-       <widget class="QCustomPlot" name="espCabezal_4" native="true">
+       <widget class="QCustomPlot" name="specHead" native="true">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -1535,11 +1353,11 @@ Tensión: </string>
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="tab_19">
+      <widget class="QWidget" name="tab_esp_2">
        <attribute name="title">
         <string>Espectro PMTs</string>
        </attribute>
-       <widget class="QCustomPlot" name="espPMTs_5" native="true">
+       <widget class="QCustomPlot" name="specPMTs" native="true">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -1553,11 +1371,29 @@ Tensión: </string>
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="tab_20">
+      <widget class="QWidget" name="tab_esp_3">
        <attribute name="title">
-        <string>Temperatura</string>
+        <string>Temperatura del Cabezal</string>
        </attribute>
-       <widget class="QCustomPlot" name="espPMTs_6" native="true">
+       <widget class="QCustomPlot" name="HeadTemp" native="true">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>741</width>
+          <height>421</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_esp_4">
+       <attribute name="title">
+        <string>Temperatura de PMTs</string>
+       </attribute>
+       <widget class="QCustomPlot" name="PMTTemp" native="true">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -1572,7 +1408,7 @@ Tensión: </string>
        </widget>
       </widget>
      </widget>
-     <widget class="QFrame" name="frame_5">
+     <widget class="QFrame" name="frame_head_select">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -1593,9 +1429,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>249</x>
-         <y>8</y>
-         <width>40</width>
+         <x>250</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1609,9 +1445,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>289</x>
-         <y>8</y>
-         <width>41</width>
+         <x>298</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1625,9 +1461,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>409</x>
-         <y>8</y>
-         <width>41</width>
+         <x>440</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1641,9 +1477,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>329</x>
-         <y>8</y>
-         <width>41</width>
+         <x>345</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1657,9 +1493,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>369</x>
-         <y>8</y>
-         <width>41</width>
+         <x>393</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1673,9 +1509,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>449</x>
-         <y>8</y>
-         <width>41</width>
+         <x>488</x>
+         <y>9</y>
+         <width>39</width>
          <height>26</height>
         </rect>
        </property>
@@ -1694,22 +1530,6 @@ Tensión: </string>
        </property>
        <property name="text">
         <string>Cabezales:</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="checkBox_7">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>490</x>
-         <y>9</y>
-         <width>41</width>
-         <height>26</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>7</string>
        </property>
       </widget>
       <widget class="QComboBox" name="comboBox_head_mode_select_graph">
@@ -1738,8 +1558,8 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>320</x>
-         <y>6</y>
+         <x>315</x>
+         <y>7</y>
          <width>141</width>
          <height>29</height>
         </rect>
@@ -1777,27 +1597,9 @@ Tensión: </string>
          <string>6</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string>7</string>
-        </property>
-       </item>
       </widget>
      </widget>
-     <widget class="QPushButton" name="pushButton_salir_graficos">
-      <property name="geometry">
-       <rect>
-        <x>850</x>
-        <y>770</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Salir</string>
-      </property>
-     </widget>
-     <widget class="QFrame" name="frame_4">
+     <widget class="QFrame" name="frame_MCA">
       <property name="geometry">
        <rect>
         <x>820</x>
@@ -1925,17 +1727,30 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>830</x>
-        <y>260</y>
+        <y>230</y>
         <width>161</width>
-        <height>191</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
        <string/>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_8">
+      <property name="geometry">
+       <rect>
+        <x>850</x>
+        <y>510</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Graficar</string>
+      </property>
+     </widget>
     </widget>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="test">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -2104,18 +1919,21 @@ Tensión: </string>
        <string>MCA/01</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_9">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>380</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>getMCA</string>
+      </property>
+     </widget>
     </widget>
    </widget>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1031</width>
-     <height>27</height>
-    </rect>
-   </property>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="sizePolicy">
@@ -2132,6 +1950,16 @@ Tensión: </string>
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1031</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

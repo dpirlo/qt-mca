@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QMessageBox"
+//#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -100,12 +101,12 @@ int MainWindow::on_pushButton_conectar_clicked()
 
     if(arpet->isPortOpen())
     {
-        ui->pushButton_conectar->setText("Connect");
+        ui->pushButton_conectar->setText("Conectar");
         arpet->portDisconnect();
     }
     else
     {
-        ui->pushButton_conectar->setText("Disconnect");
+        ui->pushButton_conectar->setText("Desconectar");
         try{
             QString port_name=ui->comboBox_port->currentText();
             arpet->portConnect(port_name.toStdString().c_str());
@@ -383,6 +384,18 @@ string MainWindow::ReadString()
     return msg;
 }
 
+string MainWindow::ReadBufferString(int buffer_size)
+{
+    string msg;
+    try{
+         arpet->portReadBufferString(&msg,buffer_size);
+    }
+    catch( Exceptions & ex ){
+         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
+    return msg;
+}
+
 size_t MainWindow::SendString(string msg, string end)
 {
     size_t bytes_transfered = 0;
@@ -409,8 +422,7 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
             ui->checkBox_10->show();
             ui->checkBox_11->show();
             ui->checkBox_12->show();
-            ui->checkBox_13->show();
-            ui->checkBox_14->show();
+            ui->checkBox_13->show();           
         }
         else
         {
@@ -419,8 +431,7 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
             ui->checkBox_10->hide();
             ui->checkBox_11->hide();
             ui->checkBox_12->hide();
-            ui->checkBox_13->hide();
-            ui->checkBox_14->hide();
+            ui->checkBox_13->hide();            
         }
     }
     else if(tab=="graph")
@@ -433,7 +444,6 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
             ui->checkBox_4->show();
             ui->checkBox_5->show();
             ui->checkBox_6->show();
-            ui->checkBox_7->show();
         }
         else
         {
@@ -443,7 +453,6 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
             ui->checkBox_4->hide();
             ui->checkBox_5->hide();
             ui->checkBox_6->hide();
-            ui->checkBox_7->hide();
         }
 
     }
@@ -526,7 +535,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    QString sended="#C701090009@0064010;";
+    QString sended="#C501090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -538,7 +547,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    QString sended="#C702090009@0064010;";
+    QString sended="#C502090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -548,13 +557,56 @@ void MainWindow::on_pushButton_4_clicked()
     ui->label_20->setText(sended);
 }
 
+QByteArray MainWindow::getPart(const QByteArray& message, int part, bool toEnd)
+  {
+    cout<<(toEnd ? -1:message.indexOf(' ',part)-part)<<endl;
+    cout<<message.indexOf(' ',part)-part<<endl;
+
+
+    int characters(toEnd ? -1 : message.indexOf(' ', part) - part);
+
+    return message.mid(part, characters);
+  }
+
+
 void MainWindow::on_pushButton_5_clicked()
 {
-    QString sended="#C702071552@01650<";
+    QString sended="#C502071552@196515";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
+    string msg_data=ReadBufferString(6160);
+
+    QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
+
+    QByteArray y = q_msg_data.left(4);
+
+    cout<<y.toStdString()<<endl;
+
+//    sleep(1);
+//    arpet->portFlush();
+    ui->label_19->setText(q_bytes);
+    ui->label_12->setText(q_msg);
+    ui->label_20->setText(sended);
+}
+
+void MainWindow::on_pushButton_9_clicked()
+{
+    QString sended="#C501071552@01650<";
+    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
+    QString q_bytes=QString::number(bytes);
+    string msg_data=ReadBufferString(6160);
+
+    arpet->getMCASplitData(msg_data,CHANNELS);
+
+    double frame=arpet->getFrameMCA();
+    double time_mca=arpet->getTimeMCA();
+    cout<<"Frame: "<< frame <<endl;
+    cout<<"Adquisition time: "<< time_mca <<endl;
+
     ui->label_19->setText(q_bytes);
     ui->label_12->setText(q_msg);
     ui->label_20->setText(sended);
@@ -562,7 +614,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    QString sended="#C702071552@02650=";
+    QString sended="#C502071552@02650=";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -574,7 +626,7 @@ void MainWindow::on_pushButton_6_clicked()
 
 void MainWindow::on_pushButton_7_clicked()
 {
-    QString sended="#C701071552@01650<";
+    QString sended="#C501071552@01650<";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -583,8 +635,33 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_12->setText(q_msg);
     ui->label_20->setText(sended);
 }
+
+void MainWindow::on_pushButton_8_clicked()
+{
+
+    // generate some data:
+    QVector<double> x(101), y(101); // initialize with entries 0..100
+    for (int i=0; i<101; ++i)
+    {
+      x[i] = i/50.0 - 1; // x goes from -1 to 1
+      y[i] = x[i]*x[i]; // let's plot a quadratic function
+    }
+    // create graph and assign data to it:
+    ui->specHead->addGraph();
+    ui->specHead->graph(0)->setData(x, y);
+    // give the axes some labels:
+    ui->specHead->xAxis2->setVisible(true);
+    ui->specHead->xAxis2->setTickLabels(false);
+    ui->specHead->yAxis2->setVisible(true);
+    ui->specHead->yAxis2->setTickLabels(false);
+    ui->specHead->xAxis->setLabel("x");
+    ui->specHead->yAxis->setLabel("y");
+    // set axes ranges, so we see all data:
+    ui->specHead->xAxis->setRange(-1, 1);
+    ui->specHead->yAxis->setRange(0, 1);
+    ui->specHead->replot();
+}
+
 /**********************************************************/
-
-
 
 

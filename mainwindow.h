@@ -21,10 +21,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    /* Pruebas */
+    explicit MainWindow(QWidget *parent = 0);    
     void checkCombosStatus();
     ~MainWindow();
+    /* Pruebas */
+    QByteArray getPart(const QByteArray& message, int part, bool toEnd);
 
 private slots:
     void setHeadMode(int index, string tab);
@@ -58,6 +59,8 @@ private slots:
     void on_pushButton_5_clicked();
     void on_pushButton_6_clicked();
     void on_pushButton_7_clicked();
+    void on_pushButton_8_clicked();    
+    void on_pushButton_9_clicked();
 
 private:
     QString openConfigurationFile();
@@ -66,6 +69,7 @@ private:
     QString getHead(string tab);
     void setLabelState(bool state, QLabel *label);
     string ReadString();
+    string ReadBufferString(int buffer_size);
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
