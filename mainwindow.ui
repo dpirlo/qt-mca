@@ -317,7 +317,7 @@
       <widget class="QLabel" name="label_camilla_estado">
        <property name="geometry">
         <rect>
-         <x>107</x>
+         <x>106</x>
          <y>148</y>
          <width>58</width>
          <height>26</height>
@@ -1930,6 +1930,19 @@ Tensión: </string>
       </property>
       <property name="text">
        <string>getMCA</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_10">
+      <property name="geometry">
+       <rect>
+        <x>790</x>
+        <y>380</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Temp</string>
       </property>
      </widget>
     </widget>

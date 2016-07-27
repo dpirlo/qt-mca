@@ -10,6 +10,7 @@
 #define MONOHEAD 0
 #define MULTIMODE 1
 #define MONOMODE 0
+#define CHANNELS 1024
 
 using namespace ap;
 namespace Ui {
@@ -25,7 +26,6 @@ public:
     void checkCombosStatus();
     ~MainWindow();
     /* Pruebas */
-    QByteArray getPart(const QByteArray& message, int part, bool toEnd);
 
 private slots:
     void setHeadMode(int index, string tab);
@@ -61,6 +61,8 @@ private slots:
     void on_pushButton_7_clicked();
     void on_pushButton_8_clicked();    
     void on_pushButton_9_clicked();
+
+    void on_pushButton_10_clicked();
 
 private:
     QString openConfigurationFile();

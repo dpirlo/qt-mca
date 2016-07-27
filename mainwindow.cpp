@@ -557,18 +557,6 @@ void MainWindow::on_pushButton_4_clicked()
     ui->label_20->setText(sended);
 }
 
-QByteArray MainWindow::getPart(const QByteArray& message, int part, bool toEnd)
-  {
-    cout<<(toEnd ? -1:message.indexOf(' ',part)-part)<<endl;
-    cout<<message.indexOf(' ',part)-part<<endl;
-
-
-    int characters(toEnd ? -1 : message.indexOf(' ', part) - part);
-
-    return message.mid(part, characters);
-  }
-
-
 void MainWindow::on_pushButton_5_clicked()
 {
     QString sended="#C502071552@196515";
@@ -602,10 +590,13 @@ void MainWindow::on_pushButton_9_clicked()
 
     arpet->getMCASplitData(msg_data,CHANNELS);
 
-    double frame=arpet->getFrameMCA();
-    double time_mca=arpet->getTimeMCA();
+    int frame=arpet->getFrameMCA();
+    long time_mca=arpet->getTimeMCA();
     cout<<"Frame: "<< frame <<endl;
     cout<<"Adquisition time: "<< time_mca <<endl;
+    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;
+    vector<int> canales=arpet->getChannels();
+    vector<long long> hits=arpet->getHitsMCA();
 
     ui->label_19->setText(q_bytes);
     ui->label_12->setText(q_msg);
@@ -662,6 +653,10 @@ void MainWindow::on_pushButton_8_clicked()
     ui->specHead->replot();
 }
 
+void MainWindow::on_pushButton_10_clicked()
+{
+
+}
+
+
 /**********************************************************/
-
-
