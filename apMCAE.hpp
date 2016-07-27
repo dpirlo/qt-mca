@@ -7,6 +7,7 @@
 #include <boost/system/system_error.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
 #include "apExceptions.hpp"
@@ -17,7 +18,6 @@ using namespace boost::asio;
 using namespace boost::system;
 
 #define SERIAL_PORT_READ_BUF_SIZE 1
-#define CHANNELS 1024
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -88,8 +88,10 @@ namespace ap {
         deadline_timer timer;
         int PortBaudRate;
         string Head_MCA;
-        double frame, time_mca, HV_pmt, offset, var, temp;
-        vector<int> hits_mca, channels_id;
+        long long time_mca;
+        int frame, HV_pmt, offset, var, temp;
+        vector<int> channels_id;
+        vector<long long> hits_mca;
 
     public:
         string getFunCHead() const { return FunCHead; }
@@ -111,14 +113,14 @@ namespace ap {
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
         serial_port_ptr getPort() const { return port; }
-        double getFrameMCA() const { return frame; }
-        double getTimeMCA() const { return time_mca; }
-        double getHVMCA() const { return HV_pmt; }
-        double getOffSetMCA() const { return offset; }
-        double getVarMCA() const { return var; }
-        double getTempMCA() const { return temp; }
+        int getFrameMCA() const { return frame; }
+        long long getTimeMCA() const { return time_mca; }
+        int getHVMCA() const { return HV_pmt; }
+        int getOffSetMCA() const { return offset; }
+        int getVarMCA() const { return var; }
+        int getTempMCA() const { return temp; }
         vector<int> getChannels() const { return channels_id; }
-        vector<int> getHitsMCA() const { return hits_mca; }
+        vector<long long> getHitsMCA() const { return hits_mca; }
     };
 
 }

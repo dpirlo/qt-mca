@@ -242,42 +242,34 @@ void MCAE::getMCASplitData(string msg_data, int channels)
     QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
 
     /* Adquisición de los bytes en raw data */
-    QByteArray frame_bytes = q_msg_data.left(4);
-    QByteArray time_mca_bytes = getReverse(q_msg_data.mid(5, 5));
-    QByteArray HV_pmt_bytes = getReverse(q_msg_data.mid(9, 2));
-    QByteArray offset_bytes = q_msg_data.mid(11, 1);
-    QByteArray var_bytes = q_msg_data.mid(12, 2);
-    QByteArray temp_bytes = q_msg_data.mid(14, 2);
+    frame=convertHexToDec(getReverse(q_msg_data.left(4)).toHex().toStdString());
+    time_mca=convertHexToDec(getReverse(q_msg_data.mid(5, 5)).toHex().toStdString());
+    HV_pmt=convertHexToDec(getReverse(q_msg_data.mid(9, 2)).toHex().toStdString());
+    offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
+    var=convertHexToDec( q_msg_data.mid(12, 2).toHex().toStdString());
+    temp=convertHexToDec(q_msg_data.mid(14, 2).toHex().toStdString());
     QByteArray data_mca_bytes = q_msg_data.right(size_block);
-
-    /* Conversión de raw data a double */
-    frame=frame_bytes.toDouble();
-    time_mca=time_mca_bytes.toDouble();
-    HV_pmt=HV_pmt_bytes.toDouble();
-    offset=offset_bytes.toDouble();
-    var=var_bytes.toDouble();
-    temp=temp_bytes.toDouble();
 
     /* Parseo de datos de la trama que contiene las cuentas por canal */
     getMCAHitsData(data_mca_bytes);
-
 }
 
 void MCAE::getMCAHitsData(QByteArray data_mca)
 {
-    int channel, hits;
-    for(unsigned int i = 0; i < data_mca.length(); i+=6)
+    int channel;
+    long long hits;
+    for(int i = 0; i < data_mca.length(); i+=6)
     {
-        channel=getReverse(data_mca.mid(i,2)).toInt();
-        hits=getReverse(data_mca.mid(i+2,4)).toInt();
+        channel=convertHexToDec(getReverse(data_mca.mid(i,2)).toHex().toStdString());
+        hits=(long long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
         channels_id.push_back(channel);
         hits_mca.push_back(hits);
-    }
+    }    
 }
 
 int MCAE::getMCACheckSum(string data_function, string data_pmt)
 {
-    int sum_of_elements=0;
+    int sum_of_elements = 0;
     for(unsigned int i = 0; i < data_function.length(); ++i)
     {
         string token(1, data_function.at(i));
