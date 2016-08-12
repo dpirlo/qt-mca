@@ -90,8 +90,8 @@ namespace ap {
         string Head_MCA;
         long long time_mca;
         int frame, HV_pmt, offset, var, temp;
-        vector<int> channels_id;
-        vector<long long> hits_mca;
+        QVector<double> channels_id;
+        QVector<double> hits_mca;
 
     public:
         string getFunCHead() const { return FunCHead; }
@@ -114,13 +114,13 @@ namespace ap {
         void setTrama_MCA(string data){ Trama_MCA=data; }
         serial_port_ptr getPort() const { return port; }
         int getFrameMCA() const { return frame; }
-        long long getTimeMCA() const { return time_mca; }
+        long getTimeMCA() const { return time_mca; }
         int getHVMCA() const { return HV_pmt; }
         int getOffSetMCA() const { return offset; }
         int getVarMCA() const { return var; }
         int getTempMCA() const { return temp; }
-        vector<int> getChannels() const { return channels_id; }
-        vector<long long> getHitsMCA() const { return hits_mca; }
+        QVector<double> getChannels() const { return channels_id; }
+        QVector<double> getHitsMCA() const { return hits_mca; }
     };
 
 }

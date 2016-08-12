@@ -257,11 +257,11 @@ void MCAE::getMCASplitData(string msg_data, int channels)
 void MCAE::getMCAHitsData(QByteArray data_mca)
 {
     int channel;
-    long long hits;
+    long hits;
     for(int i = 0; i < data_mca.length(); i+=6)
     {
         channel=convertHexToDec(getReverse(data_mca.mid(i,2)).toHex().toStdString());
-        hits=(long long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
+        hits=(long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
         channels_id.push_back(channel);
         hits_mca.push_back(hits);
     }    
