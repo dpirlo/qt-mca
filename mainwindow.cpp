@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QMessageBox"
-//#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -187,16 +186,42 @@ void MainWindow::setHeadModeConfig(int index)
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString()+arpet->getFunCSP3());
+    int bytes_int=CHANNELS*6+16;
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
     string pmt=ui->textEdit_pmt->toPlainText().toStdString();
 
-    arpet->setMCAEStream(pmt,"07","1552",arpet->getData_MCA());
+    string bytes_received=QString::number(bytes_int).toStdString();
+    string bytes_sended=QString::number(arpet->getData_MCA().size()).toStdString();
+    arpet->setMCAEStream(pmt,"0"+bytes_sended,bytes_received,arpet->getData_MCA());
+    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    QString q_msg=QString::fromStdString(ReadString());
+    string msg_data=ReadBufferString(bytes_int);
+    arpet->getMCASplitData(msg_data,CHANNELS);
 
-    size_t bytes=SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    int frame=arpet->getFrameMCA();
+    long time_mca=arpet->getTimeMCA();
+    cout<<"Frame: "<< frame <<endl;
+    cout<<"Adquisition time: "<< time_mca <<endl;
+    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;
 
-    string msg=ReadString();
-    QString q_msg=QString::fromStdString(msg);
+    // generate some data:
+    QVector<double> x=arpet->getChannels();
+    QVector<double> y=arpet->getHitsMCA();
+    double c_max = *max_element(y.begin(),y.end());
+    // create graph and assign data to it:
+    ui->specHead->addGraph();
+    ui->specHead->graph(0)->setData(x, y);
+    // give the axes some labels:
+    ui->specHead->xAxis2->setVisible(true);
+    ui->specHead->xAxis2->setTickLabels(false);
+    ui->specHead->yAxis2->setVisible(true);
+    ui->specHead->yAxis2->setTickLabels(false);
+    ui->specHead->xAxis->setLabel("Canales");
+    ui->specHead->yAxis->setLabel("Hits");
+    // set axes ranges, so we see all data:
+    ui->specHead->xAxis->setRange(0, 1024);
+    ui->specHead->yAxis->setRange(0, c_max+1000);
+    ui->specHead->replot();
 
     ui->label_21->setText(q_msg);
 
@@ -243,6 +268,53 @@ void MainWindow::setAdquireMode(int index)
     default:
         break;
     }
+}
+
+void MainWindow::on_pushButton_8_clicked()
+{
+
+    // generate some data:
+    QVector<double> x=arpet->getChannels();
+    QVector<double> y=arpet->getHitsMCA();
+    double c_max = *max_element(y.begin(),y.end());
+    // create graph and assign data to it:
+    ui->specHead->addGraph();
+    ui->specHead->graph(0)->setData(x, y);
+    // give the axes some labels:
+    ui->specHead->xAxis2->setVisible(true);
+    ui->specHead->xAxis2->setTickLabels(false);
+    ui->specHead->yAxis2->setVisible(true);
+    ui->specHead->yAxis2->setTickLabels(false);
+    ui->specHead->xAxis->setLabel("Canales");
+    ui->specHead->yAxis->setLabel("Hits");
+    // set axes ranges, so we see all data:
+    ui->specHead->xAxis->setRange(0, 1024);
+    ui->specHead->yAxis->setRange(0, c_max+1000);
+    ui->specHead->replot();
+
+
+
+}
+
+void MainWindow::getMCA()
+{
+    QVector<double> x=arpet->getChannels();
+    QVector<double> y=arpet->getHitsMCA();
+    double c_max = *max_element(y.begin(),y.end());
+
+
+    ui->specHead->addGraph();
+    ui->specHead->graph(0)->setData(x, y);
+    ui->specHead->xAxis2->setVisible(true);
+    ui->specHead->xAxis2->setTickLabels(false);
+    ui->specHead->yAxis2->setVisible(true);
+    ui->specHead->yAxis2->setTickLabels(false);
+    ui->specHead->xAxis->setLabel("Canales");
+    ui->specHead->yAxis->setLabel("Cuentas");
+    ui->specHead->xAxis->setRange(0, CHANNELS);
+    ui->specHead->yAxis->setRange(0, c_max);
+    ui->specHead->replot();
+
 }
 
 
@@ -489,38 +561,13 @@ void MainWindow::setHeadMode(int index, string tab)
     }
 }
 
-/* TOMARLOS COMO EJEMPLO PARA ENVIO Y RECEPCIÓN DEL SERIE */
+/* TEST BUTTONS. TODO: Delete all of them after debug */
 
 void MainWindow::on_pushButton_clicked()
 {   
    QString sended = ui->plainTextEdit->toPlainText();
 
    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-   //string msg=ReadString();
-
-//   cout<<bytes<<endl;
-
-//   for (int i=0;i<20;i++){arpet->data[i]='0';}
-
-
-//   cout<<"ANTES DE LEER"<<endl;
-//   cout<<arpet->data<<endl;
-//   cout<<arpet->data[1]<<endl;
-//   cout<<arpet->data[8]<<endl;
-//   cout<<arpet->data[11]<<endl;
-//   cout<<arpet->data[15]<<endl;
-//   cout<<arpet->data[19]<<endl;
-
-//   arpet->portReadCharArray(20);
-
-//   cout<<"DESPUES DE LEER"<<endl;
-//   cout<<arpet->data<<endl;
-//   cout<<arpet->data[1]<<endl;
-//   cout<<arpet->data[8]<<endl;
-//   cout<<arpet->data[11]<<endl;
-//   cout<<arpet->data[15]<<endl;
-//   cout<<arpet->data[19]<<endl;
-
    string msg=ReadString();
    QString q_msg=QString::fromStdString(msg);
 
@@ -595,8 +642,8 @@ void MainWindow::on_pushButton_9_clicked()
     cout<<"Frame: "<< frame <<endl;
     cout<<"Adquisition time: "<< time_mca <<endl;
     cout<<"Temperature: "<<arpet->getTempMCA()<<endl;
-    vector<int> canales=arpet->getChannels();
-    vector<long long> hits=arpet->getHitsMCA();
+    QVector<double> canales=arpet->getChannels();
+    QVector<double> hits=arpet->getHitsMCA();
 
     ui->label_19->setText(q_bytes);
     ui->label_12->setText(q_msg);
@@ -627,31 +674,7 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_20->setText(sended);
 }
 
-void MainWindow::on_pushButton_8_clicked()
-{
 
-    // generate some data:
-    QVector<double> x(101), y(101); // initialize with entries 0..100
-    for (int i=0; i<101; ++i)
-    {
-      x[i] = i/50.0 - 1; // x goes from -1 to 1
-      y[i] = x[i]*x[i]; // let's plot a quadratic function
-    }
-    // create graph and assign data to it:
-    ui->specHead->addGraph();
-    ui->specHead->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->specHead->xAxis2->setVisible(true);
-    ui->specHead->xAxis2->setTickLabels(false);
-    ui->specHead->yAxis2->setVisible(true);
-    ui->specHead->yAxis2->setTickLabels(false);
-    ui->specHead->xAxis->setLabel("x");
-    ui->specHead->yAxis->setLabel("y");
-    // set axes ranges, so we see all data:
-    ui->specHead->xAxis->setRange(-1, 1);
-    ui->specHead->yAxis->setRange(0, 1);
-    ui->specHead->replot();
-}
 
 void MainWindow::on_pushButton_10_clicked()
 {

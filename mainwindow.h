@@ -61,7 +61,6 @@ private slots:
     void on_pushButton_7_clicked();
     void on_pushButton_8_clicked();    
     void on_pushButton_9_clicked();
-
     void on_pushButton_10_clicked();
 
 private:
@@ -75,6 +74,7 @@ private:
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
+    void getMCA();
 
 
 private:
