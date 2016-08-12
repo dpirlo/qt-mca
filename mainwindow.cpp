@@ -189,12 +189,11 @@ void MainWindow::on_pushButton_adquirir_clicked()
     int bytes_int=CHANNELS*6+16;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
     string pmt=ui->textEdit_pmt->toPlainText().toStdString();
-
     string bytes_received=QString::number(bytes_int).toStdString();
-    string bytes_sended=QString::number(arpet->getData_MCA().size()).toStdString();
-    arpet->setMCAEStream(pmt,"0"+bytes_sended,bytes_received,arpet->getData_MCA());
+    arpet->setMCAEStream(pmt,"07",bytes_received,arpet->getData_MCA()); //TODO: Modificar el método para que autogenere la cantidad de bytes de entrada
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    QString q_msg=QString::fromStdString(ReadString());
+    string msg=ReadString();
+    QString q_msg=QString::fromStdString(msg);
     string msg_data=ReadBufferString(bytes_int);
     arpet->getMCASplitData(msg_data,CHANNELS);
 
