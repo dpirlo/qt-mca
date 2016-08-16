@@ -188,9 +188,8 @@ void MainWindow::on_pushButton_adquirir_clicked()
 {
     int bytes_int=CHANNELS*6+16;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
-    string pmt=ui->textEdit_pmt->toPlainText().toStdString();
-    string bytes_received=QString::number(bytes_int).toStdString();
-    arpet->setMCAEStream(pmt,"07",bytes_received,arpet->getData_MCA()); //TODO: Modificar el método para que autogenere la cantidad de bytes de entrada
+    string pmt=ui->textEdit_pmt->toPlainText().toStdString();    
+    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -264,6 +263,7 @@ void MainWindow::setAdquireMode(int index)
         ui->pushButton_increase->hide();
         ui->textEdit_pmt->hide();
         ui->pushButton_decrease->hide();
+        break;
     default:
         break;
     }
@@ -555,6 +555,7 @@ void MainWindow::setHeadMode(int index, string tab)
     case MULTIHEAD:
         manageHeadComboBox(tab, false);
         manageHeadCheckBox(tab, true);
+        break;
     default:
         break;
     }
