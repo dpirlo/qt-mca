@@ -366,9 +366,13 @@ void MCAE::setMCAStream(string pmt, string function)
 
 }
 
-void MCAE::setMCAEStream(string pmt,string size_sended, string size_received, string function)
+void MCAE::setMCAEStream(string pmt, int size_stream, string function)
 {
     setMCAStream(pmt, function);
+    string trama_mca=getTrama_MCA();
+    string size_sended="0"+trama_mca.size();
+    int size_mca=(int)trama_mca.size();
+    string size_received=QString::number(size_stream+size_mca).toStdString();
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }

@@ -48,7 +48,7 @@ namespace ap {
         string convertDecToHex(int dec_number);
         QByteArray getReverse(QByteArray seq);
         void setMCAStream(string pmt, string function);
-        void setMCAEStream(string pmt, string size_sended, string size_received, string function);
+        void setMCAEStream(string pmt, int size_stream, string function);
         error_code portFlush();
         int getMCACheckSum(string data_function, string data_pmt);
         string getMCAFormatStream(string data);
