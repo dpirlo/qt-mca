@@ -17,6 +17,7 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::system;
 
+#define CHANNELS 1024
 #define SERIAL_PORT_READ_BUF_SIZE 1
 
 typedef shared_ptr<serial_port> serial_port_ptr;

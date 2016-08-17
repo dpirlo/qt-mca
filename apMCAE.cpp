@@ -4,6 +4,8 @@ using namespace ap;
 
 MCAE::MCAE(size_t timeout)
     :port(serial_port_ptr(new serial_port(io))),
+     channels_id(CHANNELS),
+     hits_mca(CHANNELS),
      timeout(timeout),
      read_error(true),
      timer(port->get_io_service()),     
@@ -248,7 +250,7 @@ void MCAE::getMCASplitData(string msg_data, int channels)
     offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
     var=convertHexToDec( q_msg_data.mid(12, 2).toHex().toStdString());
     temp=convertHexToDec(q_msg_data.mid(14, 2).toHex().toStdString());
-    QByteArray data_mca_bytes = q_msg_data.right(size_block);
+    QByteArray data_mca_bytes = q_msg_data.right(size_block);    
 
     /* Parseo de datos de la trama que contiene las cuentas por canal */
     getMCAHitsData(data_mca_bytes);
@@ -258,13 +260,17 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
 {
     int channel;
     long hits;
+
+    channels_id.fill(0);
+    hits_mca.fill(0);
+
     for(int i = 0; i < data_mca.length(); i+=6)
     {
         channel=convertHexToDec(getReverse(data_mca.mid(i,2)).toHex().toStdString());
         hits=(long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
-        channels_id.push_back(channel);
-        hits_mca.push_back(hits);
-    }    
+        channels_id[channel]=channel;
+        hits_mca[channel]=hits;
+    }
 }
 
 int MCAE::getMCACheckSum(string data_function, string data_pmt)
@@ -370,7 +376,8 @@ void MCAE::setMCAEStream(string pmt, int size_stream, string function)
 {
     setMCAStream(pmt, function);
     int size_mca=(int)(getTrama_MCA().size());
-    string size_sended="0"+to_string(size_mca);
+    string size_sended=to_string(size_mca);
+    if (size_sended.length()==1) size_sended="0" + size_sended;
     string size_received=QString::number(size_stream+size_mca).toStdString();
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
