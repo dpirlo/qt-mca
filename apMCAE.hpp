@@ -17,6 +17,7 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::system;
 
+#define DS1820_FACTOR 0.0625
 #define CHANNELS 1024
 #define SERIAL_PORT_READ_BUF_SIZE 1
 
@@ -51,7 +52,7 @@ namespace ap {
         void setMCAStream(string pmt, string function);
         void setMCAEStream(string pmt, int size_stream, string function);
         error_code portFlush();
-        int getMCACheckSum(string data_function, string data_pmt);
+        int getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length);
         string getMCAFormatStream(string data);
         string convertMCAFormatStream(string data_with_cs);
         MCAE::string_code getMCAStringValues(string const& in_string);

@@ -248,9 +248,9 @@ void MCAE::getMCASplitData(string msg_data, int channels)
     time_mca=convertHexToDec(getReverse(q_msg_data.mid(5, 5)).toHex().toStdString());
     HV_pmt=convertHexToDec(getReverse(q_msg_data.mid(9, 2)).toHex().toStdString());
     offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
-    var=convertHexToDec( q_msg_data.mid(12, 2).toHex().toStdString());
-    temp=convertHexToDec(q_msg_data.mid(14, 2).toHex().toStdString());
-    QByteArray data_mca_bytes = q_msg_data.right(size_block);    
+    var=convertHexToDec(getReverse(q_msg_data.mid(12, 2)).toHex().toStdString());
+    temp=convertHexToDec(getReverse(q_msg_data.mid(14, 2)).toHex().toStdString())*DS1820_FACTOR;
+    QByteArray data_mca_bytes = q_msg_data.right(size_block);
 
     /* Parseo de datos de la trama que contiene las cuentas por canal */
     getMCAHitsData(data_mca_bytes);
@@ -273,13 +273,22 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
     }
 }
 
-int MCAE::getMCACheckSum(string data_function, string data_pmt)
+int MCAE::getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length)
 {
     int sum_of_elements = 0;
     for(unsigned int i = 0; i < data_function.length(); ++i)
     {
         string token(1, data_function.at(i));
         sum_of_elements = sum_of_elements + atoi(token.c_str());
+    }
+
+    if(data_length > 5)
+    {
+        for(unsigned int i = 0; i < data_channel.length(); ++i)
+        {
+            string token(1, data_channel.at(i));
+            sum_of_elements = sum_of_elements + atoi(token.c_str());
+        }
     }
 
     string data_pmt_hex=convertDecToHex(atoi(data_pmt.c_str()));
@@ -349,13 +358,15 @@ string MCAE::getMCAFormatStream(string data)
      * @ddcc--...--
      */
 
-    string data_function=data.substr(3,data.length());
+    string data_channel;
     string data_pmt=data.substr(1,2);
+    string data_function=data.substr(3,2);
+    if(data.length()>5) data_channel = data.substr(5,data.length());
     int data_pmt_int=atoi(data_pmt.c_str());
-    string checksum=convertDecToHex(getMCACheckSum(data_function,data_pmt));
+    string checksum=convertDecToHex(getMCACheckSum(data_function,data_channel,data_pmt,data.length()));
     if (checksum.length()==1) checksum="0" + checksum;
 
-    string data_plus_checksum = convertDecToHex(data_pmt_int) + data_function + checksum;
+    string data_plus_checksum = convertDecToHex(data_pmt_int) + data_function + data_channel + checksum;
     if (convertDecToHex(data_pmt_int).length()==1) data_plus_checksum = "0" + data_plus_checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
 
@@ -367,9 +378,8 @@ string MCAE::getMCAFormatStream(string data)
 void MCAE::setMCAStream(string pmt, string function)
 {
     if (pmt.length()==1) pmt="0" + pmt;
-    string stream_wo_cs="@"+pmt+function;
+    string stream_wo_cs="@"+pmt+function+"321";//ahestevenz (channel test) | TODO: Delete it!
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
-
 }
 
 void MCAE::setMCAEStream(string pmt, int size_stream, string function)
