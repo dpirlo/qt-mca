@@ -375,16 +375,16 @@ string MCAE::getMCAFormatStream(string data)
     return data_plus_checksum_mca_format;
 }
 
-void MCAE::setMCAStream(string pmt, string function)
+void MCAE::setMCAStream(string pmt, string function, string channel)
 {
     if (pmt.length()==1) pmt="0" + pmt;
-    string stream_wo_cs="@"+pmt+function+"321";//ahestevenz (channel test) | TODO: Delete it!
+    string stream_wo_cs="@"+pmt+function+channel;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
-void MCAE::setMCAEStream(string pmt, int size_stream, string function)
+void MCAE::setMCAEStream(string pmt, int size_stream, string function, string channel)
 {
-    setMCAStream(pmt, function);
+    setMCAStream(pmt, function, channel);
     int size_mca=(int)(getTrama_MCA().size());
     string size_sended=to_string(size_mca);
     if (size_sended.length()==1) size_sended="0" + size_sended;
