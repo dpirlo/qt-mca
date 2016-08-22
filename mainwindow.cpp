@@ -5,6 +5,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     TimeOut(1000),
+    bytes_int(CHANNELS*6+16),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -186,50 +187,52 @@ void MainWindow::setHeadModeConfig(int index)
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-    int bytes_int=CHANNELS*6+16;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
-    string pmt=ui->textEdit_pmt->toPlainText().toStdString();    
-    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA());
-    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg=ReadString();
-    QString q_msg=QString::fromStdString(msg);
-    string msg_data=ReadBufferString(bytes_int);
-    arpet->getMCASplitData(msg_data,CHANNELS);
+//    int bytes_int=CHANNELS*6+16;
+//    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
+//    string pmt=ui->textEdit_pmt->toPlainText().toStdString();
+//    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA());
+//    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+//    string msg=ReadString();
+//    QString q_msg=QString::fromStdString(msg);
+//    string msg_data=ReadBufferString(bytes_int);
+//    arpet->getMCASplitData(msg_data,CHANNELS);
 
-    int frame=arpet->getFrameMCA();
-    long time_mca=arpet->getTimeMCA();
-    /*cout<<"Frame: "<< frame <<endl;
-    cout<<"Adquisition time: "<< time_mca <<endl;
-    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;*/
+//    int frame=arpet->getFrameMCA();
+//    long time_mca=arpet->getTimeMCA();
+//    /*cout<<"Frame: "<< frame <<endl;
+//    cout<<"Adquisition time: "<< time_mca <<endl;
+//    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;*/
 
-    // generate some data:
-    QVector<double> x=arpet->getChannels();
-    QVector<double> y=arpet->getHitsMCA();
-    double c_max = *max_element(y.begin(),y.end());
-    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
-    // create graph and assign data to it:
-    ui->specHead->addGraph();
-    ui->specHead->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->specHead->xAxis2->setVisible(true);
-    ui->specHead->xAxis2->setTickLabels(false);
-    ui->specHead->yAxis2->setVisible(true);
-    ui->specHead->yAxis2->setTickLabels(false);
-    ui->specHead->xAxis->setLabel("Canales");
-    ui->specHead->yAxis->setLabel("Hits");
-    // set axes ranges, so we see all data:
-    ui->specHead->xAxis->setRange(0, CHANNELS);
-    ui->specHead->yAxis->setRange(0, c_max*1.25);
-    ui->specHead->replot();
+//    // generate some data:
+//    QVector<double> x=arpet->getChannels();
+//    QVector<double> y=arpet->getHitsMCA();
+//    double c_max = *max_element(y.begin(),y.end());
+//    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
+//    // create graph and assign data to it:
+//    ui->specHead->addGraph();
+//    ui->specHead->graph(0)->setData(x, y);
+//    // give the axes some labels:
+//    ui->specHead->xAxis2->setVisible(true);
+//    ui->specHead->xAxis2->setTickLabels(false);
+//    ui->specHead->yAxis2->setVisible(true);
+//    ui->specHead->yAxis2->setTickLabels(false);
+//    ui->specHead->xAxis->setLabel("Canales");
+//    ui->specHead->yAxis->setLabel("Hits");
+//    // set axes ranges, so we see all data:
+//    ui->specHead->xAxis->setRange(0, CHANNELS);
+//    ui->specHead->yAxis->setRange(0, c_max*1.25);
+//    ui->specHead->replot();
 
-    ui->label_21->setText(q_msg);
+    QString q_msg=getMCA("graph");
 
-    cout<<arpet->getTrama_MCAE()<<endl;
+    ui->label_received->setText(q_msg);
+
+    cout << arpet->getTrama_MCAE() << endl;
 }
 
 void MainWindow::on_pushButton_8_clicked()
 {
-    int bytes_int=CHANNELS*6+16;
+    /*int bytes_int=CHANNELS*6+16;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
     string pmt=ui->textEdit_pmt->toPlainText().toStdString();
     arpet->setMCAEStream(pmt,bytes_int,arpet->getSetHV_MCA());
@@ -237,9 +240,12 @@ void MainWindow::on_pushButton_8_clicked()
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
     string msg_data=ReadBufferString(bytes_int);
-    arpet->getMCASplitData(msg_data,CHANNELS);
+    arpet->getMCASplitData(msg_data,CHANNELS);*/
 
-    cout<<arpet->getTrama_MCAE()<<endl;
+    QString q_msg = setHV();
+
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
 }
 
 void MainWindow::on_pushButton_decrease_clicked()
@@ -286,25 +292,49 @@ void MainWindow::setAdquireMode(int index)
 }
 
 
-void MainWindow::getMCA()
+QString MainWindow::getMCA(string tap, string channels)
 {
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tap).toStdString() + arpet->getFunCSP3());
+    string pmt = ui->textEdit_pmt->toPlainText().toStdString();
+    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA(),channels);
+    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    string msg = ReadString();
+    QString q_msg = QString::fromStdString(msg);
+    string msg_data = ReadBufferString(bytes_int);
+    arpet->getMCASplitData(msg_data, CHANNELS);
+
+    return q_msg;
+}
+
+void MainWindow::getPlot()
+{
+    // generate some data:
     QVector<double> x=arpet->getChannels();
     QVector<double> y=arpet->getHitsMCA();
     double c_max = *max_element(y.begin(),y.end());
-
-
+    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
+    // create graph and assign data to it:
     ui->specHead->addGraph();
     ui->specHead->graph(0)->setData(x, y);
+    // give the axes some labels:
     ui->specHead->xAxis2->setVisible(true);
     ui->specHead->xAxis2->setTickLabels(false);
     ui->specHead->yAxis2->setVisible(true);
     ui->specHead->yAxis2->setTickLabels(false);
     ui->specHead->xAxis->setLabel("Canales");
-    ui->specHead->yAxis->setLabel("Cuentas");
+    ui->specHead->yAxis->setLabel("Hits");
+    // set axes ranges, so we see all data:
     ui->specHead->xAxis->setRange(0, CHANNELS);
-    ui->specHead->yAxis->setRange(0, c_max);
+    ui->specHead->yAxis->setRange(0, c_max*1.25);
     ui->specHead->replot();
+}
 
+QString MainWindow::setHV()
+{
+    string c="300";
+    QString q_msg = getMCA("graph",c);
+
+    return q_msg;
 }
 
 

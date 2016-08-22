@@ -75,12 +75,15 @@ private:
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    void getMCA();
+    QString getMCA(string tap, string channels="");
+    void getPlot();
+    QString setHV();
 
 
 private:
     Ui::MainWindow *ui;
     shared_ptr<MCAE> arpet;
+    int bytes_int;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;
     int TimeOut;
