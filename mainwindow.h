@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);    
+    explicit MainWindow(QWidget *parent = 0);
     void checkCombosStatus();
     ~MainWindow();
     /* Pruebas */
@@ -32,7 +32,7 @@ private slots:
     void setHeadModeConfig(int index);
     void setHeadModeGraph(int index);
     void setAdquireMode(int index);
-    int on_pushButton_conectar_clicked();    
+    int on_pushButton_conectar_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
@@ -59,10 +59,8 @@ private slots:
     void on_pushButton_5_clicked();
     void on_pushButton_6_clicked();
     void on_pushButton_7_clicked();
-    void on_pushButton_8_clicked();    
-    void on_pushButton_9_clicked();
-    void on_pushButton_10_clicked();
-
+    void on_pushButton_8_clicked();
+    void on_pushButton_9_clicked();    
 
 private:
     QString openConfigurationFile();
@@ -75,9 +73,12 @@ private:
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tap, string channels="");
-    void getPlot();
-    QString setHV();
+    QString getMCA(string tap);
+    void setMCAEDataStream(string tap, string function, string pmt, string mca_function, string channel="");
+    void getPlot(bool accum);
+    QString setHV(string tap, string channel);
+    string getPMT();
+    string getHVChannel();
 
 
 private:

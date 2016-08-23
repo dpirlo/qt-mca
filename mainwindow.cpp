@@ -14,11 +14,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_port->addItems(availablePortsName());
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("graph",false);
+    ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
+    ui->lineEdit_channel->setValidator( new QIntValidator(0, MAX_CHANNELS, this) );
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;   
+    delete ui;
 }
 
 void MainWindow::checkCombosStatus()
@@ -187,43 +189,8 @@ void MainWindow::setHeadModeConfig(int index)
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-//    int bytes_int=CHANNELS*6+16;
-//    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
-//    string pmt=ui->textEdit_pmt->toPlainText().toStdString();
-//    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA());
-//    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-//    string msg=ReadString();
-//    QString q_msg=QString::fromStdString(msg);
-//    string msg_data=ReadBufferString(bytes_int);
-//    arpet->getMCASplitData(msg_data,CHANNELS);
-
-//    int frame=arpet->getFrameMCA();
-//    long time_mca=arpet->getTimeMCA();
-//    /*cout<<"Frame: "<< frame <<endl;
-//    cout<<"Adquisition time: "<< time_mca <<endl;
-//    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;*/
-
-//    // generate some data:
-//    QVector<double> x=arpet->getChannels();
-//    QVector<double> y=arpet->getHitsMCA();
-//    double c_max = *max_element(y.begin(),y.end());
-//    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
-//    // create graph and assign data to it:
-//    ui->specHead->addGraph();
-//    ui->specHead->graph(0)->setData(x, y);
-//    // give the axes some labels:
-//    ui->specHead->xAxis2->setVisible(true);
-//    ui->specHead->xAxis2->setTickLabels(false);
-//    ui->specHead->yAxis2->setVisible(true);
-//    ui->specHead->yAxis2->setTickLabels(false);
-//    ui->specHead->xAxis->setLabel("Canales");
-//    ui->specHead->yAxis->setLabel("Hits");
-//    // set axes ranges, so we see all data:
-//    ui->specHead->xAxis->setRange(0, CHANNELS);
-//    ui->specHead->yAxis->setRange(0, c_max*1.25);
-//    ui->specHead->replot();
-
     QString q_msg=getMCA("graph");
+    getPlot(false);
 
     ui->label_received->setText(q_msg);
 
@@ -232,39 +199,29 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
 void MainWindow::on_pushButton_8_clicked()
 {
-    /*int bytes_int=CHANNELS*6+16;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("graph").toStdString() + arpet->getFunCSP3());
-    string pmt=ui->textEdit_pmt->toPlainText().toStdString();
-    arpet->setMCAEStream(pmt,bytes_int,arpet->getSetHV_MCA());
-    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg=ReadString();
-    QString q_msg=QString::fromStdString(msg);
-    string msg_data=ReadBufferString(bytes_int);
-    arpet->getMCASplitData(msg_data,CHANNELS);*/
 
-    QString q_msg = setHV();
-
+    QString q_msg = setHV("graph",getHVChannel());
     ui->label_received->setText(q_msg);
     cout << arpet->getTrama_MCAE() << endl;
 }
 
 void MainWindow::on_pushButton_decrease_clicked()
 {
-    QString pmt=ui->textEdit_pmt->toPlainText();
+    QString pmt=ui->lineEdit_pmt->text();
     if (pmt.toInt()>1)
     {
         int pmt_decrease=pmt.toInt()-1;
-        ui->textEdit_pmt->setText(QString::number(pmt_decrease));
+        ui->lineEdit_pmt->setText(QString::number(pmt_decrease));
     }
 }
 
 void MainWindow::on_pushButton_increase_clicked()
 {
-    QString pmt=ui->textEdit_pmt->toPlainText();
+    QString pmt=ui->lineEdit_pmt->text();
     if (pmt.toInt()<48)
     {
         int pmt_increase=pmt.toInt()+1;
-        ui->textEdit_pmt->setText(QString::number(pmt_increase));
+        ui->lineEdit_pmt->setText(QString::number(pmt_increase));
     }
 }
 
@@ -277,26 +234,21 @@ void MainWindow::setAdquireMode(int index)
 {
     switch (index) {
     case MONOMODE:
-        ui->pushButton_increase->show();
-        ui->textEdit_pmt->show();
-        ui->pushButton_decrease->show();
+        ui->frame_PMT->show();
+        ui->frame_HV->show();
         break;
-    case MULTIMODE:
-        ui->pushButton_increase->hide();
-        ui->textEdit_pmt->hide();
-        ui->pushButton_decrease->hide();
+    case MULTIMODE:        
+        ui->frame_PMT->hide();
+        ui->frame_HV->hide();
         break;
     default:
         break;
     }
 }
 
-
-QString MainWindow::getMCA(string tap, string channels)
+QString MainWindow::getMCA(string tap)
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tap).toStdString() + arpet->getFunCSP3());
-    string pmt = ui->textEdit_pmt->toPlainText().toStdString();
-    arpet->setMCAEStream(pmt,bytes_int,arpet->getData_MCA(),channels);
+    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getData_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     QString q_msg = QString::fromStdString(msg);
@@ -306,40 +258,80 @@ QString MainWindow::getMCA(string tap, string channels)
     return q_msg;
 }
 
-void MainWindow::getPlot()
+QString MainWindow::setHV(string tap, string channel)
 {
-    // generate some data:
-    QVector<double> x=arpet->getChannels();
-    QVector<double> y=arpet->getHitsMCA();
+    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getSetHV_MCA(), channel);
+    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    string msg = ReadString();
+    QString q_msg = QString::fromStdString(msg);
+
+    return q_msg;
+}
+
+string MainWindow::getPMT()
+{
+    QString pmt;
+    if(ui->lineEdit_pmt->text().isEmpty())
+    {
+        pmt=QString::number(1);
+        ui->lineEdit_pmt->setText(pmt);
+    }
+
+    return ui->lineEdit_pmt->text().toStdString();
+}
+
+string MainWindow::getHVChannel()
+{
+    int channel_int;
+    if(ui->lineEdit_channel->text().isEmpty())
+    {
+        channel_int=0;
+        ui->lineEdit_channel->setText(QString::number(0));
+    }
+    channel_int=ui->lineEdit_channel->text().toInt();
+
+    return arpet->getChannelCode(channel_int);
+}
+
+void MainWindow::setMCAEDataStream(string tap, string function, string pmt, string mca_function, string channel)
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tap).toStdString() + function);
+  arpet->setMCAEStream(pmt, bytes_int, mca_function, channel);
+}
+
+void MainWindow::getPlot(bool accum)
+{
+    /* Datos del gráfico */
+    QVector<double> x(CHANNELS),y(CHANNELS);
+    if (!accum){
+        x.fill(0);
+        y.fill(0);
+    }
+    x=arpet->getChannels();
+    y=arpet->getHitsMCA();
+
+    /* Se genera los ejes */
     double c_max = *max_element(y.begin(),y.end());
+    double c_min =0;
+    if (c_max==0) {c_max=1; c_min=-1;}
     cout<<"El máximo elemento de Hits: "<<c_max<<endl;
-    // create graph and assign data to it:
+
     ui->specHead->addGraph();
     ui->specHead->graph(0)->setData(x, y);
-    // give the axes some labels:
     ui->specHead->xAxis2->setVisible(true);
     ui->specHead->xAxis2->setTickLabels(false);
     ui->specHead->yAxis2->setVisible(true);
     ui->specHead->yAxis2->setTickLabels(false);
     ui->specHead->xAxis->setLabel("Canales");
     ui->specHead->yAxis->setLabel("Hits");
-    // set axes ranges, so we see all data:
+
+    /* Rangos y grafico */
     ui->specHead->xAxis->setRange(0, CHANNELS);
-    ui->specHead->yAxis->setRange(0, c_max*1.25);
+    ui->specHead->yAxis->setRange(c_min, c_max*1.25);
     ui->specHead->replot();
 }
 
-QString MainWindow::setHV()
-{
-    string c="300";
-    QString q_msg = getMCA("graph",c);
-
-    return q_msg;
-}
-
-
 /* Métodos generales del entorno gráfico */
-
 
 /**
  * @brief MainWindow::parseConfigurationFile
@@ -509,42 +501,22 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
     {
         if (show)
         {
-            ui->checkBox_8->show();
-            ui->checkBox_9->show();
-            ui->checkBox_10->show();
-            ui->checkBox_11->show();
-            ui->checkBox_12->show();
-            ui->checkBox_13->show();           
+            ui->frame_multihead_config->show();
         }
         else
         {
-            ui->checkBox_8->hide();
-            ui->checkBox_9->hide();
-            ui->checkBox_10->hide();
-            ui->checkBox_11->hide();
-            ui->checkBox_12->hide();
-            ui->checkBox_13->hide();            
+            ui->frame_multihead_config->hide();
         }
     }
     else if(tab=="graph")
     {
         if (show)
         {
-            ui->checkBox_1->show();
-            ui->checkBox_2->show();
-            ui->checkBox_3->show();
-            ui->checkBox_4->show();
-            ui->checkBox_5->show();
-            ui->checkBox_6->show();
+            ui->frame_multihead_graph->show();
         }
         else
         {
-            ui->checkBox_1->hide();
-            ui->checkBox_2->hide();
-            ui->checkBox_3->hide();
-            ui->checkBox_4->hide();
-            ui->checkBox_5->hide();
-            ui->checkBox_6->hide();
+            ui->frame_multihead_graph->hide();
         }
 
     }
@@ -585,7 +557,7 @@ void MainWindow::setHeadMode(int index, string tab)
 /* TEST BUTTONS. TODO: Delete all of them after debug */
 
 void MainWindow::on_pushButton_clicked()
-{   
+{
    QString sended = ui->plainTextEdit->toPlainText();
 
    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
@@ -695,12 +667,6 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_20->setText(sended);
 }
 
-
-
-void MainWindow::on_pushButton_10_clicked()
-{
-
-}
-
-
 /**********************************************************/
+
+
