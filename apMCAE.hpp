@@ -20,6 +20,8 @@ using namespace boost::system;
 #define DS1820_FACTOR 0.0625
 #define CHANNELS 1024
 #define SERIAL_PORT_READ_BUF_SIZE 1
+#define PMTs 48
+#define MAX_CHANNELS 4095
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -58,6 +60,7 @@ namespace ap {
         MCAE::string_code getMCAStringValues(string const& in_string);
         void getMCASplitData(string msg_data, int channels);
         void getMCAHitsData(QByteArray data_mca);
+        string getChannelCode(int channel_dec);
         ~MCAE();
 
         /* Pruebas*/
@@ -126,16 +129,5 @@ namespace ap {
     };
 
 }
-
-/*
-
-string tramaRx_Init_Head = "@0064020<", tramaRx_Init_Slaves = "@0064310>", tramaRx_Set_HV = "@0086", tramaRx_Tabla_E = "&101", tramaRx_Tabla_X = "&102", tramaRx_Tabla_T = "&105" , tramaRx_Tabla_Y = "&103", tramaRx_Tabla_Est = "&104", tramaRx_Tabla_err = "&666";
-string tramaHV_ON = "$SET,STA,ON", tramaHV_OFF = "$SET,S,OFF", tramaHV_SET = "$SET,VCO,", tramaHV_STATUS = "$TEMP", tramaRx_HV = "DEPENDE LA CANTIDAD DE SENSORES";
-string largo_trama_set_HV = "0003", largo_trama_status_hv ="0061";
-
-int timeoutRx = 0;
-const int TIMEOUTRX = 200;
-
-*/
 
 #endif // APMCAE_H

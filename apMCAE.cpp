@@ -392,3 +392,12 @@ void MCAE::setMCAEStream(string pmt, int size_stream, string function, string ch
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
+
+string MCAE::getChannelCode(int channel_dec)
+{
+    string channel= convertDecToHex(channel_dec);
+    if (channel.length()==1) channel="00" + channel;
+    if (channel.length()==2) channel="0" + channel;
+
+    return channel;
+}
