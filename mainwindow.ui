@@ -1510,7 +1510,7 @@ Tensión: </string>
         <x>820</x>
         <y>60</y>
         <width>171</width>
-        <height>111</height>
+        <height>131</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1523,7 +1523,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>10</y>
+         <y>0</y>
          <width>111</width>
          <height>31</height>
         </rect>
@@ -1543,7 +1543,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>13</x>
-         <y>40</y>
+         <y>31</y>
          <width>71</width>
          <height>31</height>
         </rect>
@@ -1552,11 +1552,11 @@ Tensión: </string>
         <string>Adquirir</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="checkBox_continue">
        <property name="geometry">
         <rect>
-         <x>38</x>
-         <y>80</y>
+         <x>40</x>
+         <y>64</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -1569,7 +1569,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>40</y>
+         <y>31</y>
          <width>71</width>
          <height>31</height>
         </rect>
@@ -1578,12 +1578,25 @@ Tensión: </string>
         <string>Reiniciar</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="checkBox_accum">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>93</y>
+         <width>111</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Acumulativo</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QLabel" name="label_received">
       <property name="geometry">
        <rect>
-        <x>830</x>
-        <y>330</y>
+        <x>828</x>
+        <y>353</y>
         <width>161</width>
         <height>41</height>
        </rect>
@@ -1596,7 +1609,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>820</x>
-        <y>180</y>
+        <y>200</y>
         <width>171</width>
         <height>141</height>
        </rect>
@@ -1922,8 +1935,8 @@ Tensión: </string>
      <widget class="QLabel" name="label_temp">
       <property name="geometry">
        <rect>
-        <x>830</x>
-        <y>380</y>
+        <x>828</x>
+        <y>403</y>
         <width>161</width>
         <height>41</height>
        </rect>
@@ -1935,8 +1948,8 @@ Tensión: </string>
      <widget class="QLabel" name="label_data">
       <property name="geometry">
        <rect>
-        <x>830</x>
-        <y>430</y>
+        <x>828</x>
+        <y>453</y>
         <width>161</width>
         <height>41</height>
        </rect>
@@ -2173,7 +2186,19 @@ Tensión: </string>
      <height>27</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuArchivo">
+    <property name="title">
+     <string>Archivo</string>
+    </property>
+    <addaction name="actionPreferencias"/>
+   </widget>
+   <addaction name="menuArchivo"/>
   </widget>
+  <action name="actionPreferencias">
+   <property name="text">
+    <string>Preferencias</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

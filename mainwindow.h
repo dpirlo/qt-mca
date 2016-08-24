@@ -69,6 +69,8 @@ private slots:
     void on_pushButton_9_clicked();
 
 
+    void on_pushButton_reset_clicked();
+
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
@@ -86,6 +88,7 @@ private:
     QString setHV(string tap, string hv_value);
     string getPMT();
     string getHVValue(int value=0);
+    void resetHitsValues();
 
 
 private:
@@ -95,6 +98,7 @@ private:
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;
     int TimeOut;
+    QVector<double> channels_ui,hits_ui;
 };
 
 #endif // MAINWINDOW_H

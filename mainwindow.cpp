@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     TimeOut(1000),
     bytes_int(CHANNELS*6+16),
+    channels_ui(CHANNELS),
+    hits_ui(CHANNELS),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -19,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
     ui->tabWidget_general->setCurrentWidget(ui->config);
+    resetHitsValues();
 }
 
 MainWindow::~MainWindow()
@@ -188,17 +191,25 @@ void MainWindow::setHeadModeConfig(int index)
 }
 
 
-/* Pestaña: "Gráficos" */
+/* Pestaña: "MCA" */
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
     QString q_msg=getMCA("mca");
-    getPlot(false);
+    bool accum=false;
+    if (!(ui->checkBox_accum->isChecked())) accum=true;
+    getPlot(accum);
 
     ui->label_received->setText(q_msg);
 
     cout << arpet->getTrama_MCAE() << endl;
 }
+
+void MainWindow::on_pushButton_reset_clicked()
+{
+    resetHitsValues();
+}
+
 
 void MainWindow::on_pushButton_hv_configure_clicked()
 {
@@ -284,7 +295,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_HV->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
-    case MULTIMODE:        
+    case MULTIMODE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
@@ -298,7 +309,7 @@ QString MainWindow::getMCA(string tap)
 {
     setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getData_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();    
+    string msg = ReadString();
     string msg_data = ReadBufferString(bytes_int);
     arpet->getMCASplitData(msg_data, CHANNELS);
 
@@ -309,7 +320,8 @@ QString MainWindow::setHV(string tap, string hv_value)
 {
     setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getSetHV_MCA(), hv_value);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();   
+    string msg = ReadString();
+    resetHitsValues();
 
     return QString::fromStdString(msg);
 }
@@ -344,38 +356,43 @@ void MainWindow::setMCAEDataStream(string tap, string function, string pmt, stri
   arpet->setMCAEStream(pmt, bytes_int, mca_function, hv_value);
 }
 
-void MainWindow::getPlot(bool accum)
+void MainWindow::resetHitsValues()
 {
-    /* Datos del gráfico */
-    QVector<double> x(CHANNELS),y(CHANNELS);
-    if (!accum){
-        x.fill(0);
-        y.fill(0);
-    }
-    x=arpet->getChannels();
-    y=arpet->getHitsMCA();
-
-    /* Se genera los ejes */
-    double c_max = *max_element(y.begin(),y.end());
-    double c_min =0;
-    if (c_max==0) {c_max=1; c_min=-1;}
-    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
-
-    ui->specHead->addGraph();
-    ui->specHead->graph(0)->setData(x, y);
-    ui->specHead->xAxis2->setVisible(true);
-    ui->specHead->xAxis2->setTickLabels(false);
-    ui->specHead->yAxis2->setVisible(true);
-    ui->specHead->yAxis2->setTickLabels(false);
-    ui->specHead->xAxis->setLabel("Canales");
-    ui->specHead->yAxis->setLabel("Cuentas");
-
-    /* Rangos y grafico */
-    ui->specHead->xAxis->setRange(0, CHANNELS);
-    ui->specHead->yAxis->setRange(c_min, c_max*1.25);
-    ui->specHead->replot();
+    hits_ui.fill(0);
 }
 
+void MainWindow::getPlot(bool accum)
+{
+    /* Datos del gráfico */    
+    if (!accum){
+        resetHitsValues();
+    }
+
+    channels_ui = arpet->getChannels();
+    transform(hits_ui.begin(), hits_ui.end(), arpet->getHitsMCA().begin(), hits_ui.begin(), plus<double>());
+
+    /* Se genera los ejes */
+    double c_max = *max_element(hits_ui.begin(),hits_ui.end());
+    double c_min =0;
+    if (c_max==0) {c_max=1; c_min=-1;}
+
+    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
+
+    ui->specPMTs->addGraph();
+    ui->specPMTs->graph(0)->setData(channels_ui, hits_ui);
+    ui->specPMTs->xAxis2->setVisible(true);
+    ui->specPMTs->xAxis2->setTickLabels(true);
+    ui->specPMTs->yAxis2->setVisible(true);
+    ui->specPMTs->yAxis2->setTickLabels(true);
+    ui->specPMTs->xAxis->setLabel("Canales");
+    ui->specPMTs->yAxis->setLabel("Cuentas");
+
+    /* Rangos y grafico */
+    ui->specPMTs->xAxis->setRange(0, CHANNELS);
+    ui->specPMTs->yAxis->setRange(c_min, c_max*1.25);
+    ui->specPMTs->replot();
+
+}
 /* Métodos generales del entorno gráfico */
 
 /**
@@ -713,3 +730,4 @@ void MainWindow::on_pushButton_7_clicked()
 }
 
 /**********************************************************/
+
