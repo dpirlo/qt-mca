@@ -13,9 +13,12 @@ MainWindow::MainWindow(QWidget *parent) :
     arpet=shared_ptr<MCAE>(new MCAE(TimeOut));
     ui->comboBox_port->addItems(availablePortsName());
     manageHeadCheckBox("config",false);
-    manageHeadCheckBox("graph",false);
+    manageHeadCheckBox("mca",false);
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
-    ui->lineEdit_channel->setValidator( new QIntValidator(0, MAX_CHANNELS, this) );
+    ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
+    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+    ui->tabWidget_general->setCurrentWidget(ui->config);
 }
 
 MainWindow::~MainWindow()
@@ -94,7 +97,7 @@ void MainWindow::on_pushButton_obtener_rutas_clicked()
     ui->textBrowser_posicion_Y->setText(coefy);
     ui->textBrowser_tiempos_cabezal->setText(coefT);
 
-    ui->plainTextEdit_alta->document()->setPlainText(QString::number(AT));
+    ui->lineEdit_alta->setText(QString::number(AT));
     ui->plainTextEdit_limiteinferior->document()->setPlainText(QString::number(LowLimit));
 }
 
@@ -189,7 +192,7 @@ void MainWindow::setHeadModeConfig(int index)
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
-    QString q_msg=getMCA("graph");
+    QString q_msg=getMCA("mca");
     getPlot(false);
 
     ui->label_received->setText(q_msg);
@@ -197,13 +200,56 @@ void MainWindow::on_pushButton_adquirir_clicked()
     cout << arpet->getTrama_MCAE() << endl;
 }
 
-void MainWindow::on_pushButton_8_clicked()
+void MainWindow::on_pushButton_hv_configure_clicked()
 {
 
-    QString q_msg = setHV("graph",getHVChannel());
+    QString q_msg = setHV("mca",getHVValue());
     ui->label_received->setText(q_msg);
     cout << arpet->getTrama_MCAE() << endl;
 }
+
+void MainWindow::on_pushButton_l_5_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(-5));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
+void MainWindow::on_pushButton_l_10_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(-10));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
+void MainWindow::on_pushButton_l_50_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(-50));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
+void MainWindow::on_pushButton_p_5_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(5));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
+void MainWindow::on_pushButton_p_10_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(10));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
+void MainWindow::on_pushButton_p_50_clicked()
+{
+    QString q_msg = setHV("mca",getHVValue(50));
+    ui->label_received->setText(q_msg);
+    cout << arpet->getTrama_MCAE() << endl;
+}
+
 
 void MainWindow::on_pushButton_decrease_clicked()
 {
@@ -227,7 +273,7 @@ void MainWindow::on_pushButton_increase_clicked()
 
 void MainWindow::setHeadModeGraph(int index)
 {
-    setHeadMode(index,"graph");
+    setHeadMode(index,"mca");
 }
 
 void MainWindow::setAdquireMode(int index)
@@ -236,10 +282,12 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
     case MULTIMODE:        
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     default:
         break;
@@ -250,22 +298,20 @@ QString MainWindow::getMCA(string tap)
 {
     setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getData_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();
-    QString q_msg = QString::fromStdString(msg);
+    string msg = ReadString();    
     string msg_data = ReadBufferString(bytes_int);
     arpet->getMCASplitData(msg_data, CHANNELS);
 
-    return q_msg;
+    return QString::fromStdString(msg);
 }
 
-QString MainWindow::setHV(string tap, string channel)
+QString MainWindow::setHV(string tap, string hv_value)
 {
-    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getSetHV_MCA(), channel);
+    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getSetHV_MCA(), hv_value);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();
-    QString q_msg = QString::fromStdString(msg);
+    string msg = ReadString();   
 
-    return q_msg;
+    return QString::fromStdString(msg);
 }
 
 string MainWindow::getPMT()
@@ -280,23 +326,22 @@ string MainWindow::getPMT()
     return ui->lineEdit_pmt->text().toStdString();
 }
 
-string MainWindow::getHVChannel()
+string MainWindow::getHVValue(int value)
 {
-    int channel_int;
-    if(ui->lineEdit_channel->text().isEmpty())
-    {
-        channel_int=0;
-        ui->lineEdit_channel->setText(QString::number(0));
-    }
-    channel_int=ui->lineEdit_channel->text().toInt();
+    int hv_value_int;
+    if (ui->lineEdit_hv_value->text().isEmpty()) hv_value_int=0;
+    if (value==0) hv_value_int=ui->lineEdit_hv_value->text().toInt();
+    else  hv_value_int=ui->lineEdit_hv_value->text().toInt()+value;
+    if (hv_value_int<0) hv_value_int=0;
+    ui->lineEdit_hv_value->setText(QString::number(hv_value_int));
 
-    return QString::number(channel_int).toStdString();
+    return QString::number(hv_value_int).toStdString();
 }
 
-void MainWindow::setMCAEDataStream(string tap, string function, string pmt, string mca_function, string channel)
+void MainWindow::setMCAEDataStream(string tap, string function, string pmt, string mca_function, string hv_value)
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tap).toStdString() + function);
-  arpet->setMCAEStream(pmt, bytes_int, mca_function, channel);
+  arpet->setMCAEStream(pmt, bytes_int, mca_function, hv_value);
 }
 
 void MainWindow::getPlot(bool accum)
@@ -323,7 +368,7 @@ void MainWindow::getPlot(bool accum)
     ui->specHead->yAxis2->setVisible(true);
     ui->specHead->yAxis2->setTickLabels(false);
     ui->specHead->xAxis->setLabel("Canales");
-    ui->specHead->yAxis->setLabel("Hits");
+    ui->specHead->yAxis->setLabel("Cuentas");
 
     /* Rangos y grafico */
     ui->specHead->xAxis->setRange(0, CHANNELS);
@@ -437,7 +482,7 @@ QStringList MainWindow::availablePortsName()
 QString MainWindow::getHead(string tab)
 {
     QString head;
-    if (tab=="graph")
+    if (tab=="mca")
     {
         if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
         {
@@ -508,7 +553,7 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
             ui->frame_multihead_config->hide();
         }
     }
-    else if(tab=="graph")
+    else if(tab=="mca")
     {
         if (show)
         {
@@ -529,7 +574,7 @@ void MainWindow::manageHeadComboBox(string tab, bool show)
         if (show) ui->comboBox_head_select_config->show();
         else ui->comboBox_head_select_config->hide();
     }
-    else if(tab=="graph")
+    else if(tab=="mca")
     {
         if (show) ui->comboBox_head_select_graph->show();
         else ui->comboBox_head_select_graph->hide();
@@ -668,5 +713,3 @@ void MainWindow::on_pushButton_7_clicked()
 }
 
 /**********************************************************/
-
-

@@ -51,6 +51,13 @@ private slots:
     void on_pushButton_clicked();
     void on_pushButton_decrease_clicked();
     void on_pushButton_increase_clicked();
+    void on_pushButton_hv_configure_clicked();
+    void on_pushButton_l_5_clicked();
+    void on_pushButton_l_10_clicked();
+    void on_pushButton_l_50_clicked();
+    void on_pushButton_p_5_clicked();
+    void on_pushButton_p_10_clicked();
+    void on_pushButton_p_50_clicked();
 
     /*Buttons de prueba*/
     void on_pushButton_2_clicked();
@@ -59,8 +66,8 @@ private slots:
     void on_pushButton_5_clicked();
     void on_pushButton_6_clicked();
     void on_pushButton_7_clicked();
-    void on_pushButton_8_clicked();
-    void on_pushButton_9_clicked();    
+    void on_pushButton_9_clicked();
+
 
 private:
     QString openConfigurationFile();
@@ -74,11 +81,11 @@ private:
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tap);
-    void setMCAEDataStream(string tap, string function, string pmt, string mca_function, string channel="");
+    void setMCAEDataStream(string tap, string function, string pmt, string mca_function, string hv_value="");
     void getPlot(bool accum);
-    QString setHV(string tap, string channel);
+    QString setHV(string tap, string hv_value);
     string getPMT();
-    string getHVChannel();
+    string getHVValue(int value=0);
 
 
 private:
