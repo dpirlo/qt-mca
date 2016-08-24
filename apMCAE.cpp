@@ -377,7 +377,7 @@ void MCAE::setMCAStream(string pmt, string function, string channel)
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
     string channel;
-    if (channel_dec.length()>1) channel=getChannelCode(atoi(channel_dec.c_str()));
+    if (channel_dec.length()>=1) channel=getChannelCode(atoi(channel_dec.c_str()));
     string pmt=getPMTCode(atoi(pmt_dec.c_str()));
     setMCAStream(pmt, function, channel);
     int size_mca=(int)(getTrama_MCA().size());
