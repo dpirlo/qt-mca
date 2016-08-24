@@ -52,7 +52,7 @@ namespace ap {
         string convertDecToHex(int dec_number);
         QByteArray getReverse(QByteArray seq);
         void setMCAStream(string pmt, string function, string channel="");
-        void setMCAEStream(string pmt, int size_stream, string function, string channel="");
+        void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
         error_code portFlush();
         int getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length);
         string getMCAFormatStream(string data);
@@ -61,6 +61,7 @@ namespace ap {
         void getMCASplitData(string msg_data, int channels);
         void getMCAHitsData(QByteArray data_mca);
         string getChannelCode(int channel_dec);
+        string getPMTCode(int pmt_dec);
         ~MCAE();
 
         /* Pruebas*/

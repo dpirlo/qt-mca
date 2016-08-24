@@ -284,17 +284,14 @@ int MCAE::getMCACheckSum(string data_function, string data_channel, string data_
 
     if(data_length > 5)
     {
-        for(unsigned int i = 0; i < data_channel.length(); ++i)
-        {
-            string token(1, data_channel.at(i));
-            sum_of_elements = sum_of_elements + atoi(token.c_str());
-        }
+        string channel_1(1,data_channel.at(0));
+        string channel_2(1,data_channel.at(1));
+        string channel_3(1,data_channel.at(2));
+        sum_of_elements = sum_of_elements + convertHexToDec(channel_1) + convertHexToDec(channel_2) + convertHexToDec(channel_3);
     }
 
-    string data_pmt_hex=convertDecToHex(atoi(data_pmt.c_str()));
-    if (data_pmt_hex.length()==1) data_pmt_hex="0" + data_pmt_hex;
-    string pmt_1(1,data_pmt_hex.at(0));
-    string pmt_2(1,data_pmt_hex.at(1));
+    string pmt_1(1,data_pmt.at(0));
+    string pmt_2(1,data_pmt.at(1));
 
     sum_of_elements = sum_of_elements + convertHexToDec(pmt_1) + convertHexToDec(pmt_2);
 
@@ -361,15 +358,11 @@ string MCAE::getMCAFormatStream(string data)
     string data_channel;
     string data_pmt=data.substr(1,2);
     string data_function=data.substr(3,2);
-    if(data.length()>5) data_channel = data.substr(5,data.length());
-    int data_pmt_int=atoi(data_pmt.c_str());
+    if(data.length()>5) data_channel = data.substr(5,data.length());    
     string checksum=convertDecToHex(getMCACheckSum(data_function,data_channel,data_pmt,data.length()));
     if (checksum.length()==1) checksum="0" + checksum;
-
-    string data_plus_checksum = convertDecToHex(data_pmt_int) + data_function + data_channel + checksum;
-    if (convertDecToHex(data_pmt_int).length()==1) data_plus_checksum = "0" + data_plus_checksum;
+    string data_plus_checksum = data_pmt + data_function + data_channel + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
-
     string data_plus_checksum_mca_format=convertMCAFormatStream(data_plus_checksum);
 
     return data_plus_checksum_mca_format;
@@ -377,13 +370,15 @@ string MCAE::getMCAFormatStream(string data)
 
 void MCAE::setMCAStream(string pmt, string function, string channel)
 {
-    if (pmt.length()==1) pmt="0" + pmt;
     string stream_wo_cs="@"+pmt+function+channel;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
-void MCAE::setMCAEStream(string pmt, int size_stream, string function, string channel)
+void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
+    string channel;
+    if (channel_dec.length()>1) channel=getChannelCode(atoi(channel_dec.c_str()));
+    string pmt=getPMTCode(atoi(pmt_dec.c_str()));
     setMCAStream(pmt, function, channel);
     int size_mca=(int)(getTrama_MCA().size());
     string size_sended=to_string(size_mca);
@@ -400,4 +395,12 @@ string MCAE::getChannelCode(int channel_dec)
     if (channel.length()==2) channel="0" + channel;
 
     return channel;
+}
+
+string MCAE::getPMTCode(int pmt_dec)
+{
+    string pmt=convertDecToHex(pmt_dec);
+    if (pmt.length()==1) pmt="0" + pmt;
+
+    return pmt;
 }
