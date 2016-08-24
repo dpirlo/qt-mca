@@ -82,11 +82,11 @@ private:
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tap);
+    QString getMCA(string tab);
     void setMCAEDataStream(string tap, string function, string pmt, string mca_function, string hv_value="");
     void getPlot(bool accum);
-    QString setHV(string tap, string hv_value);
-    string getPMT();
+    QString setHV(string tab, string hv_value);
+    int getPMT();
     string getHVValue(int value=0);
     void resetHitsValues();
 
@@ -99,6 +99,7 @@ private:
     int  AT, LowLimit;
     int TimeOut;
     QVector<double> channels_ui,hits_ui;
+    int pmt_ui_current, pmt_ui_previous ;
 };
 
 #endif // MAINWINDOW_H

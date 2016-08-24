@@ -196,8 +196,8 @@ void MainWindow::setHeadModeConfig(int index)
 void MainWindow::on_pushButton_adquirir_clicked()
 {
     QString q_msg=getMCA("mca");
-    bool accum=false;
-    if (!(ui->checkBox_accum->isChecked())) accum=true;
+    bool accum=true;
+    if (!(ui->checkBox_accum->isChecked())) accum=false;
     getPlot(accum);
 
     ui->label_received->setText(q_msg);
@@ -305,9 +305,12 @@ void MainWindow::setAdquireMode(int index)
     }
 }
 
-QString MainWindow::getMCA(string tap)
+QString MainWindow::getMCA(string tab)
 {
-    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getData_MCA());
+    pmt_ui_current=getPMT();
+    if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
+    pmt_ui_previous=pmt_ui_current;
+    setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     string msg_data = ReadBufferString(bytes_int);
@@ -316,9 +319,9 @@ QString MainWindow::getMCA(string tap)
     return QString::fromStdString(msg);
 }
 
-QString MainWindow::setHV(string tap, string hv_value)
+QString MainWindow::setHV(string tab, string hv_value)
 {
-    setMCAEDataStream(tap, arpet->getFunCSP3(), getPMT(), arpet->getSetHV_MCA(), hv_value);
+    setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(), hv_value);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     resetHitsValues();
@@ -326,7 +329,7 @@ QString MainWindow::setHV(string tap, string hv_value)
     return QString::fromStdString(msg);
 }
 
-string MainWindow::getPMT()
+int MainWindow::getPMT()
 {
     QString pmt;
     if(ui->lineEdit_pmt->text().isEmpty())
@@ -335,7 +338,7 @@ string MainWindow::getPMT()
         ui->lineEdit_pmt->setText(pmt);
     }
 
-    return ui->lineEdit_pmt->text().toStdString();
+    return ui->lineEdit_pmt->text().toInt();
 }
 
 string MainWindow::getHVValue(int value)
