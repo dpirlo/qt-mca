@@ -273,7 +273,7 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
     }
 }
 
-int MCAE::getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length)
+int MCAE::getMCACheckSum(string data_function, string data_hv_value, string data_pmt, int data_length)
 {
     int sum_of_elements = 0;
     for(unsigned int i = 0; i < data_function.length(); ++i)
@@ -284,10 +284,10 @@ int MCAE::getMCACheckSum(string data_function, string data_channel, string data_
 
     if(data_length > 5)
     {
-        string channel_1(1,data_channel.at(0));
-        string channel_2(1,data_channel.at(1));
-        string channel_3(1,data_channel.at(2));
-        sum_of_elements = sum_of_elements + convertHexToDec(channel_1) + convertHexToDec(channel_2) + convertHexToDec(channel_3);
+        string hv_value_1(1,data_hv_value.at(0));
+        string hv_value_2(1,data_hv_value.at(1));
+        string hv_value_3(1,data_hv_value.at(2));
+        sum_of_elements = sum_of_elements + convertHexToDec(hv_value_1) + convertHexToDec(hv_value_2) + convertHexToDec(hv_value_3);
     }
 
     string pmt_1(1,data_pmt.at(0));
@@ -355,31 +355,31 @@ string MCAE::getMCAFormatStream(string data)
      * @ddcc--...--
      */
 
-    string data_channel;
+    string data_hv_value;
     string data_pmt=data.substr(1,2);
     string data_function=data.substr(3,2);
-    if(data.length()>5) data_channel = data.substr(5,data.length());    
-    string checksum=convertDecToHex(getMCACheckSum(data_function,data_channel,data_pmt,data.length()));
+    if(data.length()>5) data_hv_value = data.substr(5,data.length());
+    string checksum=convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length()));
     if (checksum.length()==1) checksum="0" + checksum;
-    string data_plus_checksum = data_pmt + data_function + data_channel + checksum;
+    string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
     string data_plus_checksum_mca_format=convertMCAFormatStream(data_plus_checksum);
 
     return data_plus_checksum_mca_format;
 }
 
-void MCAE::setMCAStream(string pmt, string function, string channel)
+void MCAE::setMCAStream(string pmt, string function, string hv_value)
 {
-    string stream_wo_cs="@"+pmt+function+channel;
+    string stream_wo_cs="@"+pmt+function+hv_value;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
-void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
+void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string hv_value_dec)
 {
-    string channel;
-    if (channel_dec.length()>=1) channel=getChannelCode(atoi(channel_dec.c_str()));
+    string hv_value;
+    if (hv_value_dec.length()>=1) hv_value=getHVValueCode(atoi(hv_value_dec.c_str()));
     string pmt=getPMTCode(atoi(pmt_dec.c_str()));
-    setMCAStream(pmt, function, channel);
+    setMCAStream(pmt, function, hv_value);
     int size_mca=(int)(getTrama_MCA().size());
     string size_sended=to_string(size_mca);
     if (size_sended.length()==1) size_sended="0" + size_sended;
@@ -388,13 +388,13 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
     setTrama_MCAE(stream);
 }
 
-string MCAE::getChannelCode(int channel_dec)
+string MCAE::getHVValueCode(int hv_value_dec)
 {
-    string channel= convertDecToHex(channel_dec);
-    if (channel.length()==1) channel="00" + channel;
-    if (channel.length()==2) channel="0" + channel;
+    string hv_value= convertDecToHex(hv_value_dec);
+    if (hv_value.length()==1) hv_value="00" + hv_value;
+    if (hv_value.length()==2) hv_value="0" + hv_value;
 
-    return channel;
+    return hv_value;
 }
 
 string MCAE::getPMTCode(int pmt_dec)

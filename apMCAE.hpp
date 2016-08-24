@@ -21,7 +21,8 @@ using namespace boost::system;
 #define CHANNELS 1024
 #define SERIAL_PORT_READ_BUF_SIZE 1
 #define PMTs 48
-#define MAX_CHANNELS 4095
+#define MAX_HV_VALUE 4095
+#define MAX_HIGH_HV_VOLTAGE 1390
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -60,7 +61,7 @@ namespace ap {
         MCAE::string_code getMCAStringValues(string const& in_string);
         void getMCASplitData(string msg_data, int channels);
         void getMCAHitsData(QByteArray data_mca);
-        string getChannelCode(int channel_dec);
+        string getHVValueCode(int channel_dec);
         string getPMTCode(int pmt_dec);
         ~MCAE();
 
