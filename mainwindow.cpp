@@ -290,7 +290,7 @@ string MainWindow::getHVChannel()
     }
     channel_int=ui->lineEdit_channel->text().toInt();
 
-    return arpet->getChannelCode(channel_int);
+    return QString::number(channel_int).toStdString();
 }
 
 void MainWindow::setMCAEDataStream(string tap, string function, string pmt, string mca_function, string channel)
