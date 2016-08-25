@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_port->addItems(availablePortsName());
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
+    adquire_mode=ui->comboBox_adquire_mode->currentIndex();
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
