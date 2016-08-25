@@ -198,7 +198,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     QString q_msg=getMCA("mca");
     bool accum=true;
     if (!(ui->checkBox_accum->isChecked())) accum=false;
-    getPlot(accum);
+    getPlot(accum, ui->specPMTs);
 
     ui->label_received->setText(q_msg);
 
@@ -353,9 +353,9 @@ string MainWindow::getHVValue(int value)
     return QString::number(hv_value_int).toStdString();
 }
 
-void MainWindow::setMCAEDataStream(string tap, string function, string pmt, string mca_function, string hv_value)
+void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, string hv_value)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tap).toStdString() + function);
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
   arpet->setMCAEStream(pmt, bytes_int, mca_function, hv_value);
 }
 
@@ -364,7 +364,7 @@ void MainWindow::resetHitsValues()
     hits_ui.fill(0);
 }
 
-void MainWindow::getPlot(bool accum)
+void MainWindow::getPlot(bool accum, QCustomPlot *graph)
 {
     /* Datos del gráfico */    
     if (!accum){
@@ -381,21 +381,34 @@ void MainWindow::getPlot(bool accum)
 
     cout<<"El máximo elemento de Hits: "<<c_max<<endl;
 
-    ui->specPMTs->addGraph();
-    ui->specPMTs->graph(0)->setData(channels_ui, hits_ui);
-    ui->specPMTs->xAxis2->setVisible(true);
-    ui->specPMTs->xAxis2->setTickLabels(true);
-    ui->specPMTs->yAxis2->setVisible(true);
-    ui->specPMTs->yAxis2->setTickLabels(true);
-    ui->specPMTs->xAxis->setLabel("Canales");
-    ui->specPMTs->yAxis->setLabel("Cuentas");
+//    ui->specPMTs->addGraph();
+//    ui->specPMTs->graph(0)->setData(channels_ui, hits_ui);
+//    ui->specPMTs->xAxis2->setVisible(true);
+//    ui->specPMTs->xAxis2->setTickLabels(true);
+//    ui->specPMTs->yAxis2->setVisible(true);
+//    ui->specPMTs->yAxis2->setTickLabels(true);
+//    ui->specPMTs->xAxis->setLabel("Canales");
+//    ui->specPMTs->yAxis->setLabel("Cuentas");
+
+        graph->addGraph();
+        graph->graph(0)->setData(channels_ui, hits_ui);
+        graph->xAxis2->setVisible(true);
+        graph->xAxis2->setTickLabels(true);
+        graph->yAxis2->setVisible(true);
+        graph->yAxis2->setTickLabels(true);
+        graph->xAxis->setLabel("Canales");
+        graph->yAxis->setLabel("Cuentas");
 
     /* Rangos y grafico */
-    ui->specPMTs->xAxis->setRange(0, CHANNELS);
-    ui->specPMTs->yAxis->setRange(c_min, c_max*1.25);
-    ui->specPMTs->replot();
+//    ui->specPMTs->xAxis->setRange(0, CHANNELS);
+//    ui->specPMTs->yAxis->setRange(c_min, c_max*1.25);
+//    ui->specPMTs->replot();
 
+        graph->xAxis->setRange(0, CHANNELS);
+        graph->yAxis->setRange(c_min, c_max*1.25);
+        graph->replot();
 }
+
 /* Métodos generales del entorno gráfico */
 
 /**
@@ -564,26 +577,13 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
 {
     if (tab=="config")
     {
-        if (show)
-        {
-            ui->frame_multihead_config->show();
-        }
-        else
-        {
-            ui->frame_multihead_config->hide();
-        }
+        if (show) ui->frame_multihead_config->show();
+        else ui->frame_multihead_config->hide();
     }
     else if(tab=="mca")
     {
-        if (show)
-        {
-            ui->frame_multihead_graph->show();
-        }
-        else
-        {
-            ui->frame_multihead_graph->hide();
-        }
-
+        if (show) ui->frame_multihead_graph->show();
+        else ui->frame_multihead_graph->hide();
     }
     else return;
 }
@@ -730,6 +730,11 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_19->setText(q_bytes);
     ui->label_12->setText(q_msg);
     ui->label_20->setText(sended);
+}
+
+void MainWindow::getPreferences()
+{
+
 }
 
 /**********************************************************/
