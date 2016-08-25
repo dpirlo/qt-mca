@@ -30,7 +30,7 @@ public:
 private slots:
     void setHeadMode(int index, string tab);
     void setHeadModeConfig(int index);
-    void setHeadModeGraph(int index);
+    void setHeadModeGraph(int index);    
     void setAdquireMode(int index);
     int on_pushButton_conectar_clicked();
     void on_pushButton_triple_ventana_clicked();
@@ -72,6 +72,8 @@ private slots:
 
 
 
+
+
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
@@ -88,6 +90,7 @@ private:
     void getPlot(bool accum, QCustomPlot *graph);
     QString setHV(string tab, string hv_value);
     int getPMT();
+    void setPMT(int value);
     string getHVValue(int value=0);
     void resetHitsValues();
 
@@ -106,6 +109,11 @@ private:
     int TimeOut;
     QVector<double> channels_ui,hits_ui;
     int pmt_ui_current, pmt_ui_previous ;
+
+
+
+    int adquire_mode;
+
 };
 
 #endif // MAINWINDOW_H

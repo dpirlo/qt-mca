@@ -33,7 +33,7 @@ void MainWindow::checkCombosStatus()
 {
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
+     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));     
 }
 
 /* Pestaña: "Configuración" */
@@ -199,8 +199,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     bool accum=true;
     if (!(ui->checkBox_accum->isChecked())) accum=false;
 
-    int index=ui->comboBox_adquire_mode->currentIndex();
-    switch (index) {
+    switch (adquire_mode) {
     case MONOMODE:
         q_msg = getMCA("mca",arpet->getFunCSP3());
         getPlot(accum, ui->specPMTs);
@@ -301,7 +300,8 @@ void MainWindow::setHeadModeGraph(int index)
 
 void MainWindow::setAdquireMode(int index)
 {
-    switch (index) {
+    adquire_mode=index;
+    switch (adquire_mode) {
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
@@ -343,14 +343,28 @@ QString MainWindow::setHV(string tab, string hv_value)
 
 int MainWindow::getPMT()
 {
-    QString pmt;
-    if(ui->lineEdit_pmt->text().isEmpty())
-    {
-        pmt=QString::number(1);
-        ui->lineEdit_pmt->setText(pmt);
+    QString pmt=ui->lineEdit_pmt->text();
+    switch (adquire_mode) {
+    case MONOMODE:
+        if(pmt.isEmpty() || pmt.toInt()==0)
+        {
+            pmt=QString::number(1);
+            ui->lineEdit_pmt->setText(pmt);
+        }
+        break;
+    case MULTIMODE:
+        ui->lineEdit_pmt->setText(0);
+        break;
+    default:
+        break;
     }
 
     return ui->lineEdit_pmt->text().toInt();
+}
+
+void MainWindow::setPMT(int value)
+{
+     ui->lineEdit_pmt->setText(QString::number(value));
 }
 
 string MainWindow::getHVValue(int value)
