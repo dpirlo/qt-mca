@@ -206,7 +206,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         getPlot(accum, ui->specPMTs);
         break;
     case MULTIMODE:
-        q_msg = getMCA("mca",arpet->getHead_MCA());
+        q_msg = getMCA("mca",arpet->getFunCHead());
         getPlot(accum, ui->specHead);
         break;
     default:
