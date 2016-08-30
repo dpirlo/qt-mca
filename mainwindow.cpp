@@ -287,8 +287,13 @@ void MainWindow::drawTemperatureBoard()
           SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
           msg=ReadString();
           temp=arpet->getPMTTemperature(msg);
+          cout<<"================================"<<endl;
+          cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
+          cout<<"Recibido: "<<msg<<endl;
+          cout<<"Temperatura: "<<temp<<endl;
+          cout<<"================================"<<endl;
           setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
-          cout<<msg<<endl;
+          usleep(500);
     }
 }
 
