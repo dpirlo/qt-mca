@@ -23,6 +23,11 @@ using namespace boost::system;
 #define PMTs 48
 #define MAX_HV_VALUE 4095
 #define MAX_HIGH_HV_VOLTAGE 1390
+#define HV_BUFFER_SIZE 3
+#define PMT_BUFFER_SIZE 2
+#define RECEIVED_BUFFER_SIZE 4
+#define SENDED_BUFFER_SIZE 2
+#define CS_BUFFER_SIZE 2
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -66,6 +71,7 @@ namespace ap {
         string getHVValueCode(int channel_dec);
         string getPMTCode(int pmt_dec);
         double getPMTTemperature(string temp_stream);
+        string formatMCAStreamSize(int expected_size, string data_stream);
         ~MCAE();
 
         /* Pruebas*/

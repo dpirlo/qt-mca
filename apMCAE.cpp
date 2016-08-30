@@ -410,8 +410,7 @@ string MCAE::getMCAFormatStream(string data)
     string data_pmt=data.substr(1,2);
     string data_function=data.substr(3,2);
     if(data.length()>5) data_hv_value = data.substr(5,data.length());
-    string checksum=convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length()));
-    if (checksum.length()==1) checksum="0" + checksum;
+    string checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length())));
     string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
     string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
@@ -432,9 +431,8 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
     string pmt=getPMTCode(atoi(pmt_dec.c_str()));
     setMCAStream(pmt, function, hv_value);
     int size_mca=(int)(getTrama_MCA().size());
-    string size_sended=to_string(size_mca);
-    if (size_sended.length()==1) size_sended="0" + size_sended;
-    string size_received=QString::number(size_stream+size_mca).toStdString();
+    string size_sended=formatMCAStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
+    string size_received=formatMCAStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_stream+size_mca).toStdString());
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
@@ -442,16 +440,36 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
 string MCAE::getHVValueCode(int hv_value_dec)
 {
     string hv_value= convertDecToHex(hv_value_dec);
-    if (hv_value.length()==1) hv_value="00" + hv_value;
-    if (hv_value.length()==2) hv_value="0" + hv_value;
+    hv_value=formatMCAStreamSize(HV_BUFFER_SIZE,hv_value);
 
     return hv_value;
 }
 
+string MCAE::formatMCAStreamSize(int expected_size, string data_stream)
+{
+   switch (expected_size) {
+    case 2:
+        if (data_stream.length()==1) data_stream="0" + data_stream;
+        break;
+    case 3:
+        if (data_stream.length()==1) data_stream="00" + data_stream;
+        if (data_stream.length()==2) data_stream="0" + data_stream;
+        break;
+    case 4:
+        if (data_stream.length()==1) data_stream="000" + data_stream;
+        if (data_stream.length()==2) data_stream="00" + data_stream;
+        if (data_stream.length()==3) data_stream="0" + data_stream;
+        break;
+    default:
+        break;
+    }
+
+   return data_stream;
+}
+
 string MCAE::getPMTCode(int pmt_dec)
 {
-    string pmt=convertDecToHex(pmt_dec);
-    if (pmt.length()==1) pmt="0" + pmt;
+    string pmt=formatMCAStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
 
     return pmt;
 }
