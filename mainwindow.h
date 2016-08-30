@@ -20,6 +20,8 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+private:
+    enum temp_code {TOO_HOT,HOT,NORMAL,ERROR,NO_VALUE};
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -37,8 +39,7 @@ private slots:
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
     void on_pushButton_posicion_X_clicked();
-    void on_pushButton_posicion_Y_clicked();
-    void on_pushButton_salir_graficos_clicked();
+    void on_pushButton_posicion_Y_clicked();    
     void on_pushButton_salir_clicked();
     void on_pushButton_obtener_rutas_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
@@ -70,10 +71,6 @@ private slots:
     void on_pushButton_9_clicked();
 
 
-
-
-
-
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
@@ -93,16 +90,20 @@ private:
     void setPMT(int value);
     string getHVValue(int value=0);
     void resetHitsValues();
+    void getPMTLabelNames();
+    void drawTemperatureBoard();
+    void setTemperatureBoard(int temp, QLabel *label_pmt, int pmt);
+    void clearTemperatureBoard();
+    temp_code getTemperatureCode(int temperature);
 
     /* Preferencias */
 private:
     void getPreferences();
 
-
-
 private:
     Ui::MainWindow *ui;
     shared_ptr<MCAE> arpet;
+    QList<QLabel*> pmt_label_table;
     int bytes_int;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;

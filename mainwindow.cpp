@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_port->addItems(availablePortsName());
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
+    getPMTLabelNames();
     adquire_mode=ui->comboBox_adquire_mode->currentIndex();
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
@@ -35,6 +36,58 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));     
+}
+
+void MainWindow::getPMTLabelNames()
+{
+    pmt_label_table.push_back(ui->label_pmt_01);
+    pmt_label_table.push_back(ui->label_pmt_02);
+    pmt_label_table.push_back(ui->label_pmt_03);
+    pmt_label_table.push_back(ui->label_pmt_04);
+    pmt_label_table.push_back(ui->label_pmt_05);
+    pmt_label_table.push_back(ui->label_pmt_06);
+    pmt_label_table.push_back(ui->label_pmt_07);
+    pmt_label_table.push_back(ui->label_pmt_08);
+    pmt_label_table.push_back(ui->label_pmt_09);
+    pmt_label_table.push_back(ui->label_pmt_10);
+    pmt_label_table.push_back(ui->label_pmt_11);
+    pmt_label_table.push_back(ui->label_pmt_12);
+    pmt_label_table.push_back(ui->label_pmt_13);
+    pmt_label_table.push_back(ui->label_pmt_14);
+    pmt_label_table.push_back(ui->label_pmt_15);
+    pmt_label_table.push_back(ui->label_pmt_16);
+    pmt_label_table.push_back(ui->label_pmt_17);
+    pmt_label_table.push_back(ui->label_pmt_18);
+    pmt_label_table.push_back(ui->label_pmt_19);
+    pmt_label_table.push_back(ui->label_pmt_20);
+    pmt_label_table.push_back(ui->label_pmt_21);
+    pmt_label_table.push_back(ui->label_pmt_22);
+    pmt_label_table.push_back(ui->label_pmt_23);
+    pmt_label_table.push_back(ui->label_pmt_24);
+    pmt_label_table.push_back(ui->label_pmt_25);
+    pmt_label_table.push_back(ui->label_pmt_26);
+    pmt_label_table.push_back(ui->label_pmt_27);
+    pmt_label_table.push_back(ui->label_pmt_28);
+    pmt_label_table.push_back(ui->label_pmt_29);
+    pmt_label_table.push_back(ui->label_pmt_30);
+    pmt_label_table.push_back(ui->label_pmt_31);
+    pmt_label_table.push_back(ui->label_pmt_32);
+    pmt_label_table.push_back(ui->label_pmt_33);
+    pmt_label_table.push_back(ui->label_pmt_34);
+    pmt_label_table.push_back(ui->label_pmt_35);
+    pmt_label_table.push_back(ui->label_pmt_36);
+    pmt_label_table.push_back(ui->label_pmt_37);
+    pmt_label_table.push_back(ui->label_pmt_38);
+    pmt_label_table.push_back(ui->label_pmt_39);
+    pmt_label_table.push_back(ui->label_pmt_40);
+    pmt_label_table.push_back(ui->label_pmt_41);
+    pmt_label_table.push_back(ui->label_pmt_42);
+    pmt_label_table.push_back(ui->label_pmt_43);
+    pmt_label_table.push_back(ui->label_pmt_44);
+    pmt_label_table.push_back(ui->label_pmt_45);
+    pmt_label_table.push_back(ui->label_pmt_46);
+    pmt_label_table.push_back(ui->label_pmt_47);
+    pmt_label_table.push_back(ui->label_pmt_48);
 }
 
 /* Pestaña: "Configuración" */
@@ -77,12 +130,6 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 }
 
 void MainWindow::on_pushButton_salir_clicked()
-{
-    arpet->portDisconnect();
-    QApplication::quit();
-}
-
-void MainWindow::on_pushButton_salir_graficos_clicked()
 {
     arpet->portDisconnect();
     QApplication::quit();
@@ -194,6 +241,69 @@ void MainWindow::setHeadModeConfig(int index)
 
 /* Pestaña: "MCA" */
 
+MainWindow::temp_code MainWindow::getTemperatureCode(int temperature)
+{
+    if (temperature<20) return ERROR;
+    if (temperature>=20 && temperature<50) return NORMAL;
+    if (temperature>=50 && temperature<60) return HOT;
+    if (temperature>=60) return TOO_HOT;
+    else return NO_VALUE;
+}
+
+void MainWindow::setTemperatureBoard(int temp, QLabel *label_pmt, int pmt)
+{
+    QPalette palette_temperature;
+    palette_temperature.setColor(QPalette::Background,Qt::black);
+
+    switch (getTemperatureCode(temp)) {
+    case ERROR:
+        palette_temperature.setColor(QPalette::Background,Qt::lightGray);
+        break;
+    case NORMAL:
+        palette_temperature.setColor(QPalette::Background,Qt::green);
+        break;
+    case HOT:
+        palette_temperature.setColor(QPalette::Background,Qt::yellow);
+        break;
+    case TOO_HOT:
+        palette_temperature.setColor(QPalette::Background,Qt::red);
+        break;
+    default:
+        break;
+    }
+    QString label_text="<span style='font-weight:600;'>"+QString::number(pmt)+"<br></span><span style='font-size:18pt; font-weight:600;'>"+QString::number(temp)+"</span>";
+    label_pmt->setPalette(palette_temperature);
+    label_pmt->setText(label_text);
+}
+
+void MainWindow::drawTemperatureBoard()
+{
+    double temp;
+    string msg;
+
+    for(int pmt = 0; pmt < PMTs; pmt++)
+     {
+          setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
+          SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+          msg=ReadString();
+          temp=arpet->getPMTTemperature(msg);
+          setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
+          cout<<msg<<endl;
+    }
+}
+
+
+void MainWindow::clearTemperatureBoard()
+{
+    QPalette palette_temperature;
+    palette_temperature.setColor(QPalette::Background,Qt::transparent);
+    for(int pmt = 0; pmt < PMTs; pmt++)
+       {
+          pmt_label_table[pmt]->setPalette(palette_temperature);
+          pmt_label_table[pmt]->setText(QString::number(pmt+1));
+       }
+}
+
 void MainWindow::on_pushButton_adquirir_clicked()
 {
     QString q_msg;
@@ -204,10 +314,12 @@ void MainWindow::on_pushButton_adquirir_clicked()
     case MONOMODE:
         q_msg = getMCA("mca",arpet->getFunCSP3());
         getPlot(accum, ui->specPMTs);
+        clearTemperatureBoard();
         break;
     case MULTIMODE:
         q_msg = getMCA("mca",arpet->getFunCHead());
         getPlot(accum, ui->specHead);
+        drawTemperatureBoard();
         break;
     default:
         break;
@@ -220,12 +332,12 @@ void MainWindow::on_pushButton_adquirir_clicked()
 void MainWindow::on_pushButton_reset_clicked()
 {
     resetHitsValues();
+    clearTemperatureBoard();
 }
 
 
 void MainWindow::on_pushButton_hv_configure_clicked()
 {
-
     QString q_msg = setHV("mca",getHVValue());
     ui->label_received->setText(q_msg);
     cout << arpet->getTrama_MCAE() << endl;
@@ -327,7 +439,7 @@ QString MainWindow::getMCA(string tab, string function)
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     string msg_data = ReadBufferString(bytes_int);
-    arpet->getMCASplitData(msg_data, CHANNELS);
+    arpet->getMCASplitData(msg_data, CHANNELS);    
 
     return QString::fromStdString(msg);
 }
@@ -499,6 +611,7 @@ void MainWindow::setLabelState(bool state, QLabel *label)
     }
     return;
 }
+
 
 /**
  * @brief MainWindow::availablePortsName
@@ -712,7 +825,7 @@ void MainWindow::on_pushButton_9_clicked()
     long time_mca=arpet->getTimeMCA();
     cout<<"Frame: "<< frame <<endl;
     cout<<"Adquisition time: "<< time_mca <<endl;
-    cout<<"Temperature: "<<arpet->getTempMCA()<<endl;
+    cout<<"Temperature: "<<arpet->getTempValueMCA()<<endl;
     QVector<double> canales=arpet->getChannels();
     QVector<double> hits=arpet->getHitsMCA();
 
@@ -751,4 +864,6 @@ void MainWindow::getPreferences()
 }
 
 /**********************************************************/
+
+
 
