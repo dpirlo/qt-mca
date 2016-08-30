@@ -83,7 +83,7 @@ private:
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tab, string function);
-    void setMCAEDataStream(string tab, string function, string pmt, string mca_function, string hv_value="");
+    void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void getPlot(bool accum, QCustomPlot *graph);
     QString setHV(string tab, string hv_value);
     int getPMT();

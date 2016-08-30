@@ -435,7 +435,7 @@ QString MainWindow::getMCA(string tab, string function)
     pmt_ui_current=getPMT();
     if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
     pmt_ui_previous=pmt_ui_current;
-    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA());
+    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     string msg_data = ReadBufferString(bytes_int);
@@ -446,7 +446,7 @@ QString MainWindow::getMCA(string tab, string function)
 
 QString MainWindow::setHV(string tab, string hv_value)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(), hv_value);
+    setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(),0, hv_value);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg = ReadString();
     resetHitsValues();
@@ -492,10 +492,10 @@ string MainWindow::getHVValue(int value)
     return QString::number(hv_value_int).toStdString();
 }
 
-void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, string hv_value)
+void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
-  arpet->setMCAEStream(pmt, bytes_int, mca_function, hv_value);
+  arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
 }
 
 void MainWindow::resetHitsValues()
