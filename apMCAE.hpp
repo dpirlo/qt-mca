@@ -57,12 +57,15 @@ namespace ap {
         error_code portFlush();
         int getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length);
         string getMCAFormatStream(string data);
-        string convertMCAFormatStream(string data_with_cs);
+        string convertToMCAFormatStream(string data_with_cs);
+        string convertFromMCAFormatStream(string data_with_cs);
         MCAE::string_code getMCAStringValues(string const& in_string);
+        MCAE::string_code setMCAStringValues(string const& in_string);
         void getMCASplitData(string msg_data, int channels);
         void getMCAHitsData(QByteArray data_mca);
         string getHVValueCode(int channel_dec);
         string getPMTCode(int pmt_dec);
+        double getPMTTemperature(string temp_stream);
         ~MCAE();
 
         /* Pruebas*/
@@ -85,7 +88,7 @@ namespace ap {
         
     private:
         string FunCHead, FunCSP3, FunCHV;
-        string Init_MCA, Data_MCA, SetHV_MCA;
+        string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
         string Head_MCAE, End_MCA, End_HV;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
@@ -116,6 +119,7 @@ namespace ap {
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
         string getSetHV_MCA() const { return SetHV_MCA; }
+        string getTemp_MCA() const { return Temp_MCA; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
@@ -125,7 +129,7 @@ namespace ap {
         int getHVMCA() const { return HV_pmt; }
         int getOffSetMCA() const { return offset; }
         int getVarMCA() const { return var; }
-        int getTempMCA() const { return temp; }
+        int getTempValueMCA() const { return temp; }
         QVector<double> getChannels() const { return channels_id; }
         QVector<double> getHitsMCA() const { return hits_mca; }
     };

@@ -22,7 +22,8 @@ MCAE::MCAE(size_t timeout)
      PortBaudRate(921600),
      Init_MCA("64"),
      Data_MCA("65"),
-     SetHV_MCA("68")
+     SetHV_MCA("68"),
+     Temp_MCA("74000")
 {
     /*PRUEBAS*/
 }
@@ -309,7 +310,18 @@ MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
     else return no_value;
 }
 
-string MCAE::convertMCAFormatStream(string data_with_cs)
+MCAE::string_code MCAE::setMCAStringValues(string const& in_string)
+{
+    if (in_string == ":") return a;
+    if (in_string == ";") return b;
+    if (in_string == "<") return c;
+    if (in_string == "=") return d;
+    if (in_string == ">") return e;
+    if (in_string == "?") return f;
+    else return no_value;
+}
+
+string MCAE::convertToMCAFormatStream(string data_with_cs)
 {
     /* Formato de data con checksum:
      * @ddcc--...--ss
@@ -348,6 +360,45 @@ string MCAE::convertMCAFormatStream(string data_with_cs)
     return data_with_cs;
 }
 
+string MCAE::convertFromMCAFormatStream(string data_with_cs)
+{
+    /* Formato de data con checksum:
+     * @ddcc--...--ss
+     */
+
+    size_t pos = 0;
+
+    while (pos < data_with_cs.length())
+    {
+        string token = data_with_cs.substr(pos, 1);
+        switch (setMCAStringValues(token)) {
+        case a:
+            data_with_cs.replace(pos,token.length(),"a");
+            break;
+        case b:
+            data_with_cs.replace(pos,token.length(),"b");
+            break;
+        case c:
+            data_with_cs.replace(pos,token.length(),"c");
+            break;
+        case d:
+            data_with_cs.replace(pos,token.length(),"d");
+            break;
+        case e:
+            data_with_cs.replace(pos,token.length(),"e");
+            break;
+        case f:
+            data_with_cs.replace(pos,token.length(),"f");
+            break;
+        default:
+            break;
+        }
+        pos++;
+    }
+
+    return data_with_cs;
+}
+
 
 string MCAE::getMCAFormatStream(string data)
 {
@@ -363,7 +414,7 @@ string MCAE::getMCAFormatStream(string data)
     if (checksum.length()==1) checksum="0" + checksum;
     string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
-    string data_plus_checksum_mca_format=convertMCAFormatStream(data_plus_checksum);
+    string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
 
     return data_plus_checksum_mca_format;
 }
@@ -403,4 +454,11 @@ string MCAE::getPMTCode(int pmt_dec)
     if (pmt.length()==1) pmt="0" + pmt;
 
     return pmt;
+}
+
+double MCAE::getPMTTemperature(string temp_stream)
+{
+    QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
+    string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString());
+    return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
