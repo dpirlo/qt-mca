@@ -766,7 +766,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    QString sended="#C501090009@0064010;";
+    QString sended="#C401090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -778,7 +778,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    QString sended="#C502090009@0064010;";
+    QString sended="#C402090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -790,7 +790,7 @@ void MainWindow::on_pushButton_4_clicked()
 
 void MainWindow::on_pushButton_5_clicked()
 {
-    QString sended="#C502071552@196515";
+    QString sended="#C402071552@196515";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -812,7 +812,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::on_pushButton_9_clicked()
 {
-    QString sended="#C501071552@01650<";
+    QString sended="#C401071552@01650<";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -836,7 +836,7 @@ void MainWindow::on_pushButton_9_clicked()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    QString sended="#C502071552@02650=";
+    QString sended="#C402071552@02650=";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
@@ -848,7 +848,7 @@ void MainWindow::on_pushButton_6_clicked()
 
 void MainWindow::on_pushButton_7_clicked()
 {
-    QString sended="#C501071552@01650<";
+    QString sended="#C401071552@01650<";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
     string msg=ReadString();
     QString q_msg=QString::fromStdString(msg);
