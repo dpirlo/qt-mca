@@ -410,7 +410,7 @@ string MCAE::getMCAFormatStream(string data)
     string data_pmt=data.substr(1,2);
     string data_function=data.substr(3,2);
     if(data.length()>5) data_hv_value = data.substr(5,data.length());
-    string checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length())));
+    checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length())));
     string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
     string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
@@ -479,4 +479,14 @@ double MCAE::getPMTTemperature(string temp_stream)
     QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
     string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString());
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
+}
+
+bool MCAE::verifyCheckSum(string data_stream)
+{
+    bool checked = false;
+    QByteArray q_data_stream(data_stream.c_str(), data_stream.length());
+    string checksum_received = convertFromMCAFormatStream(q_data_stream.right(2).toStdString());
+    if (strcmp(checksum_received.c_str(),checksum.c_str())==0) checked = true;
+
+    return checked;
 }

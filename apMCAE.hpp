@@ -72,6 +72,7 @@ namespace ap {
         string getPMTCode(int pmt_dec);
         double getPMTTemperature(string temp_stream);
         string formatMCAStreamSize(int expected_size, string data_stream);
+        bool verifyCheckSum(string data_stream);
         ~MCAE();
 
         /* Pruebas*/
@@ -99,6 +100,7 @@ namespace ap {
         string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
         string init_MCA,MCA, HV;
+        string checksum;
         size_t timeout;       
         bool read_error;
         deadline_timer timer;
