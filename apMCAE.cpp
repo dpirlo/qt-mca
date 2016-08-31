@@ -20,7 +20,7 @@ MCAE::MCAE(size_t timeout)
      HV_OFF("$SET,STA,OFF"),
      HV_ON("$SET,STA,ON"),
      PortBaudRate(921600),
-     Init_MCA("64"),
+     Init_MCA("6410"),
      Data_MCA("65"),
      SetHV_MCA("68"),
      Temp_MCA("74000")
@@ -283,7 +283,7 @@ int MCAE::getMCACheckSum(string data_function, string data_hv_value, string data
         sum_of_elements = sum_of_elements + atoi(token.c_str());
     }
 
-    if(data_length > 5)
+    if(data_length > 7)
     {
         string hv_value_1(1,data_hv_value.at(0));
         string hv_value_2(1,data_hv_value.at(1));
@@ -407,9 +407,17 @@ string MCAE::getMCAFormatStream(string data)
      */
 
     string data_hv_value;
+    string data_function;
     string data_pmt=data.substr(1,2);
-    string data_function=data.substr(3,2);
-    if(data.length()>5) data_hv_value = data.substr(5,data.length());
+
+    if(data.length()>7)
+    {
+        data_function=data.substr(3,2);
+        data_hv_value = data.substr(5,data.length());
+    }
+    else
+        data_function=data.substr(3,data.length());
+
     checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length())));
     string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
