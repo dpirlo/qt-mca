@@ -31,10 +31,29 @@ public:
     /* Pruebas */
 
 private slots:
+    /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
     void setHeadModeConfig(int index);
     void setHeadModeGraph(int index);    
     void setAdquireMode(int index);
+    void syncHeadComboBoxToMCA(int index);
+    void syncHeadModeComboBoxToMCA(int index);
+    void syncCheckBoxHead1ToMCA(bool check);
+    void syncCheckBoxHead2ToMCA(bool check);
+    void syncCheckBoxHead3ToMCA(bool check);
+    void syncCheckBoxHead4ToMCA(bool check);
+    void syncCheckBoxHead5ToMCA(bool check);
+    void syncCheckBoxHead6ToMCA(bool check);
+    void syncHeadComboBoxToConfig(int index);
+    void syncHeadModeComboBoxToConfig(int index);
+    void syncCheckBoxHead1ToConfig(bool check);
+    void syncCheckBoxHead2ToConfig(bool check);
+    void syncCheckBoxHead3ToConfig(bool check);
+    void syncCheckBoxHead4ToConfig(bool check);
+    void syncCheckBoxHead5ToConfig(bool check);
+    void syncCheckBoxHead6ToConfig(bool check);
+
+    /* Buttons */
     int on_pushButton_conectar_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
@@ -106,6 +125,9 @@ private:
     Ui::MainWindow *ui;
     shared_ptr<MCAE> arpet;
     QList<QLabel*> pmt_label_table;
+    QList<QLabel*> head_status_table;
+    QList<QLabel*> pmt_status_table;
+    QList<QLabel*> hv_status_table;
     int bytes_int;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;

@@ -1070,7 +1070,7 @@ Tensión: </string>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <widget class="QCheckBox" name="checkBox_8">
+       <widget class="QCheckBox" name="checkBox_c_1">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1086,7 +1086,7 @@ Tensión: </string>
          <string>1</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_9">
+       <widget class="QCheckBox" name="checkBox_c_2">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1102,7 +1102,7 @@ Tensión: </string>
          <string>2</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_10">
+       <widget class="QCheckBox" name="checkBox_c_5">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1118,7 +1118,7 @@ Tensión: </string>
          <string>5</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_11">
+       <widget class="QCheckBox" name="checkBox_c_3">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1134,7 +1134,7 @@ Tensión: </string>
          <string>3</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_12">
+       <widget class="QCheckBox" name="checkBox_c_4">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1150,7 +1150,7 @@ Tensión: </string>
          <string>4</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_13">
+       <widget class="QCheckBox" name="checkBox_c_6">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -2172,7 +2172,7 @@ Tensión: </string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QCheckBox" name="checkBox_1">
+      <widget class="QCheckBox" name="checkBox_mca_1">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -2188,7 +2188,7 @@ Tensión: </string>
         <string>1</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_2">
+      <widget class="QCheckBox" name="checkBox_mca_2">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -2204,7 +2204,7 @@ Tensión: </string>
         <string>2</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_5">
+      <widget class="QCheckBox" name="checkBox_mca_5">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -2220,7 +2220,7 @@ Tensión: </string>
         <string>5</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_3">
+      <widget class="QCheckBox" name="checkBox_mca_3">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -2236,7 +2236,7 @@ Tensión: </string>
         <string>3</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_4">
+      <widget class="QCheckBox" name="checkBox_mca_4">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -2252,7 +2252,7 @@ Tensión: </string>
         <string>4</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_6">
+      <widget class="QCheckBox" name="checkBox_mca_6">
        <property name="enabled">
         <bool>true</bool>
        </property>

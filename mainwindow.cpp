@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
     ui->tabWidget_general->setCurrentWidget(ui->config);
-    resetHitsValues();
+    resetHitsValues();    
 }
 
 MainWindow::~MainWindow()
@@ -37,6 +37,22 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));     
+     QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
+     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+     QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
+     QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
+     QObject::connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
+     QObject::connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
+     QObject::connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
+     QObject::connect(ui->checkBox_mca_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToConfig(bool)));
+     QObject::connect(ui->checkBox_mca_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToConfig(bool)));
+     QObject::connect(ui->checkBox_mca_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToConfig(bool)));
+     QObject::connect(ui->checkBox_c_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToMCA(bool)));
+     QObject::connect(ui->checkBox_c_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToMCA(bool)));
+     QObject::connect(ui->checkBox_c_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToMCA(bool)));
+     QObject::connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
+     QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
+     QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
 }
 
 void MainWindow::getPMTLabelNames()
@@ -89,6 +105,27 @@ void MainWindow::getPMTLabelNames()
     pmt_label_table.push_back(ui->label_pmt_46);
     pmt_label_table.push_back(ui->label_pmt_47);
     pmt_label_table.push_back(ui->label_pmt_48);
+
+    pmt_status_table.push_back(ui->label_pmt_estado_1);
+    pmt_status_table.push_back(ui->label_pmt_estado_2);
+    pmt_status_table.push_back(ui->label_pmt_estado_3);
+    pmt_status_table.push_back(ui->label_pmt_estado_4);
+    pmt_status_table.push_back(ui->label_pmt_estado_5);
+    pmt_status_table.push_back(ui->label_pmt_estado_6);
+
+    hv_status_table.push_back(ui->label_hv_estado_1);
+    hv_status_table.push_back(ui->label_hv_estado_2);
+    hv_status_table.push_back(ui->label_hv_estado_3);
+    hv_status_table.push_back(ui->label_hv_estado_4);
+    hv_status_table.push_back(ui->label_hv_estado_5);
+    hv_status_table.push_back(ui->label_hv_estado_6);
+
+    head_status_table.push_back(ui->label_cabezal_estado_1);
+    head_status_table.push_back(ui->label_cabezal_estado_2);
+    head_status_table.push_back(ui->label_cabezal_estado_3);
+    head_status_table.push_back(ui->label_cabezal_estado_4);
+    head_status_table.push_back(ui->label_cabezal_estado_5);
+    head_status_table.push_back(ui->label_cabezal_estado_6);
 }
 
 /* Pestaña: "Configuración" */
@@ -175,17 +212,20 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 void MainWindow::on_pushButton_head_init_clicked()
 {
-   setMCAEDataStream("config", arpet->getFunCHead(), "0", arpet->getInit_MCA());
+
+   int head_index=getHead("config").toInt();
+   string msg;
+   /* Incialización del cabezal */
+   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-   string msg = ReadString();
+   msg = ReadString();
+   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
-   bool check=arpet->verifyCheckSum(msg);
-
-   cout<< "el checksum es: "<< check <<endl;
-
-   cout<<arpet->getTrama_MCAE()<<endl;
-   cout<<msg<<endl;
-   setLabelState(!check,ui->label_cabezal_estado_4);
+   /* Inicialización de las Spartans 3*/
+   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
+   SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+   msg = ReadString();
+   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsHeadInit()),pmt_status_table[head_index-1]);
 
 }
 
@@ -779,6 +819,86 @@ void MainWindow::setHeadMode(int index, string tab)
     default:
         break;
     }
+}
+
+void MainWindow::syncHeadModeComboBoxToConfig(int index)
+{
+    ui->comboBox_head_mode_select_config->setCurrentIndex(index);
+}
+
+void MainWindow::syncHeadComboBoxToConfig(int index)
+{
+    ui->comboBox_head_select_config->setCurrentIndex(index);
+}
+
+void MainWindow::syncHeadModeComboBoxToMCA(int index)
+{
+    ui->comboBox_head_mode_select_graph->setCurrentIndex(index);
+}
+
+void MainWindow::syncHeadComboBoxToMCA(int index)
+{
+    ui->comboBox_head_select_graph->setCurrentIndex(index);
+}
+
+void MainWindow::syncCheckBoxHead1ToConfig(bool check)
+{
+    ui->checkBox_c_1->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead2ToConfig(bool check)
+{
+    ui->checkBox_c_2->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead3ToConfig(bool check)
+{
+    ui->checkBox_c_3->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead4ToConfig(bool check)
+{
+    ui->checkBox_c_4->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead5ToConfig(bool check)
+{
+    ui->checkBox_c_5->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead6ToConfig(bool check)
+{
+    ui->checkBox_c_6->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead1ToMCA(bool check)
+{
+    ui->checkBox_mca_1->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead2ToMCA(bool check)
+{
+    ui->checkBox_mca_2->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead3ToMCA(bool check)
+{
+    ui->checkBox_mca_3->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead4ToMCA(bool check)
+{
+    ui->checkBox_mca_4->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead5ToMCA(bool check)
+{
+    ui->checkBox_mca_5->setChecked(check);
+}
+
+void MainWindow::syncCheckBoxHead6ToMCA(bool check)
+{
+    ui->checkBox_mca_6->setChecked(check);
 }
 
 /* TEST BUTTONS. TODO: Delete all of them after debug */
