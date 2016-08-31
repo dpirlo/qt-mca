@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     getPMTLabelNames();
-    adquire_mode=ui->comboBox_adquire_mode->currentIndex();
+    setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    arpet->portDisconnect();
     delete ui;
 }
 
@@ -129,12 +130,6 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
     ui->textBrowser_tiempos_cabezal->setText(fileName);
 }
 
-void MainWindow::on_pushButton_salir_clicked()
-{
-    arpet->portDisconnect();
-    QApplication::quit();
-}
-
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
     string initfile=".//config_cabs.ini";
@@ -176,6 +171,20 @@ int MainWindow::on_pushButton_conectar_clicked()
     }
 
     return MCAE::OK;
+}
+
+void MainWindow::on_pushButton_head_init_clicked()
+{
+   setMCAEDataStream("config", arpet->getFunCHead(), "0", arpet->getInit_MCA());
+   SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+   string msg = ReadString();
+
+   bool check=arpet->verifyCheckSum(msg);
+
+   cout<< "el checksum es: "<< check <<endl;
+
+   cout<<msg<<endl;
+   setLabelState(check,ui->label_cabezal_estado_4);
 }
 
 void MainWindow::on_pushButton_configurar_clicked()
@@ -293,7 +302,7 @@ void MainWindow::drawTemperatureBoard()
           cout<<"Temperatura: "<<temp<<endl;
           cout<<"================================"<<endl;
           setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
-          usleep(500);
+
     }
 }
 
@@ -318,12 +327,13 @@ void MainWindow::on_pushButton_adquirir_clicked()
     switch (adquire_mode) {
     case MONOMODE:
         q_msg = getMCA("mca",arpet->getFunCSP3());
-        getPlot(accum, ui->specPMTs);
-        clearTemperatureBoard();
+        getPlot(accum, ui->specPMTs);        
         break;
     case MULTIMODE:
         q_msg = getMCA("mca",arpet->getFunCHead());
-        getPlot(accum, ui->specHead);
+        getPlot(accum, ui->specHead);        
+        break;
+    case TEMPERATURE:
         drawTemperatureBoard();
         break;
     default:
@@ -336,8 +346,19 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
 void MainWindow::on_pushButton_reset_clicked()
 {
-    resetHitsValues();
-    clearTemperatureBoard();
+    switch (adquire_mode) {
+    case MONOMODE:
+        resetHitsValues();
+        break;
+    case MULTIMODE:
+        resetHitsValues();
+        break;
+    case TEMPERATURE:
+        clearTemperatureBoard();
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -404,7 +425,7 @@ void MainWindow::on_pushButton_decrease_clicked()
 void MainWindow::on_pushButton_increase_clicked()
 {
     QString pmt=ui->lineEdit_pmt->text();
-    if (pmt.toInt()<48)
+    if (pmt.toInt()<PMTs)
     {
         int pmt_increase=pmt.toInt()+1;
         ui->lineEdit_pmt->setText(QString::number(pmt_increase));
@@ -423,13 +444,21 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
+        ui->frame_temp->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
     case MULTIMODE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
+        ui->frame_temp->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
+    case TEMPERATURE:
+        ui->frame_PMT->hide();
+        ui->frame_HV->hide();
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
+        ui->frame_temp->show();
+
     default:
         break;
     }
@@ -869,6 +898,8 @@ void MainWindow::getPreferences()
 }
 
 /**********************************************************/
+
+
 
 
 

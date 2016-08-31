@@ -9,6 +9,7 @@
 #define MULTIHEAD 1
 #define MONOHEAD 0
 #define MULTIMODE 1
+#define TEMPERATURE 2
 #define MONOMODE 0
 #define CHANNELS 1024
 
@@ -40,7 +41,6 @@ private slots:
     void on_pushButton_energia_clicked();
     void on_pushButton_posicion_X_clicked();
     void on_pushButton_posicion_Y_clicked();    
-    void on_pushButton_salir_clicked();
     void on_pushButton_obtener_rutas_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
     void on_pushButton_configurar_clicked();
@@ -70,6 +70,8 @@ private slots:
     void on_pushButton_7_clicked();
     void on_pushButton_9_clicked();
 
+
+    void on_pushButton_head_init_clicked();
 
 private:
     QString openConfigurationFile();
