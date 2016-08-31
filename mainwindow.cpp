@@ -225,7 +225,7 @@ void MainWindow::on_pushButton_head_init_clicked()
    setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
    msg = ReadString();
-   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsHeadInit()),pmt_status_table[head_index-1]);
+   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
 
 }
 
@@ -486,6 +486,7 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
+        ui->frame_MCA->show();
         ui->frame_temp->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
@@ -493,14 +494,15 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->frame_temp->hide();
+        ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     case TEMPERATURE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
+        ui->frame_MCA->hide();
         ui->frame_temp->show();
-
     default:
         break;
     }
