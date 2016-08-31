@@ -73,6 +73,8 @@ namespace ap {
         double getPMTTemperature(string temp_stream);
         string formatMCAStreamSize(int expected_size, string data_stream);
         bool verifyCheckSum(string data_mca);
+        bool verifyStream(string data_received, string data_to_compare);
+        bool verifyMCAEStream(string data_received, string data_to_compare);
         ~MCAE();
 
         /* Pruebas*/
@@ -94,12 +96,13 @@ namespace ap {
         static const int FILE_NOT_FOUND=0002;
         
     private:
-        string FunCHead, FunCSP3, FunCHV;
+        string FunCHead, FunCSP3, FunCHV, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
         string Head_MCAE, End_MCA, End_HV;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
-        string init_MCA,MCA, HV;       
+        string init_MCA,MCA, HV;
+        string AnsMultiInit, AnsHeadInit;
         size_t timeout;       
         bool read_error;
         deadline_timer timer;
@@ -114,6 +117,7 @@ namespace ap {
         string getFunCHead() const { return FunCHead; }
         string getFunCSP3() const { return FunCSP3; }
         string getFunCHV() const { return FunCHV; }
+        string getBrCst() const { return BrCst; }
         string getHead_MCAE() const { return Head_MCAE; }
         string getEnd_MCA() const { return End_MCA; }
         string getEnd_HV() const { return End_HV; }
@@ -126,7 +130,9 @@ namespace ap {
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
         string getSetHV_MCA() const { return SetHV_MCA; }
-        string getTemp_MCA() const { return Temp_MCA; }
+        string getTemp_MCA() const { return Temp_MCA; }        
+        string getAnsMultiInit() const { return AnsMultiInit; }
+        string getAnsHeadInit() const { return AnsHeadInit; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }

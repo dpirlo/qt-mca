@@ -9,17 +9,25 @@ MCAE::MCAE(size_t timeout)
      timeout(timeout),
      read_error(true),
      timer(port->get_io_service()),     
-     /*Funciones trama MCAE*/
-     FunCHead("01"),
-     FunCSP3("02"),
-     FunCHV("03"),
+     PortBaudRate(921600),
      Head_MCAE("#C"),
      Head_MCA("@"),
      End_MCA("\r"),
      End_HV("\r\n"),
+
+     /*Funciones trama MCAE*/
+     FunCHead("01"),
+     FunCSP3("02"),
+     FunCHV("03"),     
+
+     /*Funciones trama PSOC*/
      HV_OFF("$SET,STA,OFF"),
      HV_ON("$SET,STA,ON"),
-     PortBaudRate(921600),
+
+     /*Funciones trama MCA*/
+     AnsMultiInit("@0064020<"),
+     AnsHeadInit("@0064310<"),
+     BrCst("00"),
      Init_MCA("6401"),
      Data_MCA("65"),
      SetHV_MCA("68"),
@@ -466,15 +474,25 @@ double MCAE::getPMTTemperature(string temp_stream)
 
 bool MCAE::verifyCheckSum(string data_mca)
 {
-    bool checked = false;
     string data=convertFromMCAFormatStream(data_mca);
     QByteArray q_data(data.c_str(), data.length());
     QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
-    string q_data_cs=q_data.mid(data.length()-2,2).toStdString();
+    string data_cs=q_data.mid(data.length()-2,2).toStdString();
     string checksum_received=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
-    cout<<"calc: "<<checksum_received<<endl;
-    if (strcmp(q_data_cs.c_str(),checksum_received.c_str())==0) checked=true;
-    cout<<"recieved: "<<q_data_cs<<endl;
+    bool checked=verifyStream(data_cs, checksum_received);
+
+    return checked;
+}
+
+bool MCAE::verifyMCAEStream(string data_received, string data_to_compare)
+{
+    return verifyStream(data_received,data_to_compare);
+}
+
+bool MCAE::verifyStream(string data_received, string data_to_compare)
+{
+    bool checked = false;
+    if (strcmp(data_received.c_str(),data_to_compare.c_str())==0) checked=true;
 
     return checked;
 }
