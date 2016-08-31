@@ -183,8 +183,10 @@ void MainWindow::on_pushButton_head_init_clicked()
 
    cout<< "el checksum es: "<< check <<endl;
 
+   cout<<arpet->getTrama_MCAE()<<endl;
    cout<<msg<<endl;
-   setLabelState(check,ui->label_cabezal_estado_4);
+   setLabelState(!check,ui->label_cabezal_estado_4);
+
 }
 
 void MainWindow::on_pushButton_configurar_clicked()
