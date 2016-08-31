@@ -72,7 +72,7 @@ namespace ap {
         string getPMTCode(int pmt_dec);
         double getPMTTemperature(string temp_stream);
         string formatMCAStreamSize(int expected_size, string data_stream);
-        bool verifyCheckSum(string data);
+        bool verifyCheckSum(string data_mca);
         ~MCAE();
 
         /* Pruebas*/
