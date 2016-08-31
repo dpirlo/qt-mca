@@ -20,7 +20,7 @@ MCAE::MCAE(size_t timeout)
      HV_OFF("$SET,STA,OFF"),
      HV_ON("$SET,STA,ON"),
      PortBaudRate(921600),
-     Init_MCA("6410"),
+     Init_MCA("6401"),
      Data_MCA("65"),
      SetHV_MCA("68"),
      Temp_MCA("74000")
@@ -274,27 +274,14 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
     }
 }
 
-int MCAE::getMCACheckSum(string data_function, string data_hv_value, string data_pmt, int data_length)
+int MCAE::getMCACheckSum(string data)
 {
     int sum_of_elements = 0;
-    for(unsigned int i = 0; i < data_function.length(); ++i)
+    for(unsigned int i = 0; i < data.length(); ++i)
     {
-        string token(1, data_function.at(i));
-        sum_of_elements = sum_of_elements + atoi(token.c_str());
+        string token(1, data.at(i));
+        sum_of_elements = sum_of_elements + convertHexToDec(token);
     }
-
-    if(data_length > 7)
-    {
-        string hv_value_1(1,data_hv_value.at(0));
-        string hv_value_2(1,data_hv_value.at(1));
-        string hv_value_3(1,data_hv_value.at(2));
-        sum_of_elements = sum_of_elements + convertHexToDec(hv_value_1) + convertHexToDec(hv_value_2) + convertHexToDec(hv_value_3);
-    }
-
-    string pmt_1(1,data_pmt.at(0));
-    string pmt_2(1,data_pmt.at(1));
-
-    sum_of_elements = sum_of_elements + convertHexToDec(pmt_1) + convertHexToDec(pmt_2);
 
     return sum_of_elements;
 }
@@ -406,20 +393,8 @@ string MCAE::getMCAFormatStream(string data)
      * @ddcc--...--
      */
 
-    string data_hv_value;
-    string data_function;
-    string data_pmt=data.substr(1,2);
-
-    if(data.length()>7)
-    {
-        data_function=data.substr(3,2);
-        data_hv_value = data.substr(5,data.length());
-    }
-    else
-        data_function=data.substr(3,data.length());
-
-    checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data_function,data_hv_value,data_pmt,data.length())));
-    string data_plus_checksum = data_pmt + data_function + data_hv_value + checksum;
+    string checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
+    string data_plus_checksum = data + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
     string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
 
@@ -428,7 +403,7 @@ string MCAE::getMCAFormatStream(string data)
 
 void MCAE::setMCAStream(string pmt, string function, string hv_value)
 {
-    string stream_wo_cs="@"+pmt+function+hv_value;
+    string stream_wo_cs=pmt+function+hv_value;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
@@ -489,12 +464,16 @@ double MCAE::getPMTTemperature(string temp_stream)
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 
-bool MCAE::verifyCheckSum(string data_stream)
+bool MCAE::verifyCheckSum(string data)
 {
     bool checked = false;
-    QByteArray q_data_stream(data_stream.c_str(), data_stream.length());
-    string checksum_received = convertFromMCAFormatStream(q_data_stream.right(2).toStdString());
-    if (strcmp(checksum_received.c_str(),checksum.c_str())==0) checked = true;
+    QByteArray q_data(data.c_str(), data.length());
+    QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
+    string q_data_cs=q_data.mid(data.length()-2,2).toStdString();
+    string checksum_received=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
+    cout<<"calc: "<<checksum_received<<endl;
+    if (strcmp(q_data_cs.c_str(),checksum_received.c_str())==0) checked=true;
+    cout<<"recieved: "<<q_data_cs<<endl;
 
     return checked;
 }

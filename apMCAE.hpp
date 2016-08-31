@@ -60,7 +60,7 @@ namespace ap {
         void setMCAStream(string pmt, string function, string channel="");
         void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
         error_code portFlush();
-        int getMCACheckSum(string data_function, string data_channel, string data_pmt, int data_length);
+        int getMCACheckSum(string data);
         string getMCAFormatStream(string data);
         string convertToMCAFormatStream(string data_with_cs);
         string convertFromMCAFormatStream(string data_with_cs);
@@ -72,7 +72,7 @@ namespace ap {
         string getPMTCode(int pmt_dec);
         double getPMTTemperature(string temp_stream);
         string formatMCAStreamSize(int expected_size, string data_stream);
-        bool verifyCheckSum(string data_stream);
+        bool verifyCheckSum(string data);
         ~MCAE();
 
         /* Pruebas*/
@@ -99,8 +99,7 @@ namespace ap {
         string Head_MCAE, End_MCA, End_HV;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
         string HV_OFF, HV_ON;
-        string init_MCA,MCA, HV;
-        string checksum;
+        string init_MCA,MCA, HV;       
         size_t timeout;       
         bool read_error;
         deadline_timer timer;
