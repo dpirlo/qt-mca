@@ -25,8 +25,8 @@ MCAE::MCAE(size_t timeout)
      HV_ON("$SET,STA,ON"),
 
      /*Funciones trama MCA*/
-     AnsMultiInit("@0064020<"),
-     AnsHeadInit("@0064310<"),
+     AnsMultiInit("@0064310>"),
+     AnsHeadInit("@0064020<"),
      BrCst("00"),
      Init_MCA("6401"),
      Data_MCA("65"),
