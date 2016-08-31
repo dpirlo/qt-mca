@@ -464,9 +464,10 @@ double MCAE::getPMTTemperature(string temp_stream)
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 
-bool MCAE::verifyCheckSum(string data)
+bool MCAE::verifyCheckSum(string data_mca)
 {
     bool checked = false;
+    string data=convertFromMCAFormatStream(data_mca);
     QByteArray q_data(data.c_str(), data.length());
     QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
     string q_data_cs=q_data.mid(data.length()-2,2).toStdString();
