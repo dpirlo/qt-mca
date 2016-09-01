@@ -40,11 +40,20 @@ namespace ap {
 
     public:
         MCAE(size_t timeout);
-        void setStrings();        
+        void portReadString(string *msg, char delimeter);
+        void portReadBufferString(string *msg, int buffer_size);
+        size_t portWrite(string *msg);
+        error_code portFlush();
         error_code portConnect(const char *tty_port_name);
         error_code portDisconnect();
+        void getMCASplitData(string msg_data, int channels);
+        void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
+        double getPMTTemperature(string temp_stream);
         bool isPortOpen();
-        size_t portWrite(string *msg);
+        bool verifyMCAEStream(string data_received, string data_to_compare);
+        ~MCAE();
+
+    private:
         size_t portRead(string *msg, int buffer_size);
         size_t portRead(char *c_msg);
         string portReadMCAELine();
@@ -52,39 +61,23 @@ namespace ap {
         void portReadComplete(const boost::system::error_code& error, size_t bytes_transferred);
         void portTimeOut(const boost::system::error_code& error);
         bool portReadOneChar(char& val);
-        void portReadString(string *msg, char delimeter);
-        void portReadBufferString(string *msg, int buffer_size);
-        int convertHexToDec(string hex_number);
-        string convertDecToHex(int dec_number);
-        QByteArray getReverse(QByteArray seq);
         void setMCAStream(string pmt, string function, string channel="");
-        void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
-        error_code portFlush();
         int getMCACheckSum(string data);
         string getMCAFormatStream(string data);
         string convertToMCAFormatStream(string data_with_cs);
         string convertFromMCAFormatStream(string data_with_cs);
         MCAE::string_code getMCAStringValues(string const& in_string);
         MCAE::string_code setMCAStringValues(string const& in_string);
-        void getMCASplitData(string msg_data, int channels);
         void getMCAHitsData(QByteArray data_mca);
         string getHVValueCode(int channel_dec);
         string getPMTCode(int pmt_dec);
-        double getPMTTemperature(string temp_stream);
+        bool portReadCharArray(int nbytes); /* TODO: Verificar */
+        bool verifyStream(string data_received, string data_to_compare);
         string formatMCAStreamSize(int expected_size, string data_stream);
         bool verifyCheckSum(string data_mca);
-        bool verifyStream(string data_received, string data_to_compare);
-        bool verifyMCAEStream(string data_received, string data_to_compare);
-        ~MCAE();
-
-        /* Pruebas*/
-
-        bool portReadCharArray(int nbytes);
-        char * data;
-
-    private:
-        /* Pruebas*/
-
+        int convertHexToDec(string hex_number);
+        string convertDecToHex(int dec_number);
+        QByteArray getReverse(QByteArray seq);
 
     protected:
         io_service io;
@@ -106,6 +99,7 @@ namespace ap {
         string AP_ON, AP_OFF;
         string AnsAP_ON, AnsAP_OFF;
         size_t timeout;
+        char * data; /* TODO: Verificar */
         bool read_error;
         deadline_timer timer;
         int PortBaudRate;
@@ -114,6 +108,7 @@ namespace ap {
         int frame, HV_pmt, offset, var, temp;
         QVector<double> channels_id;
         QVector<double> hits_mca;
+
 
     public:
         string getFunCHead() const { return FunCHead; }
