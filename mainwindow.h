@@ -79,6 +79,9 @@ private slots:
     void on_pushButton_p_10_clicked();
     void on_pushButton_p_50_clicked();
     void on_pushButton_reset_clicked();
+    void on_pushButton_head_init_clicked();
+    void on_pushButton_arpet_on_clicked();
+    void on_pushButton_arpet_off_clicked();
 
     /*Buttons de prueba*/
     void on_pushButton_2_clicked();
@@ -90,11 +93,7 @@ private slots:
     void on_pushButton_9_clicked();
 
 
-    void on_pushButton_head_init_clicked();
 
-    void on_pushButton_arpet_on_clicked();
-
-    void on_pushButton_arpet_off_clicked();
 
 private:
     QString openConfigurationFile();

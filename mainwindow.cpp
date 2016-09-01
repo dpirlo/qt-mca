@@ -229,20 +229,20 @@ int MainWindow::on_pushButton_conectar_clicked()
 void MainWindow::on_pushButton_head_init_clicked()
 {
 
-   int head_index=getHead("config").toInt();
-   string msg;
+   int head_index=getHead("config").toInt();   
    /* Incialización del cabezal */
    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-   msg = ReadString();
-   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
+   string msg_head = ReadString();
+   setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
    /* Inicialización de las Spartans 3*/
    setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-   msg = ReadString();
-   setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
+   string msg_pmts = ReadString();
+   setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
 
+   ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
 }
 
 void MainWindow::on_pushButton_configurar_clicked()
