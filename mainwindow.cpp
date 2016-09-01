@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_port->addItems(availablePortsName());
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
-    getPMTLabelNames();
+    getPMTLabelNames();    
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
@@ -133,7 +133,7 @@ void MainWindow::getPMTLabelNames()
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
     SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-    sleep(1);
+    sleep(2);
     SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
     string msg = ReadString();
     setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
@@ -143,7 +143,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
 {
     SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
     string msg = ReadString();
-    setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply);
+    setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply);
 }
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
@@ -630,6 +630,14 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
 
 /* Métodos generales del entorno gráfico */
 
+void MainWindow::getARPETStatus()
+{
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
+    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    string msg_head = ReadString();
+    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
+}
+
 /**
  * @brief MainWindow::parseConfigurationFile
  * @param filename
@@ -780,6 +788,7 @@ string MainWindow::ReadBufferString(int buffer_size)
 
 size_t MainWindow::SendString(string msg, string end)
 {
+    arpet->portFlush();
     size_t bytes_transfered = 0;
 
     try{
