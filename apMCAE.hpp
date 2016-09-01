@@ -103,7 +103,9 @@ namespace ap {
         string HV_OFF, HV_ON;
         string init_MCA,MCA, HV;
         string AnsMultiInit, AnsHeadInit;
-        size_t timeout;       
+        string AP_ON, AP_OFF;
+        string AnsAP_ON, AnsAP_OFF;
+        size_t timeout;
         bool read_error;
         deadline_timer timer;
         int PortBaudRate;
@@ -133,6 +135,10 @@ namespace ap {
         string getTemp_MCA() const { return Temp_MCA; }        
         string getAnsMultiInit() const { return AnsMultiInit; }
         string getAnsHeadInit() const { return AnsHeadInit; }
+        string getAP_ON() const { return AP_ON; }
+        string getAP_OFF() const { return AP_OFF; }
+        string getAnsAP_ON() const { return AnsAP_ON; }
+        string getAnsAP_OFF() const { return AnsAP_OFF; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
         void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
@@ -142,7 +148,7 @@ namespace ap {
         int getHVMCA() const { return HV_pmt; }
         int getOffSetMCA() const { return offset; }
         int getVarMCA() const { return var; }
-        int getTempValueMCA() const { return temp; }
+        int getTempValueMCA() const { return temp; }        
         QVector<double> getChannels() const { return channels_id; }
         QVector<double> getHitsMCA() const { return hits_mca; }
     };
