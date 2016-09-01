@@ -130,6 +130,22 @@ void MainWindow::getPMTLabelNames()
 
 /* Pestaña: "Configuración" */
 
+void MainWindow::on_pushButton_arpet_on_clicked()
+{
+    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+    sleep(1);
+    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+    string msg = ReadString();
+    setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
+}
+
+void MainWindow::on_pushButton_arpet_off_clicked()
+{
+    SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
+    string msg = ReadString();
+    setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply);
+}
+
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
     QString fileName = openConfigurationFile();
@@ -181,7 +197,7 @@ void MainWindow::on_pushButton_obtener_rutas_clicked()
     ui->textBrowser_tiempos_cabezal->setText(coefT);
 
     ui->lineEdit_alta->setText(QString::number(AT));
-    ui->plainTextEdit_limiteinferior->document()->setPlainText(QString::number(LowLimit));
+    ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
 }
 
 int MainWindow::on_pushButton_conectar_clicked()
@@ -738,11 +754,11 @@ QString MainWindow::getHead(string tab)
     return head;
 }
 
-string MainWindow::ReadString()
+string MainWindow::ReadString(char delimeter)
 {
     string msg;
     try{
-         arpet->portReadString(&msg,'\r');
+         arpet->portReadString(&msg,delimeter);
     }
     catch( Exceptions & ex ){
          QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
@@ -1022,8 +1038,4 @@ void MainWindow::getPreferences()
 }
 
 /**********************************************************/
-
-
-
-
 

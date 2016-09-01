@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -642,16 +642,6 @@
        </property>
        <property name="text">
         <string>Puerto:</string>
-       </property>
-      </widget>
-      <widget class="QPlainTextEdit" name="plainTextEdit_limiteinferior">
-       <property name="geometry">
-        <rect>
-         <x>228</x>
-         <y>294</y>
-         <width>91</width>
-         <height>31</height>
-        </rect>
        </property>
       </widget>
       <widget class="QLabel" name="label_2">
@@ -1259,10 +1249,19 @@ Tensión: </string>
         <string>Inicializar</string>
        </property>
       </widget>
+      <widget class="QLineEdit" name="lineEdit_limiteinferior">
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>292</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
       <zorder>frame_6</zorder>
       <zorder>comboBox_port</zorder>
       <zorder>label_6</zorder>
-      <zorder>plainTextEdit_limiteinferior</zorder>
       <zorder>label_2</zorder>
       <zorder>textBrowser_triple_ventana</zorder>
       <zorder>pushButton_energia</zorder>
@@ -1293,6 +1292,85 @@ Tensión: </string>
       <zorder>comboBox_head_mode_select_config</zorder>
       <zorder>comboBox_head_select_config</zorder>
       <zorder>pushButton_head_init</zorder>
+      <zorder>lineEdit_limiteinferior</zorder>
+     </widget>
+     <widget class="QFrame" name="frame">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>350</y>
+        <width>131</width>
+        <height>191</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_29">
+       <property name="geometry">
+        <rect>
+         <x>18</x>
+         <y>3</y>
+         <width>111</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Alimentación</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_arpet_on">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>100</y>
+         <width>95</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Encendido</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_arpet_off">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>140</y>
+         <width>95</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Apagado</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_arpet_power_supply">
+       <property name="geometry">
+        <rect>
+         <x>28</x>
+         <y>47</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="mca">

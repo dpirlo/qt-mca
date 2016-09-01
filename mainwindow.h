@@ -92,13 +92,17 @@ private slots:
 
     void on_pushButton_head_init_clicked();
 
+    void on_pushButton_arpet_on_clicked();
+
+    void on_pushButton_arpet_off_clicked();
+
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     QString getHead(string tab);
     void setLabelState(bool state, QLabel *label);
-    string ReadString();
+    string ReadString(char delimeter='\r');
     string ReadBufferString(int buffer_size);
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
