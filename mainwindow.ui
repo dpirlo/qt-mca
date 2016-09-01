@@ -176,7 +176,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -690,7 +690,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -1113,7 +1113,7 @@ Tensión: </string>
       <widget class="QLabel" name="label_29">
        <property name="geometry">
         <rect>
-         <x>510</x>
+         <x>520</x>
          <y>10</y>
          <width>121</width>
          <height>31</height>
@@ -1121,7 +1121,7 @@ Tensión: </string>
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -1133,7 +1133,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_arpet_on">
        <property name="geometry">
         <rect>
-         <x>640</x>
+         <x>660</x>
          <y>10</y>
          <width>95</width>
          <height>31</height>
@@ -1146,7 +1146,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_arpet_off">
        <property name="geometry">
         <rect>
-         <x>760</x>
+         <x>780</x>
          <y>10</y>
          <width>95</width>
          <height>31</height>
@@ -1215,7 +1215,7 @@ Tensión: </string>
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
