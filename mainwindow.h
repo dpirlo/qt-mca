@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-    enum temp_code {TOO_HOT,HOT,NORMAL,ERROR,NO_VALUE};
+    enum temp_code {TOO_HOT,HOT,WARM,NORMAL,ERROR,NO_VALUE};
 
 public:
     explicit MainWindow(QWidget *parent = 0);

@@ -311,8 +311,9 @@ void MainWindow::setHeadModeConfig(int index)
 MainWindow::temp_code MainWindow::getTemperatureCode(int temperature)
 {
     if (temperature<20) return ERROR;
-    if (temperature>=20 && temperature<50) return NORMAL;
-    if (temperature>=50 && temperature<60) return HOT;
+    if (temperature>=20 && temperature<49) return NORMAL;
+    if (temperature>=49 && temperature<56) return WARM;
+    if (temperature>=56 && temperature<60) return HOT;
     if (temperature>=60) return TOO_HOT;
     else return NO_VALUE;
 }
@@ -329,8 +330,11 @@ void MainWindow::setTemperatureBoard(int temp, QLabel *label_pmt, int pmt)
     case NORMAL:
         palette_temperature.setColor(QPalette::Background,Qt::green);
         break;
-    case HOT:
+    case WARM:
         palette_temperature.setColor(QPalette::Background,Qt::yellow);
+        break;
+    case HOT:
+        palette_temperature.setColor(QPalette::Background,QColor::fromRgb(255,140,0)); // Naranja en RGB = 255,140,0
         break;
     case TOO_HOT:
         palette_temperature.setColor(QPalette::Background,Qt::red);
