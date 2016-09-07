@@ -308,7 +308,7 @@ void MainWindow::setHeadModeConfig(int index)
 
 /* Pestaña: "MCA" */
 
-MainWindow::temp_code MainWindow::getTemperatureCode(int temperature)
+MainWindow::temp_code MainWindow::getTemperatureCode(double temperature)
 {
     if (temperature<20) return ERROR;
     if (temperature>=20 && temperature<49) return NORMAL;
@@ -318,7 +318,7 @@ MainWindow::temp_code MainWindow::getTemperatureCode(int temperature)
     else return NO_VALUE;
 }
 
-void MainWindow::setTemperatureBoard(int temp, QLabel *label_pmt, int pmt)
+void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
 {
     QPalette palette_temperature;
     palette_temperature.setColor(QPalette::Background,Qt::black);
@@ -342,7 +342,7 @@ void MainWindow::setTemperatureBoard(int temp, QLabel *label_pmt, int pmt)
     default:
         break;
     }
-    QString label_text="<span style='font-weight:600;'>"+QString::number(pmt)+"<br></span><span style='font-size:18pt; font-weight:600;'>"+QString::number(temp)+"</span>";
+    QString label_text="<span style='font-weight:600;'>"+QString::number(pmt)+"<br></span><span style='font-size:18pt; font-weight:600;'>"+QString::number(round(temp))+"</span>";
     label_pmt->setPalette(palette_temperature);
     label_pmt->setText(label_text);
 }
@@ -583,7 +583,7 @@ string MainWindow::getHVValue(int value)
     int hv_value_int;
     if (ui->lineEdit_hv_value->text().isEmpty()) hv_value_int=0;
     if (value==0) hv_value_int=ui->lineEdit_hv_value->text().toInt();
-    else  hv_value_int=ui->lineEdit_hv_value->text().toInt()+value;
+    else  hv_value_int=ui->lineEdit_hv_value->text().toInt() + value;
     if (hv_value_int<0) hv_value_int=0;
     ui->lineEdit_hv_value->setText(QString::number(hv_value_int));
 

@@ -116,9 +116,9 @@ private:
     void resetHitsValues();
     void getPMTLabelNames();
     void drawTemperatureBoard();
-    void setTemperatureBoard(int temp, QLabel *label_pmt, int pmt);
+    void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
     void clearTemperatureBoard();
-    temp_code getTemperatureCode(int temperature);
+    temp_code getTemperatureCode(double temperature);
     void getARPETStatus();
 
     /* Preferencias */
