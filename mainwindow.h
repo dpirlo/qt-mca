@@ -100,7 +100,7 @@ private:
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     QString getHead(string tab);
-    void setLabelState(bool state, QLabel *label);
+    void setLabelState(bool state, QLabel *label, bool power_off=false);
     string ReadString(char delimeter='\r');
     string ReadBufferString(int buffer_size);
     size_t SendString(string msg, string end);

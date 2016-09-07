@@ -133,7 +133,7 @@ void MainWindow::getPMTLabelNames()
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
     SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-    sleep(2);
+    sleep(1);
     SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
     string msg = ReadString();
     setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
@@ -143,7 +143,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
 {
     SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
     string msg = ReadString();
-    setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply);
+    setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply,true);
 }
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
@@ -701,13 +701,18 @@ QString MainWindow::openConfigurationFile()
  * @param state
  * @param label
  */
-void MainWindow::setLabelState(bool state, QLabel *label)
+void MainWindow::setLabelState(bool state, QLabel *label, bool power_off)
 {
     QPalette palette;
 
-    if (!state)
+    if (!state && !power_off)
     {
         palette.setColor(QPalette::Background,Qt::green);
+        label->setPalette(palette);
+    }
+    else if(power_off)
+    {
+        palette.setColor(QPalette::Background,Qt::gray);
         label->setPalette(palette);
     }
     else
@@ -715,6 +720,7 @@ void MainWindow::setLabelState(bool state, QLabel *label)
         palette.setColor(QPalette::Background,Qt::red);
         label->setPalette(palette);
     }
+
     return;
 }
 
