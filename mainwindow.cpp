@@ -134,15 +134,31 @@ void MainWindow::on_pushButton_arpet_on_clicked()
 {
     SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
     sleep(1);
-    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-    string msg = ReadString();
+    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());    
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
 }
 
 void MainWindow::on_pushButton_arpet_off_clicked()
 {
     SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
-    string msg = ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply,true);
 }
 
@@ -233,13 +249,29 @@ void MainWindow::on_pushButton_head_init_clicked()
    /* Incialización del cabezal */
    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-   string msg_head = ReadString();
+   string msg_head;
+   try
+   {
+       msg_head = ReadString();
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+   }
    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
    /* Inicialización de las Spartans 3*/
    setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-   string msg_pmts = ReadString();
+   string msg_pmts;
+   try
+   {
+       msg_pmts = ReadString();
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+   }
    setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
 
    ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
@@ -358,7 +390,15 @@ void MainWindow::drawTemperatureBoard()
         {
             setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
             SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-            msg=ReadString();
+            string msg;
+            try
+            {
+                msg = ReadString();
+            }
+            catch(Exceptions & ex)
+            {
+                QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+            }
             temp=arpet->getPMTTemperature(msg);
             cout<<"================================"<<endl;
             cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
@@ -541,8 +581,16 @@ QString MainWindow::getMCA(string tab, string function)
     pmt_ui_previous=pmt_ui_current;
     setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();
-    string msg_data = ReadBufferString(bytes_int);
+    string msg, msg_data;
+    try
+    {
+        msg = ReadString();
+        msg_data = ReadBufferString(bytes_int);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     arpet->getMCASplitData(msg_data, CHANNELS);    
 
     return QString::fromStdString(msg);
@@ -552,7 +600,15 @@ QString MainWindow::setHV(string tab, string hv_value)
 {
     setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(),0, hv_value);
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg = ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     resetHitsValues();
 
     return QString::fromStdString(msg);
@@ -644,7 +700,15 @@ void MainWindow::getARPETStatus()
 {
     setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-    string msg_head = ReadString();
+    string msg_head;
+    try
+    {
+        msg_head = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
 }
 
@@ -785,8 +849,7 @@ string MainWindow::ReadString(char delimeter)
          arpet->portReadString(&msg,delimeter);
     }
     catch( Exceptions & ex ){
-         Exceptions exception_stop("Error en la recepción");
-         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+         Exceptions exception_stop(ex.excdesc);
          throw exception_stop;
     }
     return msg;
@@ -799,7 +862,8 @@ string MainWindow::ReadBufferString(int buffer_size)
          arpet->portReadBufferString(&msg,buffer_size);
     }
     catch( Exceptions & ex ){
-         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
     }
     return msg;
 }
@@ -953,7 +1017,15 @@ void MainWindow::on_pushButton_clicked()
    QString sended = ui->plainTextEdit->toPlainText();
 
    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-   string msg=ReadString();
+   string msg;
+   try
+   {
+       msg = ReadString();
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+   }
    QString q_msg=QString::fromStdString(msg);
 
    ui->label_12->setText(q_msg);
@@ -969,7 +1041,15 @@ void MainWindow::on_pushButton_3_clicked()
 {
     QString sended="#C401090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     ui->label_19->setText(q_bytes);
@@ -981,7 +1061,15 @@ void MainWindow::on_pushButton_4_clicked()
 {
     QString sended="#C402090009@0064010;";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     ui->label_19->setText(q_bytes);
@@ -993,7 +1081,15 @@ void MainWindow::on_pushButton_5_clicked()
 {
     QString sended="#C402071552@196515";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     string msg_data=ReadBufferString(6160);
@@ -1015,7 +1111,15 @@ void MainWindow::on_pushButton_9_clicked()
 {
     QString sended="#C401071552@01650<";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     string msg_data=ReadBufferString(6160);
@@ -1039,7 +1143,15 @@ void MainWindow::on_pushButton_6_clicked()
 {
     QString sended="#C402071552@02650=";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     ui->label_19->setText(q_bytes);
@@ -1051,7 +1163,15 @@ void MainWindow::on_pushButton_7_clicked()
 {
     QString sended="#C401071552@01650<";
     size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg=ReadString();
+    string msg;
+    try
+    {
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+    }
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
     ui->label_19->setText(q_bytes);
