@@ -352,19 +352,25 @@ void MainWindow::drawTemperatureBoard()
     double temp;
     string msg;
 
-    for(int pmt = 0; pmt < PMTs; pmt++)
-     {
-          setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-          SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-          msg=ReadString();
-          temp=arpet->getPMTTemperature(msg);
-          cout<<"================================"<<endl;
-          cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
-          cout<<"Recibido: "<<msg<<endl;
-          cout<<"Temperatura: "<<temp<<endl;
-          cout<<"================================"<<endl;
-          setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
-
+    try
+    {
+        for(int pmt = 0; pmt < PMTs; pmt++)
+        {
+            setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
+            SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+            msg=ReadString();
+            temp=arpet->getPMTTemperature(msg);
+            cout<<"================================"<<endl;
+            cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
+            cout<<"Recibido: "<<msg<<endl;
+            cout<<"Temperatura: "<<temp<<endl;
+            cout<<"================================"<<endl;
+            setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
+        }
+    }
+    catch( Exceptions & ex )
+    {
+         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
     }
 }
 
@@ -779,7 +785,9 @@ string MainWindow::ReadString(char delimeter)
          arpet->portReadString(&msg,delimeter);
     }
     catch( Exceptions & ex ){
+         Exceptions exception_stop("Error en la recepción");
          QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+         throw exception_stop;
     }
     return msg;
 }
