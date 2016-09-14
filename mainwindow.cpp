@@ -132,12 +132,12 @@ void MainWindow::getPMTLabelNames()
 
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
-    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-    sleep(1);
-    SendString(arpet->getAP_ON(),arpet->getEnd_MCA());    
     string msg;
     try
     {
+        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        sleep(1);
+        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         msg = ReadString();
     }
     catch(Exceptions & ex)
@@ -149,10 +149,10 @@ void MainWindow::on_pushButton_arpet_on_clicked()
 
 void MainWindow::on_pushButton_arpet_off_clicked()
 {
-    SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
     string msg;
     try
     {
+        SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
         msg = ReadString();
     }
     catch(Exceptions & ex)
@@ -247,11 +247,11 @@ void MainWindow::on_pushButton_head_init_clicked()
 
    int head_index=getHead("config").toInt();   
    /* Incialización del cabezal */
-   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
-   SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());   
    string msg_head;
    try
    {
+       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
        msg_head = ReadString();
    }
    catch(Exceptions & ex)
@@ -261,11 +261,11 @@ void MainWindow::on_pushButton_head_init_clicked()
    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
    /* Inicialización de las Spartans 3*/
-   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
-   SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());  
    string msg_pmts;
    try
    {
+       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
        msg_pmts = ReadString();
    }
    catch(Exceptions & ex)
@@ -389,10 +389,10 @@ void MainWindow::drawTemperatureBoard()
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
             string msg;
             try
             {
+                SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
                 msg = ReadString();
             }
             catch(Exceptions & ex)
@@ -579,11 +579,11 @@ QString MainWindow::getMCA(string tab, string function)
     pmt_ui_current=getPMT();
     if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
     pmt_ui_previous=pmt_ui_current;
-    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);
-    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);    
     string msg, msg_data;
     try
     {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg = ReadString();
         msg_data = ReadBufferString(bytes_int);
     }
@@ -599,10 +599,10 @@ QString MainWindow::getMCA(string tab, string function)
 QString MainWindow::setHV(string tab, string hv_value)
 {
     setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(),0, hv_value);
-    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
     string msg;
     try
     {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg = ReadString();
     }
     catch(Exceptions & ex)
@@ -698,11 +698,11 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
 
 void MainWindow::getARPETStatus()
 {
-    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
-    SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());    
     string msg_head;
     try
     {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg_head = ReadString();
     }
     catch(Exceptions & ex)
@@ -878,9 +878,10 @@ size_t MainWindow::SendString(string msg, string end)
         bytes_transfered = arpet->portWrite(&sended);
     }
     catch(boost::system::system_error e){
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ") + tr(e.what()));
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
     }
-
+//string("No se puede acceder al puerto serie. Error: ",
     return bytes_transfered;
 }
 
