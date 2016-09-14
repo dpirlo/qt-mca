@@ -142,7 +142,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
     setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
 }
@@ -157,7 +157,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
     setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply,true);
 }
@@ -234,7 +234,7 @@ int MainWindow::on_pushButton_conectar_clicked()
         }
         catch(boost::system::system_error e)
             {
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Error: ")+tr(e.what()));;
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));;
             return MCAE::FAILED;
         }
     }
@@ -256,7 +256,7 @@ void MainWindow::on_pushButton_head_init_clicked()
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se puede/n inicializar el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
@@ -270,7 +270,7 @@ void MainWindow::on_pushButton_head_init_clicked()
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
    setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
 
@@ -382,35 +382,28 @@ void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
 void MainWindow::drawTemperatureBoard()
 {
     double temp;
-    string msg;
 
     try
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            string msg;
-            try
-            {
-                SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-                msg = ReadString();
-            }
-            catch(Exceptions & ex)
-            {
-                QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-            }
+            SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+            string msg = ReadString();
             temp=arpet->getPMTTemperature(msg);
+
             cout<<"================================"<<endl;
             cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
             cout<<"Recibido: "<<msg<<endl;
             cout<<"Temperatura: "<<temp<<endl;
             cout<<"================================"<<endl;
+
             setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
         }
     }
     catch( Exceptions & ex )
     {
-         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+         QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 }
 
@@ -589,7 +582,7 @@ QString MainWindow::getMCA(string tab, string function)
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
     arpet->getMCASplitData(msg_data, CHANNELS);    
 
@@ -607,7 +600,7 @@ QString MainWindow::setHV(string tab, string hv_value)
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
     resetHitsValues();
 
@@ -707,7 +700,7 @@ void MainWindow::getARPETStatus()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede obtener el estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
     setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
 }
