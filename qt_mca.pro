@@ -12,19 +12,24 @@ TARGET = qt-arpet
 TEMPLATE = app
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
         qcustomplot.cpp \
         apMCAE.cpp \
-        apExceptions.cpp
+        apExceptions.cpp \
+        SetPreferences.cpp \
+        MainWindow.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
         qcustomplot.h \
         apMCAE.hpp \
-        apExceptions.hpp
+        apExceptions.hpp \
+        SetPreferences.h \
+        MainWindow.h
 
 LIBS += -lboost_system
 
-FORMS += mainwindow.ui
+FORMS += \
+        SetPreferences.ui \
+        MainWindow.ui
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug
