@@ -451,7 +451,8 @@ void MainWindow::drawTemperatureBoard()
         cout<<"================================"<<endl;
     }
 
-    ui->label_temp->setText("Media: "+QString::number(mean)+"ºC"+"\nMáxima: "+QString::number(t_max)+"ºC"+"\nMínima: "+QString::number(t_min)+"ºC");
+    ui->label_title_output->setText("Temperatura");
+    ui->label_data_output->setText("Media: "+QString::number(mean)+"ºC"+"\nMáxima: "+QString::number(t_max)+"ºC"+"\nMínima: "+QString::number(t_min)+"ºC");
 }
 
 
@@ -591,14 +592,12 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
-        ui->frame_MCA->show();
-        ui->frame_temp->hide();
+        ui->frame_MCA->show();        
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
     case MULTIMODE:
         ui->frame_PMT->hide();
-        ui->frame_HV->hide();
-        ui->frame_temp->hide();
+        ui->frame_HV->hide();        
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
@@ -606,8 +605,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
-        ui->frame_MCA->hide();
-        ui->frame_temp->show();
+        ui->frame_MCA->hide();        
     default:
         break;
     }
@@ -630,7 +628,19 @@ QString MainWindow::getMCA(string tab, string function)
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    arpet->getMCASplitData(msg_data, CHANNELS);    
+    arpet->getMCASplitData(msg_data, CHANNELS);
+
+    long long time_mca;
+    int frame, HV_pmt, offset, var;
+
+    frame=arpet->getFrameMCA();
+    time_mca=arpet->getTimeMCA();
+    HV_pmt=arpet->getHVMCA();
+    offset=arpet->getOffSetMCA();
+    var=arpet->getVarMCA();
+
+    ui->label_title_output->setText("MCA Extended");
+    ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (useg): "+QString::number(time_mca));
 
     return QString::fromStdString(msg);
 }

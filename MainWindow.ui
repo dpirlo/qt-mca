@@ -2833,7 +2833,7 @@ Tensión: </string>
        <string/>
       </property>
      </widget>
-     <widget class="QFrame" name="frame_temp">
+     <widget class="QFrame" name="frame_output">
       <property name="geometry">
        <rect>
         <x>820</x>
@@ -2848,12 +2848,12 @@ Tensión: </string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="label_title_output">
        <property name="geometry">
         <rect>
          <x>8</x>
          <y>10</y>
-         <width>91</width>
+         <width>151</width>
          <height>21</height>
         </rect>
        </property>
@@ -2864,15 +2864,15 @@ Tensión: </string>
         </font>
        </property>
        <property name="text">
-        <string>Temperatura</string>
+        <string/>
        </property>
       </widget>
-      <widget class="QLabel" name="label_temp">
+      <widget class="QLabel" name="label_data_output">
        <property name="geometry">
         <rect>
-         <x>12</x>
+         <x>6</x>
          <y>30</y>
-         <width>151</width>
+         <width>161</width>
          <height>81</height>
         </rect>
        </property>
