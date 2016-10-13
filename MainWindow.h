@@ -37,6 +37,7 @@ private slots:
     void setHeadModeConfig(int index);
     void setHeadModeGraph(int index);    
     void setAdquireMode(int index);
+    void setTabMode(int index);
     void syncHeadComboBoxToMCA(int index);
     void syncHeadModeComboBoxToMCA(int index);
     void syncCheckBoxHead1ToMCA(bool check);
@@ -124,7 +125,6 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    bool debug;
     SetPreferences *pref;
     shared_ptr<MCAE> arpet;
     QList<QLabel*> pmt_label_table;
@@ -133,6 +133,7 @@ private:
     QList<QLabel*> hv_status_table;
     int adquire_mode;
     int bytes_int;
+    bool debug;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;
     int TimeOut;

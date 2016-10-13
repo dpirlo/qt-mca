@@ -1472,9 +1472,9 @@ Tensión: </string>
       </property>
       <widget class="QWidget" name="tab_esp_1">
        <attribute name="title">
-        <string>Cabezal</string>
+        <string>PMT</string>
        </attribute>
-       <widget class="QCustomPlot" name="specHead" native="true">
+       <widget class="QCustomPlot" name="specPMTs" native="true">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -1490,9 +1490,9 @@ Tensión: </string>
       </widget>
       <widget class="QWidget" name="tab_esp_2">
        <attribute name="title">
-        <string>PMT</string>
+        <string>Cabezal</string>
        </attribute>
-       <widget class="QCustomPlot" name="specPMTs" native="true">
+       <widget class="QCustomPlot" name="specHead" native="true">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -2473,7 +2473,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>825</x>
-        <y>466</y>
+        <y>505</y>
         <width>161</width>
         <height>41</height>
        </rect>
@@ -2817,29 +2817,13 @@ Tensión: </string>
        </property>
       </item>
      </widget>
-     <widget class="QLabel" name="label_data">
-      <property name="geometry">
-       <rect>
-        <x>825</x>
-        <y>510</y>
-        <width>161</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
      <widget class="QFrame" name="frame_output">
       <property name="geometry">
        <rect>
         <x>820</x>
         <y>333</y>
         <width>171</width>
-        <height>121</height>
+        <height>141</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -2873,7 +2857,7 @@ Tensión: </string>
          <x>6</x>
          <y>30</y>
          <width>161</width>
-         <height>81</height>
+         <height>101</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -2908,6 +2892,25 @@ Tensión: </string>
       </property>
       <property name="text">
        <string>Reiniciar</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_title_received">
+      <property name="geometry">
+       <rect>
+        <x>825</x>
+        <y>480</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Trama recibida</string>
       </property>
      </widget>
     </widget>

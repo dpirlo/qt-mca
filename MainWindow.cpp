@@ -12,15 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setFixedSize(this->maximumSize());
-    arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
-    pref = new SetPreferences(this);
-    manageHeadCheckBox("config",false);
-    manageHeadCheckBox("mca",false);
-    getPMTLabelNames();    
-    setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
-    SetInitialConfigurations();
-    resetHitsValues();    
+    this->setFixedSize(this->maximumSize());    
+    SetInitialConfigurations();    
 }
 
 MainWindow::~MainWindow()
@@ -32,19 +25,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::SetInitialConfigurations()
 {
+    arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
+    pref = new SetPreferences(this);
+
+    manageHeadCheckBox("config",false);
+    manageHeadCheckBox("mca",false);
+    setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
+
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
-    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
-    ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );    
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
+    getPMTLabelNames();
+
+    resetHitsValues();
 }
 
 void MainWindow::checkCombosStatus()
 {
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));     
+     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
+     QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
@@ -426,7 +429,7 @@ void MainWindow::drawTemperatureBoard()
                 cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
                 showMCAEStreamDebugMode();
                 cout<<"Trama recibida: "<<msg<<endl;
-                cout<<"Valor de temperatura: "<<temp<<"ºC"<<endl;
+                cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
                 cout<<"================================"<<endl;
             }
             setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
@@ -445,14 +448,14 @@ void MainWindow::drawTemperatureBoard()
     {
         cout<<"================================"<<endl;
         cout<<"Temperaturas"<<endl;
-        cout<<"Media: "<< mean <<"ºC"<<endl;
-        cout<<"Máxima: "<<t_max<<"ºC"<<endl;
-        cout<<"Mínima: "<<t_min<<"ºC"<<endl;
+        cout<<"Media: "<< mean <<"°C"<<endl;
+        cout<<"Máxima: "<<t_max<<"°C"<<endl;
+        cout<<"Mínima: "<<t_min<<"°C"<<endl;
         cout<<"================================"<<endl;
     }
 
     ui->label_title_output->setText("Temperatura");
-    ui->label_data_output->setText("Media: "+QString::number(mean)+"ºC"+"\nMáxima: "+QString::number(t_max)+"ºC"+"\nMínima: "+QString::number(t_min)+"ºC");
+    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+"\nMáxima: "+QString::number(t_max)+"°C"+"\nMínima: "+QString::number(t_min)+"°C");
 }
 
 
@@ -593,13 +596,13 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->show();
         ui->frame_HV->show();
         ui->frame_MCA->show();        
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     case MULTIMODE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();        
         ui->frame_MCA->show();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
     case TEMPERATURE:
         ui->frame_PMT->hide();
@@ -609,6 +612,12 @@ void MainWindow::setAdquireMode(int index)
     default:
         break;
     }
+}
+
+void MainWindow::setTabMode(int index)
+{
+    adquire_mode=index;
+    ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 
 QString MainWindow::getMCA(string tab, string function)
@@ -640,7 +649,21 @@ QString MainWindow::getMCA(string tab, string function)
     var=arpet->getVarMCA();
 
     ui->label_title_output->setText("MCA Extended");
-    ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (useg): "+QString::number(time_mca));
+    ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (useg):\n"+QString::number(time_mca));
+
+    if(debug)
+    {
+        cout<<"================================"<<endl;
+        cout<<"Datos extraídos por MCA"<<endl;
+        cout<<"Frame: "<< frame <<endl;
+        cout<<"Varianza (unidades cuadráticas de ADC): "<< var <<endl;
+        cout<<"Offset (unidades de ADC): "<< offset <<endl;
+        cout<<"Tiempo de adquisición (medido en microsegundos): "<< time_mca <<endl;
+        showMCAEStreamDebugMode();
+        cout<<"Trama recibida: "<<msg<<endl;
+        cout<<"================================"<<endl;
+    }
+
 
     return QString::fromStdString(msg);
 }
@@ -729,7 +752,7 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
     if (debug)
     {
         cout<<"================================"<<endl;
-        cout<<"Máximo elementos de cuentas: "<<c_max<<endl;
+        cout<<"Máximo número de cuentas: "<<c_max<<endl;
         cout<<"Cantidad de canales: "<<CHANNELS<<endl;
         cout<<"Rango en el gráfico: "<<endl;
         cout<<"De: "<<c_min<<" a "<<c_max*1.25 <<endl;
@@ -1219,22 +1242,27 @@ void MainWindow::on_pushButton_6_clicked()
 
 void MainWindow::on_pushButton_7_clicked()
 {
-    QString sended="#C401071552@01650<";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg;
-    try
-    {
-        msg = ReadString();
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-    }
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
+//    QString sended="#C401071552@01650<";
+//    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+//    string msg;
+//    try
+//    {
+//        msg = ReadString();
+//    }
+//    catch(Exceptions & ex)
+//    {
+//        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+//    }
+//    QString q_msg=QString::fromStdString(msg);
+//    QString q_bytes=QString::number(bytes);
+//    ui->label_19->setText(q_bytes);
+//    ui->label_12->setText(q_msg);
+//    ui->label_20->setText(sended);
+    //if(ui->tab_esp_3->isActiveWindow()) ui->comboBox_adquire_mode->setCurrentIndex(2);
+
+  setTabMode(ui->tabWidget_mca->currentIndex());
+
+
 }
 
 /**********************************************************/
