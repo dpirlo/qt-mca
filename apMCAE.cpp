@@ -17,16 +17,16 @@ MCAE::MCAE(size_t timeout)
      Head_MCAE("#C"),
      Head_MCA("@"),
      End_MCA("\r"),
-     End_HV("\r\n"),
+     End_PSOC("\r\n"),
 
      /*Funciones trama MCAE*/
      FunCHead("01"),
      FunCSP3("02"),
-     FunCHV("03"),     
+     FunCPSOC("03"),
 
      /*Funciones trama PSOC*/
-     HV_OFF("$SET,STA,OFF"),
-     HV_ON("$SET,STA,ON"),
+     PSOC_OFF("$SET,STA,OFF"),
+     PSOC_ON("$SET,STA,ON"),
 
      /*Funciones trama MCA*/
      AnsMultiInit("@0064310>"),
@@ -500,3 +500,5 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
 
     return checked;
 }
+
+//bool MCAE::verifyStream(string data_received, string data_to_compare)

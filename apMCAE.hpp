@@ -89,11 +89,11 @@ namespace ap {
         static const int FILE_NOT_FOUND=0002;
         
     private:
-        string FunCHead, FunCSP3, FunCHV, BrCst;
+        string FunCHead, FunCSP3, FunCPSOC, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
-        string Head_MCAE, End_MCA, End_HV;
+        string Head_MCAE, End_MCA, End_PSOC;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
-        string HV_OFF, HV_ON;
+        string PSOC_OFF, PSOC_ON;
         string init_MCA,MCA, HV;
         string AnsMultiInit, AnsHeadInit;
         string AP_ON, AP_OFF;
@@ -113,17 +113,17 @@ namespace ap {
     public:
         string getFunCHead() const { return FunCHead; }
         string getFunCSP3() const { return FunCSP3; }
-        string getFunCHV() const { return FunCHV; }
+        string getFunCPSOC() const { return FunCPSOC; }
         string getBrCst() const { return BrCst; }
         string getHead_MCAE() const { return Head_MCAE; }
         string getEnd_MCA() const { return End_MCA; }
-        string getEnd_HV() const { return End_HV; }
+        string getEnd_PSOC() const { return End_PSOC; }
         string getHead_MCA() const { return Head_MCA; }
         string getTrama_MCAE() const { return Trama_MCAE; }
         string getTrama_MCA() const { return Trama_MCA; }
         string getHeader_MCAE() const { return Header_MCAE; }
-        string getHV_OFF() const { return HV_OFF; }
-        string getHV_ON() const { return HV_ON; }
+        string getPSOC_OFF() const { return PSOC_OFF; }
+        string getPSOC_ON() const { return PSOC_ON; }
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
         string getSetHV_MCA() const { return SetHV_MCA; }
