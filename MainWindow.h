@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "qcustomplot.h"
+#include "SetPreferences.h"
 #include "apMCAE.hpp"
 #include <QString>
 
@@ -82,6 +83,7 @@ private slots:
     void on_pushButton_head_init_clicked();
     void on_pushButton_arpet_on_clicked();
     void on_pushButton_arpet_off_clicked();
+    void on_actionPreferencias_triggered();
 
     /*Buttons de prueba*/
     void on_pushButton_2_clicked();
@@ -92,14 +94,12 @@ private slots:
     void on_pushButton_7_clicked();
     void on_pushButton_9_clicked();
 
-
-
-
 private:
     QString openConfigurationFile();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     QString getHead(string tab);
+    void SetInitialConfigurations();
     void setLabelState(bool state, QLabel *label, bool power_off=false);
     string ReadString(char delimeter='\r');
     string ReadBufferString(int buffer_size);
@@ -120,28 +120,27 @@ private:
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
     void getARPETStatus();
-
-    /* Preferencias */
-private:
-    void getPreferences();
+    string getMCAEStreamDebugMode();
 
 private:
     Ui::MainWindow *ui;
+    bool debug;
+    SetPreferences *pref;
     shared_ptr<MCAE> arpet;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;
     QList<QLabel*> pmt_status_table;
     QList<QLabel*> hv_status_table;
+    int adquire_mode;
     int bytes_int;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     int  AT, LowLimit;
     int TimeOut;
     QVector<double> channels_ui,hits_ui;
-    int pmt_ui_current, pmt_ui_previous ;
+    int pmt_ui_current, pmt_ui_previous;
 
-
-
-    int adquire_mode;
+public:
+    void setDebugMode(bool mode) { debug = mode; }
 
 };
 

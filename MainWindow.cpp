@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "MainWindow.h"
+#include "ui_MainWindow.h"
 #include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -8,28 +8,36 @@ MainWindow::MainWindow(QWidget *parent) :
     bytes_int(CHANNELS*6+16),
     channels_ui(CHANNELS),
     hits_ui(CHANNELS),
+    debug(false),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
-    arpet=shared_ptr<MCAE>(new MCAE(TimeOut));
-    ui->comboBox_port->addItems(availablePortsName());
+    arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
+    pref = new SetPreferences(this);
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     getPMTLabelNames();    
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
-    ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
-    ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
-    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
-    ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
-    ui->tabWidget_general->setCurrentWidget(ui->config);
+    SetInitialConfigurations();
     resetHitsValues();    
 }
 
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();
+    arpet->portDisconnect();    
     delete ui;
+    delete pref;
+}
+
+void MainWindow::SetInitialConfigurations()
+{
+    ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
+    ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
+    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+    ui->tabWidget_general->setCurrentWidget(ui->config);
+    ui->comboBox_port->addItems(availablePortsName());
 }
 
 void MainWindow::checkCombosStatus()
@@ -126,6 +134,24 @@ void MainWindow::getPMTLabelNames()
     head_status_table.push_back(ui->label_cabezal_estado_4);
     head_status_table.push_back(ui->label_cabezal_estado_5);
     head_status_table.push_back(ui->label_cabezal_estado_6);
+}
+
+/* Menu: Preferencias */
+
+void MainWindow::on_actionPreferencias_triggered()
+{
+    int ret = pref->exec();
+    bool debug_console=pref->GetDegugConsoleValue();
+
+    if(ret == QDialog::Accepted)
+    {
+        setDebugMode(debug_console);
+    }
+}
+
+string MainWindow::getMCAEStreamDebugMode()
+{
+    return arpet->getTrama_MCAE();
 }
 
 /* Pestaña: "Configuración" */
@@ -290,7 +316,7 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
 
     /** TODO:
      * Seteo de HV a la tensión indicada.
@@ -306,8 +332,8 @@ void MainWindow::on_pushButton_hv_on_clicked()
      * Ver el tamaño de la trama
      */
 
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_ON()+arpet->getEnd_HV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_ON() +arpet->getEnd_PSOC());
     cout<<arpet->getTrama_MCAE()<<endl;
 }
 
@@ -317,14 +343,14 @@ void MainWindow::on_pushButton_hv_off_clicked()
      * Ver el tamaño de la trama
      */
 
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHV());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getHV_OFF()+arpet->getEnd_HV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_OFF()+arpet->getEnd_PSOC());
     cout<<arpet->getTrama_MCAE()<<endl;
 }
 
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString()+arpet->getFunCHV());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString()+arpet->getFunCPSOC());
 
     /** TODO:
      * Obtener estado de la fuente HV y mostrarlo en el label
@@ -382,6 +408,8 @@ void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
 void MainWindow::drawTemperatureBoard()
 {
     double temp;
+    QVector<double> temp_vec;
+    temp_vec.fill(0);
 
     try
     {
@@ -391,13 +419,16 @@ void MainWindow::drawTemperatureBoard()
             SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
             string msg = ReadString();
             temp=arpet->getPMTTemperature(msg);
-
-            cout<<"================================"<<endl;
-            cout<<"Enviado: "<<arpet->getTrama_MCAE()<<endl;
-            cout<<"Recibido: "<<msg<<endl;
-            cout<<"Temperatura: "<<temp<<endl;
-            cout<<"================================"<<endl;
-
+            temp_vec.push_back(temp);
+            if(debug)
+            {
+                cout<<"================================"<<endl;
+                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                cout<<"Trama enviada: "<<getMCAEStreamDebugMode()<<endl;
+                cout<<"Trama recibida: "<<msg<<endl;
+                cout<<"Valor de temperatura: "<<temp<<endl;
+                cout<<"================================"<<endl;
+            }
             setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
         }
     }
@@ -442,7 +473,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     }
 
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_reset_clicked()
@@ -467,49 +498,49 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 {
     QString q_msg = setHV("mca",getHVValue());
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_l_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-5));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_l_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-10));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_l_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-50));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_p_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(5));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_p_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(10));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 void MainWindow::on_pushButton_p_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(50));
     ui->label_received->setText(q_msg);
-    cout << arpet->getTrama_MCAE() << endl;
+    if (debug) cout << getMCAEStreamDebugMode() << endl;
 }
 
 
@@ -670,7 +701,15 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
     double c_min =0;
     if (c_max==0) {c_max=1; c_min=-1;}
 
-    cout<<"El máximo elemento de Hits: "<<c_max<<endl;
+    if (debug)
+    {
+        cout<<"================================"<<endl;
+        cout<<"Máximo elementos de cuentas: "<<c_max<<endl;
+        cout<<"Cantidad de canales: "<<CHANNELS<<endl;
+        cout<<"Rango en el gráfico: "<<endl;
+        cout<<"De: "<<c_min<<" a "<<c_max*1.25 <<endl;
+        cout<<"================================"<<endl;
+    }
 
     graph->addGraph();
     graph->graph(0)->setData(channels_ui, hits_ui);
@@ -874,7 +913,7 @@ size_t MainWindow::SendString(string msg, string end)
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
         throw exception_serial_port;
     }
-//string("No se puede acceder al puerto serie. Error: ",
+
     return bytes_transfered;
 }
 
@@ -1173,10 +1212,4 @@ void MainWindow::on_pushButton_7_clicked()
     ui->label_20->setText(sended);
 }
 
-void MainWindow::getPreferences()
-{
-
-}
-
 /**********************************************************/
-
