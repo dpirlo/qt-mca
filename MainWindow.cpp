@@ -149,9 +149,9 @@ void MainWindow::on_actionPreferencias_triggered()
     }
 }
 
-string MainWindow::getMCAEStreamDebugMode()
+void MainWindow::showMCAEStreamDebugMode()
 {
-    return arpet->getTrama_MCAE();
+    cout<< "Trama enviada: "<< arpet->getTrama_MCAE()<<endl;
 }
 
 /* Pestaña: "Configuración" */
@@ -424,9 +424,9 @@ void MainWindow::drawTemperatureBoard()
             {
                 cout<<"================================"<<endl;
                 cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                cout<<"Trama enviada: "<<getMCAEStreamDebugMode()<<endl;
+                showMCAEStreamDebugMode();
                 cout<<"Trama recibida: "<<msg<<endl;
-                cout<<"Valor de temperatura: "<<temp<<endl;
+                cout<<"Valor de temperatura: "<<temp<<"ºC"<<endl;
                 cout<<"================================"<<endl;
             }
             setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
@@ -436,6 +436,22 @@ void MainWindow::drawTemperatureBoard()
     {
          QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
+
+    double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
+    double t_max = *max_element(temp_vec.begin(),temp_vec.end());
+    double t_min = *min_element(temp_vec.begin(),temp_vec.end());
+
+    if(debug)
+    {
+        cout<<"================================"<<endl;
+        cout<<"Temperaturas"<<endl;
+        cout<<"Media: "<< mean <<"ºC"<<endl;
+        cout<<"Máxima: "<<t_max<<"ºC"<<endl;
+        cout<<"Mínima: "<<t_min<<"ºC"<<endl;
+        cout<<"================================"<<endl;
+    }
+
+    ui->label_temp->setText("Media: "+QString::number(mean)+"ºC"+"\nMáxima: "+QString::number(t_max)+"ºC"+"\nMínima: "+QString::number(t_min)+"ºC");
 }
 
 
@@ -472,8 +488,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         break;
     }
 
-    ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    ui->label_received->setText(q_msg);    
 }
 
 void MainWindow::on_pushButton_reset_clicked()
@@ -498,49 +513,49 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 {
     QString q_msg = setHV("mca",getHVValue());
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_l_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-5));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_l_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-10));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_l_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-50));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_p_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(5));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_p_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(10));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 void MainWindow::on_pushButton_p_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(50));
     ui->label_received->setText(q_msg);
-    if (debug) cout << getMCAEStreamDebugMode() << endl;
+    if (debug) showMCAEStreamDebugMode();
 }
 
 

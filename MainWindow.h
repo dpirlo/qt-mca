@@ -120,7 +120,7 @@ private:
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
     void getARPETStatus();
-    string getMCAEStreamDebugMode();
+    void showMCAEStreamDebugMode();
 
 private:
     Ui::MainWindow *ui;

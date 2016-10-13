@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1459,7 +1459,7 @@ Tensión: </string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -2852,7 +2852,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>8</x>
-         <y>3</y>
+         <y>10</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -2871,9 +2871,9 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>12</x>
-         <y>24</y>
+         <y>30</y>
          <width>151</width>
-         <height>91</height>
+         <height>81</height>
         </rect>
        </property>
        <property name="frameShape">
