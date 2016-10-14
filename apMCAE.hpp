@@ -23,6 +23,7 @@ using namespace boost::system;
 #define PMTs 48
 #define MAX_HV_VALUE 4095
 #define MAX_HIGH_HV_VOLTAGE 1390
+#define MIN_HIGH_HV_VOLTAGE 700
 #define HV_BUFFER_SIZE 3
 #define PMT_BUFFER_SIZE 2
 #define RECEIVED_BUFFER_SIZE 4
@@ -93,7 +94,8 @@ namespace ap {
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
         string Head_MCAE, End_MCA, End_PSOC;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
-        string PSOC_OFF, PSOC_ON;
+        string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS;
+        double PSOC_ADC;
         string init_MCA,MCA, HV;
         string AnsMultiInit, AnsHeadInit;
         string AP_ON, AP_OFF;
@@ -124,6 +126,10 @@ namespace ap {
         string getHeader_MCAE() const { return Header_MCAE; }
         string getPSOC_OFF() const { return PSOC_OFF; }
         string getPSOC_ON() const { return PSOC_ON; }
+        string getPSOC_SET() const { return PSOC_SET; }
+        string getPSOC_STA() const { return PSOC_STA; }
+        string getPSOC_ANS() const { return PSOC_ANS; }
+        double getPSOC_ADC() const { return PSOC_ADC; }
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
         string getSetHV_MCA() const { return SetHV_MCA; }

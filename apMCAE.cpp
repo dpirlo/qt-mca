@@ -27,6 +27,10 @@ MCAE::MCAE(size_t timeout)
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
      PSOC_ON("$SET,STA,ON"),
+     PSOC_SET("$SET,VCON,"),
+     PSOC_STA("$TEMP"),
+     PSOC_ANS("$OK"),
+     PSOC_ADC(5.8823),
 
      /*Funciones trama MCA*/
      AnsMultiInit("@0064310>"),
@@ -501,4 +505,4 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
     return checked;
 }
 
-//bool MCAE::verifyStream(string data_received, string data_to_compare)
+
