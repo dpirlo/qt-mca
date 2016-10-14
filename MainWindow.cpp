@@ -34,7 +34,7 @@ void MainWindow::SetInitialConfigurations()
 
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
-    ui->lineEdit_alta->setValidator( new QIntValidator(1, MAX_HIGH_HV_VOLTAGE, this) );    
+    ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     getPMTLabelNames();
@@ -152,9 +152,9 @@ void MainWindow::on_actionPreferencias_triggered()
     }
 }
 
-void MainWindow::showMCAEStreamDebugMode()
+void MainWindow::showMCAEStreamDebugMode(string msg)
 {
-    cout<< "Trama enviada: "<< arpet->getTrama_MCAE()<<endl;
+    cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE()<<endl;
 }
 
 /* Pestaña: "Configuración" */
@@ -273,7 +273,6 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 void MainWindow::on_pushButton_head_init_clicked()
 {
-
    int head_index=getHead("config").toInt();   
    /* Incialización del cabezal */
    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());   
@@ -319,14 +318,26 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-
     /** TODO:
-     * Seteo de HV a la tensión indicada.
-     * El seteo se debe realizar de manera escalonada
+     * Ver el tamaño de la trama
      */
-    cout<<arpet->getHeader_MCAE()<<endl;
 
+    string msg;
+    int psoc_alta = getPSOCAlta();
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString()+arpet->getEnd_PSOC());
+    try
+    {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = ReadString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
 }
 
 void MainWindow::on_pushButton_hv_on_clicked()
@@ -335,9 +346,22 @@ void MainWindow::on_pushButton_hv_on_clicked()
      * Ver el tamaño de la trama
      */
 
+    string msg;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_ON() +arpet->getEnd_PSOC());
-    cout<<arpet->getTrama_MCAE()<<endl;
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_ON() +arpet->getEnd_PSOC());
+    try
+    {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = ReadString();
+        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }   
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
 }
 
 void MainWindow::on_pushButton_hv_off_clicked()
@@ -346,19 +370,46 @@ void MainWindow::on_pushButton_hv_off_clicked()
      * Ver el tamaño de la trama
      */
 
+    string msg;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_OFF()+arpet->getEnd_PSOC());
-    cout<<arpet->getTrama_MCAE()<<endl;
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_OFF() +arpet->getEnd_PSOC());
+    try
+    {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = ReadString();
+        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led,true);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
 }
 
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString()+arpet->getFunCPSOC());
-
     /** TODO:
-     * Obtener estado de la fuente HV y mostrarlo en el label
+     * Ver el tamaño de la trama
      */
-    cout<<arpet->getHeader_MCAE()<<endl;
+
+    string msg;
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()/*+Tamaño de trama*/+ arpet->getPSOC_STA() +arpet->getEnd_PSOC());
+    try
+    {
+        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = ReadString();
+
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
 }
 
 void MainWindow::setHeadModeConfig(int index)
@@ -427,8 +478,7 @@ void MainWindow::drawTemperatureBoard()
             {
                 cout<<"================================"<<endl;
                 cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                showMCAEStreamDebugMode();
-                cout<<"Trama recibida: "<<msg<<endl;
+                showMCAEStreamDebugMode(msg);
                 cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
                 cout<<"================================"<<endl;
             }
@@ -517,49 +567,49 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 {
     QString q_msg = setHV("mca",getHVValue());
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-5));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-10));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(-50));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_5_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(5));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_10_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(10));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_50_clicked()
 {
     QString q_msg = setHV("mca",getHVValue(50));
     ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode();
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 
@@ -659,8 +709,7 @@ QString MainWindow::getMCA(string tab, string function)
         cout<<"Varianza (unidades cuadráticas de ADC): "<< var <<endl;
         cout<<"Offset (unidades de ADC): "<< offset <<endl;
         cout<<"Tiempo de adquisición (medido en microsegundos): "<< time_mca <<endl;
-        showMCAEStreamDebugMode();
-        cout<<"Trama recibida: "<<msg<<endl;
+        showMCAEStreamDebugMode(msg);
         cout<<"================================"<<endl;
     }
 
@@ -705,6 +754,18 @@ int MainWindow::getPMT()
     }
 
     return ui->lineEdit_pmt->text().toInt();
+}
+
+int MainWindow::getPSOCAlta()
+{
+    QString psoc_value=ui->lineEdit_alta->text();
+    if(psoc_value.isEmpty() || psoc_value.toInt()<700)
+    {
+            psoc_value=QString::number(700);
+            ui->lineEdit_alta->setText(psoc_value);
+    }
+
+    return ui->lineEdit_alta->text().toInt();
 }
 
 void MainWindow::setPMT(int value)
@@ -860,14 +921,14 @@ void MainWindow::setLabelState(bool state, QLabel *label, bool power_off)
         palette.setColor(QPalette::Background,Qt::green);
         label->setPalette(palette);
     }
-    else if(power_off)
+    else if(state)
     {
-        palette.setColor(QPalette::Background,Qt::gray);
+        palette.setColor(QPalette::Background,Qt::red);
         label->setPalette(palette);
     }
     else
     {
-        palette.setColor(QPalette::Background,Qt::red);
+        palette.setColor(QPalette::Background,Qt::gray);
         label->setPalette(palette);
     }
 
@@ -1242,26 +1303,6 @@ void MainWindow::on_pushButton_6_clicked()
 
 void MainWindow::on_pushButton_7_clicked()
 {
-//    QString sended="#C401071552@01650<";
-//    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-//    string msg;
-//    try
-//    {
-//        msg = ReadString();
-//    }
-//    catch(Exceptions & ex)
-//    {
-//        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-//    }
-//    QString q_msg=QString::fromStdString(msg);
-//    QString q_bytes=QString::number(bytes);
-//    ui->label_19->setText(q_bytes);
-//    ui->label_12->setText(q_msg);
-//    ui->label_20->setText(sended);
-    //if(ui->tab_esp_3->isActiveWindow()) ui->comboBox_adquire_mode->setCurrentIndex(2);
-
-  setTabMode(ui->tabWidget_mca->currentIndex());
-
 
 }
 

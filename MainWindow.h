@@ -101,7 +101,7 @@ private:
     QStringList availablePortsName();
     QString getHead(string tab);
     void SetInitialConfigurations();
-    void setLabelState(bool state, QLabel *label, bool power_off=false);
+    void setLabelState(bool state, QLabel *label, bool power_off=false);    
     string ReadString(char delimeter='\r');
     string ReadBufferString(int buffer_size);
     size_t SendString(string msg, string end);
@@ -112,6 +112,7 @@ private:
     void getPlot(bool accum, QCustomPlot *graph);
     QString setHV(string tab, string hv_value);
     int getPMT();
+    int getPSOCAlta();
     void setPMT(int value);
     string getHVValue(int value=0);
     void resetHitsValues();
@@ -121,7 +122,7 @@ private:
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
     void getARPETStatus();
-    void showMCAEStreamDebugMode();
+    void showMCAEStreamDebugMode(string msg);
 
 private:
     Ui::MainWindow *ui;

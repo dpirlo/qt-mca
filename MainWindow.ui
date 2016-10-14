@@ -1056,12 +1056,12 @@ Tensión: </string>
          <string>HV</string>
         </property>
        </widget>
-       <widget class="QLabel" name="label_hv_estado_datos">
+       <widget class="QLabel" name="label_psoc_estado_datos">
         <property name="geometry">
          <rect>
           <x>470</x>
           <y>10</y>
-          <width>471</width>
+          <width>391</width>
           <height>31</height>
          </rect>
         </property>
@@ -1097,6 +1097,22 @@ Tensión: </string>
           <width>91</width>
           <height>33</height>
          </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_led">
+        <property name="geometry">
+         <rect>
+          <x>870</x>
+          <y>10</y>
+          <width>71</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </widget>
