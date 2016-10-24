@@ -1,4 +1,4 @@
-#include "SetPreferences.h"
+#include "inc/SetPreferences.h"
 #include "ui_SetPreferences.h"
 
 SetPreferences::SetPreferences(QWidget *parent) :
