@@ -11,25 +11,25 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = qt-arpet
 TEMPLATE = app
 
-SOURCES += main.cpp\
-        qcustomplot.cpp \
-        apMCAE.cpp \
-        apExceptions.cpp \
-        SetPreferences.cpp \
-        MainWindow.cpp
+SOURCES += src/main.cpp\
+        src/qcustomplot.cpp \
+        src/apMCAE.cpp \
+        src/apExceptions.cpp \
+        src/SetPreferences.cpp \
+        src/MainWindow.cpp
 
 HEADERS  += \
-        qcustomplot.h \
-        apMCAE.hpp \
-        apExceptions.hpp \
-        SetPreferences.h \
-        MainWindow.h
+        inc/qcustomplot.h \
+        inc/apMCAE.hpp \
+        inc/apExceptions.hpp \
+        inc/SetPreferences.h \
+        inc/MainWindow.h
 
 LIBS += -lboost_system
 
 FORMS += \
-        SetPreferences.ui \
-        MainWindow.ui
+        ui/SetPreferences.ui \
+        ui/MainWindow.ui
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug
