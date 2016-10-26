@@ -16,15 +16,15 @@
 * Debug en consola (*runtime*)
 
 ### Pestaña de configuración
-<p align="center"><img src="img/img_conf.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/8d0b8f2cf9175fbc5ce53d5e0bf471c49045a8d2/img/img_conf.png" width="600"></p>
 
 ### Pestaña de Multicanal (MCA)
-<p align="center"><img src="img/img_mca.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/8d0b8f2cf9175fbc5ce53d5e0bf471c49045a8d2/img/img_mca.png" width="600"></p>
 
 ### Pestaña de temperatura
-<p align="center"><img src="img/img_temp.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/8d0b8f2cf9175fbc5ce53d5e0bf471c49045a8d2/img/img_temp.png" width="600"></p>
 
 ### Terminal de pruebas
-<p align="center"><img src="img/img_terminal.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/8d0b8f2cf9175fbc5ce53d5e0bf471c49045a8d2/img/img_terminal.png" width="600"></p>
 
 *AR-PET: Primer Tomógrafo por Emsión de Positrones Argentino, C. Verrastro, D. Estryk, E. Venialgo, S. Marinsek, M. Belzunce, XXXV Reunión Anual de la Asociación Argentina de Tecnología Nuclear, Noviembre 2008. 
