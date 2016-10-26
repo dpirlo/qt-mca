@@ -31,6 +31,8 @@ MCAE::MCAE(size_t timeout)
      PSOC_STA("$TEMP"),
      PSOC_ANS("$OK"),
      PSOC_ADC(5.8823),
+     PSOC_SIZE_SENDED("14"),
+     PSOC_SIZE_RECEIVED("0051"),
 
      /*Funciones trama MCA*/
      AnsMultiInit("@0064310>"),

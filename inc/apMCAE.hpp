@@ -94,7 +94,7 @@ namespace ap {
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
         string Head_MCAE, End_MCA, End_PSOC;
         string Header_MCAE, Trama_MCAE, Trama_MCA;
-        string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS;
+        string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
         double PSOC_ADC;
         string init_MCA,MCA, HV;
         string AnsMultiInit, AnsHeadInit;
@@ -129,6 +129,8 @@ namespace ap {
         string getPSOC_SET() const { return PSOC_SET; }
         string getPSOC_STA() const { return PSOC_STA; }
         string getPSOC_ANS() const { return PSOC_ANS; }
+        string getPSOC_SIZE_SENDED() const { return PSOC_SIZE_SENDED; }
+        string getPSOC_SIZE_RECEIVED() const { return PSOC_SIZE_RECEIVED; }
         double getPSOC_ADC() const { return PSOC_ADC; }
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
