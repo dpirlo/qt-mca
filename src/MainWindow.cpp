@@ -33,8 +33,11 @@ void MainWindow::SetInitialConfigurations()
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
 
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
+    ui->lineEdit_pmt_terminal->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
+    ui->lineEdit_pmt_hv_terminal->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     getPMTLabelNames();
@@ -319,9 +322,8 @@ void MainWindow::on_pushButton_configurar_clicked()
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            setMCAEDataStream("config", arpet->getFunCHead(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
             QString hv=QString::number(hvtable_values[pmt]);
-            q_msg = setHV("config",hv.toStdString());
+            q_msg = setHV("config",hv.toStdString(), QString::number(pmt+1).toStdString());
             if(debug)
             {
                 cout<<"================================"<<endl;
@@ -341,14 +343,10 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    /** TODO:
-     * Ver el tamaño de la trama
-     */
-
     string msg;
-    int psoc_alta = getPSOCAlta();
+    int psoc_alta = getPSOCAlta(ui->lineEdit_alta);
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString()+arpet->getEnd_PSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -365,13 +363,9 @@ void MainWindow::on_pushButton_hv_set_clicked()
 
 void MainWindow::on_pushButton_hv_on_clicked()
 {
-    /** TODO:
-     * Ver el tamaño de la trama
-     */
-
     string msg;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_ON() +arpet->getEnd_PSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -389,13 +383,9 @@ void MainWindow::on_pushButton_hv_on_clicked()
 
 void MainWindow::on_pushButton_hv_off_clicked()
 {
-    /** TODO:
-     * Ver el tamaño de la trama
-     */
-
     string msg;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+/*+Tamaño de trama*/arpet->getPSOC_OFF() +arpet->getEnd_PSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -413,13 +403,9 @@ void MainWindow::on_pushButton_hv_off_clicked()
 
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    /** TODO:
-     * Ver el tamaño de la trama
-     */
-
     string msg;
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()/*+Tamaño de trama*/+ arpet->getPSOC_STA() +arpet->getEnd_PSOC());
+    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_STA());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -591,7 +577,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     QString q_msg;
     try
     {
-        q_msg =setHV("mca",getHVValue());
+        q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -606,7 +592,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(-5));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -621,7 +607,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(-10));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -636,7 +622,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(-50));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -651,7 +637,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(5));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -666,7 +652,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(10));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -681,7 +667,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     QString q_msg;
     try
     {
-        q_msg = setHV("mca",getHVValue(50));
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
     }
     catch (Exceptions ex)
     {
@@ -751,7 +737,7 @@ void MainWindow::setTabMode(int index)
 
 QString MainWindow::getMCA(string tab, string function)
 {
-    pmt_ui_current=getPMT();
+    pmt_ui_current=getPMT(ui->lineEdit_pmt);
     if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
     pmt_ui_previous=pmt_ui_current;
     setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);    
@@ -797,9 +783,9 @@ QString MainWindow::getMCA(string tab, string function)
     return QString::fromStdString(msg);
 }
 
-QString MainWindow::setHV(string tab, string hv_value)
+QString MainWindow::setHV(string tab, string hv_value, string pmt)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), QString::number(getPMT()).toStdString(), arpet->getSetHV_MCA(),0, hv_value);
+    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSetHV_MCA(),0, hv_value);
     string msg;
     try
     {
@@ -817,37 +803,37 @@ QString MainWindow::setHV(string tab, string hv_value)
 }
 
 
-int MainWindow::getPMT()
+int MainWindow::getPMT(QLineEdit *line_edit)
 {
-    QString pmt=ui->lineEdit_pmt->text();
-    switch (adquire_mode) {
-    case MONOMODE:
-        if(pmt.isEmpty() || pmt.toInt()==0)
-        {
-            pmt=QString::number(1);
-            ui->lineEdit_pmt->setText(pmt);
-        }
-        break;
-    case MULTIMODE:
-        ui->lineEdit_pmt->setText(0);
-        break;
-    default:
-        break;
-    }
+   QString pmt=line_edit->text();
+   switch (adquire_mode) {
+     case MONOMODE:
+       if(pmt.isEmpty() || pmt.toInt()==0)
+       {
+           pmt=QString::number(1);
+           line_edit->setText(pmt);
+       }
+       break;
+      case MULTIMODE:
+       line_edit->setText(0);
+       break;
+      default:
+       break;
+   }
 
-    return ui->lineEdit_pmt->text().toInt();
+   return line_edit->text().toInt();
 }
 
-int MainWindow::getPSOCAlta()
+int MainWindow::getPSOCAlta(QLineEdit *line_edit)
 {
-    QString psoc_value=ui->lineEdit_alta->text();
+    QString psoc_value=line_edit->text();
     if(psoc_value.isEmpty() || psoc_value.toInt()<MIN_HIGH_HV_VOLTAGE)
     {
             psoc_value=QString::number(MIN_HIGH_HV_VOLTAGE);
-            ui->lineEdit_alta->setText(psoc_value);
+            line_edit->setText(psoc_value);
     }
 
-    return ui->lineEdit_alta->text().toInt();
+    return line_edit->text().toInt();
 }
 
 void MainWindow::setPMT(int value)
@@ -855,14 +841,14 @@ void MainWindow::setPMT(int value)
      ui->lineEdit_pmt->setText(QString::number(value));
 }
 
-string MainWindow::getHVValue(int value)
+string MainWindow::getHVValue(QLineEdit *line_edit, int value)
 {
     int hv_value_int;
-    if (ui->lineEdit_hv_value->text().isEmpty()) hv_value_int=0;
-    if (value==0) hv_value_int=ui->lineEdit_hv_value->text().toInt();
-    else  hv_value_int=ui->lineEdit_hv_value->text().toInt() + value;
+    if (line_edit->text().isEmpty()) hv_value_int=0;
+    if (value==0) hv_value_int=line_edit->text().toInt();
+    else  hv_value_int=line_edit->text().toInt() + value;
     if (hv_value_int<0) hv_value_int=0;
-    ui->lineEdit_hv_value->setText(QString::number(hv_value_int));
+    line_edit->setText(QString::number(hv_value_int));
 
     return QString::number(hv_value_int).toStdString();
 }
@@ -1092,6 +1078,10 @@ QString MainWindow::getHead(string tab)
            head=ui->comboBox_head_select_config->currentText();
         }
     }
+    else if (tab=="terminal")
+    {
+       head=ui->comboBox_head_select_terminal->currentText();
+    }
     else head="";
 
     return head;
@@ -1266,158 +1256,108 @@ void MainWindow::syncCheckBoxHead6ToMCA(bool check)
     ui->checkBox_mca_6->setChecked(check);
 }
 
-/* TEST BUTTONS. TODO: Delete all of them after debug */
+/* Terminal */
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_send_terminal_clicked()
 {
-   QString sended = ui->plainTextEdit->toPlainText();
-
-   size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-   string msg;
-   try
-   {
-       msg = ReadString();
-   }
-   catch(Exceptions & ex)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-   }
-   QString q_msg=QString::fromStdString(msg);
-
-   ui->label_12->setText(q_msg);
-
-}
-
-void MainWindow::on_pushButton_2_clicked()
-{
-   arpet->portFlush();
-}
-
-void MainWindow::on_pushButton_3_clicked()
-{
-    QString sended="#C401090009@0064010;";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
+    QString sended = ui->lineEdit_terminal->text();
+    size_t bytes;
     string msg;
+    string end_stream=arpet->getEnd_MCA();
+
+    if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
+
     try
     {
+        bytes = SendString(sended.toStdString(),end_stream);
         msg = ReadString();
     }
     catch(Exceptions & ex)
     {
         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
     }
+
     QString q_msg=QString::fromStdString(msg);
     QString q_bytes=QString::number(bytes);
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
+    ui->label_size_terminal->setText(q_bytes);
+    ui->label_received_terminal->setText(q_msg);
 }
 
-void MainWindow::on_pushButton_4_clicked()
+void MainWindow::on_pushButton_flush_terminal_clicked()
 {
-    QString sended="#C402090009@0064010;";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg;
-    try
-    {
-        msg = ReadString();
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-    }
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
+    arpet->portFlush();
 }
 
-void MainWindow::on_pushButton_5_clicked()
+
+
+void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 {
-    QString sended="#C402071552@196515";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg;
-    try
+    string mca_function, function, hv_value;
+    int bytes_mca;
+    switch (ui->comboBox_mca_function_terminal->currentIndex())
     {
-        msg = ReadString();
+        case 0:
+            mca_function=arpet->getInit_MCA();
+            hv_value="";
+            bytes_mca=0;
+            break;
+        case 1:
+            mca_function=arpet->getData_MCA();
+            hv_value="";
+            bytes_mca=bytes_int;
+            break;
+        case 2:
+            mca_function=arpet->getSetHV_MCA();
+            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
+            bytes_mca=0;
+            break;
+        case 3:
+            mca_function=arpet->getTemp_MCA();
+            hv_value="";
+            bytes_mca=0;
+            break;
+        default:
+            break;
     }
-    catch(Exceptions & ex)
+
+    switch (ui->comboBox_func_terminal->currentIndex())
     {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        case 0:
+            function=arpet->getFunCHead();
+            break;
+        case 1:
+            function=arpet->getFunCSP3();
+            break;
+        default:
+            break;
     }
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    string msg_data=ReadBufferString(6160);
 
-    QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
+    int pmt=getPMT(ui->lineEdit_pmt_terminal);
+    setMCAEDataStream("terminal", function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
+    ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 
-    QByteArray y = q_msg_data.left(4);
-
-    cout<<y.toStdString()<<endl;
-
-//    sleep(1);
-//    arpet->portFlush();
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
 }
 
-void MainWindow::on_pushButton_9_clicked()
+void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
 {
-    QString sended="#C401071552@01650<";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg;
-    try
+    int psoc_alta;
+    switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
-        msg = ReadString();
+        case 0:
+            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
+            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
+            break;
+        case 1:
+            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
+            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
+            break;
+        case 2:
+            psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
+            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
+            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
+            break;
+        default:
+            break;
     }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-    }
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    string msg_data=ReadBufferString(6160);
-
-    arpet->getMCASplitData(msg_data,CHANNELS);
-
-    int frame=arpet->getFrameMCA();
-    long time_mca=arpet->getTimeMCA();
-    cout<<"Frame: "<< frame <<endl;
-    cout<<"Adquisition time: "<< time_mca <<endl;
-    cout<<"Temperature: "<<arpet->getTempValueMCA()<<endl;
-    QVector<double> canales=arpet->getChannels();
-    QVector<double> hits=arpet->getHitsMCA();
-
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
+    ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 }
-
-void MainWindow::on_pushButton_6_clicked()
-{
-    QString sended="#C402071552@02650=";
-    size_t bytes=SendString(sended.toStdString(),arpet->getEnd_MCA());
-    string msg;
-    try
-    {
-        msg = ReadString();
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
-    }
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    ui->label_19->setText(q_bytes);
-    ui->label_12->setText(q_msg);
-    ui->label_20->setText(sended);
-}
-
-void MainWindow::on_pushButton_7_clicked()
-{
-
-}
-
-/**********************************************************/

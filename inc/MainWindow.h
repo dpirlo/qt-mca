@@ -69,8 +69,7 @@ private slots:
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
     void on_pushButton_hv_estado_clicked();
-    void on_pushButton_adquirir_clicked();
-    void on_pushButton_clicked();
+    void on_pushButton_adquirir_clicked();    
     void on_pushButton_decrease_clicked();
     void on_pushButton_increase_clicked();
     void on_pushButton_hv_configure_clicked();
@@ -85,15 +84,14 @@ private slots:
     void on_pushButton_arpet_on_clicked();
     void on_pushButton_arpet_off_clicked();
     void on_actionPreferencias_triggered();
+    void on_pushButton_send_terminal_clicked();
+    void on_pushButton_flush_terminal_clicked();
 
     /*Buttons de prueba*/
-    void on_pushButton_2_clicked();
-    void on_pushButton_3_clicked();
-    void on_pushButton_4_clicked();
-    void on_pushButton_5_clicked();
-    void on_pushButton_6_clicked();
-    void on_pushButton_7_clicked();
-    void on_pushButton_9_clicked();
+
+    void on_pushButton_stream_configure_mca_terminal_clicked();
+
+    void on_pushButton_stream_configure_psoc_terminal_clicked();
 
 private:
     QString openConfigurationFile();
@@ -110,11 +108,11 @@ private:
     QString getMCA(string tab, string function);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void getPlot(bool accum, QCustomPlot *graph);
-    QString setHV(string tab, string hv_value);
-    int getPMT();
-    int getPSOCAlta();
+    QString setHV(string tab, string hv_value, string pmt);
+    int getPMT(QLineEdit *line_edit);
+    int getPSOCAlta(QLineEdit *line_edit);
     void setPMT(int value);
-    string getHVValue(int value=0);
+    string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();
     void getPMTLabelNames();
     void drawTemperatureBoard();

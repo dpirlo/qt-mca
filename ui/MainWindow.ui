@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2951,11 +2951,11 @@ Tensión: </string>
      <attribute name="title">
       <string>Terminal</string>
      </attribute>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pushButton_send_terminal">
       <property name="geometry">
        <rect>
-        <x>760</x>
-        <y>90</y>
+        <x>650</x>
+        <y>50</y>
         <width>95</width>
         <height>31</height>
        </rect>
@@ -2964,11 +2964,11 @@ Tensión: </string>
        <string>Send</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_12">
+     <widget class="QLabel" name="label_received_terminal">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>170</y>
+        <x>60</x>
+        <y>190</y>
         <width>771</width>
         <height>61</height>
        </rect>
@@ -2977,21 +2977,11 @@ Tensión: </string>
        <string/>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="plainTextEdit">
+     <widget class="QLabel" name="label_size_terminal">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>90</y>
-        <width>551</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_13">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>220</y>
+        <x>60</x>
+        <y>140</y>
         <width>601</width>
         <height>41</height>
        </rect>
@@ -3000,11 +2990,11 @@ Tensión: </string>
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="pushButton_flush_terminal">
       <property name="geometry">
        <rect>
-        <x>760</x>
-        <y>130</y>
+        <x>650</x>
+        <y>90</y>
         <width>95</width>
         <height>31</height>
        </rect>
@@ -3013,119 +3003,372 @@ Tensión: </string>
        <string>Flush</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_3">
+     <widget class="QLineEdit" name="lineEdit_terminal">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>INIT-01</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_4">
-      <property name="geometry">
-       <rect>
-        <x>210</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>INIT-02</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_5">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>MCA-1/02</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_6">
-      <property name="geometry">
-       <rect>
-        <x>430</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>MCA-2/02</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_19">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>270</y>
-        <width>771</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_20">
-      <property name="geometry">
-       <rect>
-        <x>135</x>
-        <y>450</y>
-        <width>771</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_7">
-      <property name="geometry">
-       <rect>
-        <x>540</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>MCA/01</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_9">
-      <property name="geometry">
-       <rect>
-        <x>660</x>
-        <y>380</y>
-        <width>95</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>getMCA</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="lineEdit">
-      <property name="geometry">
-       <rect>
-        <x>180</x>
+        <x>60</x>
         <y>50</y>
-        <width>551</width>
+        <width>561</width>
         <height>33</height>
        </rect>
       </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_end_terminal">
+      <property name="geometry">
+       <rect>
+        <x>770</x>
+        <y>50</y>
+        <width>95</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CR+LF</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frame_trama_terminal">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>270</y>
+        <width>951</width>
+        <height>201</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QComboBox" name="comboBox_head_select_terminal">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>870</x>
+         <y>20</y>
+         <width>51</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>809</x>
+         <y>24</y>
+         <width>66</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Cabezal:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_12">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>191</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Configurar la trama</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_stream_configure_mca_terminal">
+       <property name="geometry">
+        <rect>
+         <x>820</x>
+         <y>140</y>
+         <width>95</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Configurar</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_func_terminal">
+       <property name="geometry">
+        <rect>
+         <x>147</x>
+         <y>140</y>
+         <width>83</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>PLA</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>PMT</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_13">
+       <property name="geometry">
+        <rect>
+         <x>91</x>
+         <y>143</y>
+         <width>66</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Función: </string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_19">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>70</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>PSOC</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_20">
+       <property name="geometry">
+        <rect>
+         <x>31</x>
+         <y>137</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>MCA</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_stream_configure_psoc_terminal">
+       <property name="geometry">
+        <rect>
+         <x>820</x>
+         <y>70</y>
+         <width>95</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Configurar</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_psoc_function_terminal">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>70</y>
+         <width>83</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>ON</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>OFF</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>SET</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="comboBox_mca_function_terminal">
+       <property name="geometry">
+        <rect>
+         <x>481</x>
+         <y>140</y>
+         <width>83</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>INIT</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MCA</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>HV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>TEMP</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_pmt_terminal">
+       <property name="geometry">
+        <rect>
+         <x>295</x>
+         <y>140</y>
+         <width>71</width>
+         <height>33</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_31">
+       <property name="geometry">
+        <rect>
+         <x>136</x>
+         <y>74</y>
+         <width>66</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Función:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_33">
+       <property name="geometry">
+        <rect>
+         <x>255</x>
+         <y>143</y>
+         <width>41</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PMT:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_35">
+       <property name="geometry">
+        <rect>
+         <x>320</x>
+         <y>76</y>
+         <width>121</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Valor de tensión: </string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_psoc_hv_terminal">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>70</y>
+         <width>71</width>
+         <height>33</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_36">
+       <property name="geometry">
+        <rect>
+         <x>389</x>
+         <y>143</y>
+         <width>91</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Función MCA:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_37">
+       <property name="geometry">
+        <rect>
+         <x>591</x>
+         <y>143</y>
+         <width>31</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>HV:</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_pmt_hv_terminal">
+       <property name="geometry">
+        <rect>
+         <x>620</x>
+         <y>140</y>
+         <width>71</width>
+         <height>33</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
