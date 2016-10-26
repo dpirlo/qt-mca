@@ -3117,6 +3117,16 @@ Tensión: </string>
        <string>getMCA</string>
       </property>
      </widget>
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>50</y>
+        <width>551</width>
+        <height>33</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

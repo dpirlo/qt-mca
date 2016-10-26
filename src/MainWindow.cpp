@@ -230,7 +230,7 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
-    string initfile=".//config_cabs.ini";
+    string initfile="/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini";
     QString filename=QString::fromStdString(initfile);
     parseConfigurationFile(filename);
 
@@ -307,13 +307,36 @@ void MainWindow::on_pushButton_head_init_clicked()
 
 void MainWindow::on_pushButton_configurar_clicked()
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHead());
+    coefenerg_values=getValuesFromFiles(coefenerg,false);
+    hvtable_values=getValuesFromFiles(hvtable,true);
+    coefx_values=getValuesFromFiles(coefx,false);
+    coefy_values=getValuesFromFiles(coefy,false);
+    coefT_values=getValuesFromFiles(coefT,false);
+    coefest_values=getValuesFromFiles(coefest,false);
 
-    /** TODO:
-     * Implementar una función que realice el seteo de los HV a los PMTs en función del cabezal seleccionado
-     * Ver de obtener todos los path, de los seis cabezales, solo de un .ini
-     */
-    cout<<arpet->getHeader_MCAE()<<endl;
+    QString q_msg;
+    try
+    {
+        for(int pmt = 0; pmt < PMTs; pmt++)
+        {
+            setMCAEDataStream("config", arpet->getFunCHead(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
+            QString hv=QString::number(hvtable_values[pmt]);
+            q_msg = setHV("config",hv.toStdString());
+            if(debug)
+            {
+                cout<<"================================"<<endl;
+                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                showMCAEStreamDebugMode(q_msg.toStdString());
+                cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+                cout<<"================================"<<endl;
+            }
+        }
+
+    }
+    catch( Exceptions & ex )
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
 }
 
 void MainWindow::on_pushButton_hv_set_clicked()
@@ -565,49 +588,105 @@ void MainWindow::on_pushButton_reset_clicked()
 
 void MainWindow::on_pushButton_hv_configure_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue());
+    QString q_msg;
+    try
+    {
+        q_msg =setHV("mca",getHVValue());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_5_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(-5));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(-5));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_10_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(-10));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(-10));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_l_50_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(-50));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(-50));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_5_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(5));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(5));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_10_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(10));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(10));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    QString q_msg = setHV("mca",getHVValue(50));
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(50));
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
     ui->label_received->setText(q_msg);
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
@@ -709,6 +788,7 @@ QString MainWindow::getMCA(string tab, string function)
         cout<<"Varianza (unidades cuadráticas de ADC): "<< var <<endl;
         cout<<"Offset (unidades de ADC): "<< offset <<endl;
         cout<<"Tiempo de adquisición (medido en microsegundos): "<< time_mca <<endl;
+        cout<<"Valor de HV: "<<HV_pmt<<endl;
         showMCAEStreamDebugMode(msg);
         cout<<"================================"<<endl;
     }
@@ -728,12 +808,14 @@ QString MainWindow::setHV(string tab, string hv_value)
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        Exceptions exception_hv(ex.excdesc);
+        throw exception_hv;
     }
     resetHitsValues();
 
     return QString::fromStdString(msg);
 }
+
 
 int MainWindow::getPMT()
 {
@@ -759,9 +841,9 @@ int MainWindow::getPMT()
 int MainWindow::getPSOCAlta()
 {
     QString psoc_value=ui->lineEdit_alta->text();
-    if(psoc_value.isEmpty() || psoc_value.toInt()<700)
+    if(psoc_value.isEmpty() || psoc_value.toInt()<MIN_HIGH_HV_VOLTAGE)
     {
-            psoc_value=QString::number(700);
+            psoc_value=QString::number(MIN_HIGH_HV_VOLTAGE);
             ui->lineEdit_alta->setText(psoc_value);
     }
 
@@ -853,6 +935,38 @@ void MainWindow::getARPETStatus()
     setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
 }
 
+QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
+{
+    QVector<double> values;
+    QRegExp rx("(\\t)");
+    QFile inputFile(filename);
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&inputFile);
+        if(hv)
+        {
+            while (!in.atEnd())
+            {
+                QString line = in.readLine();
+                QStringList fields = line.split(rx);
+                QString q_hv=fields.at(1);
+                values.push_back(q_hv.toDouble());
+            }
+        }
+        else
+        {
+            while (!in.atEnd())
+            {
+                QString line = in.readLine();
+                values.push_back(line.toDouble());
+            }
+        }
+        inputFile.close();
+    }
+
+    return values;
+}
+
 /**
  * @brief MainWindow::parseConfigurationFile
  * @param filename
@@ -865,7 +979,7 @@ int MainWindow::parseConfigurationFile(QString filename)
         filename=openConfigurationFile();
         configfile.setFileName(filename);
         if (!configfile.open(QIODevice::ReadOnly)){
-            qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
+            if(debug) qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
             QMessageBox::critical(this,tr("Atención"),tr("No se puede abrir el archivo de configuración."));
             return MCAE::FILE_NOT_FOUND;
         }
@@ -882,7 +996,6 @@ int MainWindow::parseConfigurationFile(QString filename)
     QString head= getHead("config");
     QString root=settings.value("Paths/root", "US").toString();
 
-    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
     coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
     hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
     coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
@@ -901,9 +1014,10 @@ int MainWindow::parseConfigurationFile(QString filename)
  */
 QString MainWindow::openConfigurationFile()
 {
+    QString root="/media/arpet/pet/calibraciones/03-info/cabezales";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    QDir::homePath(),
-                                                    tr("Texto (*.ini)"));
+                                                    root,
+                                                    tr("Configuración (*.ini);;Texto (*.txt)"));
     return filename;
 }
 

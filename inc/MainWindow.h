@@ -27,7 +27,7 @@ private:
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    void checkCombosStatus();
+    void checkCombosStatus();    
     ~MainWindow();
     /* Pruebas */
 
@@ -121,6 +121,7 @@ private:
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
+    QVector<double> getValuesFromFiles(QString filename, bool hv);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
 
@@ -136,9 +137,10 @@ private:
     int bytes_int;
     bool debug;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
+    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
     int  AT, LowLimit;
     int TimeOut;
-    QVector<double> channels_ui,hits_ui;
+    QVector<double> channels_ui,hits_ui;    
     int pmt_ui_current, pmt_ui_previous;
 
 public:
