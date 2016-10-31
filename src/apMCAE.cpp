@@ -411,7 +411,7 @@ string MCAE::getMCAFormatStream(string data)
      * @ddcc--...--
      */
 
-    string checksum=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
+    string checksum=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
     string data_plus_checksum = data + checksum;
     data_plus_checksum = Head_MCA + data_plus_checksum;
     string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
@@ -419,34 +419,53 @@ string MCAE::getMCAFormatStream(string data)
     return data_plus_checksum_mca_format;
 }
 
-void MCAE::setMCAStream(string pmt, string function, string hv_value)
+void MCAE::setMCAStream(string pmt, string function, string channel)
 {
-    string stream_wo_cs=pmt+function+hv_value;
+    string stream_wo_cs=pmt+function+channel;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
-void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string hv_value_dec)
+void MCAE::setPSOCStream(string function, string psoc_value)
 {
-    string hv_value;
-    if (hv_value_dec.length()>=1) hv_value=getHVValueCode(atoi(hv_value_dec.c_str()));
+    string stream_psoc;
+    stream_psoc=function+psoc_value;
+    setTrama_PSOC(stream_psoc);
+}
+
+void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
+{
+    string channel_value;
+    if (channel_dec.length()>=1) channel_value=getHVValueCode(atoi(channel_dec.c_str()));
     string pmt=getPMTCode(atoi(pmt_dec.c_str()));
-    setMCAStream(pmt, function, hv_value);
+    setMCAStream(pmt, function, channel_value);
     int size_mca=(int)(getTrama_MCA().size());
-    string size_sended=formatMCAStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
-    string size_received=formatMCAStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_stream+size_mca).toStdString());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_stream+size_mca).toStdString());
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
+    setTrama_MCAE(stream);
+}
+
+void MCAE::setPSOCEStream(string function, string psoc_value_dec)
+{
+    string psoc_value;
+    if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
+    setPSOCStream(function, psoc_value);
+    int size_psoc=(int)(getTrama_PSOC().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
+    cout<<size_psoc<<endl;
+    string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
     setTrama_MCAE(stream);
 }
 
 string MCAE::getHVValueCode(int hv_value_dec)
 {
     string hv_value= convertDecToHex(hv_value_dec);
-    hv_value=formatMCAStreamSize(HV_BUFFER_SIZE,hv_value);
+    hv_value=formatMCAEStreamSize(HV_BUFFER_SIZE,hv_value);
 
     return hv_value;
 }
 
-string MCAE::formatMCAStreamSize(int expected_size, string data_stream)
+string MCAE::formatMCAEStreamSize(int expected_size, string data_stream)
 {
    switch (expected_size) {
     case 2:
@@ -470,7 +489,7 @@ string MCAE::formatMCAStreamSize(int expected_size, string data_stream)
 
 string MCAE::getPMTCode(int pmt_dec)
 {
-    string pmt=formatMCAStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
+    string pmt=formatMCAEStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
 
     return pmt;
 }
@@ -488,7 +507,7 @@ bool MCAE::verifyCheckSum(string data_mca)
     QByteArray q_data(data.c_str(), data.length());
     QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
     string data_cs=q_data.mid(data.length()-2,2).toStdString();
-    string checksum_received=formatMCAStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
+    string checksum_received=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
     bool checked=verifyStream(data_cs, checksum_received);
 
     return checked;

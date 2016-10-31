@@ -49,6 +49,7 @@ namespace ap {
         error_code portDisconnect();
         void getMCASplitData(string msg_data, int channels);
         void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
+        void setPSOCEStream(string function, string psoc_value_dec="");
         double getPMTTemperature(string temp_stream);
         bool isPortOpen();
         bool verifyMCAEStream(string data_received, string data_to_compare);
@@ -63,6 +64,7 @@ namespace ap {
         void portTimeOut(const boost::system::error_code& error);
         bool portReadOneChar(char& val);
         void setMCAStream(string pmt, string function, string channel="");
+        void setPSOCStream(string function, string psoc_value="");
         int getMCACheckSum(string data);
         string getMCAFormatStream(string data);
         string convertToMCAFormatStream(string data_with_cs);
@@ -74,7 +76,7 @@ namespace ap {
         string getPMTCode(int pmt_dec);
         bool portReadCharArray(int nbytes); /* TODO: Verificar */
         bool verifyStream(string data_received, string data_to_compare);
-        string formatMCAStreamSize(int expected_size, string data_stream);
+        string formatMCAEStreamSize(int expected_size, string data_stream);
         bool verifyCheckSum(string data_mca);
         int convertHexToDec(string hex_number);
         string convertDecToHex(int dec_number);
@@ -93,7 +95,7 @@ namespace ap {
         string FunCHead, FunCSP3, FunCPSOC, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
         string Head_MCAE, End_MCA, End_PSOC;
-        string Header_MCAE, Trama_MCAE, Trama_MCA;
+        string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
         double PSOC_ADC;
         string init_MCA,MCA, HV;
@@ -123,6 +125,7 @@ namespace ap {
         string getHead_MCA() const { return Head_MCA; }
         string getTrama_MCAE() const { return Trama_MCAE; }
         string getTrama_MCA() const { return Trama_MCA; }
+        string getTrama_PSOC() const { return Trama_PSOC; }
         string getHeader_MCAE() const { return Header_MCAE; }
         string getPSOC_OFF() const { return PSOC_OFF; }
         string getPSOC_ON() const { return PSOC_ON; }
@@ -143,7 +146,8 @@ namespace ap {
         string getAnsAP_ON() const { return AnsAP_ON; }
         string getAnsAP_OFF() const { return AnsAP_OFF; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
-        void setTrama_MCAE(string data){ Trama_MCAE=data; }
+        void setTrama_MCAE(string data){ Trama_MCAE=data; }        
+        void setTrama_PSOC(string data){ Trama_PSOC=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
         serial_port_ptr getPort() const { return port; }
         int getFrameMCA() const { return frame; }
