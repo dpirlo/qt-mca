@@ -365,6 +365,13 @@
         </item>
         <item row="2" column="1">
          <widget class="QLabel" name="label_hv_estado_2">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -430,6 +437,13 @@
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_hv_estado_1">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -456,6 +470,13 @@
         </item>
         <item row="2" column="3">
          <widget class="QLabel" name="label_hv_estado_4">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -482,6 +503,13 @@
         </item>
         <item row="2" column="2">
          <widget class="QLabel" name="label_hv_estado_3">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -547,6 +575,13 @@
         </item>
         <item row="2" column="4">
          <widget class="QLabel" name="label_hv_estado_5">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -560,6 +595,13 @@
         </item>
         <item row="2" column="5">
          <widget class="QLabel" name="label_hv_estado_6">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -842,6 +884,12 @@
          <height>171</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
        <property name="text">
         <string>Configurar</string>
        </property>
@@ -968,45 +1016,6 @@
         <string>Abrir</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_hv_on">
-       <property name="geometry">
-        <rect>
-         <x>285</x>
-         <y>61</y>
-         <width>41</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>ON</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_hv_off">
-       <property name="geometry">
-        <rect>
-         <x>330</x>
-         <y>61</y>
-         <width>41</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>OFF</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_hv_estado">
-       <property name="geometry">
-        <rect>
-         <x>376</x>
-         <y>61</y>
-         <width>95</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Estado</string>
-       </property>
-      </widget>
       <widget class="QFrame" name="frame_6">
        <property name="geometry">
         <rect>
@@ -1059,9 +1068,9 @@ Tensión: </string>
        <widget class="QLabel" name="label_psoc_estado_datos">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>461</x>
           <y>10</y>
-          <width>391</width>
+          <width>471</width>
           <height>31</height>
          </rect>
         </property>
@@ -1098,21 +1107,50 @@ Tensión: </string>
           <height>33</height>
          </rect>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
-       <widget class="QLabel" name="label_led">
+       <widget class="QPushButton" name="pushButton_hv_estado">
         <property name="geometry">
          <rect>
-          <x>870</x>
+          <x>352</x>
           <y>10</y>
-          <width>71</width>
+          <width>95</width>
           <height>31</height>
          </rect>
         </property>
-        <property name="autoFillBackground">
-         <bool>true</bool>
+        <property name="text">
+         <string>Estado</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_hv_off">
+        <property name="geometry">
+         <rect>
+          <x>312</x>
+          <y>10</y>
+          <width>41</width>
+          <height>31</height>
+         </rect>
         </property>
         <property name="text">
-         <string/>
+         <string>OFF</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_hv_on">
+        <property name="geometry">
+         <rect>
+          <x>271</x>
+          <y>10</y>
+          <width>41</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>ON</string>
         </property>
        </widget>
       </widget>
@@ -1197,9 +1235,6 @@ Tensión: </string>
       <zorder>label_11</zorder>
       <zorder>textBrowser_tiempos_cabezal</zorder>
       <zorder>pushButton_tiempos_cabezal</zorder>
-      <zorder>pushButton_hv_on</zorder>
-      <zorder>pushButton_hv_off</zorder>
-      <zorder>pushButton_hv_estado</zorder>
       <zorder>lineEdit_limiteinferior</zorder>
       <zorder>label_29</zorder>
       <zorder>pushButton_arpet_on</zorder>
@@ -3241,6 +3276,11 @@ Tensión: </string>
        <item>
         <property name="text">
          <string>SET</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>STA</string>
         </property>
        </item>
       </widget>

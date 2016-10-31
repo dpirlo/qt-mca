@@ -86,15 +86,14 @@ private slots:
     void on_actionPreferencias_triggered();
     void on_pushButton_send_terminal_clicked();
     void on_pushButton_flush_terminal_clicked();
+    void on_pushButton_stream_configure_mca_terminal_clicked();
+    void on_pushButton_stream_configure_psoc_terminal_clicked();
 
     /*Buttons de prueba*/
 
-    void on_pushButton_stream_configure_mca_terminal_clicked();
-
-    void on_pushButton_stream_configure_psoc_terminal_clicked();
-
 private:
     QString openConfigurationFile();
+    void getPaths();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     QString getHead(string tab);
@@ -107,10 +106,11 @@ private:
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tab, string function);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
+    int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void getPlot(bool accum, QCustomPlot *graph);
     QString setHV(string tab, string hv_value, string pmt);
     int getPMT(QLineEdit *line_edit);
-    int getPSOCAlta(QLineEdit *line_edit);
+    QString getPSOCAlta(QLineEdit *line_edit);
     void setPMT(int value);
     string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();

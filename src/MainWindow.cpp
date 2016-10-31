@@ -233,19 +233,7 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
-    string initfile="/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini";
-    QString filename=QString::fromStdString(initfile);
-    parseConfigurationFile(filename);
-
-    ui->textBrowser_triple_ventana->setText(coefest);
-    ui->textBrowser_hv->setText(hvtable);
-    ui->textBrowser_energia->setText(coefenerg);
-    ui->textBrowser_posicion_X->setText(coefx);
-    ui->textBrowser_posicion_Y->setText(coefy);
-    ui->textBrowser_tiempos_cabezal->setText(coefT);
-
-    ui->lineEdit_alta->setText(QString::number(AT));
-    ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+    getPaths();
 }
 
 int MainWindow::on_pushButton_conectar_clicked()
@@ -343,14 +331,14 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    string msg;
-    int psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
+    string msg;    
+    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = ReadString();
+        hv_status_table[head_index-1]->setText(psoc_alta);
     }
     catch(Exceptions & ex)
     {
@@ -364,18 +352,17 @@ void MainWindow::on_pushButton_hv_set_clicked()
 void MainWindow::on_pushButton_hv_on_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = ReadString();
-        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led);
+        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
     }
     catch(Exceptions & ex)
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }   
+    }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
@@ -384,13 +371,12 @@ void MainWindow::on_pushButton_hv_on_clicked()
 void MainWindow::on_pushButton_hv_off_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = ReadString();
-        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led,true);
+        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index],true);
     }
     catch(Exceptions & ex)
     {
@@ -404,8 +390,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_STA());
+    setPSOCDataStream("config",arpet->getPSOC_STA());
     try
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -824,7 +809,7 @@ int MainWindow::getPMT(QLineEdit *line_edit)
    return line_edit->text().toInt();
 }
 
-int MainWindow::getPSOCAlta(QLineEdit *line_edit)
+QString MainWindow::getPSOCAlta(QLineEdit *line_edit)
 {
     QString psoc_value=line_edit->text();
     if(psoc_value.isEmpty() || psoc_value.toInt()<MIN_HIGH_HV_VOLTAGE)
@@ -833,7 +818,7 @@ int MainWindow::getPSOCAlta(QLineEdit *line_edit)
             line_edit->setText(psoc_value);
     }
 
-    return line_edit->text().toInt();
+    return line_edit->text();
 }
 
 void MainWindow::setPMT(int value)
@@ -857,6 +842,16 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
   arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
+}
+
+int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
+{
+    QString head=getHead(tab);
+    int head_index=head.toInt();
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + head.toStdString() + arpet->getFunCPSOC());
+    arpet->setPSOCEStream(function, psoc_value.toStdString());
+
+    return head_index;
 }
 
 void MainWindow::resetHitsValues()
@@ -1005,6 +1000,26 @@ QString MainWindow::openConfigurationFile()
                                                     root,
                                                     tr("Configuración (*.ini);;Texto (*.txt)"));
     return filename;
+}
+
+/**
+ * @brief MainWindow::getPaths
+ */
+void MainWindow::getPaths()
+{
+    string initfile="/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini";
+    QString filename=QString::fromStdString(initfile);
+    parseConfigurationFile(filename);
+
+    ui->textBrowser_triple_ventana->setText(coefest);
+    ui->textBrowser_hv->setText(hvtable);
+    ui->textBrowser_energia->setText(coefenerg);
+    ui->textBrowser_posicion_X->setText(coefx);
+    ui->textBrowser_posicion_Y->setText(coefy);
+    ui->textBrowser_tiempos_cabezal->setText(coefT);
+
+    ui->lineEdit_alta->setText(QString::number(AT));
+    ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
 }
 
 /**
@@ -1178,21 +1193,25 @@ void MainWindow::setHeadMode(int index, string tab)
 
 void MainWindow::syncHeadModeComboBoxToConfig(int index)
 {
+    getPaths();
     ui->comboBox_head_mode_select_config->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadComboBoxToConfig(int index)
 {
+    getPaths();
     ui->comboBox_head_select_config->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadModeComboBoxToMCA(int index)
 {
+    getPaths();
     ui->comboBox_head_mode_select_graph->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadComboBoxToMCA(int index)
 {
+    getPaths();
     ui->comboBox_head_select_graph->setCurrentIndex(index);
 }
 
@@ -1340,21 +1359,21 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 
 void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
 {
-    int psoc_alta;
-    switch (ui->comboBox_psoc_function_terminal->currentIndex())
+    QString psoc_alta;
+   switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
-        case 0:
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
+        case 0:            
+            setPSOCDataStream("terminal",arpet->getPSOC_ON());
             break;
         case 1:
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
+            setPSOCDataStream("terminal",arpet->getPSOC_OFF());
             break;
         case 2:
             psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
+            setPSOCDataStream("terminal",arpet->getPSOC_SET(),psoc_alta);
+            break;
+        case 3:
+            setPSOCDataStream("terminal",arpet->getPSOC_STA());
             break;
         default:
             break;
