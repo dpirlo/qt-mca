@@ -29,6 +29,7 @@ using namespace boost::system;
 #define RECEIVED_BUFFER_SIZE 4
 #define SENDED_BUFFER_SIZE 2
 #define CS_BUFFER_SIZE 2
+#define CRLF_SIZE 2
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 

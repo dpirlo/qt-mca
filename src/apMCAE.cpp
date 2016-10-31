@@ -450,7 +450,7 @@ void MCAE::setPSOCEStream(string function, string psoc_value_dec)
     string psoc_value;
     if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
     setPSOCStream(function, psoc_value);
-    int size_psoc=(int)(getTrama_PSOC().size());
+    int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
     string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
     cout<<size_psoc<<endl;
     string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
