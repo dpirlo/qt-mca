@@ -376,7 +376,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
     {
         SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = ReadString();
-        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index],true);
+        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1],true);
     }
     catch(Exceptions & ex)
     {
