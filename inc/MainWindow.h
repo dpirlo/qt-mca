@@ -86,6 +86,7 @@ private slots:
     void on_actionPreferencias_triggered();
     void on_pushButton_send_terminal_clicked();
     void on_pushButton_flush_terminal_clicked();
+    void on_pushButton_clear_terminal_clicked();
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
 

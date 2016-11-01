@@ -1307,6 +1307,10 @@ void MainWindow::on_pushButton_flush_terminal_clicked()
     arpet->portFlush();
 }
 
+void MainWindow::on_pushButton_clear_terminal_clicked()
+{
+    ui->lineEdit_terminal->clear();
+}
 
 
 void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
