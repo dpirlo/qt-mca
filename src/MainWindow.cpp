@@ -21,12 +21,14 @@ MainWindow::~MainWindow()
     arpet->portDisconnect();    
     delete ui;
     delete pref;
+    delete pmt_select;
 }
 
 void MainWindow::SetInitialConfigurations()
 {
     arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
     pref = new SetPreferences(this);
+    pmt_select = new SetPMTs(this);
 
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
@@ -534,9 +536,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         break;
     default:
         break;
-    }
-
-    ui->label_received->setText(q_msg);    
+    }     
 }
 
 void MainWindow::on_pushButton_reset_clicked()
@@ -568,7 +568,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -583,7 +583,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -598,7 +598,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -613,7 +613,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -628,7 +628,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -643,7 +643,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -658,7 +658,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_received->setText(q_msg);
+
     if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
 }
 
@@ -879,7 +879,7 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
         cout<<"Máximo número de cuentas: "<<c_max<<endl;
         cout<<"Cantidad de canales: "<<CHANNELS<<endl;
         cout<<"Rango en el gráfico: "<<endl;
-        cout<<"De: "<<c_min<<" a "<<c_max*1.25 <<endl;
+        cout<<" de "<<c_min<<" a "<<c_max*1.25 <<endl;
         cout<<"================================"<<endl;
     }
 
@@ -1383,4 +1383,25 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
             break;
     }
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
+}
+
+// TESTING
+
+void MainWindow::on_pushButton_clicked()
+{
+    int ret = pmt_select->exec();
+
+    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+
+    if(ret == QDialog::Accepted)
+    {
+        setPMTSelectedList(qlist);
+    }
+
+    if(debug)
+    {
+        QList<QString>::const_iterator stlIter;
+        for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
+            qDebug() << (*stlIter);
+    }
 }

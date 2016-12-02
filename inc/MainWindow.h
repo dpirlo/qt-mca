@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "qcustomplot.h"
 #include "SetPreferences.h"
+#include "SetPMTs.h"
 #include "apMCAE.hpp"
 #include <QString>
 
@@ -92,6 +93,8 @@ private slots:
 
     /*Buttons de prueba*/
 
+    void on_pushButton_clicked();
+
 private:
     QString openConfigurationFile();
     void getPaths();
@@ -127,11 +130,13 @@ private:
 private:
     Ui::MainWindow *ui;
     SetPreferences *pref;
+    SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;
     QList<QLabel*> pmt_status_table;
     QList<QLabel*> hv_status_table;
+    QList<QString> pmt_selected_list;
     int adquire_mode;
     int bytes_int;
     bool debug;
@@ -144,7 +149,8 @@ private:
 
 public:
     void setDebugMode(bool mode) { debug = mode; }
-
+    void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
+    QList<QString> getPMTSelectedList() { return pmt_selected_list; }
 };
 
 #endif // MAINWINDOW_H
