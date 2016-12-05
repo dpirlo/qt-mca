@@ -524,12 +524,12 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
     switch (adquire_mode) {
     case MONOMODE:
-        q_msg = getMCA("mca",arpet->getFunCSP3());
-        getPlot(accum, ui->specPMTs);        
+        q_msg = getMultiMCA("mca",arpet->getFunCSP3());
+        //getPlot(accum, ui->specPMTs);
         break;
     case MULTIMODE:
-        q_msg = getMCA("mca",arpet->getFunCHead());
-        getPlot(accum, ui->specHead);        
+        //q_msg = getMCA("mca",arpet->getFunCHead());
+        //getPlot(accum, ui->specHead);
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
@@ -663,26 +663,6 @@ void MainWindow::on_pushButton_p_50_clicked()
 }
 
 
-void MainWindow::on_pushButton_decrease_clicked()
-{
-    QString pmt=ui->lineEdit_pmt->text();
-    if (pmt.toInt()>1)
-    {
-        int pmt_decrease=pmt.toInt()-1;
-        ui->lineEdit_pmt->setText(QString::number(pmt_decrease));
-    }
-}
-
-void MainWindow::on_pushButton_increase_clicked()
-{
-    QString pmt=ui->lineEdit_pmt->text();
-    if (pmt.toInt()<PMTs)
-    {
-        int pmt_increase=pmt.toInt()+1;
-        ui->lineEdit_pmt->setText(QString::number(pmt_increase));
-    }
-}
-
 void MainWindow::setHeadModeGraph(int index)
 {
     setHeadMode(index,"mca");
@@ -720,23 +700,37 @@ void MainWindow::setTabMode(int index)
     ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 
-QString MainWindow::getMCA(string tab, string function)
+QString MainWindow::getMultiMCA(string tab, string function)
 {
-    pmt_ui_current=getPMT(ui->lineEdit_pmt);
-    if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
-    pmt_ui_previous=pmt_ui_current;
-    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);    
+   int size_pmt_selected = pmt_selected_list.length();
+   QString msg;
+
+   try
+   {
+     for (int index=0;index<size_pmt_selected;index++)
+     {
+        string pmt=pmt_selected_list.at(index).toStdString();
+        msg = getMCA(tab, function, false, pmt);
+     }
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+   }
+
+
+   return msg;
+}
+
+QString MainWindow::getMCA(string tab, string function, bool multimode, string pmt)
+{
+    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(),bytes_int);
     string msg, msg_data;
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = ReadString();
-        msg_data = ReadBufferString(bytes_int);
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
+
+    SendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
+    msg = ReadString();
+    msg_data = ReadBufferString(bytes_int);
+
     arpet->getMCASplitData(msg_data, CHANNELS);
 
     long long time_mca;
@@ -748,22 +742,24 @@ QString MainWindow::getMCA(string tab, string function)
     offset=arpet->getOffSetMCA();
     var=arpet->getVarMCA();
 
-    ui->label_title_output->setText("MCA Extended");
-    ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (useg):\n"+QString::number(time_mca));
+    if (multimode)
+    {
+        ui->label_title_output->setText("MCA Extended");
+        ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (mseg):\n"+QString::number(time_mca/1000));
+    }
 
-    if(debug)
+    if(debug && !multimode)
     {
         cout<<"================================"<<endl;
-        cout<<"Datos extraídos por MCA"<<endl;
+        cout<<"Datos extraídos por MCA en el PMT: "<< pmt <<endl;
         cout<<"Frame: "<< frame <<endl;
         cout<<"Varianza (unidades cuadráticas de ADC): "<< var <<endl;
         cout<<"Offset (unidades de ADC): "<< offset <<endl;
-        cout<<"Tiempo de adquisición (medido en microsegundos): "<< time_mca <<endl;
+        cout<<"Tiempo de adquisición (medido en milisegundos): "<< time_mca/1000 <<endl;
         cout<<"Valor de HV: "<<HV_pmt<<endl;
         showMCAEStreamDebugMode(msg);
         cout<<"================================"<<endl;
     }
-
 
     return QString::fromStdString(msg);
 }
@@ -1400,8 +1396,13 @@ void MainWindow::on_pushButton_clicked()
 
     if(debug)
     {
+        qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
         QList<QString>::const_iterator stlIter;
         for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
             qDebug() << (*stlIter);
     }
+
+    qSort(qlist);
+    ui->listWidget->clear();
+    ui->listWidget->addItems(qlist);
 }

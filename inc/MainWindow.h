@@ -71,8 +71,6 @@ private slots:
     void on_pushButton_hv_off_clicked();
     void on_pushButton_hv_estado_clicked();
     void on_pushButton_adquirir_clicked();    
-    void on_pushButton_decrease_clicked();
-    void on_pushButton_increase_clicked();
     void on_pushButton_hv_configure_clicked();
     void on_pushButton_l_5_clicked();
     void on_pushButton_l_10_clicked();
@@ -108,7 +106,8 @@ private:
     size_t SendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tab, string function);
+    QString getMCA(string tab, string function, bool multimode, string pmt="0");
+    QString getMultiMCA(string tab, string function);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void getPlot(bool accum, QCustomPlot *graph);
