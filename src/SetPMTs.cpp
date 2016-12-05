@@ -133,7 +133,8 @@ void SetPMTs::ClearPMTBoard()
         pmt_button_table[pmt]->setStyleSheet("");
         pmt_button_table[pmt]->update();
     }
-    //qDeleteAll(pmt_selected_list.begin(), pmt_selected_list.end());
+
+    pmt_selected_list.clear();
 }
 
 void SetPMTs::on_pushButton_01_clicked()
