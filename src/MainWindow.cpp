@@ -516,153 +516,6 @@ void MainWindow::clearTemperatureBoard()
        }
 }
 
-void MainWindow::on_pushButton_adquirir_clicked()
-{
-    QString q_msg;
-    bool accum=true;
-    if (!(ui->checkBox_accum->isChecked())) accum=false;
-
-    switch (adquire_mode) {
-    case MONOMODE:
-        q_msg = getMultiMCA("mca",arpet->getFunCSP3());
-        //getPlot(accum, ui->specPMTs);
-        break;
-    case MULTIMODE:
-        //q_msg = getMCA("mca",arpet->getFunCHead());
-        //getPlot(accum, ui->specHead);
-        break;
-    case TEMPERATURE:
-        drawTemperatureBoard();
-        break;
-    default:
-        break;
-    }     
-}
-
-void MainWindow::on_pushButton_reset_clicked()
-{
-    switch (adquire_mode) {
-    case MONOMODE:
-        resetHitsValues();
-        break;
-    case MULTIMODE:
-        resetHitsValues();
-        break;
-    case TEMPERATURE:
-        clearTemperatureBoard();
-        break;
-    default:
-        break;
-    }
-}
-
-
-void MainWindow::on_pushButton_hv_configure_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_5_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_10_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_50_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_5_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_10_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_50_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-
 void MainWindow::setHeadModeGraph(int index)
 {
     setHeadMode(index,"mca");
@@ -675,12 +528,12 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
-        ui->frame_MCA->show();        
+        ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     case MULTIMODE:
         ui->frame_PMT->hide();
-        ui->frame_HV->hide();        
+        ui->frame_HV->hide();
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
         break;
@@ -688,7 +541,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
-        ui->frame_MCA->hide();        
+        ui->frame_MCA->hide();
     default:
         break;
     }
@@ -700,17 +553,36 @@ void MainWindow::setTabMode(int index)
     ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 
-QString MainWindow::getMultiMCA(string tab, string function)
+QString MainWindow::getHeadMCA(string tab)
+{
+   QString msg;
+
+   try
+   {
+     msg = getMCA(tab,arpet->getFunCHead() , true);
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+   }
+
+   return msg;
+}
+
+QString MainWindow::getMultiMCA(string tab)
 {
    int size_pmt_selected = pmt_selected_list.length();
    QString msg;
+
+   if (pmt_selected_list.isEmpty())
+       QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
 
    try
    {
      for (int index=0;index<size_pmt_selected;index++)
      {
         string pmt=pmt_selected_list.at(index).toStdString();
-        msg = getMCA(tab, function, false, pmt);
+        msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
      }
    }
    catch(Exceptions & ex)
@@ -857,7 +729,7 @@ void MainWindow::resetHitsValues()
 
 void MainWindow::getPlot(bool accum, QCustomPlot *graph)
 {
-    /* Datos del gráfico */    
+    /* Datos del gráfico */
     if (!accum){
         resetHitsValues();
     }
@@ -893,6 +765,180 @@ void MainWindow::getPlot(bool accum, QCustomPlot *graph)
     graph->yAxis->setRange(c_min, c_max*1.25);
     graph->replot();
 }
+
+void MainWindow::on_pushButton_adquirir_clicked()
+{
+    QString q_msg;
+    bool accum=true;
+    if (!(ui->checkBox_accum->isChecked())) accum=false;
+
+    switch (adquire_mode) {
+    case MONOMODE:
+        q_msg = getMultiMCA("mca");
+        //getPlot(accum, ui->specPMTs);
+        break;
+    case MULTIMODE:
+        q_msg = getHeadMCA("mca");
+        getPlot(accum, ui->specHead);
+        break;
+    case TEMPERATURE:
+        drawTemperatureBoard();
+        break;
+    default:
+        break;
+    }     
+}
+
+void MainWindow::on_pushButton_reset_clicked()
+{
+    switch (adquire_mode) {
+    case MONOMODE:
+        resetHitsValues();
+        break;
+    case MULTIMODE:
+        resetHitsValues();
+        break;
+    case TEMPERATURE:
+        clearTemperatureBoard();
+        break;
+    default:
+        break;
+    }
+}
+
+
+void MainWindow::on_pushButton_select_pmt_clicked()
+{
+    int ret = pmt_select->exec();
+
+    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+
+    if(ret == QDialog::Accepted)
+    {
+        setPMTSelectedList(qlist);
+    }
+
+    if(debug)
+    {
+        cout<<"================================"<<endl;
+        qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
+        QList<QString>::const_iterator stlIter;
+        for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
+            qDebug() << (*stlIter);
+        cout<<"================================"<<endl;
+    }
+
+    qSort(qlist);
+    ui->listWidget->clear();
+    ui->listWidget->addItems(qlist);
+}
+
+
+void MainWindow::on_pushButton_hv_configure_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_5_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_10_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_50_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_5_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_10_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_50_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
 
 /* Métodos generales del entorno gráfico */
 
@@ -1379,30 +1425,4 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
             break;
     }
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
-}
-
-// TESTING
-
-void MainWindow::on_pushButton_clicked()
-{
-    int ret = pmt_select->exec();
-
-    QList<QString> qlist = pmt_select->GetPMTSelectedList();
-
-    if(ret == QDialog::Accepted)
-    {
-        setPMTSelectedList(qlist);
-    }
-
-    if(debug)
-    {
-        qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
-        QList<QString>::const_iterator stlIter;
-        for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
-            qDebug() << (*stlIter);
-    }
-
-    qSort(qlist);
-    ui->listWidget->clear();
-    ui->listWidget->addItems(qlist);
 }
