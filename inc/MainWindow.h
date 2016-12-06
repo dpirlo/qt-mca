@@ -13,7 +13,6 @@
 #define MULTIMODE 1
 #define TEMPERATURE 2
 #define MONOMODE 0
-#define CHANNELS 1024
 
 using namespace ap;
 namespace Ui {
@@ -28,15 +27,39 @@ private:
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    void checkCombosStatus();    
+    void checkCombosStatus();
     ~MainWindow();
     /* Pruebas */
 
+private slots: //PRUEBA
+
+
+
+    //void addPMTGraph(int index,  QCustomPlot *graph);
+
+
+
 private slots:
+    /* Slots de sincronización para QCustomPlot */
+    void addPMTGraph(int index,  QCustomPlot *graph, string graph_legend="");
+    void titleDoubleClickPMT(QMouseEvent* event);
+    void titleDoubleClickHead(QMouseEvent* event);
+    void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
+    void axisLabelDoubleClickHead(QCPAxis *axis, QCPAxis::SelectablePart part);
+    void legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *item);
+    void legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item);
+    void removeSelectedGraphPMT();
+    void removeAllGraphsPMT();
+    void contextMenuRequestPMT(QPoint pos);
+    void moveLegendPMT();
+    void mousePressPMT();
+    void mouseWheelPMT();
+    void selectionChangedPMT();
+    void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
     void setHeadModeConfig(int index);
-    void setHeadModeGraph(int index);    
+    void setHeadModeGraph(int index);
     void setAdquireMode(int index);
     void setTabMode(int index);
     void syncHeadComboBoxToMCA(int index);
@@ -62,7 +85,7 @@ private slots:
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
     void on_pushButton_posicion_X_clicked();
-    void on_pushButton_posicion_Y_clicked();    
+    void on_pushButton_posicion_Y_clicked();
     void on_pushButton_obtener_rutas_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
     void on_pushButton_configurar_clicked();
@@ -92,6 +115,8 @@ private slots:
 
     /*Buttons de prueba*/
 
+    void on_pushButton_clicked();
+
 private:
     QString openConfigurationFile();
     void getPaths();
@@ -99,7 +124,7 @@ private:
     QStringList availablePortsName();
     QString getHead(string tab);
     void SetInitialConfigurations();
-    void setLabelState(bool state, QLabel *label, bool power_off=false);    
+    void setLabelState(bool state, QLabel *label, bool power_off=false);
     string ReadString(char delimeter='\r');
     string ReadBufferString(int buffer_size);
     size_t SendString(string msg, string end);
@@ -111,6 +136,8 @@ private:
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void getPlot(bool accum, QCustomPlot *graph);
+    void getMultiplePlot(bool accum, QCustomPlot *graph, string title_str="");//@ahestevenz
+    void SetQCustomPlotConfiguration(QCustomPlot *graph);//@ahestevenz
     QString setHV(string tab, string hv_value, string pmt);
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);
@@ -141,9 +168,10 @@ private:
     bool debug;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
+    QVector< QVector<double> > hits_m_ui;
     int  AT, LowLimit;
     int TimeOut;
-    QVector<double> channels_ui,hits_ui;    
+    QVector<double> channels_ui,hits_ui;
     int pmt_ui_current, pmt_ui_previous;
 
 public:

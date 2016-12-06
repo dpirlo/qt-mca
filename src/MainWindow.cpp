@@ -12,13 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setFixedSize(this->maximumSize());    
-    SetInitialConfigurations();    
+    this->setFixedSize(this->maximumSize());
+    SetInitialConfigurations();
 }
 
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();    
+    arpet->portDisconnect();
     delete ui;
     delete pref;
     delete pmt_select;
@@ -43,8 +43,26 @@ void MainWindow::SetInitialConfigurations()
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     getPMTLabelNames();
-
+    SetQCustomPlotConfiguration(ui->specPMTs);
+    SetQCustomPlotConfiguration(ui->specHead);
     resetHitsValues();
+}
+
+void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
+{
+  graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                                  QCP::iSelectLegend | QCP::iSelectPlottables);
+  graph->axisRect()->setupFullAxesBox();
+  graph->xAxis->setRange(0, CHANNELS);
+  graph->yAxis->setRange(-5, 5);
+  graph->xAxis->setLabel("Canales");
+  graph->yAxis->setLabel("Cuentas");
+  graph->legend->setVisible(true);
+  QFont legendFont = font();
+  legendFont.setPointSize(10);
+  graph->legend->setFont(legendFont);
+  graph->legend->setSelectedFont(legendFont);
+  graph->legend->setSelectableParts(QCPLegend::spItems);
 }
 
 void MainWindow::checkCombosStatus()
@@ -266,9 +284,9 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 void MainWindow::on_pushButton_head_init_clicked()
 {
-   int head_index=getHead("config").toInt();   
+   int head_index=getHead("config").toInt();
    /* Incialización del cabezal */
-   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());   
+   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
    string msg_head;
    try
    {
@@ -282,7 +300,7 @@ void MainWindow::on_pushButton_head_init_clicked()
    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
    /* Inicialización de las Spartans 3*/
-   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());  
+   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    string msg_pmts;
    try
    {
@@ -333,7 +351,7 @@ void MainWindow::on_pushButton_configurar_clicked()
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    string msg;    
+    string msg;
     QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
     int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
     try
@@ -583,6 +601,7 @@ QString MainWindow::getMultiMCA(string tab)
      {
         string pmt=pmt_selected_list.at(index).toStdString();
         msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
+        hits_m_ui.append(arpet->getHitsMCA()); //@ahestevenz
      }
    }
    catch(Exceptions & ex)
@@ -786,7 +805,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         break;
     default:
         break;
-    }     
+    }
 }
 
 void MainWindow::on_pushButton_reset_clicked()
@@ -944,7 +963,7 @@ void MainWindow::on_pushButton_p_50_clicked()
 
 void MainWindow::getARPETStatus()
 {
-    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());    
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     string msg_head;
     try
     {
@@ -1408,7 +1427,7 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
     QString psoc_alta;
    switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
-        case 0:            
+        case 0:
             setPSOCDataStream("terminal",arpet->getPSOC_ON());
             break;
         case 1:
@@ -1425,4 +1444,270 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
             break;
     }
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
+}
+
+/* Métodos para QCustomPlot */
+
+void MainWindow::getMultiplePlot(bool accum, QCustomPlot *graph, string title_str)
+{
+  graph->plotLayout()->insertRow(0);
+  QCPTextElement *title = new QCPTextElement(graph, title_str.c_str(), QFont("sans", 16, QFont::Bold));
+  graph->plotLayout()->addElement(0, 0, title);
+
+  for (int index=0;index<pmt_selected_list.length();index++)
+  {
+      addPMTGraph(index, graph);
+  }
+
+  graph->rescaleAxes();
+
+  // connect slot that ties some axis selections together (especially opposite axes):
+  connect(graph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
+
+  // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
+  connect(graph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
+  connect(graph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
+
+  // make bottom and left axes transfer their ranges to top and right axes:
+  connect(graph->xAxis, SIGNAL(rangeChanged(QCPRange)), graph->xAxis2, SLOT(setRange(QCPRange)));
+  connect(graph->yAxis, SIGNAL(rangeChanged(QCPRange)), graph->yAxis2, SLOT(setRange(QCPRange)));
+
+  // connect some interaction slots:
+  connect(graph, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
+  connect(graph, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
+  connect(title, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
+
+  // connect slot that shows a message in the status bar when a graph is clicked:
+  connect(graph, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+
+  // setup policy and connect slot for context menu popup:
+  graph->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(graph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
+}
+
+void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, string graph_legend)
+{
+  channels_ui = arpet->getChannels();
+  QVector <double> hits=hits_m_ui[index];
+  graph->addGraph();
+  graph->graph()->setName(QString(graph_legend.c_str()).arg(graph->graphCount()-1));
+  graph->graph()->setData(channels_ui, hits);
+  graph->graph()->setLineStyle((QCPGraph::LineStyle)(rand()%5+1));
+  if (rand()%100 > 50)
+    graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%14+1)));
+  QPen graphPen;
+  graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
+  graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);
+  graph->graph()->setPen(graphPen);
+  graph->replot();
+}
+
+void MainWindow::axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part)
+{
+  // Renombra la etiqueta del eje a partir de un doble-clic
+  if (part == QCPAxis::spAxisLabel)
+  {
+    bool ok;
+    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+    if (ok)
+    {
+      axis->setLabel(newLabel);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::axisLabelDoubleClickHead(QCPAxis *axis, QCPAxis::SelectablePart part)
+{
+  // Renombra la etiqueta del eje a partir de un doble-clic
+  if (part == QCPAxis::spAxisLabel)
+  {
+    bool ok;
+    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+    if (ok)
+    {
+      axis->setLabel(newLabel);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::titleDoubleClickPMT(QMouseEvent* event)
+{
+  Q_UNUSED(event)
+  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
+  {
+    // Renombra el título del gráfico a partir de un doble-clic
+    bool ok;
+    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+    if (ok)
+    {
+      title->setText(newTitle);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::titleDoubleClickHead(QMouseEvent* event)
+{
+  Q_UNUSED(event)
+  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
+  {
+    // Renombra el título del gráfico a partir de un doble-clic
+    bool ok;
+    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+    if (ok)
+    {
+      title->setText(newTitle);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+  // Renombra el gráfico a partir de un doble-clic
+  Q_UNUSED(legend)
+  if (item)
+  {
+    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+    bool ok;
+    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+    if (ok)
+    {
+      plItem->plottable()->setName(newName);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+  // Renombra el gráfico a partir de un doble-clic
+  Q_UNUSED(legend)
+  if (item)
+  {
+    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+    bool ok;
+    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+    if (ok)
+    {
+      plItem->plottable()->setName(newName);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::contextMenuRequestPMT(QPoint pos)
+{
+  QMenu *menu = new QMenu(this);
+  menu->setAttribute(Qt::WA_DeleteOnClose);
+
+  if (ui->specPMTs->legend->selectTest(pos, false) >= 0)
+  {
+    menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+    menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+    menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+    menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+    menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+  } else
+  {
+    if (ui->specPMTs->selectedGraphs().size() > 0)
+      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
+    if (ui->specPMTs->graphCount() > 0)
+      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
+  }
+
+  menu->popup(ui->specPMTs->mapToGlobal(pos));
+}
+
+void MainWindow::moveLegendPMT()
+{
+  if (QAction* contextAction = qobject_cast<QAction*>(sender()))
+  {
+    bool ok;
+    int dataInt = contextAction->data().toInt(&ok);
+    if (ok)
+    {
+      ui->specPMTs->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::mousePressPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->xAxis->orientation());
+  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->yAxis->orientation());
+  else
+    ui->specPMTs->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::mouseWheelPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->xAxis->orientation());
+  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->yAxis->orientation());
+  else
+    ui->specPMTs->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::removeSelectedGraphPMT()
+{
+  if (ui->specPMTs->selectedGraphs().size() > 0)
+  {
+    ui->specPMTs->removeGraph(ui->specPMTs->selectedGraphs().first());
+    ui->specPMTs->replot();
+  }
+}
+
+void MainWindow::removeAllGraphsPMT()
+{
+  ui->specPMTs->clearGraphs();
+  ui->specPMTs->replot();
+}
+
+void MainWindow::selectionChangedPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->specPMTs->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->specPMTs->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+
+  if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->specPMTs->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->specPMTs->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+
+
+  for (int i=0; i<ui->specPMTs->graphCount(); ++i)
+  {
+    QCPGraph *graph = ui->specPMTs->graph(i);
+    QCPPlottableLegendItem *item = ui->specPMTs->legend->itemWithPlottable(graph);
+    if (item->selected() || graph->selected())
+    {
+      item->setSelected(true);
+      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+    }
+  }
+}
+
+void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
+{
+  double dataValue = plottable->interface1D()->dataMainValue(dataIndex);
+  QString message = QString("Clicked on graph '%1' at data point #%2 with value %3.").arg(plottable->name()).arg(dataIndex).arg(dataValue); //TODO: Check this
+  ui->statusBar->showMessage(message, 2500);
+}
+
+/////// TESTING //////////////
+void MainWindow::on_pushButton_clicked()
+{
+  getMultiplePlot(false,ui->specPMTs, "Cuentas por PMT");
 }
