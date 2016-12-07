@@ -744,6 +744,7 @@ int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_valu
 void MainWindow::resetHitsValues()
 {
     hits_ui.fill(0);
+    hits_m_ui.clear();
 }
 
 void MainWindow::getPlot(bool accum, QCustomPlot *graph)
@@ -794,7 +795,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     switch (adquire_mode) {
     case MONOMODE:
         q_msg = getMultiMCA("mca");
-        //getPlot(accum, ui->specPMTs);
+        getMultiplePlot(accum,ui->specPMTs, "Cuentas por PMT");
         break;
     case MULTIMODE:
         q_msg = getHeadMCA("mca");
@@ -828,6 +829,9 @@ void MainWindow::on_pushButton_reset_clicked()
 
 void MainWindow::on_pushButton_select_pmt_clicked()
 {
+    resetHitsValues();
+    removeAllGraphsPMT();
+
     int ret = pmt_select->exec();
 
     QList<QString> qlist = pmt_select->GetPMTSelectedList();
@@ -1377,13 +1381,12 @@ void MainWindow::on_pushButton_clear_terminal_clicked()
 void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 {
     string mca_function, function, hv_value;
-    int bytes_mca;
+    int bytes_mca=0;
     switch (ui->comboBox_mca_function_terminal->currentIndex())
     {
         case 0:
             mca_function=arpet->getInit_MCA();
-            hv_value="";
-            bytes_mca=0;
+            hv_value="";            
             break;
         case 1:
             mca_function=arpet->getData_MCA();
@@ -1392,13 +1395,11 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
             break;
         case 2:
             mca_function=arpet->getSetHV_MCA();
-            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
-            bytes_mca=0;
+            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);           
             break;
         case 3:
             mca_function=arpet->getTemp_MCA();
-            hv_value="";
-            bytes_mca=0;
+            hv_value="";            
             break;
         default:
             break;
@@ -1456,7 +1457,7 @@ void MainWindow::getMultiplePlot(bool accum, QCustomPlot *graph, string title_st
 
   for (int index=0;index<pmt_selected_list.length();index++)
   {
-      addPMTGraph(index, graph);
+      addPMTGraph(index, graph, pmt_selected_list.at(index).toStdString() ,accum);
   }
 
   graph->rescaleAxes();
@@ -1485,13 +1486,13 @@ void MainWindow::getMultiplePlot(bool accum, QCustomPlot *graph, string title_st
   connect(graph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
 }
 
-void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, string graph_legend)
+void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, string graph_legend, bool accum)
 {
   channels_ui = arpet->getChannels();
-  QVector <double> hits=hits_m_ui[index];
+  if (accum) hits_m_ui[index]=hits_m_ui[index]+hits_m_ui[index];
   graph->addGraph();
   graph->graph()->setName(QString(graph_legend.c_str()).arg(graph->graphCount()-1));
-  graph->graph()->setData(channels_ui, hits);
+  graph->graph()->setData(channels_ui, hits_m_ui[index]);
   graph->graph()->setLineStyle((QCPGraph::LineStyle)(rand()%5+1));
   if (rand()%100 > 50)
     graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%14+1)));
@@ -1707,7 +1708,3 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 }
 
 /////// TESTING //////////////
-void MainWindow::on_pushButton_clicked()
-{
-  getMultiplePlot(false,ui->specPMTs, "Cuentas por PMT");
-}

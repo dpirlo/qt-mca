@@ -31,17 +31,9 @@ public:
     ~MainWindow();
     /* Pruebas */
 
-private slots: //PRUEBA
-
-
-
-    //void addPMTGraph(int index,  QCustomPlot *graph);
-
-
-
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addPMTGraph(int index,  QCustomPlot *graph, string graph_legend="");
+    void addPMTGraph(int index,  QCustomPlot *graph, string graph_legend="", bool accum=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -56,6 +48,7 @@ private slots:
     void mouseWheelPMT();
     void selectionChangedPMT();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
+
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
     void setHeadModeConfig(int index);
@@ -114,8 +107,6 @@ private slots:
     void on_pushButton_stream_configure_psoc_terminal_clicked();
 
     /*Buttons de prueba*/
-
-    void on_pushButton_clicked();
 
 private:
     QString openConfigurationFile();
