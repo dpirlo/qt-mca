@@ -7,8 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
     TimeOut(1000),
     bytes_int(CHANNELS*6+16),
     channels_ui(CHANNELS),
-    hits_ui(CHANNELS),
     debug(false),
+    init(false),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -43,12 +43,12 @@ void MainWindow::SetInitialConfigurations()
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     getPMTLabelNames();
-    SetQCustomPlotConfiguration(ui->specPMTs);
-    SetQCustomPlotConfiguration(ui->specHead);
+    SetQCustomPlotConfiguration(ui->specPMTs, "Cuentas por PMT");
+    SetQCustomPlotConfiguration(ui->specHead, "Cuentas en el Cabezal");
     resetHitsValues();
 }
 
-void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
+void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str)
 {
   graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                   QCP::iSelectLegend | QCP::iSelectPlottables);
@@ -63,6 +63,33 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
   graph->legend->setFont(legendFont);
   graph->legend->setSelectedFont(legendFont);
   graph->legend->setSelectableParts(QCPLegend::spItems);
+
+  graph->plotLayout()->insertRow(0);
+  QCPTextElement *title = new QCPTextElement(graph, title_str.c_str(), QFont("sans", 16, QFont::Bold));
+  graph->plotLayout()->addElement(0, 0, title);
+
+  // connect slot that ties some axis selections together (especially opposite axes):
+  connect(graph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
+
+  // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
+  connect(graph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
+  connect(graph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
+
+  // make bottom and left axes transfer their ranges to top and right axes:
+  connect(graph->xAxis, SIGNAL(rangeChanged(QCPRange)), graph->xAxis2, SLOT(setRange(QCPRange)));
+  connect(graph->yAxis, SIGNAL(rangeChanged(QCPRange)), graph->yAxis2, SLOT(setRange(QCPRange)));
+
+  // connect some interaction slots:
+  connect(graph, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
+  connect(graph, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
+  connect(title, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
+
+  // connect slot that shows a message in the status bar when a graph is clicked:
+  connect(graph, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+
+  // setup policy and connect slot for context menu popup:
+  graph->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(graph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
 }
 
 void MainWindow::checkCombosStatus()
@@ -554,6 +581,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_HV->hide();
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+        setHeadCustomPlotEnvironment();
         break;
     case TEMPERATURE:
         ui->frame_PMT->hide();
@@ -571,25 +599,32 @@ void MainWindow::setTabMode(int index)
     ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 
-QString MainWindow::getHeadMCA(string tab)
+QString MainWindow::getHeadMCA(string tab, bool accum)
 {
    QString msg;
+   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
 
    try
    {
      msg = getMCA(tab,arpet->getFunCHead() , true);
+     hits.insert(HEAD, 1, arpet->getHitsMCA());
+     if (accum) transform(hits[HEAD].begin(),hits[HEAD].end(), getHeadVectorHits()[HEAD].begin(), hits[HEAD].begin(), plus<double>());
    }
    catch(Exceptions & ex)
    {
        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
 
+   setHeadVectorHits(hits);
+
    return msg;
 }
 
-QString MainWindow::getMultiMCA(string tab)
+QString MainWindow::getMultiMCA(string tab, bool accum)
 {
+
    int size_pmt_selected = pmt_selected_list.length();
+   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS));
    QString msg;
 
    if (pmt_selected_list.isEmpty())
@@ -601,7 +636,8 @@ QString MainWindow::getMultiMCA(string tab)
      {
         string pmt=pmt_selected_list.at(index).toStdString();
         msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
-        hits_m_ui.append(arpet->getHitsMCA()); //@ahestevenz
+        hits.insert(index, 1, arpet->getHitsMCA());
+        if (accum) transform(hits[index].begin(),hits[index].end(), getPMTVectorHits()[index].begin(), hits[index].begin(), plus<double>());
      }
    }
    catch(Exceptions & ex)
@@ -609,6 +645,7 @@ QString MainWindow::getMultiMCA(string tab)
        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
 
+   setPMTVectorHits(hits);
 
    return msg;
 }
@@ -637,6 +674,11 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
     {
         ui->label_title_output->setText("MCA Extended");
         ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (mseg):\n"+QString::number(time_mca/1000));
+    }
+    else
+    {
+      ui->label_title_output->setText("MCA Extended");
+      ui->label_data_output->setText("");
     }
 
     if(debug && !multimode)
@@ -743,47 +785,16 @@ int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_valu
 
 void MainWindow::resetHitsValues()
 {
-    hits_ui.fill(0);
-    hits_m_ui.clear();
+    hits_head_ui.clear();
+    hits_pmt_ui.clear();
+    setHitsInit(true);
 }
 
-void MainWindow::getPlot(bool accum, QCustomPlot *graph)
+void MainWindow::getHeadPlot(QCustomPlot *graph)
 {
-    /* Datos del gráfico */
-    if (!accum){
-        resetHitsValues();
-    }
-    channels_ui = arpet->getChannels();
-    transform(hits_ui.begin(), hits_ui.end(), arpet->getHitsMCA().begin(), hits_ui.begin(), plus<double>());
-
-    /* Se genera los ejes */
-    double c_max = *max_element(hits_ui.begin(),hits_ui.end());
-    double c_min =0;
-    if (c_max==0) {c_max=1; c_min=-1;}
-
-    if (debug)
-    {
-        cout<<"================================"<<endl;
-        cout<<"Máximo número de cuentas: "<<c_max<<endl;
-        cout<<"Cantidad de canales: "<<CHANNELS<<endl;
-        cout<<"Rango en el gráfico: "<<endl;
-        cout<<" de "<<c_min<<" a "<<c_max*1.25 <<endl;
-        cout<<"================================"<<endl;
-    }
-
-    graph->addGraph();
-    graph->graph(0)->setData(channels_ui, hits_ui);
-    graph->xAxis2->setVisible(true);
-    graph->xAxis2->setTickLabels(true);
-    graph->yAxis2->setVisible(true);
-    graph->yAxis2->setTickLabels(true);
-    graph->xAxis->setLabel("Canales");
-    graph->yAxis->setLabel("Cuentas");
-
-    /* Rangos y grafico */
-    graph->xAxis->setRange(0, CHANNELS);
-    graph->yAxis->setRange(c_min, c_max*1.25);
-    graph->replot();
+    graph->clearGraphs();
+    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
+    graph->rescaleAxes();
 }
 
 void MainWindow::on_pushButton_adquirir_clicked()
@@ -794,12 +805,12 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
     switch (adquire_mode) {
     case MONOMODE:
-        q_msg = getMultiMCA("mca");
-        getMultiplePlot(accum,ui->specPMTs, "Cuentas por PMT");
+        q_msg = getMultiMCA("mca",accum);
+        getMultiplePlot(ui->specPMTs);
         break;
     case MULTIMODE:
-        q_msg = getHeadMCA("mca");
-        getPlot(accum, ui->specHead);
+        q_msg = getHeadMCA("mca",accum);
+        getHeadPlot(ui->specHead);
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
@@ -814,9 +825,13 @@ void MainWindow::on_pushButton_reset_clicked()
     switch (adquire_mode) {
     case MONOMODE:
         resetHitsValues();
+        setPMTCustomPlotEnvironment(pmt_selected_list);
+        removeAllGraphsPMT();
         break;
     case MULTIMODE:
         resetHitsValues();
+        setHeadCustomPlotEnvironment();
+        removeAllGraphsHead();
         break;
     case TEMPERATURE:
         clearTemperatureBoard();
@@ -850,6 +865,8 @@ void MainWindow::on_pushButton_select_pmt_clicked()
             qDebug() << (*stlIter);
         cout<<"================================"<<endl;
     }
+
+    setPMTCustomPlotEnvironment(qlist);
 
     qSort(qlist);
     ui->listWidget->clear();
@@ -1345,7 +1362,7 @@ void MainWindow::syncCheckBoxHead6ToMCA(bool check)
 void MainWindow::on_pushButton_send_terminal_clicked()
 {
     QString sended = ui->lineEdit_terminal->text();
-    size_t bytes;
+    size_t bytes=0;
     string msg;
     string end_stream=arpet->getEnd_MCA();
 
@@ -1386,7 +1403,7 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
     {
         case 0:
             mca_function=arpet->getInit_MCA();
-            hv_value="";            
+            hv_value="";
             break;
         case 1:
             mca_function=arpet->getData_MCA();
@@ -1395,11 +1412,11 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
             break;
         case 2:
             mca_function=arpet->getSetHV_MCA();
-            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);           
+            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
             break;
         case 3:
             mca_function=arpet->getTemp_MCA();
-            hv_value="";            
+            hv_value="";
             break;
         default:
             break;
@@ -1449,56 +1466,76 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
 
 /* Métodos para QCustomPlot */
 
-void MainWindow::getMultiplePlot(bool accum, QCustomPlot *graph, string title_str)
+QVector<int> MainWindow::getCustomPlotParameters()
 {
-  graph->plotLayout()->insertRow(0);
-  QCPTextElement *title = new QCPTextElement(graph, title_str.c_str(), QFont("sans", 16, QFont::Bold));
-  graph->plotLayout()->addElement(0, 0, title);
+  QVector<int> param(6);
+  param[0]=rand()%245+10;//R
+  param[1]=rand()%245+10;//G
+  param[2]=rand()%245+10;//B
+  param[3]=rand()%5+1; //LineStyle
+  param[4]=rand()%14+1;//ScatterShape
+  param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
 
-  for (int index=0;index<pmt_selected_list.length();index++)
+  return param;
+};
+
+void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
+{
+  QVector<QVector<double> >  hits(qlist.length(), QVector<double>(CHANNELS));
+  for (unsigned int index=0; index < qlist.length(); index++)
   {
-      addPMTGraph(index, graph, pmt_selected_list.at(index).toStdString() ,accum);
+    hits[index].fill(0);
+    qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
   }
-
-  graph->rescaleAxes();
-
-  // connect slot that ties some axis selections together (especially opposite axes):
-  connect(graph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
-
-  // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
-  connect(graph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
-  connect(graph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
-
-  // make bottom and left axes transfer their ranges to top and right axes:
-  connect(graph->xAxis, SIGNAL(rangeChanged(QCPRange)), graph->xAxis2, SLOT(setRange(QCPRange)));
-  connect(graph->yAxis, SIGNAL(rangeChanged(QCPRange)), graph->yAxis2, SLOT(setRange(QCPRange)));
-
-  // connect some interaction slots:
-  connect(graph, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
-  connect(graph, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
-  connect(title, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
-
-  // connect slot that shows a message in the status bar when a graph is clicked:
-  connect(graph, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
-
-  // setup policy and connect slot for context menu popup:
-  graph->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(graph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
+  setPMTVectorHits(hits);
 }
 
-void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, string graph_legend, bool accum)
+void MainWindow::setHeadCustomPlotEnvironment()
+{
+  QVector<QVector<double> >  hits(HEADS, QVector<double>(CHANNELS));
+  for (unsigned int index=0; index < HEADS; index++)
+  {
+    hits[index].fill(0);
+    qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
+  }
+  setHeadVectorHits(hits);
+}
+
+void MainWindow::getMultiplePlot(QCustomPlot *graph)
+{
+  graph->clearGraphs();
+  for (int index=0;index<pmt_selected_list.length();index++)
+  {
+      addPMTGraph(index, graph, pmt_selected_list.at(index));
+  }
+  graph->rescaleAxes();
+}
+
+void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend, bool head)
 {
   channels_ui = arpet->getChannels();
-  if (accum) hits_m_ui[index]=hits_m_ui[index]+hits_m_ui[index];
+  QVector<double> hits;
+  QVector<int> param;
+
+  if (head)
+  {
+    hits = getHeadVectorHits()[index];
+    param = qcp_head_parameters[index];
+  }
+  else
+  {
+    hits = getPMTVectorHits()[index];
+    param = qcp_pmt_parameters[index];
+  }
+
   graph->addGraph();
-  graph->graph()->setName(QString(graph_legend.c_str()).arg(graph->graphCount()-1));
-  graph->graph()->setData(channels_ui, hits_m_ui[index]);
-  graph->graph()->setLineStyle((QCPGraph::LineStyle)(rand()%5+1));
-  if (rand()%100 > 50)
-    graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%14+1)));
+  graph->graph()->setName(graph_legend);
+  graph->graph()->setData(channels_ui,hits);
+  graph->graph()->setLineStyle((QCPGraph::LineStyle)(param[3]));
+  graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
   QPen graphPen;
-  graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-  graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);
+  graphPen.setColor(QColor(param[0], param[1], param[2]));
+  graphPen.setWidthF(param[5]);
   graph->graph()->setPen(graphPen);
   graph->replot();
 }
@@ -1669,6 +1706,12 @@ void MainWindow::removeAllGraphsPMT()
 {
   ui->specPMTs->clearGraphs();
   ui->specPMTs->replot();
+}
+
+void MainWindow::removeAllGraphsHead()
+{
+  ui->specHead->clearGraphs();
+  ui->specHead->replot();
 }
 
 void MainWindow::selectionChangedPMT()

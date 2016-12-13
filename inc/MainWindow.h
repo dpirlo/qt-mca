@@ -13,6 +13,8 @@
 #define MULTIMODE 1
 #define TEMPERATURE 2
 #define MONOMODE 0
+#define HEAD 0
+#define HEADS 6
 
 using namespace ap;
 namespace Ui {
@@ -33,7 +35,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addPMTGraph(int index,  QCustomPlot *graph, string graph_legend="", bool accum=false);
+    void addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend="", bool head=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -42,6 +44,7 @@ private slots:
     void legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item);
     void removeSelectedGraphPMT();
     void removeAllGraphsPMT();
+    void removeAllGraphsHead();
     void contextMenuRequestPMT(QPoint pos);
     void moveLegendPMT();
     void mousePressPMT();
@@ -122,13 +125,16 @@ private:
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tab, string function, bool multimode, string pmt="0");
-    QString getMultiMCA(string tab);
-    QString getHeadMCA(string tab);
+    QString getMultiMCA(string tab, bool accum=false);
+    QString getHeadMCA(string tab, bool accum);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
-    void getPlot(bool accum, QCustomPlot *graph);
-    void getMultiplePlot(bool accum, QCustomPlot *graph, string title_str="");//@ahestevenz
-    void SetQCustomPlotConfiguration(QCustomPlot *graph);//@ahestevenz
+    void setPMTCustomPlotEnvironment(QList<QString> qlist);
+    void setHeadCustomPlotEnvironment();
+    void getHeadPlot(QCustomPlot *graph);
+    void getMultiplePlot(QCustomPlot *graph);
+    QVector<int> getCustomPlotParameters();
+    void SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str="");
     QString setHV(string tab, string hv_value, string pmt);
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);
@@ -156,19 +162,25 @@ private:
     QList<QString> pmt_selected_list;
     int adquire_mode;
     int bytes_int;
-    bool debug;
+    bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
-    QVector< QVector<double> > hits_m_ui;
+    QVector< QVector<double> > hits_pmt_ui, hits_head_ui;
+    QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
     int  AT, LowLimit;
     int TimeOut;
-    QVector<double> channels_ui,hits_ui;
+    QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
 
 public:
     void setDebugMode(bool mode) { debug = mode; }
     void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
     QList<QString> getPMTSelectedList() { return pmt_selected_list; }
+    void setPMTVectorHits(QVector< QVector<double> > hits) { hits_pmt_ui = hits; }
+    QVector< QVector<double> > getPMTVectorHits( ) { return hits_pmt_ui; }
+    void setHeadVectorHits(QVector< QVector<double> > hits) { hits_head_ui = hits; }
+    QVector< QVector<double> > getHeadVectorHits( ) { return hits_head_ui; }
+    void setHitsInit(bool status) { init = status;}
 };
 
 #endif // MAINWINDOW_H
