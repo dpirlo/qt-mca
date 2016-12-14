@@ -29,6 +29,7 @@ using namespace boost::system;
 #define RECEIVED_BUFFER_SIZE 4
 #define SENDED_BUFFER_SIZE 2
 #define CS_BUFFER_SIZE 2
+#define CS_CALIB_BUFFER_SIZE 3
 #define CRLF_SIZE 2
 
 typedef shared_ptr<serial_port> serial_port_ptr;
@@ -95,9 +96,10 @@ namespace ap {
     private:
         string FunCHead, FunCSP3, FunCPSOC, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
-        string Head_MCAE, End_MCA, End_PSOC;
+        string Head_Calib, Head_MCAE, End_MCA, End_PSOC;
         string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
+        string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
         double PSOC_ADC;
         string init_MCA,MCA, HV;
         string AnsMultiInit, AnsHeadInit;
@@ -121,6 +123,7 @@ namespace ap {
         string getFunCPSOC() const { return FunCPSOC; }
         string getBrCst() const { return BrCst; }
         string getHead_MCAE() const { return Head_MCAE; }
+        string getHead_Calib() const { return Head_Calib; }
         string getEnd_MCA() const { return End_MCA; }
         string getEnd_PSOC() const { return End_PSOC; }
         string getHead_MCA() const { return Head_MCA; }
@@ -128,6 +131,10 @@ namespace ap {
         string getTrama_MCA() const { return Trama_MCA; }
         string getTrama_PSOC() const { return Trama_PSOC; }
         string getHeader_MCAE() const { return Header_MCAE; }
+        string getEnergy_Calib_Table() const { return Energy_Calib_Table; }
+        string getX_Calib_Table() const { return X_Calib_Table; }
+        string getY_Calib_Table() const { return Y_Calib_Table; }
+        string getWindow_Limits_Table() const { return Window_Limits_Table; }
         string getPSOC_OFF() const { return PSOC_OFF; }
         string getPSOC_ON() const { return PSOC_ON; }
         string getPSOC_SET() const { return PSOC_SET; }

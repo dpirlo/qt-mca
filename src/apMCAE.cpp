@@ -24,6 +24,13 @@ MCAE::MCAE(size_t timeout)
      FunCSP3("02"),
      FunCPSOC("03"),
 
+     /*Funciones de Tablas*/
+     Head_Calib("&"),
+     Energy_Calib_Table("001"),
+     X_Calib_Table("002"),
+     Y_Calib_Table("003"),
+     Window_Limits_Table("004"),
+
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
      PSOC_ON("$SET,STA,ON"),
