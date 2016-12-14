@@ -84,7 +84,7 @@ private slots:
     void on_pushButton_posicion_Y_clicked();
     void on_pushButton_obtener_rutas_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
-    void on_pushButton_configurar_clicked();
+    void on_pushButton_initialize_clicked();
     void on_pushButton_hv_set_clicked();
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
@@ -98,8 +98,7 @@ private slots:
     void on_pushButton_p_5_clicked();
     void on_pushButton_p_10_clicked();
     void on_pushButton_p_50_clicked();
-    void on_pushButton_reset_clicked();
-    void on_pushButton_head_init_clicked();
+    void on_pushButton_reset_clicked();    
     void on_pushButton_arpet_on_clicked();
     void on_pushButton_arpet_off_clicked();
     void on_actionPreferencias_triggered();
@@ -109,7 +108,7 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
 
-    /*Buttons de prueba*/
+    /*Buttons de prueba*/    
 
 private:
     QString openConfigurationFile();
@@ -117,11 +116,14 @@ private:
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
     QString getHead(string tab);
-    void SetInitialConfigurations();
+    string initHead(int head);
+    string initSP3(int head);
+    int setCalibrationTables(int head);
+    void setInitialConfigurations();
     void setLabelState(bool state, QLabel *label, bool power_off=false);
-    string ReadString(char delimeter='\r');
-    string ReadBufferString(int buffer_size);
-    size_t SendString(string msg, string end);
+    string readString(char delimeter='\r');
+    string readBufferString(int buffer_size);
+    size_t sendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tab, string function, bool multimode, string pmt="0");
@@ -159,6 +161,7 @@ private:
     QList<QLabel*> head_status_table;
     QList<QLabel*> pmt_status_table;
     QList<QLabel*> hv_status_table;
+    QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
     int adquire_mode;
     int bytes_int;

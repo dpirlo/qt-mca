@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
-    SetInitialConfigurations();
+    setInitialConfigurations();
 }
 
 MainWindow::~MainWindow()
@@ -24,7 +24,7 @@ MainWindow::~MainWindow()
     delete pmt_select;
 }
 
-void MainWindow::SetInitialConfigurations()
+void MainWindow::setInitialConfigurations()
 {
     arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
     pref = new SetPreferences(this);
@@ -187,6 +187,13 @@ void MainWindow::getPMTLabelNames()
     head_status_table.push_back(ui->label_cabezal_estado_4);
     head_status_table.push_back(ui->label_cabezal_estado_5);
     head_status_table.push_back(ui->label_cabezal_estado_6);
+
+    calib_status_table.push_back(ui->label_table_1);
+    calib_status_table.push_back(ui->label_table_2);
+    calib_status_table.push_back(ui->label_table_3);
+    calib_status_table.push_back(ui->label_table_4);
+    calib_status_table.push_back(ui->label_table_5);
+    calib_status_table.push_back(ui->label_table_6);
 }
 
 /* Menu: Preferencias */
@@ -214,10 +221,10 @@ void MainWindow::on_pushButton_arpet_on_clicked()
     string msg;
     try
     {
-        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         sleep(1);
-        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -231,8 +238,8 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     string msg;
     try
     {
-        SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -309,41 +316,146 @@ int MainWindow::on_pushButton_conectar_clicked()
     return MCAE::OK;
 }
 
-void MainWindow::on_pushButton_head_init_clicked()
-{
-   int head_index=getHead("config").toInt();
-   /* Incialización del cabezal */
-   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
-   string msg_head;
-   try
-   {
-       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-       msg_head = ReadString();
-   }
-   catch(Exceptions & ex)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr((string("No se puede/n inicializar el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-   }
-   setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
 
+void MainWindow::on_pushButton_initialize_clicked()
+{    
+    /* Inicialización del Cabezal */
+
+    int head_index=getHead("config").toInt();
+
+    string msg_head = initHead(head_index);
+    string msg_pmts = initSP3(head_index);
+
+    ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
+
+    /* Configuración de las tablas de calibración */
+
+    setCalibrationTables(head_index);
+}
+
+void MainWindow::on_pushButton_hv_set_clicked()
+{
+    string msg;
+    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        hv_status_table[head_index-1]->setText(psoc_alta);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
+}
+
+void MainWindow::on_pushButton_hv_on_clicked()
+{
+    string msg;
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
+}
+
+void MainWindow::on_pushButton_hv_off_clicked()
+{
+    string msg;
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1],true);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
+}
+
+void MainWindow::on_pushButton_hv_estado_clicked()
+{
+    string msg;
+    setPSOCDataStream("config",arpet->getPSOC_STA());
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+    if (debug) showMCAEStreamDebugMode(msg);
+}
+
+void MainWindow::setHeadModeConfig(int index)
+{
+    setHeadMode(index,"config");
+}
+
+string MainWindow::initHead(int head)
+{
+    /* Incialización del cabezal */
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
+    string msg_head;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_head = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede/n inicializar el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head-1]);
+
+    return msg_head;
+
+}
+
+string MainWindow::initSP3(int head)
+{
    /* Inicialización de las Spartans 3*/
    setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    string msg_pmts;
    try
    {
-       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-       msg_pmts = ReadString();
+       sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+       msg_pmts = readString();
    }
    catch(Exceptions & ex)
    {
        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-   setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
+   setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head-1]);
 
-   ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
+   return msg_pmts;
 }
 
-void MainWindow::on_pushButton_configurar_clicked()
+int MainWindow::setCalibrationTables(int head)
 {
     coefenerg_values=getValuesFromFiles(coefenerg,false);
     hvtable_values=getValuesFromFiles(hvtable,true);
@@ -372,92 +484,17 @@ void MainWindow::on_pushButton_configurar_clicked()
     }
     catch( Exceptions & ex )
     {
+        setLabelState(true,calib_status_table[head-1]);
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        return MCAE::FAILED;
     }
+
+
+
+    setLabelState(false,calib_status_table[head-1]);
+
+    return MCAE::OK;
 }
-
-void MainWindow::on_pushButton_hv_set_clicked()
-{
-    string msg;
-    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-        hv_status_table[head_index-1]->setText(psoc_alta);
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
-    if (debug) showMCAEStreamDebugMode(msg);
-}
-
-void MainWindow::on_pushButton_hv_on_clicked()
-{
-    string msg;
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
-    if (debug) showMCAEStreamDebugMode(msg);
-}
-
-void MainWindow::on_pushButton_hv_off_clicked()
-{
-    string msg;
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1],true);
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
-    if (debug) showMCAEStreamDebugMode(msg);
-}
-
-void MainWindow::on_pushButton_hv_estado_clicked()
-{
-    string msg;
-    setPSOCDataStream("config",arpet->getPSOC_STA());
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-
-    ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
-    if (debug) showMCAEStreamDebugMode(msg);
-}
-
-void MainWindow::setHeadModeConfig(int index)
-{
-    setHeadMode(index,"config");
-}
-
 
 /* Pestaña: "MCA" */
 
@@ -511,8 +548,8 @@ void MainWindow::drawTemperatureBoard()
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-            string msg = ReadString();
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+            string msg = readString();
             temp=arpet->getPMTTemperature(msg);
             temp_vec.push_back(temp);
             if(debug)
@@ -655,9 +692,9 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
     setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(),bytes_int);
     string msg, msg_data;
 
-    SendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
-    msg = ReadString();
-    msg_data = ReadBufferString(bytes_int);
+    sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
+    msg = readString();
+    msg_data = readBufferString(bytes_int);
 
     arpet->getMCASplitData(msg_data, CHANNELS);
 
@@ -703,8 +740,8 @@ QString MainWindow::setHV(string tab, string hv_value, string pmt)
     string msg;
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -988,8 +1025,8 @@ void MainWindow::getARPETStatus()
     string msg_head;
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg_head = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_head = readString();
     }
     catch(Exceptions & ex)
     {
@@ -1002,7 +1039,8 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
 {
     QVector<double> values;
     QRegExp rx("(\\t)");
-    QFile inputFile(filename);
+    QFile inputFile(filename);       
+
     if (inputFile.open(QIODevice::ReadOnly))
     {
         QTextStream in(&inputFile);
@@ -1184,7 +1222,7 @@ QString MainWindow::getHead(string tab)
     return head;
 }
 
-string MainWindow::ReadString(char delimeter)
+string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
@@ -1197,7 +1235,7 @@ string MainWindow::ReadString(char delimeter)
     return msg;
 }
 
-string MainWindow::ReadBufferString(int buffer_size)
+string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
@@ -1210,7 +1248,7 @@ string MainWindow::ReadBufferString(int buffer_size)
     return msg;
 }
 
-size_t MainWindow::SendString(string msg, string end)
+size_t MainWindow::sendString(string msg, string end)
 {
     arpet->portFlush();
     size_t bytes_transfered = 0;
@@ -1370,8 +1408,8 @@ void MainWindow::on_pushButton_send_terminal_clicked()
 
     try
     {
-        bytes = SendString(sended.toStdString(),end_stream);
-        msg = ReadString();
+        bytes = sendString(sended.toStdString(),end_stream);
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
