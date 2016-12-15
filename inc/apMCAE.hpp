@@ -57,6 +57,9 @@ namespace ap {
         bool verifyMCAEStream(string data_received, string data_to_compare);
         ~MCAE();
 
+        // TESTING
+        string getCalibTableFormat(QVector<double> table);
+
     private:
         size_t portRead(string *msg, int buffer_size);
         size_t portRead(char *c_msg);

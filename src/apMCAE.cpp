@@ -532,4 +532,15 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
     return checked;
 }
 
+string MCAE::getCalibTableFormat(QVector<double> table)
+{
+    QString calib_stream;
+
+    for (unsigned int index=0; index < table.length(); index++)
+    {
+        calib_stream = calib_stream + QString::number(table[index]);
+    }
+
+    return calib_stream.toStdString();
+}
 
