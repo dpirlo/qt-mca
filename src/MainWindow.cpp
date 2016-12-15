@@ -455,6 +455,8 @@ string MainWindow::initSP3(int head)
    return msg_pmts;
 }
 
+
+
 int MainWindow::setCalibrationTables(int head)
 {
     coefenerg_values=getValuesFromFiles(coefenerg,false);
@@ -1320,6 +1322,7 @@ void MainWindow::syncHeadModeComboBoxToConfig(int index)
 void MainWindow::syncHeadComboBoxToConfig(int index)
 {
     getPaths();
+    setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_config->setCurrentIndex(index);
 }
 
@@ -1332,6 +1335,7 @@ void MainWindow::syncHeadModeComboBoxToMCA(int index)
 void MainWindow::syncHeadComboBoxToMCA(int index)
 {
     getPaths();
+    setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_graph->setCurrentIndex(index);
 }
 
