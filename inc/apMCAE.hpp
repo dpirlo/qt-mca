@@ -90,6 +90,7 @@ namespace ap {
         bool verifyCheckSum(string data_mca);
         int convertHexToDec(string hex_number);
         string convertDecToHex(int dec_number);
+        string convertDecToHexUpper(int dec_number);
         string getCalibTableFormat(string function, QVector<double> table);
         int convertDoubleToInt(double value);
         string convertToTwoComplement(double value);

@@ -255,6 +255,13 @@ string MCAE::convertDecToHex(int dec_number)
     return QString(hex_number).toStdString();
 }
 
+string MCAE::convertDecToHexUpper(int dec_number)
+{
+    QByteArray hex_number = QByteArray::number(dec_number,16).toUpper();
+
+    return QString(hex_number).toStdString();
+}
+
 QByteArray MCAE::getReverse(QByteArray seq)
 {
     QByteArray reverse;
@@ -462,7 +469,7 @@ string MCAE::convertToTwoComplement(double value)
 {
     int value_int = (1 << TWO_COMPLEMENT_BITS) + convertDoubleToInt(value);
 
-    return convertDecToHex(value_int);
+    return convertDecToHexUpper(value_int);
 }
 
 string MCAE::getCalibTableFormat(string function, QVector<double> table)
@@ -472,13 +479,13 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 
     switch (file) {
     case 1:
-        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(convertDoubleToInt(table[index])));
+        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
         break;
     case 2 ... 3:
         for (int index=0; index < table.length(); index++)
         {
             if(table[index]>=0)
-                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(convertDoubleToInt(table[index])));
+                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
             else
                 temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertToTwoComplement(table[index]));
 
@@ -486,7 +493,7 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
         }
         break;
     case 4:
-        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(QString::number(table[index]).toInt()));
+        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(QString::number(table[index]).toInt()));
         break;
     default:
         break;
@@ -498,7 +505,7 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 void MCAE::setCalibStream(string function, QVector<double> table)
 {
     string stream_pmts = getCalibTableFormat(function,table);
-    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(getMCACheckSum(function + stream_pmts)));
+    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(getMCACheckSum(function + stream_pmts)));
     setTrama_Calib(getHead_Calib()+function+stream_pmts+cs_stream);
 }
 
