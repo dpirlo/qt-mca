@@ -73,6 +73,7 @@ namespace ap {
         bool portReadOneChar(char& val);
         void setMCAStream(string pmt, string function, string channel="");
         void setMCAStream(string pmt, string function, double time);
+        void setCalibStream(string function, QVector<double> table);
         void setPSOCStream(string function, string psoc_value="");
         int getMCACheckSum(string data);        
         string getMCAFormatStream(string data);
@@ -107,7 +108,7 @@ namespace ap {
         string FunCHead, FunCSP3, FunCPSOC, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA;
         string Head_Calib, Head_MCAE, End_MCA, End_PSOC;
-        string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC;
+        string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
         string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
         double PSOC_ADC;
@@ -140,6 +141,7 @@ namespace ap {
         string getTrama_MCAE() const { return Trama_MCAE; }
         string getTrama_MCA() const { return Trama_MCA; }
         string getTrama_PSOC() const { return Trama_PSOC; }
+        string getTrama_Calib() const { return Trama_Calib; }//falta el set
         string getHeader_MCAE() const { return Header_MCAE; }
         string getEnergy_Calib_Table() const { return Energy_Calib_Table; }
         string getX_Calib_Table() const { return X_Calib_Table; }
@@ -168,6 +170,7 @@ namespace ap {
         void setTrama_MCAE(string data){ Trama_MCAE=data; }        
         void setTrama_PSOC(string data){ Trama_PSOC=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
+        void setTrama_Calib(string data){ Trama_Calib=data; }
         serial_port_ptr getPort() const { return port; }
         int getFrameMCA() const { return frame; }
         long getTimeMCA() const { return time_mca; }

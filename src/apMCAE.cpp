@@ -493,6 +493,13 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
     return calib_stream;
 }
 
+void MCAE::setCalibStream(string function, QVector<double> table)
+{
+    string stream_pmts = getCalibTableFormat(function,table);
+    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(getMCACheckSum(function + stream_pmts)));
+    setTrama_Calib(getHead_Calib()+function+stream_pmts+cs_stream);
+}
+
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
     string channel_value;
@@ -519,9 +526,12 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
-    string stream_pmts = getCalibTableFormat(function,table);
-    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(getMCACheckSum(function + stream_pmts)));
-    setTrama_MCAE(getHead_Calib()+function+stream_pmts+cs_stream);
+    setCalibStream(function, table);
+    int size_calib=(int)(getTrama_Calib().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_calib).toStdString());
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
+    setTrama_MCAE(stream);
 }
 
 void MCAE::setPSOCEStream(string function, string psoc_value_dec)
