@@ -26,11 +26,13 @@ using namespace boost::system;
 #define MIN_HIGH_HV_VOLTAGE 700
 #define HV_BUFFER_SIZE 3
 #define PMT_BUFFER_SIZE 2
+#define TIME_BUFFER_SIZE 2
 #define RECEIVED_BUFFER_SIZE 4
 #define SENDED_BUFFER_SIZE 2
 #define CS_BUFFER_SIZE 2
 #define CS_CALIB_BUFFER_SIZE 3
 #define CRLF_SIZE 2
+#define TWO_COMPLEMENT_BITS 10
 
 typedef shared_ptr<serial_port> serial_port_ptr;
 
@@ -51,6 +53,8 @@ namespace ap {
         error_code portDisconnect();
         void getMCASplitData(string msg_data, int channels);
         void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
+        void setMCAEStream(string pmt_dec, string function, double time);
+        void setMCAEStream(string function, QVector<double> table);
         void setPSOCEStream(string function, string psoc_value_dec="");
         double getPMTTemperature(string temp_stream);
         bool isPortOpen();
@@ -58,7 +62,6 @@ namespace ap {
         ~MCAE();
 
         // TESTING
-        string getCalibTableFormat(QVector<double> table);
 
     private:
         size_t portRead(string *msg, int buffer_size);
@@ -69,8 +72,9 @@ namespace ap {
         void portTimeOut(const boost::system::error_code& error);
         bool portReadOneChar(char& val);
         void setMCAStream(string pmt, string function, string channel="");
+        void setMCAStream(string pmt, string function, double time);
         void setPSOCStream(string function, string psoc_value="");
-        int getMCACheckSum(string data);
+        int getMCACheckSum(string data);        
         string getMCAFormatStream(string data);
         string convertToMCAFormatStream(string data_with_cs);
         string convertFromMCAFormatStream(string data_with_cs);
@@ -85,6 +89,9 @@ namespace ap {
         bool verifyCheckSum(string data_mca);
         int convertHexToDec(string hex_number);
         string convertDecToHex(int dec_number);
+        string getCalibTableFormat(string function, QVector<double> table);
+        int convertDoubleToInt(double value);
+        string convertToTwoComplement(double value);
         QByteArray getReverse(QByteArray seq);
 
     protected:
@@ -98,7 +105,7 @@ namespace ap {
         
     private:
         string FunCHead, FunCSP3, FunCPSOC, BrCst;
-        string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA;
+        string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA;
         string Head_Calib, Head_MCAE, End_MCA, End_PSOC;
         string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
@@ -149,7 +156,8 @@ namespace ap {
         string getInit_MCA() const { return Init_MCA; }
         string getData_MCA() const { return Data_MCA; }
         string getSetHV_MCA() const { return SetHV_MCA; }
-        string getTemp_MCA() const { return Temp_MCA; }        
+        string getTemp_MCA() const { return Temp_MCA; }
+        string getSet_Time_MCA() const { return Set_Time_MCA; }
         string getAnsMultiInit() const { return AnsMultiInit; }
         string getAnsHeadInit() const { return AnsHeadInit; }
         string getAP_ON() const { return AP_ON; }

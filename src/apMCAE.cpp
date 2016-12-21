@@ -48,7 +48,8 @@ MCAE::MCAE(size_t timeout)
      Init_MCA("6401"),
      Data_MCA("65"),
      SetHV_MCA("68"),
-     Temp_MCA("74000")
+     Temp_MCA("74000"),
+     Set_Time_MCA("80")
 {
     /*PRUEBAS*/
 }
@@ -311,6 +312,7 @@ int MCAE::getMCACheckSum(string data)
     return sum_of_elements;
 }
 
+
 MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
 {
     if (in_string == "a") return a;
@@ -432,11 +434,63 @@ void MCAE::setMCAStream(string pmt, string function, string channel)
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 
+void MCAE::setMCAStream(string pmt, string function, double time)
+{
+    string time_str=QString::number(time).toStdString();
+    string stream_wo_cs=pmt+function+time_str;
+    setTrama_MCA(getMCAFormatStream(stream_wo_cs));
+}
+
 void MCAE::setPSOCStream(string function, string psoc_value)
 {
     string stream_psoc;
     stream_psoc=function+psoc_value;
     setTrama_PSOC(stream_psoc);
+}
+
+int MCAE::convertDoubleToInt(double value)
+{
+    int value_int;
+    value=value*1000;
+
+    return value_int=(int)round(value);
+}
+
+string MCAE::convertToTwoComplement(double value)
+{
+    int value_int = (1 << TWO_COMPLEMENT_BITS) + convertDoubleToInt(value);
+
+    return convertDecToHex(value_int);
+}
+
+string MCAE::getCalibTableFormat(string function, QVector<double> table)
+{
+    string calib_stream, temp_calib_stream;
+    int file=QString::fromStdString(function).toInt();
+
+    switch (file) {
+    case 1:
+        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(convertDoubleToInt(table[index])));
+        break;
+    case 2 ... 3:
+        for (int index=0; index < table.length(); index++)
+        {
+            if(table[index]>=0)
+                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(convertDoubleToInt(table[index])));
+            else
+                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertToTwoComplement(table[index]));
+
+            calib_stream = calib_stream + temp_calib_stream;
+        }
+        break;
+    case 4:
+        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(QString::number(table[index]).toInt()));
+        break;
+    default:
+        break;
+    }
+
+    return calib_stream;
 }
 
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
@@ -450,6 +504,24 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
     string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_stream+size_mca).toStdString());
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
+}
+
+void MCAE::setMCAEStream(string pmt_dec, string function, double time)
+{
+    string pmt=getPMTCode(atoi(pmt_dec.c_str()));
+    setMCAStream(pmt, function, time);
+    int size_mca=(int)(getTrama_MCA().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_mca).toStdString());
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
+    setTrama_MCAE(stream);
+}
+
+void MCAE::setMCAEStream(string function, QVector<double> table)
+{
+    string stream_pmts = getCalibTableFormat(function,table);
+    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHex(getMCACheckSum(function + stream_pmts)));
+    setTrama_MCAE(getHead_Calib()+function+stream_pmts+cs_stream);
 }
 
 void MCAE::setPSOCEStream(string function, string psoc_value_dec)
@@ -531,16 +603,3 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
 
     return checked;
 }
-
-string MCAE::getCalibTableFormat(QVector<double> table)
-{
-    QString calib_stream;
-
-    for (unsigned int index=0; index < table.length(); index++)
-    {
-        calib_stream = calib_stream + QString::number(table[index]);
-    }
-
-    return calib_stream.toStdString();
-}
-
