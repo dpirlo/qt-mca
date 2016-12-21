@@ -131,6 +131,7 @@ private:
     QString getHeadMCA(string tab, bool accum);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
+    void setMCAEDataStream(string tab, string function, QVector<double> table);
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
     void setHeadCustomPlotEnvironment();

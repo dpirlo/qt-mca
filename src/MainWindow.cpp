@@ -769,9 +769,8 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
 
 QString MainWindow::setCalibTable(string function, QVector<double> table)
 {
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHead());
-    arpet->setMCAEStream(function, table);
-    
+    setMCAEDataStream("config", function, table);
+
     string msg;
     try
     {
@@ -889,6 +888,11 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
   arpet->setMCAEStream(pmt, mca_function, time);
 }
 
+void MainWindow::setMCAEDataStream(string tab, string function,QVector<double> table )
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
+  arpet->setMCAEStream(function, table);
+}
 
 int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
 {
