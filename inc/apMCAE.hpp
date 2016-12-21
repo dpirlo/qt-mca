@@ -116,6 +116,7 @@ namespace ap {
         double PSOC_ADC;
         string init_MCA, MCA, HV;
         string AnsMultiInit, AnsHeadInit;
+        string AnsEnergy_Calib_Table, AnsX_Calib_Table, AnsY_Calib_Table, AnsWindow_Limits_Table;
         string AP_ON, AP_OFF;
         string AnsAP_ON, AnsAP_OFF;
         size_t timeout;
@@ -167,7 +168,11 @@ namespace ap {
         string getAP_ON() const { return AP_ON; }
         string getAP_OFF() const { return AP_OFF; }
         string getAnsAP_ON() const { return AnsAP_ON; }
-        string getAnsAP_OFF() const { return AnsAP_OFF; }
+        string getAnsAP_OFF() const { return AnsAP_OFF; }        
+        string getAnsEnergy_Calib_Table() const { return AnsEnergy_Calib_Table; }
+        string getAnsX_Calib_Table() const { return AnsX_Calib_Table; }
+        string getAnsY_Calib_Table() const { return AnsY_Calib_Table; }
+        string getAnsWindow_Limits_Table() const { return AnsWindow_Limits_Table; }
         string getSize_Received_Calib() const { return Size_Received_Calib; }
         string getSize_Sended_Calib() const { return Size_Sended_Calib; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }

@@ -30,6 +30,10 @@ MCAE::MCAE(size_t timeout)
      X_Calib_Table("002"),
      Y_Calib_Table("003"),
      Window_Limits_Table("004"),
+     AnsEnergy_Calib_Table("&101"),
+     AnsX_Calib_Table("&102"),
+     AnsY_Calib_Table("&103"),
+     AnsWindow_Limits_Table("&104"),
      Size_Received_Calib("0001"),
      Size_Sended_Calib("01"),
 
