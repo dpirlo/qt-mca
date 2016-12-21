@@ -455,20 +455,46 @@ string MainWindow::initSP3(int head)
    return msg_pmts;
 }
 
-
-
 int MainWindow::setCalibrationTables(int head)
 {
-    coefenerg_values=getValuesFromFiles(coefenerg,false);
+    coefenerg_values=getValuesFromFiles(coefenerg);
     hvtable_values=getValuesFromFiles(hvtable,true);
-    coefx_values=getValuesFromFiles(coefx,false);
-    coefy_values=getValuesFromFiles(coefy,false);
-    coefT_values=getValuesFromFiles(coefT,false);
-    coefest_values=getValuesFromFiles(coefest,false);
+    coefx_values=getValuesFromFiles(coefx);
+    coefy_values=getValuesFromFiles(coefy);
+    coefT_values=getValuesFromFiles(coefT);
+    coefest_values=getValuesFromFiles(coefest);
 
-    QString q_msg;
+    QString q_msg, q_msg_bis;
     try
     {
+        q_msg = setCalibTable(arpet->getX_Calib_Table(), coefx_values);
+        if(debug)
+        {
+            cout<<"================================"<<endl;
+            cout<<"Cabezal: "<< head <<endl;
+            cout<<"Configuración en posición X: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getY_Calib_Table(), coefy_values);
+        if(debug)
+        {
+            cout<<"Configuración en posición Y: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getEnergy_Calib_Table(), coefenerg_values);
+        if(debug)
+        {
+            cout<<"Configuración en energía: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getWindow_Limits_Table(),coefest_values);
+        if(debug)
+        {
+            cout<<"Configuración de Triple Ventana: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+            cout<<"================================"<<endl;
+        }
+
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             QString hv=QString::number(hvtable_values[pmt]);
@@ -479,8 +505,15 @@ int MainWindow::setCalibrationTables(int head)
                 cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
                 cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+            }
+            q_msg = setTime("config", coefT_values[pmt], QString::number(pmt+1).toStdString());
+            if(debug)
+            {
+                showMCAEStreamDebugMode(q_msg.toStdString());
+                cout<<"Valor de tiempo: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
                 cout<<"================================"<<endl;
             }
+
         }
 
     }
@@ -490,8 +523,6 @@ int MainWindow::setCalibrationTables(int head)
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         return MCAE::FAILED;
     }
-
-
 
     setLabelState(false,calib_status_table[head-1]);
 
@@ -736,6 +767,42 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
     return QString::fromStdString(msg);
 }
 
+QString MainWindow::setCalibTable(string function, QVector<double> table)
+{
+    arpet->setMCAEStream(function, table);
+    string msg;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_hv(ex.excdesc);
+        throw exception_hv;
+    }
+
+    return QString::fromStdString(msg);
+}
+
+QString MainWindow::setTime(string tab, double time_value, string pmt)
+{
+    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSet_Time_MCA(), time_value);
+    string msg;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_hv(ex.excdesc);
+        throw exception_hv;
+    }
+
+    return QString::fromStdString(msg);
+}
+
 QString MainWindow::setHV(string tab, string hv_value, string pmt)
 {
     setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSetHV_MCA(),0, hv_value);
@@ -806,11 +873,20 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
     return QString::number(hv_value_int).toStdString();
 }
 
+
 void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
   arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
 }
+
+
+void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time)
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
+  arpet->setMCAEStream(pmt, mca_function, time);
+}
+
 
 int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
 {

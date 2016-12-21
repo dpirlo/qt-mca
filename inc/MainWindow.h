@@ -130,6 +130,7 @@ private:
     QString getMultiMCA(string tab, bool accum=false);
     QString getHeadMCA(string tab, bool accum);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
+    void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
     void setHeadCustomPlotEnvironment();
@@ -138,6 +139,8 @@ private:
     QVector<int> getCustomPlotParameters();
     void SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str="");
     QString setHV(string tab, string hv_value, string pmt);
+    QString setCalibTable(string function, QVector<double> table);
+    QString setTime(string tab, double time_value, string pmt);
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);
     void setPMT(int value);
@@ -148,7 +151,7 @@ private:
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
-    QVector<double> getValuesFromFiles(QString filename, bool hv);
+    QVector<double> getValuesFromFiles(QString filename, bool hv=false);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
 
