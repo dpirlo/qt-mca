@@ -75,7 +75,7 @@ namespace ap {
         void setMCAStream(string pmt, string function, double time);
         void setCalibStream(string function, QVector<double> table);
         void setPSOCStream(string function, string psoc_value="");
-        int getMCACheckSum(string data);        
+        int getMCACheckSum(string data);
         string getMCAFormatStream(string data);
         string convertToMCAFormatStream(string data_with_cs);
         string convertFromMCAFormatStream(string data_with_cs);
@@ -103,7 +103,7 @@ namespace ap {
         static const int OK=0000;
         static const int FAILED=0001;
         static const int FILE_NOT_FOUND=0002;
-        
+
     private:
         string FunCHead, FunCSP3, FunCPSOC, BrCst;
         string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA;
@@ -111,8 +111,9 @@ namespace ap {
         string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
         string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
+        string Size_Received_Calib, Size_Sended_Calib;
         double PSOC_ADC;
-        string init_MCA,MCA, HV;
+        string init_MCA, MCA, HV;
         string AnsMultiInit, AnsHeadInit;
         string AP_ON, AP_OFF;
         string AnsAP_ON, AnsAP_OFF;
@@ -141,7 +142,7 @@ namespace ap {
         string getTrama_MCAE() const { return Trama_MCAE; }
         string getTrama_MCA() const { return Trama_MCA; }
         string getTrama_PSOC() const { return Trama_PSOC; }
-        string getTrama_Calib() const { return Trama_Calib; }//falta el set
+        string getTrama_Calib() const { return Trama_Calib; }
         string getHeader_MCAE() const { return Header_MCAE; }
         string getEnergy_Calib_Table() const { return Energy_Calib_Table; }
         string getX_Calib_Table() const { return X_Calib_Table; }
@@ -166,8 +167,10 @@ namespace ap {
         string getAP_OFF() const { return AP_OFF; }
         string getAnsAP_ON() const { return AnsAP_ON; }
         string getAnsAP_OFF() const { return AnsAP_OFF; }
+        string getSize_Received_Calib() const { return Size_Received_Calib; }
+        string getSize_Sended_Calib() const { return Size_Sended_Calib; }
         void setHeader_MCAE(string data) { Header_MCAE=data; }
-        void setTrama_MCAE(string data){ Trama_MCAE=data; }        
+        void setTrama_MCAE(string data){ Trama_MCAE=data; }
         void setTrama_PSOC(string data){ Trama_PSOC=data; }
         void setTrama_MCA(string data){ Trama_MCA=data; }
         void setTrama_Calib(string data){ Trama_Calib=data; }
@@ -177,7 +180,7 @@ namespace ap {
         int getHVMCA() const { return HV_pmt; }
         int getOffSetMCA() const { return offset; }
         int getVarMCA() const { return var; }
-        int getTempValueMCA() const { return temp; }        
+        int getTempValueMCA() const { return temp; }
         QVector<double> getChannels() const { return channels_id; }
         QVector<double> getHitsMCA() const { return hits_mca; }
     };

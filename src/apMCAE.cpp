@@ -8,7 +8,7 @@ MCAE::MCAE(size_t timeout)
      hits_mca(CHANNELS),
      timeout(timeout),
      read_error(true),
-     timer(port->get_io_service()),     
+     timer(port->get_io_service()),
      PortBaudRate(921600),
      AnsAP_ON("ON"),
      AnsAP_OFF("OFF"),
@@ -30,6 +30,8 @@ MCAE::MCAE(size_t timeout)
      X_Calib_Table("002"),
      Y_Calib_Table("003"),
      Window_Limits_Table("004"),
+     Size_Received_Calib("0001"),
+     Size_Sended_Calib("01"),
 
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
@@ -66,7 +68,7 @@ bool MCAE::isPortOpen()
 
 error_code MCAE::portConnect(const char *tty_port_name)
 {
-    error_code error_code;    
+    error_code error_code;
     port->open(tty_port_name, error_code);
     port->set_option(serial_port_base::baud_rate(PortBaudRate));
 
@@ -128,7 +130,7 @@ string MCAE::portReadMCAELine() {
 }
 
 string MCAE::portReadPSOCLine() {
-  char c;  
+  char c;
   string msg;
   while(true) {
       portRead(&c);
@@ -228,7 +230,7 @@ bool MCAE::portReadCharArray(int nbytes)
 
 error_code MCAE::portFlush()
 {
-    error_code ec;    
+    error_code ec;
 
     const bool isFlushed =! ::tcflush(port->native(), TCIOFLUSH);
     if (!isFlushed)
@@ -527,9 +529,8 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
     setCalibStream(function, table);
-    int size_calib=(int)(getTrama_Calib().size());
-    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
-    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_calib).toStdString());
+    string size_sended=getSize_Sended_Calib();
+    string size_received=getSize_Received_Calib();
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
     setTrama_MCAE(stream);
 }
