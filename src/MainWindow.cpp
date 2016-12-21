@@ -464,7 +464,7 @@ int MainWindow::setCalibrationTables(int head)
     coefT_values=getValuesFromFiles(coefT);
     coefest_values=getValuesFromFiles(coefest);
 
-    QString q_msg, q_msg_bis;
+    QString q_msg;
     try
     {
         q_msg = setCalibTable(arpet->getX_Calib_Table(), coefx_values);
@@ -520,7 +520,7 @@ int MainWindow::setCalibrationTables(int head)
     catch( Exceptions & ex )
     {
         setLabelState(true,calib_status_table[head-1]);
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden configurar las tablas de calibración. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         return MCAE::FAILED;
     }
 
