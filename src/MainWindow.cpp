@@ -318,7 +318,7 @@ int MainWindow::on_pushButton_conectar_clicked()
 
 
 void MainWindow::on_pushButton_initialize_clicked()
-{    
+{
     /* Inicialización del Cabezal */
 
     int head_index=getHead("config").toInt();
@@ -769,7 +769,9 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
 
 QString MainWindow::setCalibTable(string function, QVector<double> table)
 {
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCHead());
     arpet->setMCAEStream(function, table);
+    
     string msg;
     try
     {
@@ -1117,7 +1119,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
 {
     QVector<double> values;
     QRegExp rx("(\\t)");
-    QFile inputFile(filename);       
+    QFile inputFile(filename);
 
     if (inputFile.open(QIODevice::ReadOnly))
     {
