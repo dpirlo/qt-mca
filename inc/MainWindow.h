@@ -140,7 +140,7 @@ private:
     QVector<int> getCustomPlotParameters();
     void SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str="");
     QString setHV(string tab, string hv_value, string pmt);
-    QString setCalibTable(string function, QVector<double> table);
+    QString setCalibTable(string function, QVector<double> table, string msg_compare);
     QString setTime(string tab, double time_value, string pmt);
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);

@@ -467,7 +467,7 @@ int MainWindow::setCalibrationTables(int head)
     QString q_msg;
     try
     {
-        q_msg = setCalibTable(arpet->getX_Calib_Table(), coefx_values);
+        q_msg = setCalibTable(arpet->getX_Calib_Table(), coefx_values, arpet->getAnsX_Calib_Table());
         if(debug)
         {
             cout<<"================================"<<endl;
@@ -475,19 +475,19 @@ int MainWindow::setCalibrationTables(int head)
             cout<<"Configuración en posición X: "<<endl;
             showMCAEStreamDebugMode(q_msg.toStdString());
         }
-        q_msg = setCalibTable(arpet->getY_Calib_Table(), coefy_values);
+        q_msg = setCalibTable(arpet->getY_Calib_Table(), coefy_values, arpet->getAnsY_Calib_Table());
         if(debug)
         {
             cout<<"Configuración en posición Y: "<<endl;
             showMCAEStreamDebugMode(q_msg.toStdString());
         }
-        q_msg = setCalibTable(arpet->getEnergy_Calib_Table(), coefenerg_values);
+        q_msg = setCalibTable(arpet->getEnergy_Calib_Table(), coefenerg_values, arpet->getAnsEnergy_Calib_Table());
         if(debug)
         {
             cout<<"Configuración en energía: "<<endl;
             showMCAEStreamDebugMode(q_msg.toStdString());
         }
-        q_msg = setCalibTable(arpet->getWindow_Limits_Table(),coefest_values);
+        q_msg = setCalibTable(arpet->getWindow_Limits_Table(),coefest_values, arpet->getAnsWindow_Limits_Table());
         if(debug)
         {
             cout<<"Configuración de Triple Ventana: "<<endl;
@@ -767,7 +767,7 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, string p
     return QString::fromStdString(msg);
 }
 
-QString MainWindow::setCalibTable(string function, QVector<double> table)
+QString MainWindow::setCalibTable(string function, QVector<double> table, string msg_compare)
 {
     setMCAEDataStream("config", function, table);
 
@@ -779,8 +779,14 @@ QString MainWindow::setCalibTable(string function, QVector<double> table)
     }
     catch(Exceptions & ex)
     {
-        Exceptions exception_hv(ex.excdesc);
-        throw exception_hv;
+        Exceptions exception_time_out(ex.excdesc);
+        throw exception_time_out;
+    }
+
+    if(!arpet->verifyMCAEStream(msg, msg_compare))
+    {
+        Exceptions exception_calib(string("Respuesta: "+msg).c_str());
+        throw exception_calib;
     }
 
     return QString::fromStdString(msg);
