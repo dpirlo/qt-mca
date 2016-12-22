@@ -15,6 +15,7 @@
 #define MONOMODE 0
 #define HEAD 0
 #define HEADS 6
+#define MIN_TEMPERATURE 20
 
 using namespace ap;
 namespace Ui {

@@ -584,7 +584,7 @@ void MainWindow::drawTemperatureBoard()
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
             string msg = readString();
             temp=arpet->getPMTTemperature(msg);
-            temp_vec.push_back(temp);
+            if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
             if(debug)
             {
                 cout<<"================================"<<endl;
