@@ -7,26 +7,28 @@ MainWindow::MainWindow(QWidget *parent) :
     TimeOut(1000),
     bytes_int(CHANNELS*6+16),
     channels_ui(CHANNELS),
-    hits_ui(CHANNELS),
     debug(false),
+    init(false),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setFixedSize(this->maximumSize());    
-    SetInitialConfigurations();    
+    this->setFixedSize(this->maximumSize());
+    setInitialConfigurations();
 }
 
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();    
+    arpet->portDisconnect();
     delete ui;
     delete pref;
+    delete pmt_select;
 }
 
-void MainWindow::SetInitialConfigurations()
+void MainWindow::setInitialConfigurations()
 {
     arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
     pref = new SetPreferences(this);
+    pmt_select = new SetPMTs(this);
 
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
@@ -41,8 +43,53 @@ void MainWindow::SetInitialConfigurations()
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     getPMTLabelNames();
-
+    SetQCustomPlotConfiguration(ui->specPMTs, "Cuentas por PMT");
+    SetQCustomPlotConfiguration(ui->specHead, "Cuentas en el Cabezal");
     resetHitsValues();
+}
+
+void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str)
+{
+  graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                                  QCP::iSelectLegend | QCP::iSelectPlottables);
+  graph->axisRect()->setupFullAxesBox();
+  graph->xAxis->setRange(0, CHANNELS);
+  graph->yAxis->setRange(-5, 5);
+  graph->xAxis->setLabel("Canales");
+  graph->yAxis->setLabel("Cuentas");
+  graph->legend->setVisible(true);
+  QFont legendFont = font();
+  legendFont.setPointSize(10);
+  graph->legend->setFont(legendFont);
+  graph->legend->setSelectedFont(legendFont);
+  graph->legend->setSelectableParts(QCPLegend::spItems);
+
+  graph->plotLayout()->insertRow(0);
+  QCPTextElement *title = new QCPTextElement(graph, title_str.c_str(), QFont("sans", 16, QFont::Bold));
+  graph->plotLayout()->addElement(0, 0, title);
+
+  // connect slot that ties some axis selections together (especially opposite axes):
+  connect(graph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
+
+  // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
+  connect(graph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
+  connect(graph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
+
+  // make bottom and left axes transfer their ranges to top and right axes:
+  connect(graph->xAxis, SIGNAL(rangeChanged(QCPRange)), graph->xAxis2, SLOT(setRange(QCPRange)));
+  connect(graph->yAxis, SIGNAL(rangeChanged(QCPRange)), graph->yAxis2, SLOT(setRange(QCPRange)));
+
+  // connect some interaction slots:
+  connect(graph, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
+  connect(graph, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
+  connect(title, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
+
+  // connect slot that shows a message in the status bar when a graph is clicked:
+  connect(graph, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+
+  // setup policy and connect slot for context menu popup:
+  graph->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(graph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
 }
 
 void MainWindow::checkCombosStatus()
@@ -140,6 +187,13 @@ void MainWindow::getPMTLabelNames()
     head_status_table.push_back(ui->label_cabezal_estado_4);
     head_status_table.push_back(ui->label_cabezal_estado_5);
     head_status_table.push_back(ui->label_cabezal_estado_6);
+
+    calib_status_table.push_back(ui->label_table_1);
+    calib_status_table.push_back(ui->label_table_2);
+    calib_status_table.push_back(ui->label_table_3);
+    calib_status_table.push_back(ui->label_table_4);
+    calib_status_table.push_back(ui->label_table_5);
+    calib_status_table.push_back(ui->label_table_6);
 }
 
 /* Menu: Preferencias */
@@ -167,10 +221,10 @@ void MainWindow::on_pushButton_arpet_on_clicked()
     string msg;
     try
     {
-        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         sleep(1);
-        SendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -184,8 +238,8 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     string msg;
     try
     {
-        SendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -233,19 +287,7 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 
 void MainWindow::on_pushButton_obtener_rutas_clicked()
 {
-    string initfile="/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini";
-    QString filename=QString::fromStdString(initfile);
-    parseConfigurationFile(filename);
-
-    ui->textBrowser_triple_ventana->setText(coefest);
-    ui->textBrowser_hv->setText(hvtable);
-    ui->textBrowser_energia->setText(coefenerg);
-    ui->textBrowser_posicion_X->setText(coefx);
-    ui->textBrowser_posicion_Y->setText(coefy);
-    ui->textBrowser_tiempos_cabezal->setText(coefT);
-
-    ui->lineEdit_alta->setText(QString::number(AT));
-    ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+    getPaths();
 }
 
 int MainWindow::on_pushButton_conectar_clicked()
@@ -274,83 +316,33 @@ int MainWindow::on_pushButton_conectar_clicked()
     return MCAE::OK;
 }
 
-void MainWindow::on_pushButton_head_init_clicked()
+
+void MainWindow::on_pushButton_initialize_clicked()
 {
-   int head_index=getHead("config").toInt();   
-   /* Incialización del cabezal */
-   setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());   
-   string msg_head;
-   try
-   {
-       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-       msg_head = ReadString();
-   }
-   catch(Exceptions & ex)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr((string("No se puede/n inicializar el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-   }
-   setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head_index-1]);
+    /* Inicialización del Cabezal */
 
-   /* Inicialización de las Spartans 3*/
-   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());  
-   string msg_pmts;
-   try
-   {
-       SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-       msg_pmts = ReadString();
-   }
-   catch(Exceptions & ex)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-   }
-   setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head_index-1]);
+    int head_index=getHead("config").toInt();
 
-   ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
-}
+    string msg_head = initHead(head_index);
+    string msg_pmts = initSP3(head_index);
 
-void MainWindow::on_pushButton_configurar_clicked()
-{
-    coefenerg_values=getValuesFromFiles(coefenerg,false);
-    hvtable_values=getValuesFromFiles(hvtable,true);
-    coefx_values=getValuesFromFiles(coefx,false);
-    coefy_values=getValuesFromFiles(coefy,false);
-    coefT_values=getValuesFromFiles(coefT,false);
-    coefest_values=getValuesFromFiles(coefest,false);
+    ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
 
-    QString q_msg;
-    try
-    {
-        for(int pmt = 0; pmt < PMTs; pmt++)
-        {
-            QString hv=QString::number(hvtable_values[pmt]);
-            q_msg = setHV("config",hv.toStdString(), QString::number(pmt+1).toStdString());
-            if(debug)
-            {
-                cout<<"================================"<<endl;
-                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                showMCAEStreamDebugMode(q_msg.toStdString());
-                cout<<"Valor de HV: "<< hv.toStdString() <<endl;
-                cout<<"================================"<<endl;
-            }
-        }
+    /* Configuración de las tablas de calibración */
 
-    }
-    catch( Exceptions & ex )
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
+    setCalibrationTables(head_index);
 }
 
 void MainWindow::on_pushButton_hv_set_clicked()
 {
     string msg;
-    int psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
+    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        hv_status_table[head_index-1]->setText(psoc_alta);
     }
     catch(Exceptions & ex)
     {
@@ -364,18 +356,17 @@ void MainWindow::on_pushButton_hv_set_clicked()
 void MainWindow::on_pushButton_hv_on_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led);
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
     }
     catch(Exceptions & ex)
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }   
+    }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
@@ -384,13 +375,12 @@ void MainWindow::on_pushButton_hv_on_clicked()
 void MainWindow::on_pushButton_hv_off_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
-        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), ui->label_led,true);
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1],true);
     }
     catch(Exceptions & ex)
     {
@@ -404,12 +394,11 @@ void MainWindow::on_pushButton_hv_off_clicked()
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
     string msg;
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("config").toStdString() + arpet->getFunCPSOC());
-    arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_STA());
+    setPSOCDataStream("config",arpet->getPSOC_STA());
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-        msg = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
 
     }
     catch(Exceptions & ex)
@@ -426,6 +415,119 @@ void MainWindow::setHeadModeConfig(int index)
     setHeadMode(index,"config");
 }
 
+string MainWindow::initHead(int head)
+{
+    /* Incialización del cabezal */
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
+    string msg_head;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_head = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede/n inicializar el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head-1]);
+
+    return msg_head;
+
+}
+
+string MainWindow::initSP3(int head)
+{
+   /* Inicialización de las Spartans 3*/
+   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
+   string msg_pmts;
+   try
+   {
+       sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+       msg_pmts = readString();
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+   }
+   setLabelState(!arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head-1]);
+
+   return msg_pmts;
+}
+
+int MainWindow::setCalibrationTables(int head)
+{
+    coefenerg_values=getValuesFromFiles(coefenerg);
+    hvtable_values=getValuesFromFiles(hvtable,true);
+    coefx_values=getValuesFromFiles(coefx);
+    coefy_values=getValuesFromFiles(coefy);
+    coefT_values=getValuesFromFiles(coefT);
+    coefest_values=getValuesFromFiles(coefest);
+
+    QString q_msg;
+    try
+    {
+        q_msg = setCalibTable(arpet->getX_Calib_Table(), coefx_values, arpet->getAnsX_Calib_Table());
+        if(debug)
+        {
+            cout<<"================================"<<endl;
+            cout<<"Cabezal: "<< head <<endl;
+            cout<<"Configuración en posición X: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getY_Calib_Table(), coefy_values, arpet->getAnsY_Calib_Table());
+        if(debug)
+        {
+            cout<<"Configuración en posición Y: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getEnergy_Calib_Table(), coefenerg_values, arpet->getAnsEnergy_Calib_Table());
+        if(debug)
+        {
+            cout<<"Configuración en energía: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+        q_msg = setCalibTable(arpet->getWindow_Limits_Table(),coefest_values, arpet->getAnsWindow_Limits_Table());
+        if(debug)
+        {
+            cout<<"Configuración de Triple Ventana: "<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+            cout<<"================================"<<endl;
+        }
+
+        for(int pmt = 0; pmt < PMTs; pmt++)
+        {
+            QString hv=QString::number(hvtable_values[pmt]);
+            q_msg = setHV("config",hv.toStdString(), QString::number(pmt+1).toStdString());
+            if(debug)
+            {
+                cout<<"================================"<<endl;
+                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                showMCAEStreamDebugMode(q_msg.toStdString());
+                cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+            }
+            q_msg = setTime("config", coefT_values[pmt], QString::number(pmt+1).toStdString());
+            if(debug)
+            {
+                showMCAEStreamDebugMode(q_msg.toStdString());
+                cout<<"Valor de tiempo: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"================================"<<endl;
+            }
+
+        }
+
+    }
+    catch( Exceptions & ex )
+    {
+        setLabelState(true,calib_status_table[head-1]);
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden configurar las tablas de calibración. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        return MCAE::FAILED;
+    }
+
+    setLabelState(false,calib_status_table[head-1]);
+
+    return MCAE::OK;
+}
 
 /* Pestaña: "MCA" */
 
@@ -479,10 +581,10 @@ void MainWindow::drawTemperatureBoard()
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-            string msg = ReadString();
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+            string msg = readString();
             temp=arpet->getPMTTemperature(msg);
-            temp_vec.push_back(temp);
+            if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
             if(debug)
             {
                 cout<<"================================"<<endl;
@@ -529,175 +631,6 @@ void MainWindow::clearTemperatureBoard()
        }
 }
 
-void MainWindow::on_pushButton_adquirir_clicked()
-{
-    QString q_msg;
-    bool accum=true;
-    if (!(ui->checkBox_accum->isChecked())) accum=false;
-
-    switch (adquire_mode) {
-    case MONOMODE:
-        q_msg = getMCA("mca",arpet->getFunCSP3());
-        getPlot(accum, ui->specPMTs);        
-        break;
-    case MULTIMODE:
-        q_msg = getMCA("mca",arpet->getFunCHead());
-        getPlot(accum, ui->specHead);        
-        break;
-    case TEMPERATURE:
-        drawTemperatureBoard();
-        break;
-    default:
-        break;
-    }
-
-    ui->label_received->setText(q_msg);    
-}
-
-void MainWindow::on_pushButton_reset_clicked()
-{
-    switch (adquire_mode) {
-    case MONOMODE:
-        resetHitsValues();
-        break;
-    case MULTIMODE:
-        resetHitsValues();
-        break;
-    case TEMPERATURE:
-        clearTemperatureBoard();
-        break;
-    default:
-        break;
-    }
-}
-
-
-void MainWindow::on_pushButton_hv_configure_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_5_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_10_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_l_50_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_5_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_10_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-void MainWindow::on_pushButton_p_50_clicked()
-{
-    QString q_msg;
-    try
-    {
-        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
-    }
-    catch (Exceptions ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_received->setText(q_msg);
-    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
-}
-
-
-void MainWindow::on_pushButton_decrease_clicked()
-{
-    QString pmt=ui->lineEdit_pmt->text();
-    if (pmt.toInt()>1)
-    {
-        int pmt_decrease=pmt.toInt()-1;
-        ui->lineEdit_pmt->setText(QString::number(pmt_decrease));
-    }
-}
-
-void MainWindow::on_pushButton_increase_clicked()
-{
-    QString pmt=ui->lineEdit_pmt->text();
-    if (pmt.toInt()<PMTs)
-    {
-        int pmt_increase=pmt.toInt()+1;
-        ui->lineEdit_pmt->setText(QString::number(pmt_increase));
-    }
-}
-
 void MainWindow::setHeadModeGraph(int index)
 {
     setHeadMode(index,"mca");
@@ -710,20 +643,21 @@ void MainWindow::setAdquireMode(int index)
     case MONOMODE:
         ui->frame_PMT->show();
         ui->frame_HV->show();
-        ui->frame_MCA->show();        
+        ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     case MULTIMODE:
         ui->frame_PMT->hide();
-        ui->frame_HV->hide();        
+        ui->frame_HV->hide();
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+        setHeadCustomPlotEnvironment();
         break;
     case TEMPERATURE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
-        ui->frame_MCA->hide();        
+        ui->frame_MCA->hide();
     default:
         break;
     }
@@ -735,23 +669,66 @@ void MainWindow::setTabMode(int index)
     ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 
-QString MainWindow::getMCA(string tab, string function)
+QString MainWindow::getHeadMCA(string tab, bool accum)
 {
-    pmt_ui_current=getPMT(ui->lineEdit_pmt);
-    if (pmt_ui_current!=pmt_ui_previous) resetHitsValues();
-    pmt_ui_previous=pmt_ui_current;
-    setMCAEDataStream(tab, function, QString::number(pmt_ui_current).toStdString(), arpet->getData_MCA(),bytes_int);    
+   QString msg;
+   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
+
+   try
+   {
+     msg = getMCA(tab,arpet->getFunCHead() , true);
+     hits.insert(HEAD, 1, arpet->getHitsMCA());
+     if (accum) transform(hits[HEAD].begin(),hits[HEAD].end(), getHeadVectorHits()[HEAD].begin(), hits[HEAD].begin(), plus<double>());
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+   }
+
+   setHeadVectorHits(hits);
+
+   return msg;
+}
+
+QString MainWindow::getMultiMCA(string tab, bool accum)
+{
+
+   int size_pmt_selected = pmt_selected_list.length();
+   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS));
+   QString msg;
+
+   if (pmt_selected_list.isEmpty())
+       QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+
+   try
+   {
+     for (int index=0;index<size_pmt_selected;index++)
+     {
+        string pmt=pmt_selected_list.at(index).toStdString();
+        msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
+        hits.insert(index, 1, arpet->getHitsMCA());
+        if (accum) transform(hits[index].begin(),hits[index].end(), getPMTVectorHits()[index].begin(), hits[index].begin(), plus<double>());
+     }
+   }
+   catch(Exceptions & ex)
+   {
+       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+   }
+
+   setPMTVectorHits(hits);
+
+   return msg;
+}
+
+QString MainWindow::getMCA(string tab, string function, bool multimode, string pmt)
+{
+    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(),bytes_int);
     string msg, msg_data;
-    try
-    {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = ReadString();
-        msg_data = ReadBufferString(bytes_int);
-    }
-    catch(Exceptions & ex)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
+
+    sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
+    msg = readString();
+    msg_data = readBufferString(bytes_int);
+
     arpet->getMCASplitData(msg_data, CHANNELS);
 
     long long time_mca;
@@ -763,22 +740,72 @@ QString MainWindow::getMCA(string tab, string function)
     offset=arpet->getOffSetMCA();
     var=arpet->getVarMCA();
 
-    ui->label_title_output->setText("MCA Extended");
-    ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (useg):\n"+QString::number(time_mca));
+    if (multimode)
+    {
+        ui->label_title_output->setText("MCA Extended");
+        ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (mseg):\n"+QString::number(time_mca/1000));
+    }
+    else
+    {
+      ui->label_title_output->setText("MCA Extended");
+      ui->label_data_output->setText("");
+    }
 
-    if(debug)
+    if(debug && !multimode)
     {
         cout<<"================================"<<endl;
-        cout<<"Datos extraídos por MCA"<<endl;
+        cout<<"Datos extraídos por MCA en el PMT: "<< pmt <<endl;
         cout<<"Frame: "<< frame <<endl;
         cout<<"Varianza (unidades cuadráticas de ADC): "<< var <<endl;
         cout<<"Offset (unidades de ADC): "<< offset <<endl;
-        cout<<"Tiempo de adquisición (medido en microsegundos): "<< time_mca <<endl;
+        cout<<"Tiempo de adquisición (medido en milisegundos): "<< time_mca/1000 <<endl;
         cout<<"Valor de HV: "<<HV_pmt<<endl;
         showMCAEStreamDebugMode(msg);
         cout<<"================================"<<endl;
     }
 
+    return QString::fromStdString(msg);
+}
+
+QString MainWindow::setCalibTable(string function, QVector<double> table, string msg_compare)
+{
+    setMCAEDataStream("config", function, table);
+
+    string msg;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_time_out(ex.excdesc);
+        throw exception_time_out;
+    }
+
+    if(!arpet->verifyMCAEStream(msg, msg_compare))
+    {
+        Exceptions exception_calib(string("Función: "+function+" Respuesta: "+msg).c_str());
+        throw exception_calib;
+    }
+
+    return QString::fromStdString(msg);
+}
+
+QString MainWindow::setTime(string tab, double time_value, string pmt)
+{
+    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSet_Time_MCA(), time_value);
+    string msg;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_hv(ex.excdesc);
+        throw exception_hv;
+    }
 
     return QString::fromStdString(msg);
 }
@@ -789,8 +816,8 @@ QString MainWindow::setHV(string tab, string hv_value, string pmt)
     string msg;
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -824,7 +851,7 @@ int MainWindow::getPMT(QLineEdit *line_edit)
    return line_edit->text().toInt();
 }
 
-int MainWindow::getPSOCAlta(QLineEdit *line_edit)
+QString MainWindow::getPSOCAlta(QLineEdit *line_edit)
 {
     QString psoc_value=line_edit->text();
     if(psoc_value.isEmpty() || psoc_value.toInt()<MIN_HIGH_HV_VOLTAGE)
@@ -833,7 +860,7 @@ int MainWindow::getPSOCAlta(QLineEdit *line_edit)
             line_edit->setText(psoc_value);
     }
 
-    return line_edit->text().toInt();
+    return line_edit->text();
 }
 
 void MainWindow::setPMT(int value)
@@ -853,66 +880,243 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
     return QString::number(hv_value_int).toStdString();
 }
 
+
 void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
   arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
 }
 
+
+void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time)
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
+  arpet->setMCAEStream(pmt, mca_function, time);
+}
+
+void MainWindow::setMCAEDataStream(string tab, string function,QVector<double> table )
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
+  arpet->setMCAEStream(function, table);
+}
+
+int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
+{
+    QString head=getHead(tab);
+    int head_index=head.toInt();
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + head.toStdString() + arpet->getFunCPSOC());
+    arpet->setPSOCEStream(function, psoc_value.toStdString());
+
+    return head_index;
+}
+
 void MainWindow::resetHitsValues()
 {
-    hits_ui.fill(0);
+    hits_head_ui.clear();
+    hits_pmt_ui.clear();
+    setHitsInit(true);
 }
 
-void MainWindow::getPlot(bool accum, QCustomPlot *graph)
+void MainWindow::getHeadPlot(QCustomPlot *graph)
 {
-    /* Datos del gráfico */    
-    if (!accum){
-        resetHitsValues();
+    graph->clearGraphs();
+    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
+    graph->rescaleAxes();
+}
+
+void MainWindow::on_pushButton_adquirir_clicked()
+{
+    QString q_msg;
+    bool accum=true;
+    if (!(ui->checkBox_accum->isChecked())) accum=false;
+
+    switch (adquire_mode) {
+    case MONOMODE:
+        q_msg = getMultiMCA("mca",accum);
+        getMultiplePlot(ui->specPMTs);
+        break;
+    case MULTIMODE:
+        q_msg = getHeadMCA("mca",accum);
+        getHeadPlot(ui->specHead);
+        break;
+    case TEMPERATURE:
+        drawTemperatureBoard();
+        break;
+    default:
+        break;
     }
-    channels_ui = arpet->getChannels();
-    transform(hits_ui.begin(), hits_ui.end(), arpet->getHitsMCA().begin(), hits_ui.begin(), plus<double>());
+}
 
-    /* Se genera los ejes */
-    double c_max = *max_element(hits_ui.begin(),hits_ui.end());
-    double c_min =0;
-    if (c_max==0) {c_max=1; c_min=-1;}
+void MainWindow::on_pushButton_reset_clicked()
+{
+    switch (adquire_mode) {
+    case MONOMODE:
+        resetHitsValues();
+        setPMTCustomPlotEnvironment(pmt_selected_list);
+        removeAllGraphsPMT();
+        break;
+    case MULTIMODE:
+        resetHitsValues();
+        setHeadCustomPlotEnvironment();
+        removeAllGraphsHead();
+        break;
+    case TEMPERATURE:
+        clearTemperatureBoard();
+        break;
+    default:
+        break;
+    }
+}
 
-    if (debug)
+
+void MainWindow::on_pushButton_select_pmt_clicked()
+{
+    resetHitsValues();
+    removeAllGraphsPMT();
+
+    int ret = pmt_select->exec();
+
+    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+
+    if(ret == QDialog::Accepted)
+    {
+        setPMTSelectedList(qlist);
+    }
+
+    if(debug)
     {
         cout<<"================================"<<endl;
-        cout<<"Máximo número de cuentas: "<<c_max<<endl;
-        cout<<"Cantidad de canales: "<<CHANNELS<<endl;
-        cout<<"Rango en el gráfico: "<<endl;
-        cout<<"De: "<<c_min<<" a "<<c_max*1.25 <<endl;
+        qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
+        QList<QString>::const_iterator stlIter;
+        for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
+            qDebug() << (*stlIter);
         cout<<"================================"<<endl;
     }
 
-    graph->addGraph();
-    graph->graph(0)->setData(channels_ui, hits_ui);
-    graph->xAxis2->setVisible(true);
-    graph->xAxis2->setTickLabels(true);
-    graph->yAxis2->setVisible(true);
-    graph->yAxis2->setTickLabels(true);
-    graph->xAxis->setLabel("Canales");
-    graph->yAxis->setLabel("Cuentas");
+    setPMTCustomPlotEnvironment(qlist);
 
-    /* Rangos y grafico */
-    graph->xAxis->setRange(0, CHANNELS);
-    graph->yAxis->setRange(c_min, c_max*1.25);
-    graph->replot();
+    qSort(qlist);
+    ui->listWidget->clear();
+    ui->listWidget->addItems(qlist);
 }
+
+
+void MainWindow::on_pushButton_hv_configure_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_5_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_10_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_l_50_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_5_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_10_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
+void MainWindow::on_pushButton_p_50_clicked()
+{
+    QString q_msg;
+    try
+    {
+        q_msg = setHV("mca",getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+    }
+    catch (Exceptions ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+    if (debug) showMCAEStreamDebugMode(q_msg.toStdString());
+}
+
 
 /* Métodos generales del entorno gráfico */
 
 void MainWindow::getARPETStatus()
 {
-    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());    
+    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     string msg_head;
     try
     {
-        SendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg_head = ReadString();
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_head = readString();
     }
     catch(Exceptions & ex)
     {
@@ -926,6 +1130,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
     QVector<double> values;
     QRegExp rx("(\\t)");
     QFile inputFile(filename);
+
     if (inputFile.open(QIODevice::ReadOnly))
     {
         QTextStream in(&inputFile);
@@ -1008,6 +1213,26 @@ QString MainWindow::openConfigurationFile()
 }
 
 /**
+ * @brief MainWindow::getPaths
+ */
+void MainWindow::getPaths()
+{
+    string initfile="/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini";
+    QString filename=QString::fromStdString(initfile);
+    parseConfigurationFile(filename);
+
+    ui->textBrowser_triple_ventana->setText(coefest);
+    ui->textBrowser_hv->setText(hvtable);
+    ui->textBrowser_energia->setText(coefenerg);
+    ui->textBrowser_posicion_X->setText(coefx);
+    ui->textBrowser_posicion_Y->setText(coefy);
+    ui->textBrowser_tiempos_cabezal->setText(coefT);
+
+    ui->lineEdit_alta->setText(QString::number(AT));
+    ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+}
+
+/**
  * @brief MainWindow::SetLabelState
  * @param state
  * @param label
@@ -1087,7 +1312,7 @@ QString MainWindow::getHead(string tab)
     return head;
 }
 
-string MainWindow::ReadString(char delimeter)
+string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
@@ -1100,7 +1325,7 @@ string MainWindow::ReadString(char delimeter)
     return msg;
 }
 
-string MainWindow::ReadBufferString(int buffer_size)
+string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
@@ -1113,7 +1338,7 @@ string MainWindow::ReadBufferString(int buffer_size)
     return msg;
 }
 
-size_t MainWindow::SendString(string msg, string end)
+size_t MainWindow::sendString(string msg, string end)
 {
     arpet->portFlush();
     size_t bytes_transfered = 0;
@@ -1178,21 +1403,27 @@ void MainWindow::setHeadMode(int index, string tab)
 
 void MainWindow::syncHeadModeComboBoxToConfig(int index)
 {
+    getPaths();
     ui->comboBox_head_mode_select_config->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadComboBoxToConfig(int index)
 {
+    getPaths();
+    setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_config->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadModeComboBoxToMCA(int index)
 {
+    getPaths();
     ui->comboBox_head_mode_select_graph->setCurrentIndex(index);
 }
 
 void MainWindow::syncHeadComboBoxToMCA(int index)
 {
+    getPaths();
+    setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_graph->setCurrentIndex(index);
 }
 
@@ -1261,7 +1492,7 @@ void MainWindow::syncCheckBoxHead6ToMCA(bool check)
 void MainWindow::on_pushButton_send_terminal_clicked()
 {
     QString sended = ui->lineEdit_terminal->text();
-    size_t bytes;
+    size_t bytes=0;
     string msg;
     string end_stream=arpet->getEnd_MCA();
 
@@ -1269,8 +1500,8 @@ void MainWindow::on_pushButton_send_terminal_clicked()
 
     try
     {
-        bytes = SendString(sended.toStdString(),end_stream);
-        msg = ReadString();
+        bytes = sendString(sended.toStdString(),end_stream);
+        msg = readString();
     }
     catch(Exceptions & ex)
     {
@@ -1288,18 +1519,21 @@ void MainWindow::on_pushButton_flush_terminal_clicked()
     arpet->portFlush();
 }
 
+void MainWindow::on_pushButton_clear_terminal_clicked()
+{
+    ui->lineEdit_terminal->clear();
+}
 
 
 void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 {
     string mca_function, function, hv_value;
-    int bytes_mca;
+    int bytes_mca=0;
     switch (ui->comboBox_mca_function_terminal->currentIndex())
     {
         case 0:
             mca_function=arpet->getInit_MCA();
             hv_value="";
-            bytes_mca=0;
             break;
         case 1:
             mca_function=arpet->getData_MCA();
@@ -1309,12 +1543,10 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
         case 2:
             mca_function=arpet->getSetHV_MCA();
             hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
-            bytes_mca=0;
             break;
         case 3:
             mca_function=arpet->getTemp_MCA();
             hv_value="";
-            bytes_mca=0;
             break;
         default:
             break;
@@ -1340,24 +1572,312 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 
 void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
 {
-    int psoc_alta;
-    switch (ui->comboBox_psoc_function_terminal->currentIndex())
+    QString psoc_alta;
+   switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
         case 0:
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_ON());
+            setPSOCDataStream("terminal",arpet->getPSOC_ON());
             break;
         case 1:
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_OFF());
+            setPSOCDataStream("terminal",arpet->getPSOC_OFF());
             break;
         case 2:
             psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
-            arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead("terminal").toStdString() + arpet->getFunCPSOC());
-            arpet->setTrama_MCAE(arpet->getHeader_MCAE()+arpet->getPSOC_SIZE_SENDED()+arpet->getPSOC_SIZE_RECEIVED()+arpet->getPSOC_SET()+QString::number(round(psoc_alta/arpet->getPSOC_ADC())).toStdString());
+            setPSOCDataStream("terminal",arpet->getPSOC_SET(),psoc_alta);
+            break;
+        case 3:
+            setPSOCDataStream("terminal",arpet->getPSOC_STA());
             break;
         default:
             break;
     }
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 }
+
+/* Métodos para QCustomPlot */
+
+QVector<int> MainWindow::getCustomPlotParameters()
+{
+  QVector<int> param(6);
+  param[0]=rand()%245+10;//R
+  param[1]=rand()%245+10;//G
+  param[2]=rand()%245+10;//B
+  param[3]=rand()%5+1; //LineStyle
+  param[4]=rand()%14+1;//ScatterShape
+  param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
+
+  return param;
+};
+
+void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
+{
+  QVector<QVector<double> >  hits(qlist.length(), QVector<double>(CHANNELS));
+  for (unsigned int index=0; index < qlist.length(); index++)
+  {
+    hits[index].fill(0);
+    qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
+  }
+  setPMTVectorHits(hits);
+}
+
+void MainWindow::setHeadCustomPlotEnvironment()
+{
+  QVector<QVector<double> >  hits(HEADS, QVector<double>(CHANNELS));
+  for (unsigned int index=0; index < HEADS; index++)
+  {
+    hits[index].fill(0);
+    qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
+  }
+  setHeadVectorHits(hits);
+}
+
+void MainWindow::getMultiplePlot(QCustomPlot *graph)
+{
+  graph->clearGraphs();
+  for (int index=0;index<pmt_selected_list.length();index++)
+  {
+      addPMTGraph(index, graph, pmt_selected_list.at(index));
+  }
+  graph->rescaleAxes();
+}
+
+void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend, bool head)
+{
+  channels_ui = arpet->getChannels();
+  QVector<double> hits;
+  QVector<int> param;
+
+  if (head)
+  {
+    hits = getHeadVectorHits()[index];
+    param = qcp_head_parameters[index];
+  }
+  else
+  {
+    hits = getPMTVectorHits()[index];
+    param = qcp_pmt_parameters[index];
+  }
+
+  graph->addGraph();
+  graph->graph()->setName(graph_legend);
+  graph->graph()->setData(channels_ui,hits);
+  graph->graph()->setLineStyle((QCPGraph::LineStyle)(param[3]));
+  graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
+  QPen graphPen;
+  graphPen.setColor(QColor(param[0], param[1], param[2]));
+  graphPen.setWidthF(param[5]);
+  graph->graph()->setPen(graphPen);
+  graph->replot();
+}
+
+void MainWindow::axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part)
+{
+  // Renombra la etiqueta del eje a partir de un doble-clic
+  if (part == QCPAxis::spAxisLabel)
+  {
+    bool ok;
+    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+    if (ok)
+    {
+      axis->setLabel(newLabel);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::axisLabelDoubleClickHead(QCPAxis *axis, QCPAxis::SelectablePart part)
+{
+  // Renombra la etiqueta del eje a partir de un doble-clic
+  if (part == QCPAxis::spAxisLabel)
+  {
+    bool ok;
+    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+    if (ok)
+    {
+      axis->setLabel(newLabel);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::titleDoubleClickPMT(QMouseEvent* event)
+{
+  Q_UNUSED(event)
+  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
+  {
+    // Renombra el título del gráfico a partir de un doble-clic
+    bool ok;
+    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+    if (ok)
+    {
+      title->setText(newTitle);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::titleDoubleClickHead(QMouseEvent* event)
+{
+  Q_UNUSED(event)
+  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
+  {
+    // Renombra el título del gráfico a partir de un doble-clic
+    bool ok;
+    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+    if (ok)
+    {
+      title->setText(newTitle);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+  // Renombra el gráfico a partir de un doble-clic
+  Q_UNUSED(legend)
+  if (item)
+  {
+    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+    bool ok;
+    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+    if (ok)
+    {
+      plItem->plottable()->setName(newName);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+  // Renombra el gráfico a partir de un doble-clic
+  Q_UNUSED(legend)
+  if (item)
+  {
+    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+    bool ok;
+    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+    if (ok)
+    {
+      plItem->plottable()->setName(newName);
+      ui->specHead->replot();
+    }
+  }
+}
+
+void MainWindow::contextMenuRequestPMT(QPoint pos)
+{
+  QMenu *menu = new QMenu(this);
+  menu->setAttribute(Qt::WA_DeleteOnClose);
+
+  if (ui->specPMTs->legend->selectTest(pos, false) >= 0)
+  {
+    menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+    menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+    menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+    menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+    menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+  } else
+  {
+    if (ui->specPMTs->selectedGraphs().size() > 0)
+      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
+    if (ui->specPMTs->graphCount() > 0)
+      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
+  }
+
+  menu->popup(ui->specPMTs->mapToGlobal(pos));
+}
+
+void MainWindow::moveLegendPMT()
+{
+  if (QAction* contextAction = qobject_cast<QAction*>(sender()))
+  {
+    bool ok;
+    int dataInt = contextAction->data().toInt(&ok);
+    if (ok)
+    {
+      ui->specPMTs->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
+      ui->specPMTs->replot();
+    }
+  }
+}
+
+void MainWindow::mousePressPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->xAxis->orientation());
+  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->yAxis->orientation());
+  else
+    ui->specPMTs->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::mouseWheelPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->xAxis->orientation());
+  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->yAxis->orientation());
+  else
+    ui->specPMTs->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::removeSelectedGraphPMT()
+{
+  if (ui->specPMTs->selectedGraphs().size() > 0)
+  {
+    ui->specPMTs->removeGraph(ui->specPMTs->selectedGraphs().first());
+    ui->specPMTs->replot();
+  }
+}
+
+void MainWindow::removeAllGraphsPMT()
+{
+  ui->specPMTs->clearGraphs();
+  ui->specPMTs->replot();
+}
+
+void MainWindow::removeAllGraphsHead()
+{
+  ui->specHead->clearGraphs();
+  ui->specHead->replot();
+}
+
+void MainWindow::selectionChangedPMT()
+{
+  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->specPMTs->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->specPMTs->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+
+  if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->specPMTs->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->specPMTs->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+
+
+  for (int i=0; i<ui->specPMTs->graphCount(); ++i)
+  {
+    QCPGraph *graph = ui->specPMTs->graph(i);
+    QCPPlottableLegendItem *item = ui->specPMTs->legend->itemWithPlottable(graph);
+    if (item->selected() || graph->selected())
+    {
+      item->setSelected(true);
+      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+    }
+  }
+}
+
+void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
+{
+  double dataValue = plottable->interface1D()->dataMainValue(dataIndex);
+  QString message = QString("Clicked on graph '%1' at data point #%2 with value %3.").arg(plottable->name()).arg(dataIndex).arg(dataValue); //TODO: Check this
+  ui->statusBar->showMessage(message, 2500);
+}
+
+/////// TESTING //////////////

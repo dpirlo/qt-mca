@@ -8,11 +8,6 @@ SetPreferences::SetPreferences(QWidget *parent) :
     ui->setupUi(this);
 }
 
-bool SetPreferences::GetDegugConsoleValue()
-{
-    return debconsole;
-}
-
 void SetPreferences::accept()
 {
    debconsole = ui->checkBox_Debug->isChecked();

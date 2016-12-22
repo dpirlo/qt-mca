@@ -16,20 +16,23 @@ SOURCES += src/main.cpp\
         src/apMCAE.cpp \
         src/apExceptions.cpp \
         src/SetPreferences.cpp \
-        src/MainWindow.cpp
+        src/MainWindow.cpp \
+        src/SetPMTs.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
         inc/apMCAE.hpp \
         inc/apExceptions.hpp \
         inc/SetPreferences.h \
-        inc/MainWindow.h
+        inc/MainWindow.h \
+        inc/SetPMTs.h
 
 LIBS += -lboost_system
 
 FORMS += \
         ui/SetPreferences.ui \
-        ui/MainWindow.ui
+        ui/MainWindow.ui \
+        ui/SetPMTs.ui
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug
