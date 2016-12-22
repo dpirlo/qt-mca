@@ -785,7 +785,7 @@ QString MainWindow::setCalibTable(string function, QVector<double> table, string
 
     if(!arpet->verifyMCAEStream(msg, msg_compare))
     {
-        Exceptions exception_calib(string("Respuesta: "+msg).c_str());
+        Exceptions exception_calib(string("Función: "+function+" Respuesta: "+msg).c_str());
         throw exception_calib;
     }
 
