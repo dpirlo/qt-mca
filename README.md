@@ -23,8 +23,8 @@ En esta sección se realiza la selección del cabezal y su inicialización a par
 ### Pestaña de Multicanal (MCA)
 Se recibe las tramas MCA y se grafican sus resultados. 
 
-#### PMTs
-Se selecciona los números de PMTs que se requiere visualizar su comportamiento y luego se adquiere la trama MCA.
+#### Fotomultiplicador
+Se adquiere la trama MCA a un número de PMTs seleccionados previamente.
 
 <p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_pmt_selection.png" width="600"></p>
 <p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_mca.png" width="600"></p>
