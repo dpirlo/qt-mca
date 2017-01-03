@@ -1,8 +1,28 @@
+/**
+ * @class Exceptions
+ *
+ * @brief Clase de manejo de excepciones
+ *
+ * Esta clase provee métodos y propiedades para el
+ * manejo de excepciones.
+ *
+ * @note Clase heredada de QException
+ *
+ * @author Ariel Hernández
+ *
+ * @version $Version
+ *
+ * Contacto: ahernandez@cae.cnea.gov.ar
+ *
+ */
 #ifndef APEXCEPTIONS_H
 #define APEXCEPTIONS_H
 #include <QException>
 #include <QDebug>
 
+/**
+ * El Namespace ap (ARPET) contiene los métodos y propiedades relacionados con ...
+ */
 namespace ap {
 
     class Exceptions: public QException
@@ -10,7 +30,6 @@ namespace ap {
     public:
         Exceptions(const char *desc);
         const char *excdesc;
-
     };
 }
 
