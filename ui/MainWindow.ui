@@ -725,7 +725,7 @@
       <widget class="QComboBox" name="comboBox_port">
        <property name="geometry">
         <rect>
-         <x>83</x>
+         <x>90</x>
          <y>7</y>
          <width>151</width>
          <height>29</height>
@@ -749,13 +749,13 @@
         </font>
        </property>
        <property name="text">
-        <string>Puerto:</string>
+        <string>Puerto</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_conectar">
        <property name="geometry">
         <rect>
-         <x>243</x>
+         <x>250</x>
          <y>8</y>
          <width>101</width>
          <height>27</height>
@@ -782,13 +782,13 @@
         </font>
        </property>
        <property name="text">
-        <string>Alimentación:</string>
+        <string>Alimentación</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_arpet_on">
        <property name="geometry">
         <rect>
-         <x>488</x>
+         <x>498</x>
          <y>5</y>
          <width>95</width>
          <height>31</height>
@@ -816,7 +816,7 @@
       <widget class="QPushButton" name="pushButton_arpet_off">
        <property name="geometry">
         <rect>
-         <x>590</x>
+         <x>600</x>
          <y>5</y>
          <width>95</width>
          <height>31</height>
@@ -1505,7 +1505,7 @@ Tensión: </string>
         <rect>
          <x>8</x>
          <y>2</y>
-         <width>151</width>
+         <width>251</width>
          <height>31</height>
         </rect>
        </property>

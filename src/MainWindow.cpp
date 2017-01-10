@@ -350,12 +350,16 @@ void MainWindow::on_pushButton_configure_clicked()
        break;
    case COIN_AUTOCOINCIDENCE:
        initCoincidenceMode();
+       sleep(1);
        setCoincidenceModeWindowTime();
+       sleep(1);
        setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
        break;
    case COIN_AVANCED:
        initCoincidenceMode();
+       sleep(1);
        setCoincidenceModeWindowTime();
+       sleep(1);
        setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
        break;
    case COIN_CALIB:
