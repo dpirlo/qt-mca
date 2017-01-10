@@ -343,23 +343,23 @@ void MainWindow::on_pushButton_configure_clicked()
    switch (index) {
    case COIN_NORMAL:
        initCoincidenceMode();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeWindowTime();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
        break;
    case COIN_AUTOCOINCIDENCE:
        initCoincidenceMode();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeWindowTime();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
        break;
    case COIN_AVANCED:
        initCoincidenceMode();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeWindowTime();
-       sleep(1);
+       usleep(1000);
        setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
        break;
    case COIN_CALIB:
