@@ -72,7 +72,7 @@ public:
     void checkCombosStatus();
     ~MainWindow();
 
-    /** Area de prueba/testing */
+    /* Area de prueba/testing */
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
@@ -151,7 +151,7 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
 
-    /** Buttons de prueba/testing */
+    /* Buttons de prueba/testing */
 
 
 private:
@@ -177,7 +177,7 @@ private:
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
     void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
-    void setMCAEDataStream(string tab, string coin_function, string data_one, string data_two, bool time);
+    void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
     void setHeadCustomPlotEnvironment();
@@ -225,8 +225,7 @@ private:
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<double> > hits_pmt_ui, hits_head_ui;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
-    int  AT, LowLimit;
-    int TimeOut;
+    int  AT, LowLimit;   
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
 

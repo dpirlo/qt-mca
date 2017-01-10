@@ -4,6 +4,17 @@ using namespace ap;
 
 /**
  * @brief MCAE::MCAE
+ *
+ * Constructor de la clase
+ *
+ * Se inicializan todas las propiedades respecto a las funciones de envío de datos serie con los protocolos: MCA, PSOC, Coincidencias y Calibración.
+ * Al conjunto que engloba todos estos protocolos se lo denomina MCA Extendido. Esta clase contiene todos los métodos y propiedades para acceder, administrar,
+ * configurar y monitoriar el tomógrafo por emisión de positrones ARPET.
+ *
+ * Solo admite como parámetro el tiempo que debe esperar el servicio de comunicación antes de emitir una excepción por _time out_. El tiempo por defecto es de 1 segundo.
+ *
+ * @note Se documentan las propiedades más importantes.
+ *
  * @param timeout
  */
 MCAE::MCAE(size_t timeout)
@@ -13,6 +24,11 @@ MCAE::MCAE(size_t timeout)
      timeout(timeout),
      read_error(true),
      timer(port->get_io_service()),
+     /**
+      * @brief PortBaudRate
+      *
+      * Velocidad de funcionamiento de la comunicación con el equipo
+      */
      PortBaudRate(921600),
      AnsAP_ON("ON"),
      AnsAP_OFF("OFF"),
@@ -47,6 +63,7 @@ MCAE::MCAE(size_t timeout)
      Select_Mode_Coin("703"),
      Normal_Coin_Mode("333333333"),
      Auto_Coin_Mode("020102121"),
+     Head_Coin("07"),
 
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
@@ -54,6 +71,13 @@ MCAE::MCAE(size_t timeout)
      PSOC_SET("$SET,VCON,"),
      PSOC_STA("$TEMP"),
      PSOC_ANS("$OK"),
+     /**
+      * @brief PSOC_ADC
+      *
+      * Tensión por cada unidade de ADC
+      * 1 Unidad de ADC = 5.8823 V
+      *
+      */
      PSOC_ADC(5.8823),
      PSOC_SIZE_SENDED("14"),
      PSOC_SIZE_RECEIVED("0051"),
@@ -68,9 +92,15 @@ MCAE::MCAE(size_t timeout)
      Temp_MCA("74000"),
      Set_Time_MCA("80")
 {
-    /*PRUEBAS*/
+    /* Testing */
 }
 
+/**
+ * @brief MCAE::~MCAE
+ *
+ * Destructor de la clase MCAE
+ *
+ */
 MCAE::~MCAE()
 {
    portDisconnect();
@@ -78,7 +108,7 @@ MCAE::~MCAE()
 
 /**
  * @brief MCAE::isPortOpen
- * @return true si esta abierto, caso contrario, false.
+ * @return si está abierto responde _true_
  */
 bool MCAE::isPortOpen()
 {
@@ -87,8 +117,11 @@ bool MCAE::isPortOpen()
 
 /**
  * @brief MCAE::portConnect
+ *
+ * Conexión del objeto puerto serie _port_
+ *
  * @param tty_port_name
- * @return
+ * @return Código de error
  */
 error_code MCAE::portConnect(const char *tty_port_name)
 {
@@ -98,10 +131,12 @@ error_code MCAE::portConnect(const char *tty_port_name)
 
     return error_code;
 }
-
 /**
  * @brief MCAE::portDisconnect
- * @return
+ *
+ * Desconexión del objeto puerto serie _port_
+ *
+ * @return Código de error
  */
 error_code MCAE::portDisconnect()
 {
@@ -111,7 +146,14 @@ error_code MCAE::portDisconnect()
 
     return error_code;
 }
-
+/**
+ * @brief MCAE::portWrite
+ *
+ * Escritura sobre el objeto puerto serie _port_
+ *
+ * @param msg
+ * @return Tamaño de la trama en bytes
+ */
 size_t MCAE::portWrite(string *msg)
 {
     char c_msg[msg->size()+1];
@@ -120,7 +162,15 @@ size_t MCAE::portWrite(string *msg)
 
     return bytes_transferred;
 }
-
+/**
+ * @brief MCAE::portRead
+ *
+ * Lectura sobre el objeto puerto serie _port_ y el resultado se guarda en un puntero a _string_
+ *
+ * @param msg
+ * @param buffer_size
+ * @return Tamaño de la trama en bytes
+ */
 size_t MCAE::portRead(string *msg, int buffer_size)
 {
     char c_msg[buffer_size];
@@ -129,8 +179,15 @@ size_t MCAE::portRead(string *msg, int buffer_size)
 
     return bytes_transferred;
 }
-
-
+/**
+ * @brief MCAE::portRead
+ * @overload
+ *
+ * Lectura sobre el objeto puerto serie _port_ y el resultado se guarda en un puntero a _char_
+ *
+ * @param c_msg
+ * @return Tamaño de la trama en bytes
+ */
 size_t MCAE::portRead(char *c_msg)
 {
     int buffer_size=1;
@@ -138,8 +195,13 @@ size_t MCAE::portRead(char *c_msg)
 
     return bytes_transferred;
 }
-
-
+/**
+ * @brief MCAE::portReadMCAELine
+ *
+ * Lectura por línea sobre el objeto puerto serie _port_ y el resultado es un _string_
+ *
+ * @return La línea leída en _string_
+ */
 string MCAE::portReadMCAELine() {
   char c;
   string msg;
@@ -156,7 +218,13 @@ string MCAE::portReadMCAELine() {
   }
   return msg;
 }
-
+/**
+ * @brief MCAE::portReadPSOCLine
+ *
+ * Lectura por línea sobre el objeto puerto serie _port_ y el resultado es un _string_
+ *
+ * @return La línea leída en _string_
+ */
 string MCAE::portReadPSOCLine() {
   char c;
   string msg;
@@ -176,22 +244,40 @@ string MCAE::portReadPSOCLine() {
   }
   return msg;
 }
-
+/**
+ * @brief MCAE::portReadComplete
+ *
+ * Lectura completa sobre el objeto puerto serie _port_ hasta agotar el temporizador
+ *
+ * @param error
+ * @param bytes_transferred
+ */
 void MCAE::portReadComplete(const boost::system::error_code& error,
                         size_t bytes_transferred)
 {
     read_error = (error || bytes_transferred == 0);
     timer.cancel();
 }
-
-
+/**
+ * @brief MCAE::portTimeOut
+ *
+ * Cuando se llama a este método cancela la actividad sobre el objeto _port_
+ *
+ * @param error
+ */
 void MCAE::portTimeOut(const boost::system::error_code& error)
 {
     if (error) { return; }
     port->cancel();
 }
-
-
+/**
+ * @brief MCAE::portReadOneChar
+ *
+ * Lectura de a un _char_ sobre el objeto puerto serie _port_ y el resultado se guarda en un puntero a _char_
+ *
+ * @param val
+ * @return El estado de la lectura, _true_ si no hubo inconvenientes.
+ */
 bool MCAE::portReadOneChar(char& val)
 {
    char c;
@@ -213,7 +299,14 @@ bool MCAE::portReadOneChar(char& val)
 
    return !read_error;
 }
-
+/**
+ * @brief MCAE::portReadString
+ *
+ * Lectura sobre el objeto puerto serie _port_ y el resultado va a un puntero _string_
+ *
+ * @param msg
+ * @param delimeter
+ */
 void MCAE::portReadString(string *msg, char delimeter)
 {
     char c;
@@ -226,7 +319,14 @@ void MCAE::portReadString(string *msg, char delimeter)
         throw exception_timeout;
     }
 }
-
+/**
+ * @brief MCAE::portReadBufferString
+ *
+ * Lectura de un determinado _buffer_ sobre el objeto puerto serie _port_ y el resultado va a un puntero _string_
+ *
+ * @param msg
+ * @param buffer_size
+ */
 void MCAE::portReadBufferString(string *msg, int buffer_size)
 {
     char c;
@@ -241,7 +341,15 @@ void MCAE::portReadBufferString(string *msg, int buffer_size)
         throw exception_timeout;
     }
 }
-
+/**
+ * @brief MCAE::portReadCharArray
+ * @deprecated
+ *
+ * Lectura de un determinado _array_ sobre el objeto puerto serie _port_ y el resultado va a un puntero _char_
+ *
+ * @param nbytes
+ * @return _true_ si se logra leer satisfactoriamente
+ */
 bool MCAE::portReadCharArray(int nbytes)
 {
     try
@@ -255,7 +363,13 @@ bool MCAE::portReadCharArray(int nbytes)
         }
     return true;
 }
-
+/**
+ * @brief MCAE::portFlush
+ *
+ * Limpieza del _buffer_ de lectura del objeto _port_
+ *
+ * @return Código de error
+ */
 error_code MCAE::portFlush()
 {
     error_code ec;
@@ -266,7 +380,14 @@ error_code MCAE::portFlush()
 
     return ec;
 }
-
+/**
+ * @brief MCAE::convertHexToDec
+ *
+ * Método de conversión de Hexadecimal (_string_) a Decimal (_int_)
+ *
+ * @param hex_number_s
+ * @return dec_number
+ */
 int MCAE::convertHexToDec(string hex_number_s)
 {
     bool ok;
@@ -275,21 +396,42 @@ int MCAE::convertHexToDec(string hex_number_s)
 
     return dec_number;
 }
-
+/**
+ * @brief MCAE::convertDecToHex
+ *
+ * Método de conversión de Decimal (_int_) a Hexadecimal (_string_) en minúsculas (abcdef)
+ *
+ * @param dec_number
+ * @return hex_number
+ */
 string MCAE::convertDecToHex(int dec_number)
 {
     QByteArray hex_number = QByteArray::number(dec_number,16);
 
     return QString(hex_number).toStdString();
 }
-
+/**
+ * @brief MCAE::convertDecToHexUpper
+ *
+ * Método de conversión de Decimal (_int_) a Hexadecimal (_string_) en mayúsculas (ABCDEF)
+ *
+ * @param dec_number
+ * @return hex_number
+ */
 string MCAE::convertDecToHexUpper(int dec_number)
 {
     QByteArray hex_number = QByteArray::number(dec_number,16).toUpper();
 
     return QString(hex_number).toStdString();
 }
-
+/**
+ * @brief MCAE::getReverse
+ *
+ * Método de inversión de _bytes_
+ *
+ * @param seq
+ * @return secuencia _seq_ en sentido inverso
+ */
 QByteArray MCAE::getReverse(QByteArray seq)
 {
     QByteArray reverse;
@@ -301,7 +443,21 @@ QByteArray MCAE::getReverse(QByteArray seq)
 
     return reverse;
 }
-
+/**
+ * @brief MCAE::getMCASplitData
+ *
+ * Método que realiza la segmentación de la trama MCA en los siguientes campos:
+ * > Sincronismo
+ * > tiempo de adquisición
+ * > HV del fotomultiplicador
+ * > nivel de offset del ADC
+ * > potencia de ruido (varianza)
+ * > temperatura del fotomultiplicador
+ * > Cuentas MCA por canal
+ *
+ * @param msg_data
+ * @param channels
+ */
 void MCAE::getMCASplitData(string msg_data, int channels)
 {
     int size_block=6*channels;
@@ -319,7 +475,13 @@ void MCAE::getMCASplitData(string msg_data, int channels)
     /* Parseo de datos de la trama que contiene las cuentas por canal */
     getMCAHitsData(data_mca_bytes);
 }
-
+/**
+ * @brief MCAE::getMCAHitsData
+ *
+ * Método que realiza la segmentación de la trama de cuentas de MCA por canal y los guarda en los vectores *channels_id* y *hits_mca*
+ *
+ * @param data_mca
+ */
 void MCAE::getMCAHitsData(QByteArray data_mca)
 {
     int channel;
@@ -336,7 +498,14 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
         hits_mca[channel]=hits;
     }
 }
-
+/**
+ * @brief MCAE::getMCACheckSum
+ *
+ * Cálculo del _checksum_ en la trama de datos
+ *
+ * @param data
+ * @return
+ */
 int MCAE::getMCACheckSum(string data)
 {
     int sum_of_elements = 0;
@@ -348,8 +517,14 @@ int MCAE::getMCACheckSum(string data)
 
     return sum_of_elements;
 }
-
-
+/**
+ * @brief MCAE::getMCAStringValues
+ *
+ * Se obtiene el dato en _string_code_ a partir de un _string_
+ *
+ * @param in_string
+ * @return Código _string_code_
+ */
 MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
 {
     if (in_string == "a") return a;
@@ -360,7 +535,14 @@ MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
     if (in_string == "f") return f;
     else return no_value;
 }
-
+/**
+ * @brief MCAE::setMCAStringValues
+ *
+ * Se configura el dato en _string_code_ a partir de un dato _ASCII_ en la trama de datos MCA
+ *
+ * @param in_string
+ * @return Código _string_code_
+ */
 MCAE::string_code MCAE::setMCAStringValues(string const& in_string)
 {
     if (in_string == ":") return a;
@@ -371,13 +553,17 @@ MCAE::string_code MCAE::setMCAStringValues(string const& in_string)
     if (in_string == "?") return f;
     else return no_value;
 }
-
+/**
+ * @brief MCAE::convertToMCAFormatStream
+ *
+ * Conversión de la trama en formato de envío MCA.
+ * Formato de data con checksum: @ddcc--...--ss
+ *
+ * @param data_with_cs
+ * @return data_with_cs con formato MCA
+ */
 string MCAE::convertToMCAFormatStream(string data_with_cs)
 {
-    /* Formato de data con checksum:
-     * @ddcc--...--ss
-     */
-
     size_t pos = 0;
 
     while (pos < data_with_cs.length())
@@ -410,7 +596,15 @@ string MCAE::convertToMCAFormatStream(string data_with_cs)
 
     return data_with_cs;
 }
-
+/**
+ * @brief MCAE::convertFromMCAFormatStream
+ *
+ * Conversión de la trama MCA en formato _string_ para lectura de datos
+ * Formato de data con checksum: @ddcc--...--ss
+ *
+ * @param data_with_cs
+ * @return data_with_cs con formato _string_
+ */
 string MCAE::convertFromMCAFormatStream(string data_with_cs)
 {
     /* Formato de data con checksum:

@@ -3,8 +3,7 @@
 #include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    TimeOut(1000),
+    QMainWindow(parent),    
     bytes_int(CHANNELS*6+16),
     channels_ui(CHANNELS),
     debug(false),
@@ -26,7 +25,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::setInitialConfigurations()
 {
-    arpet = shared_ptr<MCAE>(new MCAE(TimeOut));
+    arpet = shared_ptr<MCAE>(new MCAE());
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
 
@@ -1050,9 +1049,9 @@ void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<do
   arpet->setMCAEStream(calib_function, table);
 }
 
-void MainWindow::setMCAEDataStream(string tab, string coin_function, string data_one, string data_two, bool time)
+void MainWindow::setMCAEDataStream(string coin_function, string data_one, string data_two, bool time)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() /*"getHead(tab).toStdString()"*/ + arpet->getFunCHead());
   arpet->setMCAEStream(coin_function, data_one, data_two, time);
 }
 

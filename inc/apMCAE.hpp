@@ -62,7 +62,7 @@ using namespace boost::system;
 typedef shared_ptr<serial_port> serial_port_ptr;
 
 /**
- * El Namespace ap contiene los métodos y propiedades relacionados con la comunicación del equipo ARPET
+ * El Namespace ap contiene los métodos y propiedades relacionados con la comunicación del equipo ARPET.
  */
 namespace ap {
 
@@ -78,7 +78,7 @@ namespace ap {
         enum string_code {a,b,c,d,e,f,no_value};
 
     public:
-        MCAE(size_t timeout);
+        MCAE(size_t timeout=1000);
         void portReadString(string *msg, char delimeter);
         void portReadBufferString(string *msg, int buffer_size);
         size_t portWrite(string *msg);
@@ -96,7 +96,7 @@ namespace ap {
         bool verifyMCAEStream(string data_received, string data_to_compare);
         ~MCAE();
 
-        /** Area de métodos en testing */
+        /* Area de métodos en testing */
 
     private:
         size_t portRead(string *msg, int buffer_size);
@@ -120,7 +120,8 @@ namespace ap {
         void getMCAHitsData(QByteArray data_mca);
         string getHVValueCode(int channel_dec);
         string getPMTCode(int pmt_dec);
-        bool portReadCharArray(int nbytes); /** @todo: Verificar el funcionamiento de este método. */
+        /** @todo: Verificar el funcionamiento de este método. */
+        bool portReadCharArray(int nbytes);
         bool verifyStream(string data_received, string data_to_compare);
         string formatMCAEStreamSize(int expected_size, string data_stream);
         bool verifyCheckSum(string data_mca);
@@ -133,7 +134,7 @@ namespace ap {
         string convertToTwoComplement(int value, int two_complement_bits=8);
         QByteArray getReverse(QByteArray seq);
 
-        /** Area de métodos en testing */
+        /* Area de métodos en testing */
 
     protected:
         /**
@@ -172,7 +173,7 @@ namespace ap {
         string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
         string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
         string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
-        string Init_Coin, Window_Time_Coin, Select_Mode_Coin;
+        string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin;
         string Auto_Coin_Mode, Normal_Coin_Mode;
         string Generic_Received_Size, Generic_Sended_Size;
         double PSOC_ADC;
@@ -182,7 +183,8 @@ namespace ap {
         string AP_ON, AP_OFF;
         string AnsAP_ON, AnsAP_OFF;
         size_t timeout;
-        char * data; /** @todo: Verificar */
+        /** @todo: Verificar esta propiedad si no es _deprecated_*/
+        char * data;
         bool read_error;
         deadline_timer timer;
         int PortBaudRate;
@@ -192,7 +194,7 @@ namespace ap {
         QVector<double> channels_id;
         QVector<double> hits_mca;
 
-        /** Area de propiedades en testing */
+        /* Area de propiedades en testing */
 
     public:
         /**
@@ -319,6 +321,7 @@ namespace ap {
          * @brief getPSOC_OFF
          * @return PSOC_OFF
          */
+        string getHead_Coin() const { return Head_Coin; }
         string getPSOC_OFF() const { return PSOC_OFF; }
         /**
          * @brief getPSOC_ON
@@ -515,7 +518,6 @@ namespace ap {
          * @return hits_mca
          */
         QVector<double> getHitsMCA() const { return hits_mca; }
-
     };
 
 }
