@@ -33,7 +33,10 @@ void MainWindow::setInitialConfigurations()
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
+    ui->frame_adquire_advance_mode->hide();
 
+    ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
+    ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
     ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_pmt_terminal->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
@@ -42,7 +45,7 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
-    getPMTLabelNames();
+    setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, "Cuentas por PMT");
     SetQCustomPlotConfiguration(ui->specHead, "Cuentas en el Cabezal");
     resetHitsValues();
@@ -102,6 +105,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
+     QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
      QObject::connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
      QObject::connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
      QObject::connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
@@ -116,7 +120,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
 }
 
-void MainWindow::getPMTLabelNames()
+void MainWindow::setQListElements()
 {
     pmt_label_table.push_back(ui->label_pmt_01);
     pmt_label_table.push_back(ui->label_pmt_02);
@@ -194,6 +198,16 @@ void MainWindow::getPMTLabelNames()
     calib_status_table.push_back(ui->label_table_4);
     calib_status_table.push_back(ui->label_table_5);
     calib_status_table.push_back(ui->label_table_6);
+
+    heads_coin_table.push_back(ui->comboBox_coin_1);
+    heads_coin_table.push_back(ui->comboBox_coin_2);
+    heads_coin_table.push_back(ui->comboBox_coin_3);
+    heads_coin_table.push_back(ui->comboBox_coin_4);
+    heads_coin_table.push_back(ui->comboBox_coin_5);
+    heads_coin_table.push_back(ui->comboBox_coin_6);
+    heads_coin_table.push_back(ui->comboBox_coin_7);
+    heads_coin_table.push_back(ui->comboBox_coin_8);
+    heads_coin_table.push_back(ui->comboBox_coin_9);
 }
 
 /* Menu: Preferencias */
@@ -225,12 +239,14 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         sleep(1);
         sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         msg = readString();
+        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
+        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
     }
     catch(Exceptions & ex)
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
-    setLabelState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->label_arpet_power_supply);
 }
 
 void MainWindow::on_pushButton_arpet_off_clicked()
@@ -240,12 +256,14 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     {
         sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
         msg = readString();
+        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));        
+        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
-    setLabelState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->label_arpet_power_supply,true);
 }
 
 void MainWindow::on_pushButton_triple_ventana_clicked()
@@ -299,12 +317,12 @@ int MainWindow::on_pushButton_conectar_clicked()
         arpet->portDisconnect();
     }
     else
-    {
-        ui->pushButton_conectar->setText("Desconectar");
+    {        
         try{
             QString port_name=ui->comboBox_port->currentText();
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
+            ui->pushButton_conectar->setText("Desconectar");
         }
         catch(boost::system::system_error e)
             {
@@ -316,21 +334,49 @@ int MainWindow::on_pushButton_conectar_clicked()
     return MCAE::OK;
 }
 
+void MainWindow::on_pushButton_configure_clicked()
+{
+    /** @todo : Agregar el modo calibración.
+    */
+   /* Inicialización del modo Coincidencia */
+
+   int index=ui->comboBox_adquire_mode_coin->currentIndex();
+   switch (index) {
+   case COIN_NORMAL:
+       initCoincidenceMode();
+       setCoincidenceModeWindowTime();
+       setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+       break;
+   case COIN_AUTOCOINCIDENCE:
+       initCoincidenceMode();
+       setCoincidenceModeWindowTime();
+       setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
+       break;
+   case COIN_AVANCED:
+       initCoincidenceMode();
+       setCoincidenceModeWindowTime();
+       setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
+       break;
+   case COIN_CALIB:
+       cout<<"No implementado aún"<<endl;
+       break;
+       return;
+   default:
+       break;
+   }
+}
 
 void MainWindow::on_pushButton_initialize_clicked()
 {
     /* Inicialización del Cabezal */
+   int head_index=getHead("config").toInt();
+   string msg_head = initHead(head_index);
+   string msg_pmts = initSP3(head_index);
 
-    int head_index=getHead("config").toInt();
+   if (debug) cout<<"Recepción del Cabezal: "+msg_head+"\nRecepción de los PMTs: "+msg_pmts<<endl;
 
-    string msg_head = initHead(head_index);
-    string msg_pmts = initSP3(head_index);
-
-    ui->label_config_init->setText("Recepción del Cabezal: "+QString::fromStdString(msg_head)+"\nRecepción de los PMTs: "+QString::fromStdString(msg_pmts));
-
-    /* Configuración de las tablas de calibración */
-
-    setCalibrationTables(head_index);
+   /* Configuración de las tablas de calibración */
+   setCalibrationTables(head_index);
 }
 
 void MainWindow::on_pushButton_hv_set_clicked()
@@ -408,6 +454,86 @@ void MainWindow::on_pushButton_hv_estado_clicked()
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
+}
+
+
+string MainWindow::getCoincidenceAdvanceModeDataStream()
+{
+    int index;
+    string stream;
+    for(int i = 0; i < COIN_BYTES_ADV; i++)
+    {
+        index = heads_coin_table[i]->currentIndex();
+        stream = stream + to_string(index);
+    }
+
+    return stream;
+}
+
+void MainWindow::setCoincidenceModeDataStream(string stream)
+{
+    setMCAEDataStream("config",arpet->getSelect_Mode_Coin(),stream,"",false);
+    string msg_ans;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden configurar el modo de coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    if(debug)
+    {
+        cout<<"Selección del modo de coincidencia: "<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
+}
+
+void MainWindow::initCoincidenceMode()
+{
+    /* Inicialización de modo coincidencia */
+    setMCAEDataStream("config",arpet->getInit_Coin(),"","",false);
+    string msg_ans;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    if(debug)
+    {
+        cout<<"Inicialización del modo coincidencia: "<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
+}
+
+void MainWindow::setCoincidenceModeWindowTime()
+{
+    string vn="-"+ui->lineEdit_WN->text().toStdString();
+    string vp=ui->lineEdit_WP->text().toStdString();
+    setMCAEDataStream("config",arpet->getWindow_Time_Coin(),vn,vp,true);
+    string msg_ans;
+
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+        QString q_label_text="<span style='font-weight:600; color: blue'>"+QString::fromStdString("[" + vn + "," + vp + "]" )+"<br></span>";
+        ui->label_window_interval->setText(q_label_text);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden configurar las ventanas de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    if(debug)
+    {
+        cout<<"Configuración del intervalo de tiempo de ventana: "<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
 }
 
 void MainWindow::setHeadModeConfig(int index)
@@ -663,6 +789,30 @@ void MainWindow::setAdquireMode(int index)
     }
 }
 
+void MainWindow::setAdvanceCoinMode(int index)
+{
+    switch (index) {
+    case COIN_NORMAL:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->show();
+        break;
+    case COIN_AUTOCOINCIDENCE:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->show();
+        break;
+    case COIN_AVANCED:
+        ui->frame_adquire_advance_mode->show();
+        ui->frame_window_coin->show();
+        break;
+    case COIN_CALIB:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->hide();
+        break;
+    default:
+        break;
+    }
+}
+
 void MainWindow::setTabMode(int index)
 {
     adquire_mode=index;
@@ -894,10 +1044,16 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
   arpet->setMCAEStream(pmt, mca_function, time);
 }
 
-void MainWindow::setMCAEDataStream(string tab, string function,QVector<double> table )
+void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<double> table )
 {
   arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
-  arpet->setMCAEStream(function, table);
+  arpet->setMCAEStream(calib_function, table);
+}
+
+void MainWindow::setMCAEDataStream(string tab, string coin_function, string data_one, string data_two, bool time)
+{
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
+  arpet->setMCAEStream(coin_function, data_one, data_two, time);
 }
 
 int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
@@ -1122,7 +1278,7 @@ void MainWindow::getARPETStatus()
     {
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede obtener el estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
+    //setLabelState(!arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),ui->label_arpet_power_supply);
 }
 
 QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
@@ -1258,6 +1414,27 @@ void MainWindow::setLabelState(bool state, QLabel *label, bool power_off)
     }
 
     return;
+}
+
+void MainWindow::SetButtonState(bool state, QPushButton * button, bool disable)
+{
+    QString color;
+
+    if (state && !disable)
+    {
+        color="background-color: green";
+    }
+    else if (!state && !disable)
+    {
+        color="background-color: red";
+    }
+    else
+    {
+        color=" ";
+    }
+    button->setStyleSheet(color);
+    button->update();
+    button->setChecked(!disable);
 }
 
 
@@ -1607,7 +1784,7 @@ QVector<int> MainWindow::getCustomPlotParameters()
   param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
 
   return param;
-};
+}
 
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
