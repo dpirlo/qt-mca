@@ -3,7 +3,7 @@
 #include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),    
+    QMainWindow(parent),
     bytes_int(CHANNELS*6+16),
     channels_ui(CHANNELS),
     debug(false),
@@ -260,7 +260,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));        
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
         SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
 }
@@ -316,7 +316,7 @@ int MainWindow::on_pushButton_conectar_clicked()
         arpet->portDisconnect();
     }
     else
-    {        
+    {
         try{
             QString port_name=ui->comboBox_port->currentText();
             arpet->portConnect(port_name.toStdString().c_str());
@@ -471,7 +471,7 @@ string MainWindow::getCoincidenceAdvanceModeDataStream()
 
 void MainWindow::setCoincidenceModeDataStream(string stream)
 {
-    setMCAEDataStream("config",arpet->getSelect_Mode_Coin(),stream,"",false);
+    setMCAEDataStream(arpet->getSelect_Mode_Coin(),stream,"",false);
     string msg_ans;
     try
     {
@@ -492,7 +492,7 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
 void MainWindow::initCoincidenceMode()
 {
     /* Inicialización de modo coincidencia */
-    setMCAEDataStream("config",arpet->getInit_Coin(),"","",false);
+    setMCAEDataStream(arpet->getInit_Coin(),"","",false);
     string msg_ans;
     try
     {
@@ -514,7 +514,7 @@ void MainWindow::setCoincidenceModeWindowTime()
 {
     string vn="-"+ui->lineEdit_WN->text().toStdString();
     string vp=ui->lineEdit_WP->text().toStdString();
-    setMCAEDataStream("config",arpet->getWindow_Time_Coin(),vn,vp,true);
+    setMCAEDataStream(arpet->getWindow_Time_Coin(),vn,vp,true);
     string msg_ans;
 
     try
@@ -1051,7 +1051,7 @@ void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<do
 
 void MainWindow::setMCAEDataStream(string coin_function, string data_one, string data_two, bool time)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() /*"getHead(tab).toStdString()"*/ + arpet->getFunCHead());
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() + arpet->getFunCHead());
   arpet->setMCAEStream(coin_function, data_one, data_two, time);
 }
 

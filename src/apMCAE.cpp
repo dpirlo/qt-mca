@@ -42,7 +42,7 @@ MCAE::MCAE(size_t timeout)
      /*Funciones trama MCAE*/
      FunCHead("01"),
      FunCSP3("02"),
-     FunCPSOC("03"),     
+     FunCPSOC("03"),
 
      /*Funciones de Tablas*/
      Head_Calib_Coin("&"),
@@ -63,7 +63,7 @@ MCAE::MCAE(size_t timeout)
      Select_Mode_Coin("703"),
      Normal_Coin_Mode("333333333"),
      Auto_Coin_Mode("020102121"),
-     Head_Coin("07"),
+     Head_Coin("7"),
 
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
@@ -512,7 +512,7 @@ int MCAE::getMCACheckSum(string data)
     for(unsigned int i = 0; i < data.length(); ++i)
     {
         string token(1, data.at(i));
-        sum_of_elements = sum_of_elements + convertHexToDec(token);        
+        sum_of_elements = sum_of_elements + convertHexToDec(token);
     }
 
     return sum_of_elements;
@@ -743,7 +743,7 @@ void MCAE::setCoinStream(string function, string data_one, string data_two, bool
       stream = function + data_one;
   }
 
-  string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));  
+  string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));
   setTrama_Coin(getHead_Calib_Coin() + stream + cs_stream);
 }
 
