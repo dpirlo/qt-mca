@@ -20,9 +20,6 @@
 #include <QException>
 #include <QDebug>
 
-/**
- * El Namespace ap (ARPET) contiene los métodos y propiedades relacionados con ...
- */
 namespace ap {
 
     class Exceptions: public QException

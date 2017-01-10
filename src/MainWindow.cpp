@@ -343,7 +343,9 @@ void MainWindow::on_pushButton_configure_clicked()
    switch (index) {
    case COIN_NORMAL:
        initCoincidenceMode();
+       sleep(1);
        setCoincidenceModeWindowTime();
+       sleep(1);
        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
        break;
    case COIN_AUTOCOINCIDENCE:
