@@ -2,6 +2,10 @@
 
 using namespace ap;
 
+/**
+ * @brief MCAE::MCAE
+ * @param timeout
+ */
 MCAE::MCAE(size_t timeout)
     :port(serial_port_ptr(new serial_port(io))),
      channels_id(CHANNELS),
@@ -22,10 +26,10 @@ MCAE::MCAE(size_t timeout)
      /*Funciones trama MCAE*/
      FunCHead("01"),
      FunCSP3("02"),
-     FunCPSOC("03"),
+     FunCPSOC("03"),     
 
      /*Funciones de Tablas*/
-     Head_Calib("&"),
+     Head_Calib_Coin("&"),
      Energy_Calib_Table("001"),
      X_Calib_Table("002"),
      Y_Calib_Table("003"),
@@ -34,8 +38,15 @@ MCAE::MCAE(size_t timeout)
      AnsX_Calib_Table("&102"),
      AnsY_Calib_Table("&103"),
      AnsWindow_Limits_Table("&104"),
-     Size_Received_Calib("0001"),
-     Size_Sended_Calib("01"),
+     Generic_Received_Size("0001"),
+     Generic_Sended_Size("01"),
+
+     /*Funciones trama Coincidencia*/
+     Init_Coin("701"),
+     Window_Time_Coin("702"),
+     Select_Mode_Coin("703"),
+     Normal_Coin_Mode("333333333"),
+     Auto_Coin_Mode("020102121"),
 
      /*Funciones trama PSOC*/
      PSOC_OFF("$SET,STA,OFF"),
@@ -65,11 +76,20 @@ MCAE::~MCAE()
    portDisconnect();
 }
 
+/**
+ * @brief MCAE::isPortOpen
+ * @return true si esta abierto, caso contrario, false.
+ */
 bool MCAE::isPortOpen()
 {
     return port->is_open();
 }
 
+/**
+ * @brief MCAE::portConnect
+ * @param tty_port_name
+ * @return
+ */
 error_code MCAE::portConnect(const char *tty_port_name)
 {
     error_code error_code;
@@ -79,6 +99,10 @@ error_code MCAE::portConnect(const char *tty_port_name)
     return error_code;
 }
 
+/**
+ * @brief MCAE::portDisconnect
+ * @return
+ */
 error_code MCAE::portDisconnect()
 {
     error_code error_code;
@@ -319,7 +343,7 @@ int MCAE::getMCACheckSum(string data)
     for(unsigned int i = 0; i < data.length(); ++i)
     {
         string token(1, data.at(i));
-        sum_of_elements = sum_of_elements + convertHexToDec(token);
+        sum_of_elements = sum_of_elements + convertHexToDec(token);        
     }
 
     return sum_of_elements;
@@ -469,11 +493,18 @@ int MCAE::convertDoubleToInt(double value)
     return value_int=(int)round(value);
 }
 
-string MCAE::convertToTwoComplement(double value)
+string MCAE::convertToTwoComplement(double value, int two_complement_bits)
 {
-    int value_int = (1 << TWO_COMPLEMENT_BITS) + convertDoubleToInt(value);
+    int value_int = (1 << two_complement_bits) + convertDoubleToInt(value);
 
     return convertDecToHexUpper(value_int);
+}
+
+string MCAE::convertToTwoComplement(int value, int two_complement_bits)
+{
+    int value_int = (1 << two_complement_bits) + value;
+
+    return convertDecToHex(value_int);
 }
 
 string MCAE::getCalibTableFormat(string function, QVector<double> table)
@@ -497,7 +528,7 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
         }
         break;
     case 4:
-        for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(QString::number(table[index]).toInt()));
+        for (int index = 0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(QString::number(table[index]).toInt()));
         break;
     default:
         break;
@@ -506,11 +537,27 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
     return calib_stream;
 }
 
+void MCAE::setCoinStream(string function, string data_one, string data_two, bool time)
+{
+  string stream;
+  if (time)
+  {
+      stream = function + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_two).toInt())) + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertToTwoComplement(QString::fromStdString(data_one).toInt()));
+  }
+  else
+  {
+      stream = function + data_one;
+  }
+
+  string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));  
+  setTrama_Coin(getHead_Calib_Coin() + stream + cs_stream);
+}
+
 void MCAE::setCalibStream(string function, QVector<double> table)
 {
     string stream_pmts = getCalibTableFormat(function,table);
     string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(getMCACheckSum(function + stream_pmts)));
-    setTrama_Calib(getHead_Calib()+function+stream_pmts+cs_stream);
+    setTrama_Calib(getHead_Calib_Coin()+function+stream_pmts+cs_stream);
 }
 
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
@@ -521,7 +568,7 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
     setMCAStream(pmt, function, channel_value);
     int size_mca=(int)(getTrama_MCA().size());
     string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
-    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_stream+size_mca).toStdString());
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_stream+size_mca));/** @todo:Verificar QString::number(size_stream+size_mca).toStdString()->to_string(size_stream+size_mca)*/
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
@@ -532,7 +579,7 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
     setMCAStream(pmt, function, time);
     int size_mca=(int)(getTrama_MCA().size());
     string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
-    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,QString::number(size_mca).toStdString());
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_mca));/** @todo:Verificar QString::number(size_mca).toStdString()->to_string(size_mca)*/
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
@@ -540,9 +587,19 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
     setCalibStream(function, table);
-    string size_sended=getSize_Sended_Calib();
-    string size_received=getSize_Received_Calib();
+    string size_sended=getGeneric_Sended_Size();
+    string size_received=getGeneric_Received_Size();
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
+    setTrama_MCAE(stream);
+}
+
+void MCAE::setMCAEStream(string function, string data_one, string data_two, bool time)
+{
+    setCoinStream(function, data_one, data_two, time);
+    int size_coin=(int)(getTrama_Coin().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_coin));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_coin));
+    string stream = getHeader_MCAE()+size_sended+size_received+convertToMCAFormatStream(getTrama_Coin());
     setTrama_MCAE(stream);
 }
 
@@ -597,7 +654,8 @@ string MCAE::getPMTCode(int pmt_dec)
 double MCAE::getPMTTemperature(string temp_stream)
 {
     QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
-    string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString());
+    /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @todo : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
+    string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 
