@@ -124,7 +124,7 @@ private slots:
     void syncCheckBoxHead6ToConfig(bool check);
 
     /* Buttons */
-    int on_pushButton_conectar_clicked();
+    void on_pushButton_conectar_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();

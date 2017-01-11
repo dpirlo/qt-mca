@@ -432,9 +432,8 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 }
 /**
  * @brief MainWindow::on_pushButton_conectar_clicked
- * @return Si se conecta devuelve MCAE::OK, caso contrario MCAE::FAILED
  */
-int MainWindow::on_pushButton_conectar_clicked()
+void MainWindow::on_pushButton_conectar_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(arpet->isPortOpen())
@@ -456,12 +455,9 @@ int MainWindow::on_pushButton_conectar_clicked()
             {
             QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
             if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
-            return MCAE::FAILED;
         }
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
-
-    return MCAE::OK;
 }
 /**
  * @brief MainWindow::on_pushButton_configure_clicked
@@ -529,7 +525,11 @@ void MainWindow::on_pushButton_initialize_clicked()
    if(!arpet->isPortOpen())
    {
      QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-     if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+     if(debug)
+     {
+       cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+       cout<<"[END-LOG-DBG] ====================================================="<<endl;
+     }
      return;
    }
 
@@ -699,6 +699,11 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
     catch(Exceptions & ex)
     {
         Exceptions exception_set_coincidence_mode_failure((string("No se puede configurar el modo coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+          cout<<"No se puede configurar el modo coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+          showMCAEStreamDebugMode(msg_ans);
+        }
         throw exception_set_coincidence_mode_failure;
     }
     if(debug)
@@ -726,6 +731,11 @@ void MainWindow::initCoincidenceMode()
     catch(Exceptions & ex)
     {
         Exceptions exception_init_coincidence_failure((string("No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+          cout<<"No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+          showMCAEStreamDebugMode(msg_ans);
+        }
         throw exception_init_coincidence_failure;
     }
     if(debug)
@@ -757,6 +767,11 @@ void MainWindow::setCoincidenceModeWindowTime()
     catch(Exceptions & ex)
     {
         Exceptions exception_set_coincidence_window_time_failure((string("No se pueden configura la ventana de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+          cout<<"No se pueden configura la ventana de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+          showMCAEStreamDebugMode(msg_ans);
+        }
         throw exception_set_coincidence_window_time_failure;
     }
     if(debug)
@@ -1056,6 +1071,7 @@ void MainWindow::drawTemperatureBoard()
     catch( Exceptions & ex )
     {
          QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+         if(debug) cout<<"Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: "<<string(ex.excdesc).c_str()<<endl;
     }
 
     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
@@ -1189,7 +1205,7 @@ QString MainWindow::getHeadMCA(string tab, bool accum)
    catch(Exceptions & ex)
    {
        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-       if(debug) cout<<"No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+       if(debug) cout<<"No se pueden obtener los valores de MCA. Error: "<<string(ex.excdesc).c_str()<<endl;
    }
    setHeadVectorHits(hits);
 
@@ -1215,6 +1231,7 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
    {
      QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
      if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+     return msg;
    }
 
    try
@@ -1236,6 +1253,7 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
    catch(Exceptions & ex)
    {
        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+       if(debug) cout<<"No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: "<<string(ex.excdesc).c_str()<<endl;
    }
 
    setPMTVectorHits(hits);
@@ -1629,12 +1647,10 @@ void MainWindow::on_pushButton_select_pmt_clicked()
 
     if(debug)
     {
-        cout<<"================================"<<endl;
         qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
         QList<QString>::const_iterator stlIter;
         for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
-            qDebug() << (*stlIter);
-        cout<<"================================"<<endl;
+            qDebug() << (*stlIter);        
     }
 
     setPMTCustomPlotEnvironment(qlist);
