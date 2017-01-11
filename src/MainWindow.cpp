@@ -286,6 +286,8 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         sleep(1);
         sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+        sleep(1);
+        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         msg = readString();
         SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
         SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
@@ -528,7 +530,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
-        setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+        setLabelState(!arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
     }
     catch(Exceptions & ex)
     {
@@ -853,7 +855,7 @@ void MainWindow::setCalibrationTables(int head)
     }
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
 
-    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);    
+    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);
 }
 
 /* Pestaña: "MCA" */
@@ -1492,10 +1494,15 @@ void MainWindow::getARPETStatus()
   {
       sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
       msg = readString();
-      SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
-      SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
-      SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-      SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+      if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
+      {
+        SetButtonState(true,ui->pushButton_arpet_on);
+        SetButtonState(true,ui->pushButton_arpet_off, true);
+      } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
+      {
+        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+      }
   }
   catch(Exceptions & ex)
   {
