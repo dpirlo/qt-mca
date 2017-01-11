@@ -510,8 +510,7 @@ void MainWindow::on_pushButton_configure_clicked()
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
-       if(debug) cout<<ex.excdesc<<endl;
+       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));       
        setLabelState(false,ui->label_coincidencia_estado);
    }
    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
@@ -1070,8 +1069,8 @@ void MainWindow::drawTemperatureBoard()
     }
     catch( Exceptions & ex )
     {
-         QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-         if(debug) cout<<"Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: "<<string(ex.excdesc).c_str()<<endl;
+      if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
@@ -1204,8 +1203,8 @@ QString MainWindow::getHeadMCA(string tab, bool accum)
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-       if(debug) cout<<"No se pueden obtener los valores de MCA. Error: "<<string(ex.excdesc).c_str()<<endl;
+     if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
+     QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
    setHeadVectorHits(hits);
 
@@ -1229,8 +1228,8 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
 
    if (pmt_selected_list.isEmpty())
    {
-     QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
      if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+     QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
      return msg;
    }
 
@@ -1252,8 +1251,8 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-       if(debug) cout<<"No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: "<<string(ex.excdesc).c_str()<<endl;
+     if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
+     QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
 
    setPMTVectorHits(hits);
