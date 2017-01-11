@@ -84,13 +84,19 @@ private slots:
     void legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *item);
     void legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item);
     void removeSelectedGraphPMT();
+    void removeSelectedGraphHead();
     void removeAllGraphsPMT();
     void removeAllGraphsHead();
     void contextMenuRequestPMT(QPoint pos);
+    void contextMenuRequestHead(QPoint pos);
     void moveLegendPMT();
+    void moveLegendHead();
     void mousePressPMT();
+    void mousePressHead();
     void mouseWheelPMT();
+    void mouseWheelHead();
     void selectionChangedPMT();
+    void selectionChangedHead();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 
     /* Slots de sincronización en el entorno gráfico */
@@ -124,7 +130,7 @@ private slots:
     void on_pushButton_energia_clicked();
     void on_pushButton_posicion_X_clicked();
     void on_pushButton_posicion_Y_clicked();
-    void on_pushButton_obtener_rutas_clicked();
+    void on_pushButton_obtener_ini_clicked();
     void on_pushButton_tiempos_cabezal_clicked();
     void on_pushButton_initialize_clicked();
     void on_pushButton_configure_clicked();
@@ -141,7 +147,7 @@ private slots:
     void on_pushButton_p_5_clicked();
     void on_pushButton_p_10_clicked();
     void on_pushButton_p_50_clicked();
-    void on_pushButton_reset_clicked();    
+    void on_pushButton_reset_clicked();
     void on_pushButton_arpet_on_clicked();
     void on_pushButton_arpet_off_clicked();
     void on_actionPreferencias_triggered();
@@ -162,9 +168,10 @@ private:
     QString getHead(string tab);
     string initHead(int head);
     string initSP3(int head);
-    int setCalibrationTables(int head);    
+    int setCalibrationTables(int head);
     void setInitialConfigurations();
-    void setLabelState(bool state, QLabel *label, bool power_off=false);
+    void setLabelState(bool state, QLabel *label);
+    void setTextBrowserState(bool state, QTextBrowser *tbro);
     void SetButtonState(bool state, QPushButton * button, bool disable=false);
     string readString(char delimeter='\r');
     string readBufferString(int buffer_size);
@@ -184,7 +191,8 @@ private:
     void getHeadPlot(QCustomPlot *graph);
     void getMultiplePlot(QCustomPlot *graph);
     QVector<int> getCustomPlotParameters();
-    void SetQCustomPlotConfiguration(QCustomPlot *graph, string title_str="");
+    void SetQCustomPlotConfiguration(QCustomPlot *graph);
+    void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
     QString setHV(string tab, string hv_value, string pmt);
     QString setCalibTable(string function, QVector<double> table, string msg_compare);
     QString setTime(string tab, double time_value, string pmt);
@@ -211,6 +219,7 @@ private:
     SetPreferences *pref;
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
+    string initfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;
@@ -225,7 +234,7 @@ private:
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<double> > hits_pmt_ui, hits_head_ui;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
-    int  AT, LowLimit;   
+    int  AT, LowLimit;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
 

@@ -1107,6 +1107,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QLabel" name="label_10">
        <property name="geometry">
@@ -1130,6 +1133,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_energia">
        <property name="geometry">
@@ -1152,6 +1158,9 @@
          <width>661</width>
          <height>21</height>
         </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_tiempos_cabezal">
@@ -1203,6 +1212,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_initialize">
        <property name="geometry">
@@ -1233,6 +1245,9 @@
          <width>661</width>
          <height>21</height>
         </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QLabel" name="label_4">
@@ -1306,6 +1321,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QLabel" name="label_8">
        <property name="geometry">
@@ -1333,7 +1351,7 @@
         <string>Coef. Energía:</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_obtener_rutas">
+      <widget class="QPushButton" name="pushButton_obtener_ini">
        <property name="geometry">
         <rect>
          <x>800</x>
@@ -1343,7 +1361,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Obtener rutas</string>
+        <string>Obtener config.ini</string>
        </property>
       </widget>
      </widget>
@@ -1523,8 +1541,8 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_configure">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>182</y>
+         <x>86</x>
+         <y>174</y>
          <width>95</width>
          <height>31</height>
         </rect>
@@ -1539,7 +1557,7 @@ Tensión: </string>
       <widget class="QComboBox" name="comboBox_adquire_mode_coin">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>32</x>
          <y>34</y>
          <width>141</width>
          <height>29</height>
@@ -1572,7 +1590,7 @@ Tensión: </string>
          <x>30</x>
          <y>69</y>
          <width>201</width>
-         <height>111</height>
+         <height>91</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -1585,7 +1603,7 @@ Tensión: </string>
         <property name="geometry">
          <rect>
           <x>40</x>
-          <y>45</y>
+          <y>30</y>
           <width>51</width>
           <height>33</height>
          </rect>
@@ -1606,8 +1624,8 @@ Tensión: </string>
        <widget class="QLineEdit" name="lineEdit_WP">
         <property name="geometry">
          <rect>
-          <x>116</x>
-          <y>45</y>
+          <x>130</x>
+          <y>30</y>
           <width>51</width>
           <height>31</height>
          </rect>
@@ -1622,27 +1640,27 @@ Tensión: </string>
        <widget class="QLabel" name="label_43">
         <property name="geometry">
          <rect>
-          <x>51</x>
-          <y>27</y>
+          <x>10</x>
+          <y>35</y>
           <width>31</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>WN</string>
+         <string>WN:</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_51">
         <property name="geometry">
          <rect>
-          <x>127</x>
-          <y>26</y>
+          <x>100</x>
+          <y>35</y>
           <width>31</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>WP</string>
+         <string>WP:</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_52">
@@ -1662,7 +1680,7 @@ Tensión: </string>
         <property name="geometry">
          <rect>
           <x>16</x>
-          <y>84</y>
+          <y>63</y>
           <width>171</width>
           <height>21</height>
          </rect>
@@ -1702,7 +1720,7 @@ Tensión: </string>
          <rect>
           <x>4</x>
           <y>4</y>
-          <width>221</width>
+          <width>226</width>
           <height>211</height>
          </rect>
         </property>
@@ -2061,11 +2079,31 @@ Tensión: </string>
         </layout>
        </widget>
       </widget>
+      <widget class="QLabel" name="label_coincidencia_estado">
+       <property name="geometry">
+        <rect>
+         <x>185</x>
+         <y>36</y>
+         <width>46</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
       <zorder>frame_adquire_advance_mode</zorder>
       <zorder>label_40</zorder>
       <zorder>pushButton_configure</zorder>
       <zorder>comboBox_adquire_mode_coin</zorder>
       <zorder>frame_window_coin</zorder>
+      <zorder>label_coincidencia_estado</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="mca">
