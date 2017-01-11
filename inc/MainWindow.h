@@ -19,7 +19,7 @@
  *
  * @version $Version
  *
- * Contact: ahernandez@cae.cnea.gov.ar
+ * Contacto: ahernandez@cae.cnea.gov.ar
  *
  */
 #ifndef MAINWINDOW_H
@@ -47,9 +47,8 @@
 
 using namespace ap;
 
-/*!
+/**
     El Namespace Ui contiene los métodos y propiedades del entorno gráfico de la aplicación qt-mca.
-
 */
 namespace Ui {
 class MainWindow;
@@ -168,7 +167,7 @@ private:
     QString getHead(string tab);
     string initHead(int head);
     string initSP3(int head);
-    int setCalibrationTables(int head);
+    void setCalibrationTables(int head);
     void setInitialConfigurations();
     void setLabelState(bool state, QLabel *label);
     void setTextBrowserState(bool state, QTextBrowser *tbro);
@@ -292,7 +291,7 @@ public:
      *
      * Devuelve el vector de cuentas por cabezal.
      *
-     * @return
+     * @return hits_head_ui
      */
     QVector< QVector<double> > getHeadVectorHits( ) { return hits_head_ui; }
     /**

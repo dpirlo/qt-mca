@@ -2,6 +2,13 @@
 #include "ui_MainWindow.h"
 #include "QMessageBox"
 
+/**
+ * @brief MainWindow::MainWindow
+ *
+ * Constructor de la clase
+ *
+ * @param parent
+ */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     bytes_int(CHANNELS*6+16),
@@ -16,7 +23,12 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     getPaths();
 }
-
+/**
+ * @brief MainWindow::~MainWindow
+ *
+ * Destructor de la clase
+ *
+ */
 MainWindow::~MainWindow()
 {
     arpet->portDisconnect();
@@ -24,7 +36,12 @@ MainWindow::~MainWindow()
     delete pref;
     delete pmt_select;
 }
-
+/**
+ * @brief MainWindow::setInitialConfigurations
+ *
+ * Inicialización de múltiples configuraciones relacionadas con la comunicación, los gráficos y la interfaz gráfica
+ *
+ */
 void MainWindow::setInitialConfigurations()
 {
     arpet = shared_ptr<MCAE>(new MCAE());
@@ -52,7 +69,10 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
     resetHitsValues();
 }
-
+/**
+ * @brief MainWindow::SetQCustomPlotConfiguration
+ * @param graph
+ */
 void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
 {
   graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
@@ -71,7 +91,11 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
 
   graph->plotLayout()->insertRow(0);
 }
-
+/**
+ * @brief MainWindow::SetQCustomPlotSlots
+ * @param title_pmt_str
+ * @param title_head_str
+ */
 void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str)
 {
   /* Slots para PMTs */
@@ -104,7 +128,12 @@ void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str
   connect(ui->specHead, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestHead(QPoint)));
   ui->specHead->plotLayout()->addElement(0, 0, title_head);
 }
-
+/**
+ * @brief MainWindow::checkCombosStatus
+ *
+ * _Slots_ de intercomunicación para los diferentes _QWidget_ de la UI.
+ *
+ */
 void MainWindow::checkCombosStatus()
 {
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
@@ -129,7 +158,9 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
      QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
 }
-
+/**
+ * @brief MainWindow::setQListElements
+ */
 void MainWindow::setQListElements()
 {
     pmt_label_table.push_back(ui->label_pmt_01);
@@ -221,7 +252,9 @@ void MainWindow::setQListElements()
 }
 
 /* Menu: Preferencias */
-
+/**
+ * @brief MainWindow::on_actionPreferencias_triggered
+ */
 void MainWindow::on_actionPreferencias_triggered()
 {
     int ret = pref->exec();
@@ -232,14 +265,19 @@ void MainWindow::on_actionPreferencias_triggered()
         setDebugMode(debug_console);
     }
 }
-
+/**
+ * @brief MainWindow::showMCAEStreamDebugMode
+ * @param msg
+ */
 void MainWindow::showMCAEStreamDebugMode(string msg)
 {
     cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE()<<endl;
 }
 
 /* Pestaña: "Configuración" */
-
+/**
+ * @brief MainWindow::on_pushButton_arpet_on_clicked
+ */
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
     string msg;
@@ -258,7 +296,9 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
 }
-
+/**
+ * @brief MainWindow::on_pushButton_arpet_off_clicked
+ */
 void MainWindow::on_pushButton_arpet_off_clicked()
 {
     string msg;
@@ -275,49 +315,65 @@ void MainWindow::on_pushButton_arpet_off_clicked()
         SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_triple_ventana->setText(fileName);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_hv_clicked
+ */
 void MainWindow::on_pushButton_hv_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_hv->setText(fileName);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_energia_clicked
+ */
 void MainWindow::on_pushButton_energia_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_energia->setText(fileName);
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_posicion_X_clicked
+ */
 void MainWindow::on_pushButton_posicion_X_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_posicion_X->setText(fileName);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_posicion_Y_clicked
+ */
 void MainWindow::on_pushButton_posicion_Y_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_posicion_Y->setText(fileName);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_tiempos_cabezal_clicked
+ */
 void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_tiempos_cabezal->setText(fileName);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_obtener_ini_clicked
+ */
 void MainWindow::on_pushButton_obtener_ini_clicked()
 {
     openConfigurationFile();
 }
-
+/**
+ * @brief MainWindow::on_pushButton_conectar_clicked
+ * @return Si se conecta devuelve MCAE::OK, caso contrario MCAE::FAILED
+ */
 int MainWindow::on_pushButton_conectar_clicked()
 {
 
@@ -344,11 +400,12 @@ int MainWindow::on_pushButton_conectar_clicked()
 
     return MCAE::OK;
 }
-
+/**
+ * @brief MainWindow::on_pushButton_configure_clicked
+ * @todo : Agregar el modo calibración
+ */
 void MainWindow::on_pushButton_configure_clicked()
 {
-    /** @todo : Agregar el modo calibración.
-    */
    /* Inicialización del modo Coincidencia */
 
    int index=ui->comboBox_adquire_mode_coin->currentIndex();
@@ -391,7 +448,9 @@ void MainWindow::on_pushButton_configure_clicked()
    }
 
 }
-
+/**
+ * @brief MainWindow::on_pushButton_initialize_clicked
+ */
 void MainWindow::on_pushButton_initialize_clicked()
 {
    if(!arpet->isPortOpen())
@@ -415,7 +474,9 @@ void MainWindow::on_pushButton_initialize_clicked()
    setCalibrationTables(head_index);
    if (debug) cout<<"========================================="<<endl;
 }
-
+/**
+ * @brief MainWindow::on_pushButton_hv_set_clicked
+ */
 void MainWindow::on_pushButton_hv_set_clicked()
 {
     string msg;
@@ -435,7 +496,9 @@ void MainWindow::on_pushButton_hv_set_clicked()
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_hv_on_clicked
+ */
 void MainWindow::on_pushButton_hv_on_clicked()
 {
     string msg;
@@ -454,7 +517,9 @@ void MainWindow::on_pushButton_hv_on_clicked()
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_hv_off_clicked
+ */
 void MainWindow::on_pushButton_hv_off_clicked()
 {
     string msg;
@@ -473,7 +538,9 @@ void MainWindow::on_pushButton_hv_off_clicked()
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_hv_estado_clicked
+ */
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
     string msg;
@@ -492,8 +559,13 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug) showMCAEStreamDebugMode(msg);
 }
-
-
+/**
+ * @brief MainWindow::getCoincidenceAdvanceModeDataStream
+ *
+ * Método que configura la trama avanzada en modo coincidencia a partir de la lectura de QComboBox
+ *
+ * @return La trama de datos en _string_
+ */
 string MainWindow::getCoincidenceAdvanceModeDataStream()
 {
     int index;
@@ -506,7 +578,13 @@ string MainWindow::getCoincidenceAdvanceModeDataStream()
 
     return stream;
 }
-
+/**
+ * @brief MainWindow::setCoincidenceModeDataStream
+ *
+ * Configuración de la trama en modo coincidencia
+ *
+ * @param stream
+ */
 void MainWindow::setCoincidenceModeDataStream(string stream)
 {
     setMCAEDataStream(arpet->getSelect_Mode_Coin(),stream,"",false);
@@ -527,7 +605,12 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
         showMCAEStreamDebugMode(msg_ans);
     }
 }
-
+/**
+ * @brief MainWindow::initCoincidenceMode
+ *
+ * Método que configura la trama de inicialización en modo coincidencia
+ *
+ */
 void MainWindow::initCoincidenceMode()
 {
     /* Inicialización de modo coincidencia */
@@ -549,7 +632,12 @@ void MainWindow::initCoincidenceMode()
         showMCAEStreamDebugMode(msg_ans);
     }
 }
-
+/**
+ * @brief MainWindow::setCoincidenceModeWindowTime
+ *
+ * Método que configura la trama de ventana de tiempo en modo coincidencia
+ *
+ */
 void MainWindow::setCoincidenceModeWindowTime()
 {
     string vn="-"+ui->lineEdit_WN->text().toStdString();
@@ -575,12 +663,22 @@ void MainWindow::setCoincidenceModeWindowTime()
         showMCAEStreamDebugMode(msg_ans);
     }
 }
-
+/**
+ * @brief MainWindow::setHeadModeConfig
+ * @param index
+ */
 void MainWindow::setHeadModeConfig(int index)
 {
     setHeadMode(index,"config");
 }
-
+/**
+ * @brief MainWindow::initHead
+ *
+ * Inicializa el cabezal seleccionado
+ *
+ * @param head
+ * @return Mensaje de recepción en _string_
+ */
 string MainWindow::initHead(int head)
 {
     /* Incialización del cabezal */
@@ -600,7 +698,14 @@ string MainWindow::initHead(int head)
 
     return msg_head;
 }
-
+/**
+ * @brief MainWindow::initSP3
+ *
+ * Inicialización de las SPARTANS 3 del cabezal seleccionado
+ *
+ * @param head
+ * @return Mensaje de recepción en _string_
+ */
 string MainWindow::initSP3(int head)
 {
    /* Inicialización de las Spartans 3*/
@@ -620,8 +725,14 @@ string MainWindow::initSP3(int head)
 
    return msg_pmts;
 }
-
-int MainWindow::setCalibrationTables(int head)
+/**
+ * @brief MainWindow::setCalibrationTables
+ *
+ * Configuración de la tabla de calibración
+ *
+ * @param head
+ */
+void MainWindow::setCalibrationTables(int head)
 {
     coefenerg_values=getValuesFromFiles(coefenerg);
     hvtable_values=getValuesFromFiles(hvtable,true);
@@ -742,13 +853,18 @@ int MainWindow::setCalibrationTables(int head)
     }
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
 
-    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);
-
-    return MCAE::OK;
+    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);    
 }
 
 /* Pestaña: "MCA" */
-
+/**
+ * @brief MainWindow::getTemperatureCode
+ *
+ * Configura el rango de temperatura en función del valor de temperatura
+ *
+ * @param temperature
+ * @return Valor de temp_code
+ */
 MainWindow::temp_code MainWindow::getTemperatureCode(double temperature)
 {
     if (temperature<20) return ERROR;
@@ -758,7 +874,15 @@ MainWindow::temp_code MainWindow::getTemperatureCode(double temperature)
     if (temperature>=60) return TOO_HOT;
     else return NO_VALUE;
 }
-
+/**
+ * @brief MainWindow::setTemperatureBoard
+ *
+ * Configura el valor de temperatura para el tablero
+ *
+ * @param temp
+ * @param label_pmt
+ * @param pmt
+ */
 void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
 {
     QPalette palette_temperature;
@@ -787,7 +911,12 @@ void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
     label_pmt->setPalette(palette_temperature);
     label_pmt->setText(label_text);
 }
-
+/**
+ * @brief MainWindow::drawTemperatureBoard
+ *
+ * Dibuja el tablero con las diferentes temperaturas
+ *
+ */
 void MainWindow::drawTemperatureBoard()
 {
     double temp;
