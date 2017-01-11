@@ -291,6 +291,7 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
+  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
   string msg;
   try
   {
@@ -308,7 +309,12 @@ void MainWindow::getARPETStatus()
   }
   catch(Exceptions & ex)
   {
-      QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+    if(debug)
+    {
+      cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    }
+    QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
   }
 }
 /**
@@ -336,9 +342,9 @@ void MainWindow::on_pushButton_arpet_on_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
+      if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+      SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -362,9 +368,9 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
+      if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+      SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -452,9 +458,9 @@ void MainWindow::on_pushButton_conectar_clicked()
             getARPETStatus();
         }
         catch(boost::system::system_error e)
-            {
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
-            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+        {
+          if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+          QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
         }
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
@@ -562,8 +568,8 @@ void MainWindow::on_pushButton_hv_set_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
@@ -591,8 +597,8 @@ void MainWindow::on_pushButton_hv_on_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
@@ -620,8 +626,8 @@ void MainWindow::on_pushButton_hv_off_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
@@ -649,8 +655,8 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
@@ -1673,8 +1679,8 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1697,8 +1703,8 @@ void MainWindow::on_pushButton_l_5_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1721,8 +1727,8 @@ void MainWindow::on_pushButton_l_10_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1745,8 +1751,8 @@ void MainWindow::on_pushButton_l_50_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1769,8 +1775,8 @@ void MainWindow::on_pushButton_p_5_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1793,8 +1799,8 @@ void MainWindow::on_pushButton_p_10_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -1817,8 +1823,8 @@ void MainWindow::on_pushButton_p_50_clicked()
     }
     catch (Exceptions ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
