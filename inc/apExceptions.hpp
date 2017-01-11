@@ -1,5 +1,5 @@
 /**
- * @class Exceptions
+ * @class ap::Exceptions
  *
  * @brief Clase de manejo de excepciones
  *
@@ -13,6 +13,7 @@
  * @version $Version
  *
  * Contacto: ahernandez@cae.cnea.gov.ar
+ *           ariel.h.estevenz@ieee.org
  *
  */
 #ifndef APEXCEPTIONS_H

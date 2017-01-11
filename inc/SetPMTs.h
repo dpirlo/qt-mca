@@ -15,6 +15,7 @@
  * @version $Version
  *
  * Contacto: ahernandez@cae.cnea.gov.ar
+ *           ariel.h.estevenz@ieee.org
  *
  */
 #ifndef SETPMTS_H
@@ -113,6 +114,7 @@ public:
      * @brief GetPMTSelectedList
      *
      * Método público que obtiene la lista seleccionada de fotomultiplicadores.
+     *
      * @return pmt_selected_list
      * @see pmt_selected_list
      */

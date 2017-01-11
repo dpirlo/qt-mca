@@ -20,6 +20,7 @@
  * @version $Version
  *
  * Contacto: ahernandez@cae.cnea.gov.ar
+ *           ariel.h.estevenz@ieee.org
  *
  */
 #ifndef MAINWINDOW_H
@@ -164,6 +165,7 @@ private:
     void getPaths();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
+    string getLocalDateAndTime();
     QString getHead(string tab);
     string initHead(int head);
     string initSP3(int head);

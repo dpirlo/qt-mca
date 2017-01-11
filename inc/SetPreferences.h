@@ -13,6 +13,7 @@
  * @version $Version
  *
  * Contacto: ahernandez@cae.cnea.gov.ar
+ *           ariel.h.estevenz@ieee.org
  *
  */
 #ifndef SETPREFERENCES_H
