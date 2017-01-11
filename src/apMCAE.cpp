@@ -34,6 +34,7 @@ MCAE::MCAE(size_t timeout)
      AnsAP_OFF("OFF"),
      AP_ON("ARPETON"),
      AP_OFF("ARPETOFF"),
+     AP_STATUS("ARPETO"),
      Head_MCAE("#C"),
      Head_MCA("@"),
      End_MCA("\r"),

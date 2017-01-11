@@ -67,7 +67,7 @@ typedef shared_ptr<serial_port> serial_port_ptr;
 namespace ap {
 
     class MCAE
-    {        
+    {
     private:
         /**
          * @brief The string_code enum
@@ -180,7 +180,7 @@ namespace ap {
         string init_MCA, MCA, HV;
         string AnsMultiInit, AnsHeadInit;
         string AnsEnergy_Calib_Table, AnsX_Calib_Table, AnsY_Calib_Table, AnsWindow_Limits_Table;
-        string AP_ON, AP_OFF;
+        string AP_ON, AP_OFF, AP_STATUS;
         string AnsAP_ON, AnsAP_OFF;
         size_t timeout;
         /** @todo: Verificar esta propiedad si no es _deprecated_*/
@@ -318,10 +318,14 @@ namespace ap {
          */
         string getNormal_Coin_Mode() const { return Normal_Coin_Mode; }
         /**
+         * @brief getHead_Coin
+         * @return Head_Coin
+         */
+        string getHead_Coin() const { return Head_Coin; }
+        /**
          * @brief getPSOC_OFF
          * @return PSOC_OFF
          */
-        string getHead_Coin() const { return Head_Coin; }
         string getPSOC_OFF() const { return PSOC_OFF; }
         /**
          * @brief getPSOC_ON
@@ -404,6 +408,11 @@ namespace ap {
          */
         string getAP_OFF() const { return AP_OFF; }
         /**
+         * @brief getAP_STATUS
+         * @return AP_STATUS
+         */
+        string getAP_STATUS() const { return AP_STATUS; }
+        /**
          * @brief getAnsAP_ON
          * @return AnsAP_ON
          */
@@ -412,7 +421,7 @@ namespace ap {
          * @brief getAnsAP_OFF
          * @return AnsAP_OFF
          */
-        string getAnsAP_OFF() const { return AnsAP_OFF; }        
+        string getAnsAP_OFF() const { return AnsAP_OFF; }
         /**
          * @brief getAnsEnergy_Calib_Table
          * @return AnsEnergy_Calib_Table
