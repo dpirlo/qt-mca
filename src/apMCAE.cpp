@@ -34,7 +34,7 @@ MCAE::MCAE(size_t timeout)
      AnsAP_OFF("OFF"),
      AP_ON("ARPETON"),
      AP_OFF("ARPETOFF"),
-     AP_STATUS("ARPETO"),
+     AP_STATUS("ARPETO?"),
      Head_MCAE("#C"),
      Head_MCA("@"),
      End_MCA("\r"),
@@ -109,7 +109,7 @@ MCAE::~MCAE()
 
 /**
  * @brief MCAE::isPortOpen
- * @return si está abierto responde _true_
+ * @return Si está abierto responde _true_
  */
 bool MCAE::isPortOpen()
 {
@@ -431,7 +431,7 @@ string MCAE::convertDecToHexUpper(int dec_number)
  * Método de inversión de _bytes_
  *
  * @param seq
- * @return secuencia _seq_ en sentido inverso
+ * @return Secuencia _seq_ en sentido inverso
  */
 QByteArray MCAE::getReverse(QByteArray seq)
 {
@@ -505,7 +505,7 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
  * Cálculo del _checksum_ en la trama de datos
  *
  * @param data
- * @return
+ * @return El valor del _checksum_
  */
 int MCAE::getMCACheckSum(string data)
 {
@@ -645,12 +645,17 @@ string MCAE::convertFromMCAFormatStream(string data_with_cs)
     return data_with_cs;
 }
 
-
+/**
+ * @brief MCAE::getMCAFormatStream
+ *
+ * Conversión de la trama en formato MCA para el envío de datos
+ * Formato de _data_ sin checksum: @ddcc--...--
+ *
+ * @param data
+ * @return data con _checksum_ en formato MCA
+ */
 string MCAE::getMCAFormatStream(string data)
 {
-    /* Formato de data sin checksum:
-     * @ddcc--...--
-     */
 
     string checksum=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
     string data_plus_checksum = data + checksum;
@@ -659,27 +664,60 @@ string MCAE::getMCAFormatStream(string data)
 
     return data_plus_checksum_mca_format;
 }
-
+/**
+ * @brief MCAE::setMCAStream
+ *
+ * Configuración de la trama MCA
+ *
+ * @param pmt
+ * @param function
+ * @param channel
+ */
 void MCAE::setMCAStream(string pmt, string function, string channel)
 {
     string stream_wo_cs=pmt+function+channel;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
-
+/**
+ * @brief MCAE::setMCAStream
+ * @overload
+ *
+ * Configuración de la trama MCA
+ *
+ * @param pmt
+ * @param function
+ * @param time
+ */
 void MCAE::setMCAStream(string pmt, string function, double time)
 {
     string time_str=QString::number(time).toStdString();
     string stream_wo_cs=pmt+function+time_str;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
-
+/**
+ * @brief MCAE::setPSOCStream
+ *
+ * Configuración de la trama PSOC
+ *
+ * @param function
+ * @param psoc_value
+ */
 void MCAE::setPSOCStream(string function, string psoc_value)
 {
     string stream_psoc;
     stream_psoc=function+psoc_value;
     setTrama_PSOC(stream_psoc);
 }
-
+/**
+ * @brief MCAE::convertDoubleToInt
+ *
+ * Conversión de un valor en _double_ multiplicado por 1000 a _int_
+ * double=double*1000;
+ * int=(int)round(double)
+ *
+ * @param value
+ * @return value_int
+ */
 int MCAE::convertDoubleToInt(double value)
 {
     int value_int;
@@ -687,21 +725,46 @@ int MCAE::convertDoubleToInt(double value)
 
     return value_int=(int)round(value);
 }
-
+/**
+ * @brief MCAE::convertToTwoComplement
+ *
+ * Conversión de un valor _double_ negativo a complemento a 2
+ *
+ * @param value
+ * @param two_complement_bits
+ * @return Valor en complemento a 2 en Hexadecimal (upper)
+ */
 string MCAE::convertToTwoComplement(double value, int two_complement_bits)
 {
     int value_int = (1 << two_complement_bits) + convertDoubleToInt(value);
 
     return convertDecToHexUpper(value_int);
 }
-
+/**
+ * @brief MCAE::convertToTwoComplement
+ * @overload
+ *
+ * Conversión de un valor _int_ negativo a complemento a 2
+ *
+ * @param value
+ * @param two_complement_bits
+ * @return Valor en complemento a 2 en Hexadecimal (lower)
+ */
 string MCAE::convertToTwoComplement(int value, int two_complement_bits)
 {
     int value_int = (1 << two_complement_bits) + value;
 
     return convertDecToHex(value_int);
 }
-
+/**
+ * @brief MCAE::getCalibTableFormat
+ *
+ * Se obtiene la trama a partir de la tabla configurada en la etapa de calibración
+ *
+ * @param function
+ * @param table
+ * @return Trama para calibración
+ */
 string MCAE::getCalibTableFormat(string function, QVector<double> table)
 {
     string calib_stream, temp_calib_stream;
@@ -731,7 +794,16 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 
     return calib_stream;
 }
-
+/**
+ * @brief MCAE::setCoinStream
+ *
+ * Configuración de la trama para el modo coincidencia
+ *
+ * @param function
+ * @param data_one
+ * @param data_two
+ * @param time
+ */
 void MCAE::setCoinStream(string function, string data_one, string data_two, bool time)
 {
   string stream;
@@ -747,14 +819,30 @@ void MCAE::setCoinStream(string function, string data_one, string data_two, bool
   string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));
   setTrama_Coin(getHead_Calib_Coin() + stream + cs_stream);
 }
-
+/**
+ * @brief MCAE::setCalibStream
+ *
+ * Configuración de la trama de envío para calibración
+ *
+ * @param function
+ * @param table
+ */
 void MCAE::setCalibStream(string function, QVector<double> table)
 {
     string stream_pmts = getCalibTableFormat(function,table);
     string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(getMCACheckSum(function + stream_pmts)));
     setTrama_Calib(getHead_Calib_Coin()+function+stream_pmts+cs_stream);
 }
-
+/**
+ * @brief MCAE::setMCAEStream
+ *
+ * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * @param pmt_dec
+ * @param size_stream
+ * @param function
+ * @param channel_dec
+ */
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
     string channel_value;
@@ -767,7 +855,16 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
-
+/**
+ * @brief MCAE::setMCAEStream
+ * @overload
+ *
+ * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * @param pmt_dec
+ * @param function
+ * @param time
+ */
 void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 {
     string pmt=getPMTCode(atoi(pmt_dec.c_str()));
@@ -778,7 +875,15 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
     setTrama_MCAE(stream);
 }
-
+/**
+ * @brief MCAE::setMCAEStream
+ * @overload
+ *
+ * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * @param function
+ * @param table
+ */
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
     setCalibStream(function, table);
@@ -787,7 +892,17 @@ void MCAE::setMCAEStream(string function, QVector<double> table)
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
     setTrama_MCAE(stream);
 }
-
+/**
+ * @brief MCAE::setMCAEStream
+ * @overload
+ *
+ * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * @param function
+ * @param data_one
+ * @param data_two
+ * @param time
+ */
 void MCAE::setMCAEStream(string function, string data_one, string data_two, bool time)
 {
     setCoinStream(function, data_one, data_two, time);
@@ -797,7 +912,14 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
     string stream = getHeader_MCAE()+size_sended+size_received+convertToMCAFormatStream(getTrama_Coin());
     setTrama_MCAE(stream);
 }
-
+/**
+ * @brief MCAE::setPSOCEStream
+ *
+ * Configuración de la trama general de envío para el protocolo MCAE (para PSOC)
+ *
+ * @param function
+ * @param psoc_value_dec
+ */
 void MCAE::setPSOCEStream(string function, string psoc_value_dec)
 {
     string psoc_value;
@@ -808,7 +930,14 @@ void MCAE::setPSOCEStream(string function, string psoc_value_dec)
     string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
     setTrama_MCAE(stream);
 }
-
+/**
+ * @brief MCAE::getHVValueCode
+ *
+ * Valor de HV en Hexadecimal con su formato
+ *
+ * @param hv_value_dec
+ * @return hv_value_dec en Hexadecimal (lower)
+ */
 string MCAE::getHVValueCode(int hv_value_dec)
 {
     string hv_value= convertDecToHex(hv_value_dec);
@@ -816,7 +945,15 @@ string MCAE::getHVValueCode(int hv_value_dec)
 
     return hv_value;
 }
-
+/**
+ * @brief MCAE::formatMCAEStreamSize
+ *
+ * Formato de la trama para envío
+ *
+ * @param expected_size
+ * @param data_stream
+ * @return data_stream en formato de envío
+ */
 string MCAE::formatMCAEStreamSize(int expected_size, string data_stream)
 {
    switch (expected_size) {
@@ -838,14 +975,28 @@ string MCAE::formatMCAEStreamSize(int expected_size, string data_stream)
 
    return data_stream;
 }
-
+/**
+ * @brief MCAE::getPMTCode
+ *
+ * Valor de PMT en Hexadecimal con su formato
+ *
+ * @param pmt_dec
+ * @return Valor de PMT
+ */
 string MCAE::getPMTCode(int pmt_dec)
 {
     string pmt=formatMCAEStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
 
     return pmt;
 }
-
+/**
+ * @brief MCAE::getPMTTemperature
+ *
+ * Analizador de la trama de temperatura
+ *
+ * @param temp_stream
+ * @return Valor de temperatura en decimal
+ */
 double MCAE::getPMTTemperature(string temp_stream)
 {
     QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
@@ -853,7 +1004,14 @@ double MCAE::getPMTTemperature(string temp_stream)
     string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
-
+/**
+ * @brief MCAE::verifyCheckSum
+ *
+ * Analizador de _checksum_
+ *
+ * @param data_mca
+ * @return _true_ si el _checksum_ es válido
+ */
 bool MCAE::verifyCheckSum(string data_mca)
 {
     string data=convertFromMCAFormatStream(data_mca);
@@ -865,12 +1023,28 @@ bool MCAE::verifyCheckSum(string data_mca)
 
     return checked;
 }
-
+/**
+ * @brief MCAE::verifyMCAEStream
+ *
+ * Analizador de la trama MCAE
+ *
+ * @param data_received
+ * @param data_to_compare
+ * @return _true_ si la trama es válida
+ */
 bool MCAE::verifyMCAEStream(string data_received, string data_to_compare)
 {
     return verifyStream(data_received,data_to_compare);
 }
-
+/**
+ * @brief MCAE::verifyStream
+ *
+ * Analizador de trama de datos
+ *
+ * @param data_received
+ * @param data_to_compare
+ * @return _true_ si la trama es válida
+ */
 bool MCAE::verifyStream(string data_received, string data_to_compare)
 {
     bool checked = false;
