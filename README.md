@@ -47,6 +47,6 @@ Consola para pruebas de envío y recepción de tramas serie.
 ### Debug
 En el momento que se habilita la opción _debug_ desde el menú preferencias, el programa comienza a mostrar todos los mensajes recibidos y envíados al equipo por consola.
 
-<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_debug.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/bbcd512a4747a28cb135ff4b5ec0e625382c0460/img/img_debug.png" width="600"></p>
 
 *AR-PET: Primer Tomógrafo por Emsión de Positrones Argentino, C. Verrastro, D. Estryk, E. Venialgo, S. Marinsek, M. Belzunce, XXXV Reunión Anual de la Asociación Argentina de Tecnología Nuclear, Noviembre 2008. 
