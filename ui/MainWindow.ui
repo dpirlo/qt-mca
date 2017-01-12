@@ -1542,7 +1542,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>86</x>
-         <y>174</y>
+         <y>178</y>
          <width>95</width>
          <height>31</height>
         </rect>
@@ -1590,7 +1590,7 @@ Tensión: </string>
          <x>30</x>
          <y>69</y>
          <width>201</width>
-         <height>91</height>
+         <height>101</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -1680,7 +1680,7 @@ Tensión: </string>
         <property name="geometry">
          <rect>
           <x>16</x>
-          <y>63</y>
+          <y>70</y>
           <width>171</width>
           <height>21</height>
          </rect>
