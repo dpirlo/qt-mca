@@ -1,3 +1,23 @@
+/**
+ * @class SetPMTs
+ *
+ * @brief Clase de selección de PMTs
+ *
+ * Esta clase provee métodos y propiedades para el manejo
+ * del QDialog que realiza la selección de los
+ * fotomultiplicadores. A partir de esta selección se adquiere
+ * los valores de MCA.
+ *
+ * @note Clase heredada de QDialog
+ *
+ * @author Ariel Hernández
+ *
+ * @version $Version
+ *
+ * Contacto: ahernandez@cae.cnea.gov.ar
+ *           ariel.h.estevenz@ieee.org
+ *
+ */
 #ifndef SETPMTS_H
 #define SETPMTS_H
 
@@ -79,12 +99,25 @@ private slots:
     void on_pushButton_47_clicked();
     void on_pushButton_48_clicked();
 
-private:
+private:    
     Ui::SetPMTs *ui;
-    QList<QString> pmt_selected_list;
+    /**
+     * @brief pmt_selected_list
+     *
+     * Lista de QString que contiene los fotomultiplicadores (PMT) seleccionados.
+     */
+    QList<QString> pmt_selected_list;    
     QList<QPushButton*> pmt_button_table;
 
 public:
+    /**
+     * @brief GetPMTSelectedList
+     *
+     * Método público que obtiene la lista seleccionada de fotomultiplicadores.
+     *
+     * @return pmt_selected_list
+     * @see pmt_selected_list
+     */
     QList<QString> GetPMTSelectedList() const { return pmt_selected_list; }
 
 };
