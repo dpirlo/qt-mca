@@ -97,6 +97,8 @@ private slots:
     void mouseWheelHead();
     void selectionChangedPMT();
     void selectionChangedHead();
+    void resetGraphZoomPMT();
+    void resetGraphZoomHead();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 
     /* Slots de sincronización en el entorno gráfico */

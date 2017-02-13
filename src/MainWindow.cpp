@@ -516,7 +516,7 @@ void MainWindow::on_pushButton_configure_clicked()
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));       
+       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
        setLabelState(false,ui->label_coincidencia_estado);
    }
    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
@@ -1191,19 +1191,19 @@ void MainWindow::setTabMode(int index)
  *
  * Obtiene las cuentas de MCA para un cabezal determinado
  *
- * @param tab 
+ * @param tab
  * @return Devuelve el mensaje de respuesta en _QString_
  */
 QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
-   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));   
+   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
 
    try
    {
      msg = getMCA(tab,arpet->getFunCHead() , true);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
-     hits.insert(HEAD, 1, arpet->getHitsMCA());     
+     hits.insert(HEAD, 1, arpet->getHitsMCA());
    }
    catch(Exceptions & ex)
    {
@@ -1247,7 +1247,7 @@ QString MainWindow::getMultiMCA(string tab)
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
-        hits.insert(index, 1, arpet->getHitsMCA());        
+        hits.insert(index, 1, arpet->getHitsMCA());
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1577,7 +1577,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
-    QString q_msg;    
+    QString q_msg;
 
     switch (adquire_mode) {
     case MONOMODE:
@@ -1649,7 +1649,7 @@ void MainWindow::on_pushButton_select_pmt_clicked()
         qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
         QList<QString>::const_iterator stlIter;
         for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
-            qDebug() << (*stlIter);        
+            qDebug() << (*stlIter);
     }
 
     setPMTCustomPlotEnvironment(qlist);
@@ -2526,8 +2526,6 @@ void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legen
   graph->addGraph();
   graph->graph()->setName(graph_legend);
   graph->graph()->setData(channels_ui,hits);
-  graph->graph()->setLineStyle((QCPGraph::LineStyle)(param[3]));
-  graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
   QPen graphPen;
   graphPen.setColor(QColor(param[0], param[1], param[2]));
   graphPen.setWidthF(param[5]);
@@ -2670,6 +2668,7 @@ void MainWindow::contextMenuRequestPMT(QPoint pos)
     menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
   } else
   {
+    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomPMT()));
     if (ui->specPMTs->selectedGraphs().size() > 0)
       menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
     if (ui->specPMTs->graphCount() > 0)
@@ -2696,10 +2695,12 @@ void MainWindow::contextMenuRequestHead(QPoint pos)
     menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
   } else
   {
+    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomHead()));
     if (ui->specHead->selectedGraphs().size() > 0)
-      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
+      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphHead()));
     if (ui->specHead->graphCount() > 0)
-      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
+      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsHead()));
+
   }
 
   menu->popup(ui->specHead->mapToGlobal(pos));
@@ -2883,6 +2884,18 @@ void MainWindow::selectionChangedHead()
       graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
     }
   }
+}
+
+void MainWindow::resetGraphZoomHead()
+{
+  ui->specHead->rescaleAxes();
+  ui->specHead->replot();
+}
+
+void MainWindow::resetGraphZoomPMT()
+{
+  ui->specPMTs->rescaleAxes();
+  ui->specPMTs->replot();
 }
 /**
  * @brief MainWindow::graphClicked
