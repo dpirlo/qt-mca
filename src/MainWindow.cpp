@@ -1191,11 +1191,10 @@ void MainWindow::setTabMode(int index)
  *
  * Obtiene las cuentas de MCA para un cabezal determinado
  *
- * @param tab
- * @param accum
+ * @param tab 
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getHeadMCA(string tab, bool accum)
+QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
    QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));   
@@ -1204,8 +1203,7 @@ QString MainWindow::getHeadMCA(string tab, bool accum)
    {
      msg = getMCA(tab,arpet->getFunCHead() , true);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
-     hits.insert(HEAD, 1, arpet->getHitsMCA());
-     if (accum) transform(hits[HEAD].begin(),hits[HEAD].end(), getHeadVectorHits()[HEAD].begin(), hits[HEAD].begin(), plus<double>());
+     hits.insert(HEAD, 1, arpet->getHitsMCA());     
    }
    catch(Exceptions & ex)
    {
@@ -1222,10 +1220,9 @@ QString MainWindow::getHeadMCA(string tab, bool accum)
  * Obtiene las cuentas de MCA correspondiente a los fotomultiplicadores en un cabezal determinado
  *
  * @param tab
- * @param accum
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getMultiMCA(string tab, bool accum)
+QString MainWindow::getMultiMCA(string tab)
 {
 
    int size_pmt_selected = pmt_selected_list.length();
@@ -1250,8 +1247,7 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
-        hits.insert(index, 1, arpet->getHitsMCA());
-        if (accum) transform(hits[index].begin(),hits[index].end(), getPMTVectorHits()[index].begin(), hits[index].begin(), plus<double>());
+        hits.insert(index, 1, arpet->getHitsMCA());        
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1581,17 +1577,15 @@ void MainWindow::on_pushButton_adquirir_clicked()
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
-    QString q_msg;
-    bool accum=true;
-    if (!(ui->checkBox_accum->isChecked())) accum=false;
+    QString q_msg;    
 
     switch (adquire_mode) {
     case MONOMODE:
-        q_msg = getMultiMCA("mca",accum);
+        q_msg = getMultiMCA("mca");
         getMultiplePlot(ui->specPMTs);
         break;
     case MULTIMODE:
-        q_msg = getHeadMCA("mca",accum);
+        q_msg = getHeadMCA("mca");
         getHeadPlot(ui->specHead);
         break;
     case TEMPERATURE:

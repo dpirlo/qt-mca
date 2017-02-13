@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1721,7 +1721,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3119,29 +3119,13 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>60</x>
-         <y>21</y>
+         <y>5</y>
          <width>101</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
         <string>Continuo</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="checkBox_accum">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>0</y>
-         <width>111</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Acumulativo</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -3550,7 +3534,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>828</x>
-        <y>510</y>
+        <y>503</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -3563,7 +3547,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>914</x>
-        <y>510</y>
+        <y>503</y>
         <width>71</width>
         <height>31</height>
        </rect>

@@ -180,8 +180,8 @@ private:
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
     QString getMCA(string tab, string function, bool multimode, string pmt="0");
-    QString getMultiMCA(string tab, bool accum=false);
-    QString getHeadMCA(string tab, bool accum);
+    QString getMultiMCA(string tab);
+    QString getHeadMCA(string tab);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
     void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
