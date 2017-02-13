@@ -15,6 +15,13 @@ using namespace ap;
  *
  * @note Se documentan las propiedades más importantes.
  *
+ * @brief PortBaudRate:
+ * Velocidad de funcionamiento de la comunicación con el equipo
+ *
+ * @brief PSOC_ADC:
+ * Tensión por cada unidade de ADC
+ * 1 Unidad de ADC = 5.8823 V
+ *
  * @param timeout
  */
 MCAE::MCAE(size_t timeout)
@@ -23,12 +30,7 @@ MCAE::MCAE(size_t timeout)
      hits_mca(CHANNELS),
      timeout(timeout),
      read_error(true),
-     timer(port->get_io_service()),
-     /**
-      * @brief PortBaudRate
-      *
-      * Velocidad de funcionamiento de la comunicación con el equipo
-      */
+     timer(port->get_io_service()),     
      PortBaudRate(921600),
      AnsAP_ON("ON"),
      AnsAP_OFF("OFF"),
@@ -71,14 +73,7 @@ MCAE::MCAE(size_t timeout)
      PSOC_ON("$SET,STA,ON"),
      PSOC_SET("$SET,VCON,"),
      PSOC_STA("$TEMP"),
-     PSOC_ANS("$OK"),
-     /**
-      * @brief PSOC_ADC
-      *
-      * Tensión por cada unidade de ADC
-      * 1 Unidad de ADC = 5.8823 V
-      *
-      */
+     PSOC_ANS("$OK"), 
      PSOC_ADC(5.8823),
      PSOC_SIZE_SENDED("14"),
      PSOC_SIZE_RECEIVED("0051"),
