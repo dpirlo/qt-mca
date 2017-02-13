@@ -2885,13 +2885,17 @@ void MainWindow::selectionChangedHead()
     }
   }
 }
-
+/**
+ * @brief MainWindow::resetGraphZoomHead
+ */
 void MainWindow::resetGraphZoomHead()
 {
   ui->specHead->rescaleAxes();
   ui->specHead->replot();
 }
-
+/**
+ * @brief MainWindow::resetGraphZoomPMT
+ */
 void MainWindow::resetGraphZoomPMT()
 {
   ui->specPMTs->rescaleAxes();
