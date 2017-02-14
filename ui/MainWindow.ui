@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2128,7 +2128,7 @@ Tensión: </string>
         <x>20</x>
         <y>50</y>
         <width>791</width>
-        <height>501</height>
+        <height>511</height>
        </rect>
       </property>
       <property name="tabShape">
@@ -2153,10 +2153,10 @@ Tensión: </string>
        <widget class="QCustomPlot" name="specPMTs" native="true">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>20</y>
-          <width>741</width>
-          <height>421</height>
+          <x>0</x>
+          <y>0</y>
+          <width>781</width>
+          <height>471</height>
          </rect>
         </property>
         <property name="autoFillBackground">
@@ -2171,10 +2171,10 @@ Tensión: </string>
        <widget class="QCustomPlot" name="specHead" native="true">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>20</y>
-          <width>741</width>
-          <height>421</height>
+          <x>0</x>
+          <y>0</y>
+          <width>781</width>
+          <height>471</height>
          </rect>
         </property>
         <property name="autoFillBackground">
@@ -3084,9 +3084,9 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>820</x>
-        <y>459</y>
+        <y>479</y>
         <width>171</width>
-        <height>91</height>
+        <height>71</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3099,7 +3099,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>3</y>
+         <y>0</y>
          <width>111</width>
          <height>31</height>
         </rect>
@@ -3119,7 +3119,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>60</x>
-         <y>5</y>
+         <y>2</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -3485,7 +3485,7 @@ Tensión: </string>
         <x>820</x>
         <y>315</y>
         <width>171</width>
-        <height>141</height>
+        <height>161</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3519,7 +3519,7 @@ Tensión: </string>
          <x>6</x>
          <y>40</y>
          <width>161</width>
-         <height>91</height>
+         <height>111</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -3534,7 +3534,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>828</x>
-        <y>503</y>
+        <y>510</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -3547,7 +3547,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>914</x>
-        <y>503</y>
+        <y>510</y>
         <width>71</width>
         <height>31</height>
        </rect>

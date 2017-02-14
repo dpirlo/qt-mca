@@ -2530,6 +2530,10 @@ void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legen
   graphPen.setColor(QColor(param[0], param[1], param[2]));
   graphPen.setWidthF(param[5]);
   graph->graph()->setPen(graphPen);
+  graph->legend->setVisible(true);
+  graph->legend->setWrap(4);
+  graph->legend->setRowSpacing(1);
+  graph->legend->setColumnSpacing(2);
   graph->replot();
 }
 /**
