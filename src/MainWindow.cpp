@@ -2486,7 +2486,7 @@ void MainWindow::getMultiplePlot(QCustomPlot *graph)
   graph->clearGraphs();
   for (int index=0;index<pmt_selected_list.length();index++)
   {
-      addPMTGraph(index, graph, pmt_selected_list.at(index));
+      addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
   }
   graph->rescaleAxes();
 }
@@ -2497,18 +2497,20 @@ void MainWindow::getMultiplePlot(QCustomPlot *graph)
 void MainWindow::getHeadPlot(QCustomPlot *graph)
 {
     graph->clearGraphs();
-    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
+    addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
     graph->rescaleAxes();
 }
 /**
- * @brief MainWindow::addPMTGraph
+ * @brief MainWindow::addGraph
  * @param index
  * @param graph
+ * @param channels
  * @param graph_legend
  * @param head
  */
-void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend, bool head)
+void MainWindow::addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
 {
+  channels_ui.resize(channels);
   channels_ui = arpet->getChannels();
   QVector<double> hits;
   QVector<int> param;

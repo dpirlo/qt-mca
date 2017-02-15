@@ -76,7 +76,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend="", bool head=false);
+    void addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
