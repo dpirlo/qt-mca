@@ -1201,7 +1201,7 @@ QString MainWindow::getHeadMCA(string tab)
 
    try
    {
-     msg = getMCA(tab,arpet->getFunCHead() , true);
+     msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
      hits.insert(HEAD, 1, arpet->getHitsMCA());
    }
@@ -1226,7 +1226,7 @@ QString MainWindow::getMultiMCA(string tab)
 {
 
    int size_pmt_selected = pmt_selected_list.length();
-   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS));
+   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS_PMT));
    QString msg;
 
    if (pmt_selected_list.isEmpty())
@@ -1241,7 +1241,7 @@ QString MainWindow::getMultiMCA(string tab)
      for (int index=0;index<size_pmt_selected;index++)
      {
         string pmt=pmt_selected_list.at(index).toStdString();
-        msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
+        msg = getMCA(tab, arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
         if(debug)
         {
           cout<<"PMT: "<<pmt<<" "<<endl;
@@ -1268,19 +1268,20 @@ QString MainWindow::getMultiMCA(string tab)
  * @param tab
  * @param function
  * @param multimode
+ * @param channels
  * @param pmt
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getMCA(string tab, string function, bool multimode, string pmt)
+QString MainWindow::getMCA(string tab, string function, bool multimode, int channels, string pmt)
 {
-    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(),bytes_int);
+    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(), channels*6+16);
     string msg, msg_data;
 
     sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
     msg = readString();
     msg_data = readBufferString(bytes_int);
 
-    arpet->getMCASplitData(msg_data, CHANNELS);
+    arpet->getMCASplitData(msg_data, channels);
 
     long long time_mca;
     int frame, HV_pmt, offset, var;
@@ -1558,16 +1559,6 @@ void MainWindow::resetHitsValues()
     hits_head_ui.clear();
     hits_pmt_ui.clear();
     setHitsInit(true);
-}
-/**
- * @brief MainWindow::getHeadPlot
- * @param graph
- */
-void MainWindow::getHeadPlot(QCustomPlot *graph)
-{
-    graph->clearGraphs();
-    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
-    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::on_pushButton_adquirir_clicked
@@ -2498,6 +2489,16 @@ void MainWindow::getMultiplePlot(QCustomPlot *graph)
       addPMTGraph(index, graph, pmt_selected_list.at(index));
   }
   graph->rescaleAxes();
+}
+/**
+ * @brief MainWindow::getHeadPlot
+ * @param graph
+ */
+void MainWindow::getHeadPlot(QCustomPlot *graph)
+{
+    graph->clearGraphs();
+    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
+    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::addPMTGraph

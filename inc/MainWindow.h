@@ -181,7 +181,7 @@ private:
     size_t sendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tab, string function, bool multimode, string pmt="0");
+    QString getMCA(string tab, string function, bool multimode, int channels, string pmt="0");
     QString getMultiMCA(string tab);
     QString getHeadMCA(string tab);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
