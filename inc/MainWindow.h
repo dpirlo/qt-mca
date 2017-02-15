@@ -33,11 +33,11 @@
 #include "apMCAE.hpp"
 #include <QString>
 
-#define MULTIHEAD 1
 #define MONOHEAD 0
-#define MULTIMODE 1
+#define MULTIHEAD 1
+#define PMT 0
+#define CABEZAL 1
 #define TEMPERATURE 2
-#define MONOMODE 0
 #define HEAD 0
 #define HEADS 6
 #define MIN_TEMPERATURE 20

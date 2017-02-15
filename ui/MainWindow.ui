@@ -3339,12 +3339,12 @@ Tensión: </string>
       </property>
       <item>
        <property name="text">
-        <string>Monomodo</string>
+        <string>PMT</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>Multimodo</string>
+        <string>Cabezal</string>
        </property>
       </item>
       <item>

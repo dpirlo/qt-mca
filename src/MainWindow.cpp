@@ -1127,13 +1127,13 @@ void MainWindow::setAdquireMode(int index)
 {
     adquire_mode=index;
     switch (adquire_mode) {
-    case MONOMODE:
+    case PMT:
         ui->frame_PMT->show();
         ui->frame_HV->show();
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
-    case MULTIMODE:
+    case CABEZAL:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->frame_MCA->show();
@@ -1414,14 +1414,14 @@ int MainWindow::getPMT(QLineEdit *line_edit)
 {
    QString pmt=line_edit->text();
    switch (adquire_mode) {
-     case MONOMODE:
+     case PMT:
        if(pmt.isEmpty() || pmt.toInt()==0)
        {
            pmt=QString::number(1);
            line_edit->setText(pmt);
        }
        break;
-      case MULTIMODE:
+      case CABEZAL:
        line_edit->setText(0);
        break;
       default:
@@ -1570,11 +1570,11 @@ void MainWindow::on_pushButton_adquirir_clicked()
     QString q_msg;
 
     switch (adquire_mode) {
-    case MONOMODE:
+    case PMT:
         q_msg = getMultiMCA("mca");
         getMultiplePlot(ui->specPMTs);
         break;
-    case MULTIMODE:
+    case CABEZAL:
         q_msg = getHeadMCA("mca");
         getHeadPlot(ui->specHead);
         break;
@@ -1595,13 +1595,13 @@ void MainWindow::on_pushButton_reset_clicked()
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
     /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA */
     switch (adquire_mode) {
-    case MONOMODE:
+    case PMT:
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
         resetHitsValues();
         setPMTCustomPlotEnvironment(pmt_selected_list);
         removeAllGraphsPMT();
         break;
-    case MULTIMODE:
+    case CABEZAL:
         if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
         resetHitsValues();
         setHeadCustomPlotEnvironment();
