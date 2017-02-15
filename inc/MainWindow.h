@@ -194,7 +194,7 @@ private:
     void getHeadPlot(QCustomPlot *graph);
     void getMultiplePlot(QCustomPlot *graph);
     QVector<int> getCustomPlotParameters();
-    void SetQCustomPlotConfiguration(QCustomPlot *graph);
+    void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
     void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
     QString setHV(string tab, string hv_value, string pmt);
     QString setCalibTable(string function, QVector<double> table, string msg_compare);
@@ -231,7 +231,6 @@ private:
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
     int adquire_mode;
-    int bytes_int;
     bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;

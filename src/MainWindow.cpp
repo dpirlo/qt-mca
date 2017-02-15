@@ -11,8 +11,6 @@
  */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    bytes_int(CHANNELS*6+16),
-    channels_ui(CHANNELS),
     debug(false),
     init(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
@@ -64,21 +62,22 @@ void MainWindow::setInitialConfigurations()
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     setQListElements();
-    SetQCustomPlotConfiguration(ui->specPMTs);
-    SetQCustomPlotConfiguration(ui->specHead);
+    SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
+    SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
     resetHitsValues();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
  * @param graph
+ * @param channels
  */
-void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
+void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
 {
   graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                   QCP::iSelectLegend | QCP::iSelectPlottables);
   graph->axisRect()->setupFullAxesBox();
-  graph->xAxis->setRange(0, CHANNELS);
+  graph->xAxis->setRange(0, channels);
   graph->yAxis->setRange(-5, 5);
   graph->xAxis->setLabel("Canales");
   graph->yAxis->setLabel("Cuentas");
@@ -1279,7 +1278,7 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, int chan
 
     sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
     msg = readString();
-    msg_data = readBufferString(bytes_int);
+    msg_data = readBufferString(channels*6+16);
 
     arpet->getMCASplitData(msg_data, channels);
 
@@ -1594,7 +1593,7 @@ void MainWindow::on_pushButton_reset_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
-
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA */
     switch (adquire_mode) {
     case MONOMODE:
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
@@ -2375,7 +2374,6 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
         case 1:
             mca_function=arpet->getData_MCA();
             hv_value="";
-            bytes_mca=bytes_int;
             break;
         case 2:
             mca_function=arpet->getSetHV_MCA();
@@ -2393,9 +2391,11 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
     {
         case 0:
             function=arpet->getFunCHead();
+            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS*6+16;
             break;
         case 1:
             function=arpet->getFunCSP3();
+            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS_PMT*6+16;
             break;
         default:
             break;
