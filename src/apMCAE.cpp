@@ -26,11 +26,9 @@ using namespace ap;
  */
 MCAE::MCAE(size_t timeout)
     :port(serial_port_ptr(new serial_port(io))),
-     channels_id(CHANNELS),
-     hits_mca(CHANNELS),
      timeout(timeout),
      read_error(true),
-     timer(port->get_io_service()),     
+     timer(port->get_io_service()),
      PortBaudRate(921600),
      AnsAP_ON("ON"),
      AnsAP_OFF("OFF"),
@@ -73,7 +71,7 @@ MCAE::MCAE(size_t timeout)
      PSOC_ON("$SET,STA,ON"),
      PSOC_SET("$SET,VCON,"),
      PSOC_STA("$TEMP"),
-     PSOC_ANS("$OK"), 
+     PSOC_ANS("$OK"),
      PSOC_ADC(5.8823),
      PSOC_SIZE_SENDED("14"),
      PSOC_SIZE_RECEIVED("0051"),
@@ -90,7 +88,6 @@ MCAE::MCAE(size_t timeout)
 {
     /* Testing */
 }
-
 /**
  * @brief MCAE::~MCAE
  *
@@ -101,7 +98,6 @@ MCAE::~MCAE()
 {
    portDisconnect();
 }
-
 /**
  * @brief MCAE::isPortOpen
  * @return Si está abierto responde _true_
@@ -110,7 +106,6 @@ bool MCAE::isPortOpen()
 {
     return port->is_open();
 }
-
 /**
  * @brief MCAE::portConnect
  *
@@ -482,6 +477,9 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
 {
     int channel;
     long hits;
+
+    channels_id.resize(data_mca.length());
+    hits_mca.resize(data_mca.length());
 
     channels_id.fill(0);
     hits_mca.fill(0);
