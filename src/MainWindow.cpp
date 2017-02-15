@@ -2526,6 +2526,7 @@ void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legen
   graph->addGraph();
   graph->graph()->setName(graph_legend);
   graph->graph()->setData(channels_ui,hits);
+  graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
   QPen graphPen;
   graphPen.setColor(QColor(param[0], param[1], param[2]));
   graphPen.setWidthF(param[5]);
