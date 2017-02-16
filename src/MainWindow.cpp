@@ -325,30 +325,36 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus()
 {
-  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;  
+  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
 
-  int head_index = setPSOCDataStream("config",arpet->getPSOC_STA());
+  if(!arpet->isPortOpen())
+  {
+    QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+    if(debug)
+    {
+      cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    }
+    return;
+  }
+
+  int head_index = getHead("config").toInt();
   if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
   /* Inicialización del Cabezal */
-  string msg_head = initHead(head_index);
-  string msg_pmts = initSP3(head_index);
-
-  if(debug)
-  {
-    cout<<"Respuesta de la inicialización del cabezal: "<<msg_head<<endl;
-    cout<<"Respuesta de la inicialización de los PMTs: "<<msg_pmts<<endl;
-  }
+  initHead(head_index);
+  initSP3(head_index);
 
   string msg;
   QVector<QString> ans_psoc;
+  setPSOCDataStream("config",arpet->getPSOC_STA());
   try
   {
       sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
       msg = readString();
       ans_psoc = arpet->parserPSOCStream(msg);
       hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
-      if (arpet->verifyMCAEStream(ans_psoc.at(2).toStdString(),"ON"))
+      if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
         setLabelState(true, hv_status_table[head_index-1]);
       else
         setLabelState(false, hv_status_table[head_index-1]);
@@ -373,6 +379,7 @@ void MainWindow::getHeadStatus()
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+
     string msg;
     try
     {
@@ -587,7 +594,7 @@ void MainWindow::on_pushButton_initialize_clicked()
    }
 
    int head_index=getHead("config").toInt();
-   if(debug) cout<<"Cabezal: "<<head_index<<endl;   
+   if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
    /* Configuración de las tablas de calibración */
    setCalibrationTables(head_index);
@@ -850,6 +857,7 @@ string MainWindow::initHead(int head)
     /* Incialización del cabezal */
     setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     string msg_head;
+
     try
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
