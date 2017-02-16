@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1075,7 +1075,7 @@
       <widget class="QPushButton" name="pushButton_triple_ventana">
        <property name="geometry">
         <rect>
-         <x>804</x>
+         <x>796</x>
          <y>13</y>
          <width>71</width>
          <height>21</height>
@@ -1140,7 +1140,7 @@
       <widget class="QPushButton" name="pushButton_energia">
        <property name="geometry">
         <rect>
-         <x>804</x>
+         <x>796</x>
          <y>73</y>
          <width>71</width>
          <height>21</height>
@@ -1166,7 +1166,7 @@
       <widget class="QPushButton" name="pushButton_tiempos_cabezal">
        <property name="geometry">
         <rect>
-         <x>803</x>
+         <x>795</x>
          <y>159</y>
          <width>71</width>
          <height>21</height>
@@ -1219,9 +1219,9 @@
       <widget class="QPushButton" name="pushButton_initialize">
        <property name="geometry">
         <rect>
-         <x>881</x>
+         <x>875</x>
          <y>11</y>
-         <width>91</width>
+         <width>101</width>
          <height>171</height>
         </rect>
        </property>
@@ -1232,7 +1232,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Inicialización
+        <string>Configuración
  de
  Cabezales</string>
        </property>
@@ -1266,7 +1266,7 @@
       <widget class="QPushButton" name="pushButton_hv">
        <property name="geometry">
         <rect>
-         <x>804</x>
+         <x>796</x>
          <y>43</y>
          <width>71</width>
          <height>21</height>
@@ -1289,7 +1289,7 @@
       <widget class="QPushButton" name="pushButton_posicion_Y">
        <property name="geometry">
         <rect>
-         <x>804</x>
+         <x>796</x>
          <y>130</y>
          <width>71</width>
          <height>21</height>
@@ -1302,7 +1302,7 @@
       <widget class="QPushButton" name="pushButton_posicion_X">
        <property name="geometry">
         <rect>
-         <x>804</x>
+         <x>796</x>
          <y>103</y>
          <width>71</width>
          <height>21</height>

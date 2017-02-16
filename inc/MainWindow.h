@@ -124,7 +124,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
-    void getHVStatus();
+    void getHeadStatus();
 
     /* Buttons */
     void on_pushButton_conectar_clicked();

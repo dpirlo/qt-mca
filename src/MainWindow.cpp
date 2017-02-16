@@ -66,11 +66,6 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
     resetHitsValues();
-
-
-    //QVector<QString> n = arpet->parserPSOCStream("$HV,OFF,214/255,007/255,000/255");
-    //cout<<n.at(2).toStdString()<<endl;
-
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -146,7 +141,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHVStatus()));
+     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHeadStatus()));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -323,15 +318,28 @@ void MainWindow::getARPETStatus()
   }
 }
 /**
- * @brief MainWindow::getHVStatus
+ * @brief MainWindow::getHeadStatus
  *
- * Slot que determina el estado de la fuente HV en el cabezal seleccionado
+ * Slot que incicializa el cabezal seleccionado y determina el estado de su fuente de HV (PSOC).
  *
  */
-void MainWindow::getHVStatus()
+void MainWindow::getHeadStatus()
 {
-  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;  
+
   int head_index = setPSOCDataStream("config",arpet->getPSOC_STA());
+  if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+  /* Inicialización del Cabezal */
+  string msg_head = initHead(head_index);
+  string msg_pmts = initSP3(head_index);
+
+  if(debug)
+  {
+    cout<<"Respuesta de la inicialización del cabezal: "<<msg_head<<endl;
+    cout<<"Respuesta de la inicialización de los PMTs: "<<msg_pmts<<endl;
+  }
+
   string msg;
   QVector<QString> ans_psoc;
   try
@@ -354,7 +362,6 @@ void MainWindow::getHVStatus()
     }
     QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
   }
-
 
 }
 /**
@@ -496,7 +503,7 @@ void MainWindow::on_pushButton_conectar_clicked()
             ui->pushButton_conectar->setText("Desconectar");
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             getARPETStatus();
-            getHVStatus();
+            getHeadStatus();
         }
         catch(boost::system::system_error e)
         {
@@ -580,11 +587,7 @@ void MainWindow::on_pushButton_initialize_clicked()
    }
 
    int head_index=getHead("config").toInt();
-   if(debug) cout<<"Cabezal: "<<head_index<<endl;
-
-    /* Inicialización del Cabezal */
-   string msg_head = initHead(head_index);
-   string msg_pmts = initSP3(head_index);
+   if(debug) cout<<"Cabezal: "<<head_index<<endl;   
 
    /* Configuración de las tablas de calibración */
    setCalibrationTables(head_index);
@@ -1281,7 +1284,7 @@ QString MainWindow::getMultiMCA(string tab)
    {
      for (int index=0;index<size_pmt_selected;index++)
      {
-        string pmt=pmt_selected_list.at(index).toStdString();
+        string pmt = pmt_selected_list.at(index).toStdString();
         msg = getMCA(tab, arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
         if(debug)
         {
@@ -2526,6 +2529,8 @@ void MainWindow::setHeadCustomPlotEnvironment()
 void MainWindow::getMultiplePlot(QCustomPlot *graph)
 {
   graph->clearGraphs();
+  if (arpet->getChannels().size()==0) return;
+
   for (int index=0;index<pmt_selected_list.length();index++)
   {
       addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
