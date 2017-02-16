@@ -124,6 +124,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
+    void getHVStatus();
 
     /* Buttons */
     void on_pushButton_conectar_clicked();
@@ -216,6 +217,8 @@ private:
     void setCoincidenceModeWindowTime();
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
+
+
 
 private:
     Ui::MainWindow *ui;

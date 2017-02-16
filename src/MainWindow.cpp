@@ -66,6 +66,11 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
     resetHitsValues();
+
+
+    //QVector<QString> n = arpet->parserPSOCStream("$HV,OFF,214/255,007/255,000/255");
+    //cout<<n.at(2).toStdString()<<endl;
+
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -141,6 +146,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHVStatus()));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -317,6 +323,41 @@ void MainWindow::getARPETStatus()
   }
 }
 /**
+ * @brief MainWindow::getHVStatus
+ *
+ * Slot que determina el estado de la fuente HV en el cabezal seleccionado
+ *
+ */
+void MainWindow::getHVStatus()
+{
+  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+  int head_index = setPSOCDataStream("config",arpet->getPSOC_STA());
+  string msg;
+  QVector<QString> ans_psoc;
+  try
+  {
+      sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+      msg = readString();
+      ans_psoc = arpet->parserPSOCStream(msg);
+      hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
+      if (arpet->verifyMCAEStream(ans_psoc.at(2).toStdString(),"ON"))
+        setLabelState(true, hv_status_table[head_index-1]);
+      else
+        setLabelState(false, hv_status_table[head_index-1]);
+  }
+  catch(Exceptions & ex)
+  {
+    if(debug)
+    {
+      cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
+      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    }
+    QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+  }
+
+
+}
+/**
  * @brief MainWindow::on_pushButton_arpet_on_clicked
  *
  * Encendido del ARPET
@@ -455,6 +496,7 @@ void MainWindow::on_pushButton_conectar_clicked()
             ui->pushButton_conectar->setText("Desconectar");
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             getARPETStatus();
+            getHVStatus();
         }
         catch(boost::system::system_error e)
         {
