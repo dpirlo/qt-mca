@@ -995,6 +995,7 @@ double MCAE::getPMTTemperature(string temp_stream)
     QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
     /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @todo : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
     string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
+
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 /**
