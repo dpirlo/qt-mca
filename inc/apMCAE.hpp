@@ -91,12 +91,14 @@ namespace ap {
         void setMCAEStream(string function, QVector<double> table);
         void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
         void setPSOCEStream(string function, string psoc_value_dec="");
-        double getPMTTemperature(string temp_stream);
-        bool isPortOpen();
         bool verifyMCAEStream(string data_received, string data_to_compare);
+        QVector<QString> parserPSOCStream(string stream);
+        double getPMTTemperature(string temp_stream);
+        bool isPortOpen();        
         ~MCAE();
 
         /* Area de métodos en testing */
+
 
     private:
         size_t portRead(string *msg, int buffer_size);

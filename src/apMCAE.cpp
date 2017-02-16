@@ -1045,3 +1045,34 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
 
     return checked;
 }
+/**
+ * @brief MCAE::parserPSOCStream
+ *
+ * Analiza la trama de respuesta de la placa PSOC, identificando si está encendida o no y el valor de tensión configurado
+ *
+ * @param stream
+ * @return Vector _line_ con los campos de la trama identificados
+ */
+QVector<QString> MCAE::parserPSOCStream(string stream)
+{
+    QVector<QString> line;
+    string delimiter_1 = ",";
+    string delimiter_2 = "/";
+    size_t pos = 0, pos_line=0;
+    int vecIndex=0;
+    string token;
+
+    while ((pos = stream.find(delimiter_1)) != string::npos)
+    {
+       token = stream.substr(0, pos);
+       line.append(QString::fromStdString(token));
+       stream.erase(0, pos + delimiter_1.length());
+       vecIndex++;
+    }
+
+    pos_line = line.at(2).toStdString().find(delimiter_2);
+    token = line.at(2).toStdString().substr(0,pos_line);
+    line.replace(2,QString::fromStdString(token));
+
+    return line;
+}
