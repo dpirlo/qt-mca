@@ -99,7 +99,7 @@ private slots:
     void on_pushButton_47_clicked();
     void on_pushButton_48_clicked();
 
-private:    
+private:
     Ui::SetPMTs *ui;
     /**
      * @brief pmt_selected_list

@@ -163,6 +163,8 @@ private slots:
     /* Buttons de prueba/testing */
 
 
+    void on_pushButton_clicked();
+
 private:
     QString openConfigurationFile();
     void getPaths();
@@ -233,6 +235,7 @@ private:
     QList<QLabel*> hv_status_table;
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
+    QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
