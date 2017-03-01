@@ -33,11 +33,11 @@
 #include "apMCAE.hpp"
 #include <QString>
 
-#define MULTIHEAD 1
 #define MONOHEAD 0
-#define MULTIMODE 1
+#define MULTIHEAD 1
+#define PMT 0
+#define CABEZAL 1
 #define TEMPERATURE 2
-#define MONOMODE 0
 #define HEAD 0
 #define HEADS 6
 #define MIN_TEMPERATURE 20
@@ -76,7 +76,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend="", bool head=false);
+    void addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -97,6 +97,8 @@ private slots:
     void mouseWheelHead();
     void selectionChangedPMT();
     void selectionChangedHead();
+    void resetGraphZoomPMT();
+    void resetGraphZoomHead();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 
     /* Slots de sincronización en el entorno gráfico */
@@ -122,6 +124,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
+    void getHeadStatus();
 
     /* Buttons */
     void on_pushButton_conectar_clicked();
@@ -179,9 +182,9 @@ private:
     size_t sendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
     void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tab, string function, bool multimode, string pmt="0");
-    QString getMultiMCA(string tab, bool accum=false);
-    QString getHeadMCA(string tab, bool accum);
+    QString getMCA(string tab, string function, bool multimode, int channels, string pmt="0");
+    QString getMultiMCA(string tab);
+    QString getHeadMCA(string tab);
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
     void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
@@ -192,7 +195,7 @@ private:
     void getHeadPlot(QCustomPlot *graph);
     void getMultiplePlot(QCustomPlot *graph);
     QVector<int> getCustomPlotParameters();
-    void SetQCustomPlotConfiguration(QCustomPlot *graph);
+    void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
     void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
     QString setHV(string tab, string hv_value, string pmt);
     QString setCalibTable(string function, QVector<double> table, string msg_compare);
@@ -215,6 +218,8 @@ private:
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
 
+
+
 private:
     Ui::MainWindow *ui;
     SetPreferences *pref;
@@ -229,7 +234,6 @@ private:
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
     int adquire_mode;
-    int bytes_int;
     bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;

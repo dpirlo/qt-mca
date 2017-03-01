@@ -37,6 +37,7 @@ using namespace boost::system;
 
 #define DS1820_FACTOR 0.0625
 #define CHANNELS 1024
+#define CHANNELS_PMT 256
 #define SERIAL_PORT_READ_BUF_SIZE 1
 #define PMTs 48
 #define MAX_HV_VALUE 4095
@@ -90,12 +91,14 @@ namespace ap {
         void setMCAEStream(string function, QVector<double> table);
         void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
         void setPSOCEStream(string function, string psoc_value_dec="");
-        double getPMTTemperature(string temp_stream);
-        bool isPortOpen();
         bool verifyMCAEStream(string data_received, string data_to_compare);
+        QVector<QString> parserPSOCStream(string stream);
+        double getPMTTemperature(string temp_stream);
+        bool isPortOpen();        
         ~MCAE();
 
         /* Area de métodos en testing */
+
 
     private:
         size_t portRead(string *msg, int buffer_size);

@@ -15,20 +15,20 @@ using namespace ap;
  *
  * @note Se documentan las propiedades más importantes.
  *
+ * @brief PortBaudRate:
+ * Velocidad de funcionamiento de la comunicación con el equipo
+ *
+ * @brief PSOC_ADC:
+ * Tensión por cada unidade de ADC
+ * 1 Unidad de ADC = 5.8823 V
+ *
  * @param timeout
  */
 MCAE::MCAE(size_t timeout)
     :port(serial_port_ptr(new serial_port(io))),
-     channels_id(CHANNELS),
-     hits_mca(CHANNELS),
      timeout(timeout),
      read_error(true),
      timer(port->get_io_service()),
-     /**
-      * @brief PortBaudRate
-      *
-      * Velocidad de funcionamiento de la comunicación con el equipo
-      */
      PortBaudRate(921600),
      AnsAP_ON("ON"),
      AnsAP_OFF("OFF"),
@@ -72,13 +72,6 @@ MCAE::MCAE(size_t timeout)
      PSOC_SET("$SET,VCON,"),
      PSOC_STA("$TEMP"),
      PSOC_ANS("$OK"),
-     /**
-      * @brief PSOC_ADC
-      *
-      * Tensión por cada unidade de ADC
-      * 1 Unidad de ADC = 5.8823 V
-      *
-      */
      PSOC_ADC(5.8823),
      PSOC_SIZE_SENDED("14"),
      PSOC_SIZE_RECEIVED("0051"),
@@ -95,7 +88,6 @@ MCAE::MCAE(size_t timeout)
 {
     /* Testing */
 }
-
 /**
  * @brief MCAE::~MCAE
  *
@@ -106,7 +98,6 @@ MCAE::~MCAE()
 {
    portDisconnect();
 }
-
 /**
  * @brief MCAE::isPortOpen
  * @return Si está abierto responde _true_
@@ -115,7 +106,6 @@ bool MCAE::isPortOpen()
 {
     return port->is_open();
 }
-
 /**
  * @brief MCAE::portConnect
  *
@@ -487,6 +477,9 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
 {
     int channel;
     long hits;
+
+    channels_id.resize(data_mca.length());
+    hits_mca.resize(data_mca.length());
 
     channels_id.fill(0);
     hits_mca.fill(0);
@@ -1002,6 +995,7 @@ double MCAE::getPMTTemperature(string temp_stream)
     QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
     /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @todo : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
     string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
+
     return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 /**
@@ -1051,4 +1045,35 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
     if (strcmp(data_received.c_str(),data_to_compare.c_str())==0) checked=true;
 
     return checked;
+}
+/**
+ * @brief MCAE::parserPSOCStream
+ *
+ * Analiza la trama de respuesta de la placa PSOC, identificando si está encendida o no y el valor de tensión configurado
+ *
+ * @param stream
+ * @return Vector _line_ con los campos de la trama identificados
+ */
+QVector<QString> MCAE::parserPSOCStream(string stream)
+{
+    QVector<QString> line;
+    string delimiter_1 = ",";
+    string delimiter_2 = "/";
+    size_t pos = 0, pos_line=0;
+    int vecIndex=0;
+    string token;
+
+    while ((pos = stream.find(delimiter_1)) != string::npos)
+    {
+       token = stream.substr(0, pos);
+       line.append(QString::fromStdString(token));
+       stream.erase(0, pos + delimiter_1.length());
+       vecIndex++;
+    }
+
+    pos_line = line.at(2).toStdString().find(delimiter_2);
+    token = line.at(2).toStdString().substr(0,pos_line);
+    line.replace(2,QString::fromStdString(token));
+
+    return line;
 }

@@ -11,8 +11,6 @@
  */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    bytes_int(CHANNELS*6+16),
-    channels_ui(CHANNELS),
     debug(false),
     init(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
@@ -64,21 +62,22 @@ void MainWindow::setInitialConfigurations()
     ui->tabWidget_general->setCurrentWidget(ui->config);
     ui->comboBox_port->addItems(availablePortsName());
     setQListElements();
-    SetQCustomPlotConfiguration(ui->specPMTs);
-    SetQCustomPlotConfiguration(ui->specHead);
+    SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
+    SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
     resetHitsValues();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
  * @param graph
+ * @param channels
  */
-void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph)
+void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
 {
   graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                   QCP::iSelectLegend | QCP::iSelectPlottables);
   graph->axisRect()->setupFullAxesBox();
-  graph->xAxis->setRange(0, CHANNELS);
+  graph->xAxis->setRange(0, channels);
   graph->yAxis->setRange(-5, 5);
   graph->xAxis->setLabel("Canales");
   graph->yAxis->setLabel("Cuentas");
@@ -142,6 +141,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHeadStatus()));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -318,6 +318,59 @@ void MainWindow::getARPETStatus()
   }
 }
 /**
+ * @brief MainWindow::getHeadStatus
+ *
+ * Slot que incicializa el cabezal seleccionado y determina el estado de su fuente de HV (PSOC).
+ *
+ */
+void MainWindow::getHeadStatus()
+{
+  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+
+  if(!arpet->isPortOpen())
+  {
+    QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+    if(debug)
+    {
+      cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    }
+    return;
+  }
+
+  int head_index = getHead("config").toInt();
+  if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+  /* Inicialización del Cabezal */
+  initHead(head_index);
+  initSP3(head_index);
+
+  string msg;
+  QVector<QString> ans_psoc;
+  setPSOCDataStream("config",arpet->getPSOC_STA());
+  try
+  {
+      sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+      msg = readString();
+      ans_psoc = arpet->parserPSOCStream(msg);
+      hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
+      if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
+        setLabelState(true, hv_status_table[head_index-1]);
+      else
+        setLabelState(false, hv_status_table[head_index-1]);
+  }
+  catch(Exceptions & ex)
+  {
+    if(debug)
+    {
+      cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
+      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    }
+    QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+  }
+
+}
+/**
  * @brief MainWindow::on_pushButton_arpet_on_clicked
  *
  * Encendido del ARPET
@@ -326,6 +379,7 @@ void MainWindow::getARPETStatus()
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+
     string msg;
     try
     {
@@ -456,6 +510,7 @@ void MainWindow::on_pushButton_conectar_clicked()
             ui->pushButton_conectar->setText("Desconectar");
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             getARPETStatus();
+            getHeadStatus();
         }
         catch(boost::system::system_error e)
         {
@@ -516,7 +571,7 @@ void MainWindow::on_pushButton_configure_clicked()
    }
    catch(Exceptions & ex)
    {
-       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));       
+       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
        setLabelState(false,ui->label_coincidencia_estado);
    }
    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
@@ -540,10 +595,6 @@ void MainWindow::on_pushButton_initialize_clicked()
 
    int head_index=getHead("config").toInt();
    if(debug) cout<<"Cabezal: "<<head_index<<endl;
-
-    /* Inicialización del Cabezal */
-   string msg_head = initHead(head_index);
-   string msg_pmts = initSP3(head_index);
 
    /* Configuración de las tablas de calibración */
    setCalibrationTables(head_index);
@@ -806,6 +857,7 @@ string MainWindow::initHead(int head)
     /* Incialización del cabezal */
     setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     string msg_head;
+
     try
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
@@ -1128,13 +1180,13 @@ void MainWindow::setAdquireMode(int index)
 {
     adquire_mode=index;
     switch (adquire_mode) {
-    case MONOMODE:
+    case PMT:
         ui->frame_PMT->show();
         ui->frame_HV->show();
         ui->frame_MCA->show();
         ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
-    case MULTIMODE:
+    case CABEZAL:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
         ui->frame_MCA->show();
@@ -1192,20 +1244,18 @@ void MainWindow::setTabMode(int index)
  * Obtiene las cuentas de MCA para un cabezal determinado
  *
  * @param tab
- * @param accum
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getHeadMCA(string tab, bool accum)
+QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
-   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));   
+   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
 
    try
    {
-     msg = getMCA(tab,arpet->getFunCHead() , true);
+     msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
      hits.insert(HEAD, 1, arpet->getHitsMCA());
-     if (accum) transform(hits[HEAD].begin(),hits[HEAD].end(), getHeadVectorHits()[HEAD].begin(), hits[HEAD].begin(), plus<double>());
    }
    catch(Exceptions & ex)
    {
@@ -1222,14 +1272,13 @@ QString MainWindow::getHeadMCA(string tab, bool accum)
  * Obtiene las cuentas de MCA correspondiente a los fotomultiplicadores en un cabezal determinado
  *
  * @param tab
- * @param accum
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getMultiMCA(string tab, bool accum)
+QString MainWindow::getMultiMCA(string tab)
 {
 
    int size_pmt_selected = pmt_selected_list.length();
-   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS));
+   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS_PMT));
    QString msg;
 
    if (pmt_selected_list.isEmpty())
@@ -1243,15 +1292,14 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
    {
      for (int index=0;index<size_pmt_selected;index++)
      {
-        string pmt=pmt_selected_list.at(index).toStdString();
-        msg = getMCA(tab, arpet->getFunCSP3(), false, pmt);
+        string pmt = pmt_selected_list.at(index).toStdString();
+        msg = getMCA(tab, arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
         if(debug)
         {
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
         hits.insert(index, 1, arpet->getHitsMCA());
-        if (accum) transform(hits[index].begin(),hits[index].end(), getPMTVectorHits()[index].begin(), hits[index].begin(), plus<double>());
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1272,19 +1320,20 @@ QString MainWindow::getMultiMCA(string tab, bool accum)
  * @param tab
  * @param function
  * @param multimode
+ * @param channels
  * @param pmt
  * @return Devuelve el mensaje de respuesta en _QString_
  */
-QString MainWindow::getMCA(string tab, string function, bool multimode, string pmt)
+QString MainWindow::getMCA(string tab, string function, bool multimode, int channels, string pmt)
 {
-    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(),bytes_int);
+    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(), channels*6+16);
     string msg, msg_data;
 
     sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
     msg = readString();
-    msg_data = readBufferString(bytes_int);
+    msg_data = readBufferString(channels*6+16);
 
-    arpet->getMCASplitData(msg_data, CHANNELS);
+    arpet->getMCASplitData(msg_data, channels);
 
     long long time_mca;
     int frame, HV_pmt, offset, var;
@@ -1418,14 +1467,14 @@ int MainWindow::getPMT(QLineEdit *line_edit)
 {
    QString pmt=line_edit->text();
    switch (adquire_mode) {
-     case MONOMODE:
+     case PMT:
        if(pmt.isEmpty() || pmt.toInt()==0)
        {
            pmt=QString::number(1);
            line_edit->setText(pmt);
        }
        break;
-      case MULTIMODE:
+      case CABEZAL:
        line_edit->setText(0);
        break;
       default:
@@ -1564,16 +1613,6 @@ void MainWindow::resetHitsValues()
     setHitsInit(true);
 }
 /**
- * @brief MainWindow::getHeadPlot
- * @param graph
- */
-void MainWindow::getHeadPlot(QCustomPlot *graph)
-{
-    graph->clearGraphs();
-    addPMTGraph(HEAD, graph, ui->comboBox_head_select_graph->currentText(),true);
-    graph->rescaleAxes();
-}
-/**
  * @brief MainWindow::on_pushButton_adquirir_clicked
  */
 void MainWindow::on_pushButton_adquirir_clicked()
@@ -1582,16 +1621,14 @@ void MainWindow::on_pushButton_adquirir_clicked()
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
     QString q_msg;
-    bool accum=true;
-    if (!(ui->checkBox_accum->isChecked())) accum=false;
 
     switch (adquire_mode) {
-    case MONOMODE:
-        q_msg = getMultiMCA("mca",accum);
+    case PMT:
+        q_msg = getMultiMCA("mca");
         getMultiplePlot(ui->specPMTs);
         break;
-    case MULTIMODE:
-        q_msg = getHeadMCA("mca",accum);
+    case CABEZAL:
+        q_msg = getHeadMCA("mca");
         getHeadPlot(ui->specHead);
         break;
     case TEMPERATURE:
@@ -1609,15 +1646,15 @@ void MainWindow::on_pushButton_reset_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
-
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA */
     switch (adquire_mode) {
-    case MONOMODE:
+    case PMT:
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
         resetHitsValues();
         setPMTCustomPlotEnvironment(pmt_selected_list);
         removeAllGraphsPMT();
         break;
-    case MULTIMODE:
+    case CABEZAL:
         if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
         resetHitsValues();
         setHeadCustomPlotEnvironment();
@@ -1655,7 +1692,7 @@ void MainWindow::on_pushButton_select_pmt_clicked()
         qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
         QList<QString>::const_iterator stlIter;
         for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
-            qDebug() << (*stlIter);        
+            qDebug() << (*stlIter);
     }
 
     setPMTCustomPlotEnvironment(qlist);
@@ -2390,7 +2427,6 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
         case 1:
             mca_function=arpet->getData_MCA();
             hv_value="";
-            bytes_mca=bytes_int;
             break;
         case 2:
             mca_function=arpet->getSetHV_MCA();
@@ -2408,9 +2444,11 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
     {
         case 0:
             function=arpet->getFunCHead();
+            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS*6+16;
             break;
         case 1:
             function=arpet->getFunCSP3();
+            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS_PMT*6+16;
             break;
         default:
             break;
@@ -2499,21 +2537,35 @@ void MainWindow::setHeadCustomPlotEnvironment()
 void MainWindow::getMultiplePlot(QCustomPlot *graph)
 {
   graph->clearGraphs();
+  if (arpet->getChannels().size()==0) return;
+
   for (int index=0;index<pmt_selected_list.length();index++)
   {
-      addPMTGraph(index, graph, pmt_selected_list.at(index));
+      addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
   }
   graph->rescaleAxes();
 }
 /**
- * @brief MainWindow::addPMTGraph
+ * @brief MainWindow::getHeadPlot
+ * @param graph
+ */
+void MainWindow::getHeadPlot(QCustomPlot *graph)
+{
+    graph->clearGraphs();
+    addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
+    graph->rescaleAxes();
+}
+/**
+ * @brief MainWindow::addGraph
  * @param index
  * @param graph
+ * @param channels
  * @param graph_legend
  * @param head
  */
-void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legend, bool head)
+void MainWindow::addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
 {
+  channels_ui.resize(channels);
   channels_ui = arpet->getChannels();
   QVector<double> hits;
   QVector<int> param;
@@ -2532,12 +2584,15 @@ void MainWindow::addPMTGraph(int index,  QCustomPlot *graph, QString graph_legen
   graph->addGraph();
   graph->graph()->setName(graph_legend);
   graph->graph()->setData(channels_ui,hits);
-  graph->graph()->setLineStyle((QCPGraph::LineStyle)(param[3]));
   graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
   QPen graphPen;
   graphPen.setColor(QColor(param[0], param[1], param[2]));
   graphPen.setWidthF(param[5]);
   graph->graph()->setPen(graphPen);
+  graph->legend->setVisible(true);
+  graph->legend->setWrap(4);
+  graph->legend->setRowSpacing(1);
+  graph->legend->setColumnSpacing(2);
   graph->replot();
 }
 /**
@@ -2676,6 +2731,7 @@ void MainWindow::contextMenuRequestPMT(QPoint pos)
     menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
   } else
   {
+    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomPMT()));
     if (ui->specPMTs->selectedGraphs().size() > 0)
       menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
     if (ui->specPMTs->graphCount() > 0)
@@ -2702,10 +2758,12 @@ void MainWindow::contextMenuRequestHead(QPoint pos)
     menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
   } else
   {
+    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomHead()));
     if (ui->specHead->selectedGraphs().size() > 0)
-      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
+      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphHead()));
     if (ui->specHead->graphCount() > 0)
-      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
+      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsHead()));
+
   }
 
   menu->popup(ui->specHead->mapToGlobal(pos));
@@ -2889,6 +2947,22 @@ void MainWindow::selectionChangedHead()
       graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
     }
   }
+}
+/**
+ * @brief MainWindow::resetGraphZoomHead
+ */
+void MainWindow::resetGraphZoomHead()
+{
+  ui->specHead->rescaleAxes();
+  ui->specHead->replot();
+}
+/**
+ * @brief MainWindow::resetGraphZoomPMT
+ */
+void MainWindow::resetGraphZoomPMT()
+{
+  ui->specPMTs->rescaleAxes();
+  ui->specPMTs->replot();
 }
 /**
  * @brief MainWindow::graphClicked
