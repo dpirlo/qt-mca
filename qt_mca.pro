@@ -17,7 +17,8 @@ SOURCES += src/main.cpp\
         src/apExceptions.cpp \
         src/SetPreferences.cpp \
         src/MainWindow.cpp \
-        src/SetPMTs.cpp
+        src/SetPMTs.cpp \
+    src/apAutoCalib.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
@@ -25,7 +26,8 @@ HEADERS  += \
         inc/apExceptions.hpp \
         inc/SetPreferences.h \
         inc/MainWindow.h \
-        inc/SetPMTs.h
+        inc/SetPMTs.h \
+    inc/apAutoCalib.hpp
 
 LIBS += -lboost_system
 

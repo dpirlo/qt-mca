@@ -31,6 +31,7 @@
 #include "SetPreferences.h"
 #include "SetPMTs.h"
 #include "apMCAE.hpp"
+#include "apAutoCalib.hpp"
 #include <QString>
 
 #define MONOHEAD 0

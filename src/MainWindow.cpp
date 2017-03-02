@@ -3034,7 +3034,9 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 
 void MainWindow::on_pushButton_clicked()
 {
-    QList<int> checked_PMTs;
+    QList<int> checked_PMTs, checked_Cab;
+    QMessageBox messageBox;
+
 
     // Recupero los PMT checkeados
     for(int i = 0;  i< PMTs ; i++ )
@@ -3044,14 +3046,46 @@ void MainWindow::on_pushButton_clicked()
             checked_PMTs.append(i);
         }
     }
+    if(checked_PMTs.length() == 0)
+    {
+        messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
 
     // Recupero el canal objetivo
     QString Canal_obj = ui->Canal_objetivo->text();
+    if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
+    {
+        messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+
+    // Recupero los cabezales
+    for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
+    {
+        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
+
+        if(q->checkState() == Qt::Checked)
+        {
+            checked_Cab.append(i);
+        }
+    }
+    if(checked_Cab.length() == 0)
+    {
+        messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
 
 
+    // Genero el calibrador
+    AutoCalib calibrador(checked_PMTs, checked_Cab, Canal_obj.toFloat());
 
-    // Debug
-    for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
-    cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
+
+    // Calibro
+    cout<<"Calibrador..."<<endl;
+    calibrador.calibrar_simple();
 
 }
