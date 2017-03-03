@@ -1,6 +1,6 @@
 #include "inc/MainWindow.h"
 #include "ui_MainWindow.h"
-#include "QMessageBox"
+
 
 /**
  * @brief MainWindow::MainWindow
@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
-    getPaths();
+    getPaths();    
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -1349,7 +1349,8 @@ QString MainWindow::getMultiMCA(string tab)
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
-        hits.insert(index, 1, arpet->getHitsMCA());
+        addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT);
+        //hits.insert(index, 1, arpet->getHitsMCA());
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1557,7 +1558,12 @@ void MainWindow::setPMT(int value)
 {
      ui->lineEdit_pmt->setText(QString::number(value));
 }
-
+/**
+ * @brief MainWindow::getHVValue
+ * @param line_edit
+ * @param value
+ * @return
+ */
 string MainWindow::getHVValue(QLineEdit *line_edit, int value)
 {
     int hv_value_int;
@@ -1574,12 +1580,17 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
  *
  * Configuración de la trama MCAE
  *
+ * Se configura la trama general de MCAE para el envío de MCA. Este método recibe como parámetros el 'tab'
+ * del entorno gráfico, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt', la función MCA ('mca_function'),
+ * el tamaño de la trama de recepción 'bytes_mca' (opcional) y en el caso que se realice la confifuración de HV se debe
+ * incorporar el valor de HV, caso contrario dejar este campo en blanco.
+ *
  * @param tab
  * @param function
  * @param pmt
  * @param mca_function
- * @param bytes_mca
- * @param hv_value
+ * @param bytes_mca (opcional)
+ * @param hv_value (opcional)
  */
 void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
@@ -1591,6 +1602,11 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
  * @overload
  *
  * Configuración de la trama MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de calibración de Tiempos en el Cabezal. Este método
+ * recibe como parámetros el 'tab' del entorno gráfico, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt',
+ * la función MCA ('mca_function') y el tiempo en double. Este método se utiliza para la configuración de las tablas
+ * de Tiempos en el Cabezal.
  *
  * @param tab
  * @param function
@@ -1609,6 +1625,10 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
  *
  * Configuración de la trama MCAE
  *
+ * Se configura la trama general de MCAE para la configuración de las tablas de calibración. Este método recibe como
+ * parámetros el 'tab' del entorno gráfico, la 'calib_function' correspondiente a la función de calibración y 'table'
+ * que corresponde a la tabla con los valores de calibración correspondiente.
+ *
  * @param tab
  * @param calib_function
  * @param table
@@ -1623,6 +1643,13 @@ void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<do
  * @overload
  *
  * Configuración de la trama MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de los modos de autocoincidencia. Este método recibe
+ * como parámetros la función de coincidencia ('coin_function'), las tramas 'data_one' y 'data_two', y el valor
+ * booleano 'time'. Cuando se define la ventana temporal (_subclocks_) se utilizan las tramas 'data_one' y 'data_two'
+ * (como el valor de ventana inferior y superior respectivamente), y la variable booleana 'time' se configura en _true_.
+ * Para los otros modos solo se configura la trama 'data_one', la trama 'data_two' queda en blanco y la variable booleana
+ * 'time' se configura en _false_.
  *
  * @param coin_function
  * @param data_one
@@ -1675,11 +1702,11 @@ void MainWindow::on_pushButton_adquirir_clicked()
     switch (adquire_mode) {
     case PMT:
         q_msg = getMultiMCA("mca");
-        getMultiplePlot(ui->specPMTs);
+        //getMultiplePlot(ui->specPMTs);
         break;
     case CABEZAL:
         q_msg = getHeadMCA("mca");
-        getHeadPlot(ui->specHead);
+        //getHeadPlot(ui->specHead);
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
@@ -2592,7 +2619,7 @@ void MainWindow::getMultiplePlot(QCustomPlot *graph)
 
   for (int index=0;index<pmt_selected_list.length();index++)
   {
-      addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
+      //addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
   }
   graph->rescaleAxes();
 }
@@ -2603,7 +2630,7 @@ void MainWindow::getMultiplePlot(QCustomPlot *graph)
 void MainWindow::getHeadPlot(QCustomPlot *graph)
 {
     graph->clearGraphs();
-    addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
+    //addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
     graph->rescaleAxes();
 }
 /**
@@ -2614,23 +2641,24 @@ void MainWindow::getHeadPlot(QCustomPlot *graph)
  * @param graph_legend
  * @param head
  */
-void MainWindow::addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
+void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
 {
   channels_ui.resize(channels);
-  channels_ui = arpet->getChannels();
-  QVector<double> hits;
+  channels_ui = arpet->getChannels();  
   QVector<int> param;
+  param = getCustomPlotParameters();
 
-  if (head)
+  /*if (head)
   {
     hits = getHeadVectorHits()[index];
     param = qcp_head_parameters[index];
+
   }
   else
   {
     hits = getPMTVectorHits()[index];
     param = qcp_pmt_parameters[index];
-  }
+  }*/
 
   graph->addGraph();
   graph->graph()->setName(graph_legend);

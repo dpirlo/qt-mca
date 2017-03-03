@@ -27,6 +27,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "QMessageBox"
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
@@ -76,7 +77,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
+    void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -162,8 +163,8 @@ private slots:
 
     /* Buttons de prueba/testing */
 
-
     void on_pushButton_clicked();
+
 
 private:
     QString openConfigurationFile();
@@ -220,6 +221,7 @@ private:
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
 
+    /* Area de prueba/testing */
 
 
 private:
@@ -245,6 +247,9 @@ private:
     int  AT, LowLimit;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
+
+    /* Area de prueba/testing */
+
 
 public:
     /**
