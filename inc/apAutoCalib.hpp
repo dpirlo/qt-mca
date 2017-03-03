@@ -34,6 +34,10 @@ namespace ap {
 
 
         private:
+            // Pedir MCA
+            void pedir_MCA_PMT(int Cabezal, int PMT, int canales);
+
+        protected:
              QList<int> PMTs_List;
              QList<int> Cab_List;
              float  Canal_Obj;
