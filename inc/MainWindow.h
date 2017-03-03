@@ -239,8 +239,7 @@ private:
     int adquire_mode;
     bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
-    QVector< QVector<double> > hits_pmt_ui, hits_head_ui;
+    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;    
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
     int  AT, LowLimit;
     QVector<double> channels_ui;
@@ -273,39 +272,7 @@ public:
      *
      * @return pmt_selected_list
      */
-    QList<QString> getPMTSelectedList() { return pmt_selected_list; }
-    /**
-     * @brief setPMTVectorHits
-     *
-     * Configura el vector de cuentas por PMT.
-     *
-     * @param hits
-     */
-    void setPMTVectorHits(QVector< QVector<double> > hits) { hits_pmt_ui = hits; }
-    /**
-     * @brief getPMTVectorHits
-     *
-     * Devuelve el vector de cuentas por PMT.
-     *
-     * @return hits_pmt_ui
-     */
-    QVector< QVector<double> > getPMTVectorHits( ) { return hits_pmt_ui; }
-    /**
-     * @brief setHeadVectorHits
-     *
-     * Configura el vector de cuentas por cabezal.
-     *
-     * @param hits
-     */
-    void setHeadVectorHits(QVector< QVector<double> > hits) { hits_head_ui = hits; }
-    /**
-     * @brief getHeadVectorHits
-     *
-     * Devuelve el vector de cuentas por cabezal.
-     *
-     * @return hits_head_ui
-     */
-    QVector< QVector<double> > getHeadVectorHits( ) { return hits_head_ui; }
+    QList<QString> getPMTSelectedList() { return pmt_selected_list; }        
     /**
      * @brief setHitsInit
      *

@@ -1682,9 +1682,8 @@ int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_valu
  */
 void MainWindow::resetHitsValues()
 {
-    hits_head_ui.clear();
-    hits_pmt_ui.clear();
-    setHitsInit(true);
+  arpet->resetHitsMCA();
+  setHitsInit(true);
 }
 /**
  * @brief MainWindow::on_pushButton_adquirir_clicked
@@ -1698,12 +1697,10 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
     switch (adquire_mode) {
     case PMT:
-        q_msg = getMultiMCA("mca");
-        //getMultiplePlot(ui->specPMTs);
+        q_msg = getMultiMCA("mca");        
         break;
     case CABEZAL:
-        q_msg = getHeadMCA("mca");
-        //getHeadPlot(ui->specHead);
+        q_msg = getHeadMCA("mca");        
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
@@ -2601,11 +2598,11 @@ void MainWindow::setHeadCustomPlotEnvironment()
 }
 /**
  * @brief MainWindow::addGraph
- * @param index
+ * @param hits
  * @param graph
  * @param channels
  * @param graph_legend
- * @param head
+ * @param param
  */
 void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
 {
