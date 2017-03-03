@@ -77,7 +77,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
+    void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -194,9 +194,7 @@ private:
     void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
-    void setHeadCustomPlotEnvironment();
-    void getHeadPlot(QCustomPlot *graph);
-    void getMultiplePlot(QCustomPlot *graph);
+    void setHeadCustomPlotEnvironment();        
     QVector<int> getCustomPlotParameters();
     void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
     void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");

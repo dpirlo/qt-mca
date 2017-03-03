@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
-    getPaths();    
+    getPaths();
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -1299,20 +1299,19 @@ void MainWindow::setTabMode(int index)
 QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
-   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
+   QString head=getHead(tab);
 
    try
    {
      msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
-     hits.insert(HEAD, 1, arpet->getHitsMCA());
+     addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
    }
    catch(Exceptions & ex)
    {
      if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
      QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-   setHeadVectorHits(hits);
 
    return msg;
 }
@@ -1337,7 +1336,7 @@ QString MainWindow::getMultiMCA(string tab)
      QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
      return msg;
    }
-
+   ui->specPMTs->clearGraphs();
    try
    {
      for (int index=0;index<size_pmt_selected;index++)
@@ -1349,8 +1348,7 @@ QString MainWindow::getMultiMCA(string tab)
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
-        addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT);
-        //hits.insert(index, 1, arpet->getHitsMCA());
+        addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1359,8 +1357,7 @@ QString MainWindow::getMultiMCA(string tab)
      if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
      QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-
-   setPMTVectorHits(hits);
+   ui->specPMTs->rescaleAxes();
    return msg;
 }
 /**
@@ -2587,51 +2584,20 @@ QVector<int> MainWindow::getCustomPlotParameters()
  */
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
-  QVector<QVector<double> >  hits(qlist.length(), QVector<double>(CHANNELS));
   for (unsigned int index=0; index < qlist.length(); index++)
   {
-    hits[index].fill(0);
     qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
   }
-  setPMTVectorHits(hits);
 }
 /**
  * @brief MainWindow::setHeadCustomPlotEnvironment
  */
 void MainWindow::setHeadCustomPlotEnvironment()
 {
-  QVector<QVector<double> >  hits(HEADS, QVector<double>(CHANNELS));
   for (unsigned int index=0; index < HEADS; index++)
   {
-    hits[index].fill(0);
     qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
   }
-  setHeadVectorHits(hits);
-}
-/**
- * @brief MainWindow::getMultiplePlot
- * @param graph
- */
-void MainWindow::getMultiplePlot(QCustomPlot *graph)
-{
-  graph->clearGraphs();
-  if (arpet->getChannels().size()==0) return;
-
-  for (int index=0;index<pmt_selected_list.length();index++)
-  {
-      //addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
-  }
-  graph->rescaleAxes();
-}
-/**
- * @brief MainWindow::getHeadPlot
- * @param graph
- */
-void MainWindow::getHeadPlot(QCustomPlot *graph)
-{
-    graph->clearGraphs();
-    //addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
-    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::addGraph
@@ -2641,24 +2607,10 @@ void MainWindow::getHeadPlot(QCustomPlot *graph)
  * @param graph_legend
  * @param head
  */
-void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
+void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
 {
   channels_ui.resize(channels);
-  channels_ui = arpet->getChannels();  
-  QVector<int> param;
-  param = getCustomPlotParameters();
-
-  /*if (head)
-  {
-    hits = getHeadVectorHits()[index];
-    param = qcp_head_parameters[index];
-
-  }
-  else
-  {
-    hits = getPMTVectorHits()[index];
-    param = qcp_pmt_parameters[index];
-  }*/
+  channels_ui = arpet->getChannels();
 
   graph->addGraph();
   graph->graph()->setName(graph_legend);
