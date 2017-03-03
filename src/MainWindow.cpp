@@ -1300,7 +1300,7 @@ QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
    QString head=getHead(tab);
-
+   ui->specHead->clearGraphs();
    try
    {
      msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
@@ -1312,7 +1312,8 @@ QString MainWindow::getHeadMCA(string tab)
      if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
      QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-
+   ui->specHead->rescaleAxes();
+   
    return msg;
 }
 /**
@@ -1697,10 +1698,10 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
     switch (adquire_mode) {
     case PMT:
-        q_msg = getMultiMCA("mca");        
+        q_msg = getMultiMCA("mca");
         break;
     case CABEZAL:
-        q_msg = getHeadMCA("mca");        
+        q_msg = getHeadMCA("mca");
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
