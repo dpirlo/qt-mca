@@ -79,6 +79,7 @@ namespace ap {
 
     public:
         MCAE(size_t timeout=1000);
+        MCAE(shared_ptr<MCAE> copy, size_t timeout=1000);
         void portReadString(string *msg, char delimeter);
         void portReadBufferString(string *msg, int buffer_size);
         size_t portWrite(string *msg);

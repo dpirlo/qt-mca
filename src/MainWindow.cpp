@@ -46,6 +46,9 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
 
+    // Calibrador
+    calibrador = shared_ptr<AutoCalib>(new AutoCalib(arpet));
+
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
@@ -3052,6 +3055,7 @@ void MainWindow::on_pushButton_clicked()
         messageBox.setFixedSize(500,200);
         return;
     }
+    calibrador->setPMT_List(checked_PMTs);
 
     // Recupero el canal objetivo
     QString Canal_obj = ui->Canal_objetivo->text();
@@ -3061,6 +3065,7 @@ void MainWindow::on_pushButton_clicked()
         messageBox.setFixedSize(500,200);
         return;
     }
+    calibrador->setCanal_Obj(Canal_obj.toInt());
 
     // Recupero los cabezales
     for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
@@ -3078,14 +3083,15 @@ void MainWindow::on_pushButton_clicked()
         messageBox.setFixedSize(500,200);
         return;
     }
+    calibrador->setCab_List(checked_Cab);
 
 
     // Genero el calibrador
-    AutoCalib calibrador(checked_PMTs, checked_Cab, Canal_obj.toFloat());
+    //AutoCalib calibrador(checked_PMTs, checked_Cab, Canal_obj.toFloat(), arpet);
 
 
     // Calibro
     cout<<"Calibrador..."<<endl;
-    calibrador.calibrar_simple();
+    calibrador->calibrar_simple();
 
 }

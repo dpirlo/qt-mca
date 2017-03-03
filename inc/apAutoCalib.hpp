@@ -28,9 +28,13 @@ namespace ap {
     {
         public:
             // Constructor
-            AutoCalib(QList<int> checked_PMTs, QList<int> checked_Cab, float Canal_Obj_par);
+            AutoCalib(shared_ptr<MCAE> copy);
             // Calibracion Simple
             bool calibrar_simple();
+
+            void setPMT_List(QList<int> checked_PMTs) {this->PMTs_List = checked_PMTs;}
+            void setCab_List(QList<int> checked_Cab) {this->Cab_List = checked_Cab;}
+            void setCanal_Obj(int Canal_Obj_par) {this->Canal_Obj = Canal_Obj_par;}
 
 
         private:
@@ -40,7 +44,7 @@ namespace ap {
         protected:
              QList<int> PMTs_List;
              QList<int> Cab_List;
-             float  Canal_Obj;
+             int  Canal_Obj;
     };
 }
 

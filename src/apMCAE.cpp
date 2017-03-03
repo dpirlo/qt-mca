@@ -1077,3 +1077,74 @@ QVector<QString> MCAE::parserPSOCStream(string stream)
 
     return line;
 }
+
+
+// TESTING
+
+
+
+MCAE::MCAE(shared_ptr<MCAE> copy, size_t timeout)
+    :port(serial_port_ptr(new serial_port(io))),
+     timeout(timeout),
+     read_error(true),
+     timer(port->get_io_service()),
+     PortBaudRate(921600),
+     AnsAP_ON("ON"),
+     AnsAP_OFF("OFF"),
+     AP_ON("ARPETON"),
+     AP_OFF("ARPETOFF"),
+     AP_STATUS("ARPETO?"),
+     Head_MCAE("#C"),
+     Head_MCA("@"),
+     End_MCA("\r"),
+     End_PSOC("\r\n"),
+
+     /*Funciones trama MCAE*/
+     FunCHead("01"),
+     FunCSP3("02"),
+     FunCPSOC("03"),
+
+     /*Funciones de Tablas*/
+     Head_Calib_Coin("&"),
+     Energy_Calib_Table("001"),
+     X_Calib_Table("002"),
+     Y_Calib_Table("003"),
+     Window_Limits_Table("004"),
+     AnsEnergy_Calib_Table("&101"),
+     AnsX_Calib_Table("&102"),
+     AnsY_Calib_Table("&103"),
+     AnsWindow_Limits_Table("&104"),
+     Generic_Received_Size("0001"),
+     Generic_Sended_Size("01"),
+
+     /*Funciones trama Coincidencia*/
+     Init_Coin("701"),
+     Window_Time_Coin("702"),
+     Select_Mode_Coin("703"),
+     Normal_Coin_Mode("333333333"),
+     Auto_Coin_Mode("020102121"),
+     Head_Coin("7"),
+
+     /*Funciones trama PSOC*/
+     PSOC_OFF("$SET,STA,OFF"),
+     PSOC_ON("$SET,STA,ON"),
+     PSOC_SET("$SET,VCON,"),
+     PSOC_STA("$TEMP"),
+     PSOC_ANS("$OK"),
+     PSOC_ADC(5.8823),
+     PSOC_SIZE_SENDED("14"),
+     PSOC_SIZE_RECEIVED("0051"),
+
+     /*Funciones trama MCA*/
+     AnsMultiInit("@0064310>"),
+     AnsHeadInit("@0064020<"),
+     BrCst("00"),
+     Init_MCA("6401"),
+     Data_MCA("65"),
+     SetHV_MCA("68"),
+     Temp_MCA("74000"),
+     Set_Time_MCA("80")
+{
+    this->port = copy->getPort();
+
+}

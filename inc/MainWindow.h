@@ -228,6 +228,7 @@ private:
     SetPreferences *pref;
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
+    shared_ptr<AutoCalib> calibrador;
     string initfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;

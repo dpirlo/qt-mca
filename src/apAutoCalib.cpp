@@ -3,26 +3,24 @@
 using namespace ap;
 
 
-AutoCalib::AutoCalib(QList<int> checked_PMTs, QList<int> checked_Cab, float Canal_Obj_par)
+AutoCalib::AutoCalib(shared_ptr<MCAE> copy):MCAE(copy, 1000)
 {
 
-    this->PMTs_List = checked_PMTs;
-    this->Cab_List = checked_Cab;
-    this->Canal_Obj = Canal_Obj_par;
-
 }
+
+
 
 bool AutoCalib::calibrar_simple()
 {
 
+    cout << "Enviando a cabezal "<<Cab_List[0]<<" PMT "<<PMTs_List[0]<<endl;
+    //pedir_MCA_PMT(Cab_List[0] , PMTs_List[0], 256);
 
-    pedir_MCA_PMT(Cab_List[0] , PMTs_List[0], 256);
 
-            /*
     for(int i=0; i<PMTs_List.length();i++) { cout<<PMTs_List[i]<<endl; }
     for(int i=0; i<Cab_List.length();i++) { cout<<Cab_List[i]<<endl; }
     cout<<"Canal Objetivo:"<<Canal_Obj<<endl;
-*/
+
 
     return 1;
 }
@@ -45,9 +43,31 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
 
     sended = getTrama_MCAE() + getEnd_MCA();
 
-    bytes_transfered = portWrite(&sended);
+    cout << "Enviando a cabezal "<<Cabezal_str.toStdString()<<" PMT "<<PMT_str.toStdString()<<endl;
 
-    portReadString(&msg,'\r');                  //     msg = readString();
+
+    try
+    {
+        bytes_transfered = portWrite(&sended);
+    }
+    catch(boost::system::system_error e)
+    {
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
+
+
+    try
+    {
+         portReadString(&msg,'\r');                  //     msg = readString();
+    }
+    catch( Exceptions & ex )
+    {
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+
+
 
     portReadBufferString(&msg,canales*6+16);    //   msg_data = readBufferString(channels*6+16);
 
@@ -62,6 +82,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
     for(int i=0; i<canales_pmt.length();i++) { cout<<canales_pmt[i]<<endl; }
     cout<<"Hits:"<<endl;
     for(int i=0; i<hits_pmt.length();i++) { cout<<hits_pmt[i]<<endl; }
+
 
 }
 
