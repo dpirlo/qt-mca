@@ -827,14 +827,18 @@ void MCAE::setCalibStream(string function, QVector<double> table)
     setTrama_Calib(getHead_Calib_Coin()+function+stream_pmts+cs_stream);
 }
 /**
- * @brief MCAE::setMCAEStream
+ * @brief MCAE::setMCAEStream 
  *
  * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * Se configura la trama general de MCAE para el envío de MCA. Este método recibe como parámetros el valor de 'pmt',
+ * el tamaño de la trama de recepción 'size_stream', la función MCA ('function') y en el caso que se realice la
+ * confifuración de HV se debe incorporar el valor de HV ('channel_dec'), caso contrario dejar este campo en blanco.
  *
  * @param pmt_dec
  * @param size_stream
  * @param function
- * @param channel_dec
+ * @param channel_dec (opcional)
  */
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
@@ -853,6 +857,10 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
  * @overload
  *
  * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de calibración de Tiempos en el Cabezal. Este método
+ * recibe como parámetros el valor de 'pmt_dec' (en decimal), la función MCA ('function') y el tiempo en double.
+ * Este método se utiliza para la configuración de las tablas de Tiempos en el Cabezal.
  *
  * @param pmt_dec
  * @param function
@@ -874,6 +882,10 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
  *
  * Configuración de la trama general de envío para el protocolo MCAE
  *
+ * Se configura la trama general de MCAE para la configuración de las tablas de calibración. Este método recibe como
+ * parámetros 'function' correspondiente a la función de calibración y 'table' que corresponde a la tabla con los
+ * valores de calibración correspondiente.
+ *
  * @param function
  * @param table
  */
@@ -890,6 +902,13 @@ void MCAE::setMCAEStream(string function, QVector<double> table)
  * @overload
  *
  * Configuración de la trama general de envío para el protocolo MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de los modos de autocoincidencia. Este método recibe
+ * como parámetros la función de coincidencia ('function'), las tramas 'data_one' y 'data_two', y el valor
+ * booleano 'time'. Cuando se define la ventana temporal (en _subclocks_) se utilizan las tramas 'data_one' y 'data_two'
+ * (como el valor de ventana inferior y superior respectivamente), y la variable booleana 'time' se configura en _true_.
+ * Para los otros modos solo se configura la trama 'data_one', la trama 'data_two' queda en blanco y la variable
+ * booleana 'time' se configura en _false_.
  *
  * @param function
  * @param data_one
