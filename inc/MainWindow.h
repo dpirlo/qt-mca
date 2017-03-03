@@ -247,6 +247,7 @@ private:
     int  AT, LowLimit;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
+    QString port_name;
 
 public:
     /**

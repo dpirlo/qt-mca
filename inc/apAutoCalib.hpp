@@ -28,23 +28,24 @@ namespace ap {
     {
         public:
             // Constructor
-            AutoCalib(shared_ptr<MCAE> copy);
+            AutoCalib();
             // Calibracion Simple
             bool calibrar_simple();
 
             void setPMT_List(QList<int> checked_PMTs) {this->PMTs_List = checked_PMTs;}
             void setCab_List(QList<int> checked_Cab) {this->Cab_List = checked_Cab;}
             void setCanal_Obj(int Canal_Obj_par) {this->Canal_Obj = Canal_Obj_par;}
+            void setPort_Name(QString port_name_par) {this->port_name = port_name_par;}
 
 
         private:
             // Pedir MCA
             void pedir_MCA_PMT(int Cabezal, int PMT, int canales);
 
-        protected:
-             QList<int> PMTs_List;
-             QList<int> Cab_List;
-             int  Canal_Obj;
+            QList<int> PMTs_List;
+            QList<int> Cab_List;
+            int  Canal_Obj;
+            QString port_name;
     };
 }
 

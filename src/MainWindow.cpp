@@ -47,7 +47,7 @@ void MainWindow::setInitialConfigurations()
     pmt_select = new SetPMTs(this);
 
     // Calibrador
-    calibrador = shared_ptr<AutoCalib>(new AutoCalib(arpet));
+    calibrador = shared_ptr<AutoCalib>(new AutoCalib());
 
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
@@ -557,7 +557,8 @@ void MainWindow::on_pushButton_conectar_clicked()
     else
     {
         try{
-            QString port_name=ui->comboBox_port->currentText();
+            port_name=ui->comboBox_port->currentText();
+            calibrador->setPort_Name(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             ui->pushButton_conectar->setText("Desconectar");
@@ -3046,7 +3047,7 @@ void MainWindow::on_pushButton_clicked()
     {
         if (pmt_button_table[i]->isChecked())
         {
-            checked_PMTs.append(i);
+            checked_PMTs.append(i+1);
         }
     }
     if(checked_PMTs.length() == 0)
@@ -3074,7 +3075,7 @@ void MainWindow::on_pushButton_clicked()
 
         if(q->checkState() == Qt::Checked)
         {
-            checked_Cab.append(i);
+            checked_Cab.append(i+1);
         }
     }
     if(checked_Cab.length() == 0)
@@ -3086,12 +3087,11 @@ void MainWindow::on_pushButton_clicked()
     calibrador->setCab_List(checked_Cab);
 
 
-    // Genero el calibrador
-    //AutoCalib calibrador(checked_PMTs, checked_Cab, Canal_obj.toFloat(), arpet);
-
-
     // Calibro
     cout<<"Calibrador..."<<endl;
+    cout<<"Soltando puerto serie de arpet..."<<endl;
+    arpet->portDisconnect();
     calibrador->calibrar_simple();
-
+    arpet->portConnect(port_name.toStdString().c_str());
+    cout<<"Devolviendo puerto serie de arpet..."<<endl;
 }
