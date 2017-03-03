@@ -529,6 +529,10 @@ namespace ap {
          * @return hits_mca
          */
         QVector<double> getHitsMCA() const { return hits_mca; }
+        /**
+         * @brief resetHitsMCA
+         */
+        void resetHitsMCA() { hits_mca.clear(); }
     };
 
 }
