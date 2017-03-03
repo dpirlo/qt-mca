@@ -1326,9 +1326,7 @@ QString MainWindow::getHeadMCA(string tab)
  */
 QString MainWindow::getMultiMCA(string tab)
 {
-
-   int size_pmt_selected = pmt_selected_list.length();
-   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS_PMT));
+   int size_pmt_selected = pmt_selected_list.length();   
    QString msg;
 
    if (pmt_selected_list.isEmpty())
