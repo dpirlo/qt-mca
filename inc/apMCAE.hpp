@@ -79,9 +79,9 @@ namespace ap {
 
     public:
         MCAE(size_t timeout=1000);
-        void portReadString(string *msg, char delimeter);
-        void portReadBufferString(string *msg, int buffer_size);
-        size_t portWrite(string *msg);
+        void portReadString(string *msg, char delimeter, const char *tty_port_name);
+        void portReadBufferString(string *msg, int buffer_size, const char *tty_port_name);
+        size_t portWrite(string *msg, const char *tty_port_name);
         error_code portFlush();
         error_code portConnect(const char *tty_port_name);
         error_code portDisconnect();

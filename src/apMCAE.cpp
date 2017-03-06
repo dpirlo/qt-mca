@@ -145,11 +145,14 @@ error_code MCAE::portDisconnect()
  * @param msg
  * @return Tamaño de la trama en bytes
  */
-size_t MCAE::portWrite(string *msg)
+size_t MCAE::portWrite(string *msg, const char *tty_port_name)
 {
+    portConnect(tty_port_name);
+
     char c_msg[msg->size()+1];
     strcpy(c_msg, msg->c_str());
     size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
+    portDisconnect();
 
     return bytes_transferred;
 }
@@ -298,8 +301,9 @@ bool MCAE::portReadOneChar(char& val)
  * @param msg
  * @param delimeter
  */
-void MCAE::portReadString(string *msg, char delimeter)
+void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name)
 {
+    portConnect(tty_port_name);
     char c;
     while (portReadOneChar(c) && c != delimeter) {
         msg->push_back(c);
@@ -309,6 +313,7 @@ void MCAE::portReadString(string *msg, char delimeter)
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
+    portDisconnect();
 }
 /**
  * @brief MCAE::portReadBufferString
@@ -318,8 +323,9 @@ void MCAE::portReadString(string *msg, char delimeter)
  * @param msg
  * @param buffer_size
  */
-void MCAE::portReadBufferString(string *msg, int buffer_size)
+void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_port_name)
 {
+    portConnect(tty_port_name);
     char c;
     int buffer=1;
     while (portReadOneChar(c) && buffer <= buffer_size) {
@@ -331,6 +337,7 @@ void MCAE::portReadBufferString(string *msg, int buffer_size)
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
+    portDisconnect();
 }
 /**
  * @brief MCAE::portReadCharArray
