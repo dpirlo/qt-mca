@@ -52,6 +52,8 @@ namespace ap {
             void pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib);
             // Setear HV dinodo PMT
             void modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo);
+            // Reseteo memoria cabezal (SP6)
+            void reset_Mem_Cab(int Cabezal);
 
             QList<int> PMTs_List;
             QList<int> Cab_List;

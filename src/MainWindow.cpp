@@ -3067,14 +3067,19 @@ void MainWindow::on_pushButton_clicked()
     calibrador->setCab_List(checked_Cab);
 
     // Debug
-    for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
-    cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
+    //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
+    //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
+
+
+    // Cierro el serie de arpet
+    //cout<<"Soltando puerto serie de arpet..."<<endl;
+    arpet->portDisconnect();
 
     // Calibro
-    cout<<"Calibrador..."<<endl;
-    cout<<"Soltando puerto serie de arpet..."<<endl;
-    arpet->portDisconnect();
+    //cout<<"Calibrador..."<<endl;
     calibrador->calibrar_simple(ui->specPMTs_2);
-    cout<<"Devolviendo puerto serie de arpet..."<<endl;
+
+    // Devuelvo serial a arpet
+    //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
 }
