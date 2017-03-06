@@ -143,6 +143,7 @@ error_code MCAE::portDisconnect()
  * Escritura sobre el objeto puerto serie _port_
  *
  * @param msg
+ * @param tty_port_name
  * @return Tamaño de la trama en bytes
  */
 size_t MCAE::portWrite(string *msg, const char *tty_port_name)
@@ -196,7 +197,8 @@ size_t MCAE::portRead(char *c_msg)
  *
  * @return La línea leída en _string_
  */
-string MCAE::portReadMCAELine() {
+string MCAE::portReadMCAELine()
+{
   char c;
   string msg;
   while(true) {
@@ -219,7 +221,8 @@ string MCAE::portReadMCAELine() {
  *
  * @return La línea leída en _string_
  */
-string MCAE::portReadPSOCLine() {
+string MCAE::portReadPSOCLine()
+{
   char c;
   string msg;
   while(true) {
@@ -300,6 +303,7 @@ bool MCAE::portReadOneChar(char& val)
  *
  * @param msg
  * @param delimeter
+ * @param tty_port_name
  */
 void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name)
 {
@@ -322,6 +326,7 @@ void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name
  *
  * @param msg
  * @param buffer_size
+ * @param tty_port_name
  */
 void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_port_name)
 {

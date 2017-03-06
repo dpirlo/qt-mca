@@ -2193,7 +2193,7 @@ string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
-         arpet->portReadString(&msg,delimeter,port_name.toStdString().c_str());
+         arpet->portReadString(&msg,delimeter, port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2213,7 +2213,7 @@ string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
-         arpet->portReadBufferString(&msg,buffer_size,port_name.toStdString().c_str());
+         arpet->portReadBufferString(&msg,buffer_size, port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2237,7 +2237,7 @@ size_t MainWindow::sendString(string msg, string end)
 
     try{
         string sended=msg + end;
-        bytes_transfered = arpet->portWrite(&sended,port_name.toStdString().c_str());
+        bytes_transfered = arpet->portWrite(&sended, port_name.toStdString().c_str());
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
