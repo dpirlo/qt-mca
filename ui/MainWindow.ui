@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -752,7 +752,7 @@
         <string>Puerto</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_conectar">
+      <widget class="QPushButton" name="pushButton_init_configure">
        <property name="geometry">
         <rect>
          <x>250</x>
@@ -762,13 +762,13 @@
         </rect>
        </property>
        <property name="text">
-        <string>Conectar</string>
+        <string>Configurar</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_29">
        <property name="geometry">
         <rect>
-         <x>370</x>
+         <x>490</x>
          <y>4</y>
          <width>111</width>
          <height>31</height>
@@ -788,7 +788,7 @@
       <widget class="QPushButton" name="pushButton_arpet_on">
        <property name="geometry">
         <rect>
-         <x>498</x>
+         <x>618</x>
          <y>5</y>
          <width>95</width>
          <height>31</height>
@@ -816,7 +816,7 @@
       <widget class="QPushButton" name="pushButton_arpet_off">
        <property name="geometry">
         <rect>
-         <x>600</x>
+         <x>720</x>
          <y>5</y>
          <width>95</width>
          <height>31</height>
@@ -832,9 +832,9 @@
       <widget class="QLabel" name="label_power_management">
        <property name="geometry">
         <rect>
-         <x>720</x>
+         <x>820</x>
          <y>6</y>
-         <width>251</width>
+         <width>151</width>
          <height>31</height>
         </rect>
        </property>
@@ -1721,7 +1721,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>284</height>
+          <height>211</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3569,10 +3569,10 @@ Tensión: </string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>693</x>
-        <y>63</y>
-        <width>311</width>
-        <height>181</height>
+        <x>713</x>
+        <y>50</y>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">

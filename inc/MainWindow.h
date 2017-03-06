@@ -27,6 +27,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "QMessageBox"
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
@@ -77,7 +78,7 @@ public:
 
 private slots:
     /* Slots de sincronización para QCustomPlot */
-    void addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend="", bool head=false);
+    void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -128,7 +129,7 @@ private slots:
     void getHeadStatus();
 
     /* Buttons */
-    void on_pushButton_conectar_clicked();
+    void on_pushButton_init_configure_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
@@ -163,14 +164,17 @@ private slots:
 
     /* Buttons de prueba/testing */
 
-
     void on_pushButton_clicked();
+
+
+
 
 private:
     QString openConfigurationFile();
     void getPaths();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
+    QString port_name;
     string getLocalDateAndTime();
     QString getHead(string tab);
     string initHead(int head);
@@ -194,9 +198,7 @@ private:
     void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
     int setPSOCDataStream(string tab, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
-    void setHeadCustomPlotEnvironment();
-    void getHeadPlot(QCustomPlot *graph);
-    void getMultiplePlot(QCustomPlot *graph);
+    void setHeadCustomPlotEnvironment();        
     QVector<int> getCustomPlotParameters();
     void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
     void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
@@ -221,6 +223,7 @@ private:
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
 
+    /* Area de prueba/testing */
 
 
 private:
@@ -241,13 +244,15 @@ private:
     int adquire_mode;
     bool debug, init;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
-    QVector< QVector<double> > hits_pmt_ui, hits_head_ui;
+    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;    
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
     int  AT, LowLimit;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
-    QString port_name;
+
+
+    /* Area de prueba/testing */
+
 
 public:
     /**
@@ -273,39 +278,7 @@ public:
      *
      * @return pmt_selected_list
      */
-    QList<QString> getPMTSelectedList() { return pmt_selected_list; }
-    /**
-     * @brief setPMTVectorHits
-     *
-     * Configura el vector de cuentas por PMT.
-     *
-     * @param hits
-     */
-    void setPMTVectorHits(QVector< QVector<double> > hits) { hits_pmt_ui = hits; }
-    /**
-     * @brief getPMTVectorHits
-     *
-     * Devuelve el vector de cuentas por PMT.
-     *
-     * @return hits_pmt_ui
-     */
-    QVector< QVector<double> > getPMTVectorHits( ) { return hits_pmt_ui; }
-    /**
-     * @brief setHeadVectorHits
-     *
-     * Configura el vector de cuentas por cabezal.
-     *
-     * @param hits
-     */
-    void setHeadVectorHits(QVector< QVector<double> > hits) { hits_head_ui = hits; }
-    /**
-     * @brief getHeadVectorHits
-     *
-     * Devuelve el vector de cuentas por cabezal.
-     *
-     * @return hits_head_ui
-     */
-    QVector< QVector<double> > getHeadVectorHits( ) { return hits_head_ui; }
+    QList<QString> getPMTSelectedList() { return pmt_selected_list; }        
     /**
      * @brief setHitsInit
      *

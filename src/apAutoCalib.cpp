@@ -29,7 +29,7 @@ bool AutoCalib::calibrar_simple()
 
 void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
 {
-    portConnect(port_name.toStdString().c_str());
+
 
     string msg, msg_data;
     size_t bytes_transfered = 0;
@@ -53,7 +53,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
 
     try
     {
-        bytes_transfered = portWrite(&sended);
+        bytes_transfered = portWrite(&sended, port_name.toStdString().c_str());
     }
     catch(boost::system::system_error e)
     {
@@ -64,7 +64,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
     cout << "Leyendo"<<endl;
     try
     {
-         portReadString(&msg,'\r');                  //     msg = readString();
+         portReadString(&msg,'\r', port_name.toStdString().c_str());                  //     msg = readString();
     }
     catch( Exceptions & ex )
     {
@@ -77,7 +77,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
 
     cout << "Leyendo el buffer"<<endl;
     try{
-             portReadBufferString(&msg_data,canales*6+16);    //   msg_data = readBufferString(channels*6+16);
+             portReadBufferString(&msg_data,canales*6+16, port_name.toStdString().c_str());    //   msg_data = readBufferString(channels*6+16);
         }
         catch( Exceptions & ex ){
           cout << "No se leer... aparentemente..."<<endl;
@@ -99,7 +99,6 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales)
     for(int i=0; i<hits_pmt.length();i++) { cout<<hits_pmt[i]<<","; }
     cout<<endl;
 
-    portDisconnect();
 
 }
 

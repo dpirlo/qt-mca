@@ -1,6 +1,6 @@
 #include "inc/MainWindow.h"
 #include "ui_MainWindow.h"
-#include "QMessageBox"
+
 
 /**
  * @brief MainWindow::MainWindow
@@ -544,14 +544,13 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 
 }
 /**
- * @brief MainWindow::on_pushButton_conectar_clicked
+ * @brief MainWindow::on_pushButton_init_configure_clicked
  */
-void MainWindow::on_pushButton_conectar_clicked()
+void MainWindow::on_pushButton_init_configure_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(arpet->isPortOpen())
     {
-        ui->pushButton_conectar->setText("Conectar");
         arpet->portDisconnect();
     }
     else
@@ -560,8 +559,7 @@ void MainWindow::on_pushButton_conectar_clicked()
             port_name=ui->comboBox_port->currentText();
             calibrador->setPort_Name(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
-            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
-            ui->pushButton_conectar->setText("Desconectar");
+            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             getARPETStatus();
             getHeadStatus();
@@ -1303,21 +1301,21 @@ void MainWindow::setTabMode(int index)
 QString MainWindow::getHeadMCA(string tab)
 {
    QString msg;
-   QVector<QVector<double> >  hits(HEADS,QVector<double>(CHANNELS));
-
+   QString head=getHead(tab);
+   ui->specHead->clearGraphs();
    try
    {
      msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
      if(debug) showMCAEStreamDebugMode(msg.toStdString());
-     hits.insert(HEAD, 1, arpet->getHitsMCA());
+     addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
    }
    catch(Exceptions & ex)
    {
      if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
      QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-   setHeadVectorHits(hits);
-
+   ui->specHead->rescaleAxes();
+   
    return msg;
 }
 /**
@@ -1330,9 +1328,7 @@ QString MainWindow::getHeadMCA(string tab)
  */
 QString MainWindow::getMultiMCA(string tab)
 {
-
-   int size_pmt_selected = pmt_selected_list.length();
-   QVector<QVector<double> >  hits(size_pmt_selected,QVector<double>(CHANNELS_PMT));
+   int size_pmt_selected = pmt_selected_list.length();   
    QString msg;
 
    if (pmt_selected_list.isEmpty())
@@ -1341,7 +1337,7 @@ QString MainWindow::getMultiMCA(string tab)
      QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
      return msg;
    }
-
+   ui->specPMTs->clearGraphs();
    try
    {
      for (int index=0;index<size_pmt_selected;index++)
@@ -1353,7 +1349,7 @@ QString MainWindow::getMultiMCA(string tab)
           cout<<"PMT: "<<pmt<<" "<<endl;
           showMCAEStreamDebugMode(msg.toStdString());
         }
-        hits.insert(index, 1, arpet->getHitsMCA());
+        addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
      }
      if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
    }
@@ -1362,8 +1358,7 @@ QString MainWindow::getMultiMCA(string tab)
      if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
      QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
    }
-
-   setPMTVectorHits(hits);
+   ui->specPMTs->rescaleAxes();
    return msg;
 }
 /**
@@ -1561,7 +1556,12 @@ void MainWindow::setPMT(int value)
 {
      ui->lineEdit_pmt->setText(QString::number(value));
 }
-
+/**
+ * @brief MainWindow::getHVValue
+ * @param line_edit
+ * @param value
+ * @return
+ */
 string MainWindow::getHVValue(QLineEdit *line_edit, int value)
 {
     int hv_value_int;
@@ -1578,12 +1578,17 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
  *
  * Configuración de la trama MCAE
  *
+ * Se configura la trama general de MCAE para el envío de MCA. Este método recibe como parámetros el 'tab'
+ * del entorno gráfico, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt', la función MCA ('mca_function'),
+ * el tamaño de la trama de recepción 'bytes_mca' (opcional) y en el caso que se realice la confifuración de HV se debe
+ * incorporar el valor de HV, caso contrario dejar este campo en blanco.
+ *
  * @param tab
  * @param function
  * @param pmt
  * @param mca_function
- * @param bytes_mca
- * @param hv_value
+ * @param bytes_mca (opcional)
+ * @param hv_value (opcional)
  */
 void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
@@ -1595,6 +1600,11 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
  * @overload
  *
  * Configuración de la trama MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de calibración de Tiempos en el Cabezal. Este método
+ * recibe como parámetros el 'tab' del entorno gráfico, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt',
+ * la función MCA ('mca_function') y el tiempo en double. Este método se utiliza para la configuración de las tablas
+ * de Tiempos en el Cabezal.
  *
  * @param tab
  * @param function
@@ -1613,6 +1623,10 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
  *
  * Configuración de la trama MCAE
  *
+ * Se configura la trama general de MCAE para la configuración de las tablas de calibración. Este método recibe como
+ * parámetros el 'tab' del entorno gráfico, la 'calib_function' correspondiente a la función de calibración y 'table'
+ * que corresponde a la tabla con los valores de calibración correspondiente.
+ *
  * @param tab
  * @param calib_function
  * @param table
@@ -1627,6 +1641,13 @@ void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<do
  * @overload
  *
  * Configuración de la trama MCAE
+ *
+ * Se configura la trama general de MCAE para la configuración de los modos de autocoincidencia. Este método recibe
+ * como parámetros la función de coincidencia ('coin_function'), las tramas 'data_one' y 'data_two', y el valor
+ * booleano 'time'. Cuando se define la ventana temporal (_subclocks_) se utilizan las tramas 'data_one' y 'data_two'
+ * (como el valor de ventana inferior y superior respectivamente), y la variable booleana 'time' se configura en _true_.
+ * Para los otros modos solo se configura la trama 'data_one', la trama 'data_two' queda en blanco y la variable booleana
+ * 'time' se configura en _false_.
  *
  * @param coin_function
  * @param data_one
@@ -1662,9 +1683,8 @@ int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_valu
  */
 void MainWindow::resetHitsValues()
 {
-    hits_head_ui.clear();
-    hits_pmt_ui.clear();
-    setHitsInit(true);
+  arpet->resetHitsMCA();
+  setHitsInit(true);
 }
 /**
  * @brief MainWindow::on_pushButton_adquirir_clicked
@@ -1679,11 +1699,9 @@ void MainWindow::on_pushButton_adquirir_clicked()
     switch (adquire_mode) {
     case PMT:
         q_msg = getMultiMCA("mca");
-        getMultiplePlot(ui->specPMTs);
         break;
     case CABEZAL:
         q_msg = getHeadMCA("mca");
-        getHeadPlot(ui->specHead);
         break;
     case TEMPERATURE:
         drawTemperatureBoard();
@@ -2179,7 +2197,7 @@ string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
-         arpet->portReadString(&msg,delimeter);
+         arpet->portReadString(&msg,delimeter,port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2199,7 +2217,7 @@ string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
-         arpet->portReadBufferString(&msg,buffer_size);
+         arpet->portReadBufferString(&msg,buffer_size, port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2223,7 +2241,7 @@ size_t MainWindow::sendString(string msg, string end)
 
     try{
         string sended=msg + end;
-        bytes_transfered = arpet->portWrite(&sended);
+        bytes_transfered = arpet->portWrite(&sended,port_name.toStdString().c_str());
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
@@ -2564,77 +2582,38 @@ QVector<int> MainWindow::getCustomPlotParameters()
  */
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
-  QVector<QVector<double> >  hits(qlist.length(), QVector<double>(CHANNELS));
+
   for (unsigned int index=0; index < qlist.length(); index++)
   {
-    hits[index].fill(0);
+
     qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
   }
-  setPMTVectorHits(hits);
+
 }
 /**
  * @brief MainWindow::setHeadCustomPlotEnvironment
  */
 void MainWindow::setHeadCustomPlotEnvironment()
 {
-  QVector<QVector<double> >  hits(HEADS, QVector<double>(CHANNELS));
+
   for (unsigned int index=0; index < HEADS; index++)
   {
-    hits[index].fill(0);
+
     qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
   }
-  setHeadVectorHits(hits);
-}
-/**
- * @brief MainWindow::getMultiplePlot
- * @param graph
- */
-void MainWindow::getMultiplePlot(QCustomPlot *graph)
-{
-  graph->clearGraphs();
-  if (arpet->getChannels().size()==0) return;
-
-  for (int index=0;index<pmt_selected_list.length();index++)
-  {
-      addGraph(index, graph, CHANNELS_PMT, pmt_selected_list.at(index));
-  }
-  graph->rescaleAxes();
-}
-/**
- * @brief MainWindow::getHeadPlot
- * @param graph
- */
-void MainWindow::getHeadPlot(QCustomPlot *graph)
-{
-    graph->clearGraphs();
-    addGraph(HEAD, graph, CHANNELS, ui->comboBox_head_select_graph->currentText(), true);
-    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::addGraph
- * @param index
+ * @param hits
  * @param graph
  * @param channels
  * @param graph_legend
- * @param head
+ * @param param
  */
-void MainWindow::addGraph(int index,  QCustomPlot *graph, int channels, QString graph_legend, bool head)
+void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
 {
   channels_ui.resize(channels);
   channels_ui = arpet->getChannels();
-  QVector<double> hits;
-  QVector<int> param;
-
-  if (head)
-  {
-    hits = getHeadVectorHits()[index];
-    param = qcp_head_parameters[index];
-  }
-  else
-  {
-    hits = getPMTVectorHits()[index];
-    param = qcp_pmt_parameters[index];
-  }
 
   graph->addGraph();
   graph->graph()->setName(graph_legend);
@@ -3086,12 +3065,13 @@ void MainWindow::on_pushButton_clicked()
     }
     calibrador->setCab_List(checked_Cab);
 
+    // Debug
+    for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
+    cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
 
     // Calibro
     cout<<"Calibrador..."<<endl;
     cout<<"Soltando puerto serie de arpet..."<<endl;
-    arpet->portDisconnect();
     calibrador->calibrar_simple();
-    arpet->portConnect(port_name.toStdString().c_str());
     cout<<"Devolviendo puerto serie de arpet..."<<endl;
 }
