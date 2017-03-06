@@ -128,7 +128,7 @@ private slots:
     void getHeadStatus();
 
     /* Buttons */
-    void on_pushButton_conectar_clicked();
+    void on_pushButton_init_configure_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
@@ -166,11 +166,14 @@ private slots:
     void on_pushButton_clicked();
 
 
+
+
 private:
     QString openConfigurationFile();
     void getPaths();
     int parseConfigurationFile(QString filename);
     QStringList availablePortsName();
+    QString port_name;
     string getLocalDateAndTime();
     QString getHead(string tab);
     string initHead(int head);

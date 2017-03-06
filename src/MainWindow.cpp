@@ -541,23 +541,21 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 
 }
 /**
- * @brief MainWindow::on_pushButton_conectar_clicked
+ * @brief MainWindow::on_pushButton_init_configure_clicked
  */
-void MainWindow::on_pushButton_conectar_clicked()
+void MainWindow::on_pushButton_init_configure_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(arpet->isPortOpen())
     {
-        ui->pushButton_conectar->setText("Conectar");
         arpet->portDisconnect();
     }
     else
     {
         try{
-            QString port_name=ui->comboBox_port->currentText();
+            port_name=ui->comboBox_port->currentText();
             arpet->portConnect(port_name.toStdString().c_str());
-            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
-            ui->pushButton_conectar->setText("Desconectar");
+            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             getARPETStatus();
             getHeadStatus();
@@ -2195,7 +2193,7 @@ string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
-         arpet->portReadString(&msg,delimeter);
+         arpet->portReadString(&msg,delimeter,port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2215,7 +2213,7 @@ string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
-         arpet->portReadBufferString(&msg,buffer_size);
+         arpet->portReadBufferString(&msg,buffer_size,port_name.toStdString().c_str());
     }
     catch( Exceptions & ex ){
          Exceptions exception_stop(ex.excdesc);
@@ -2239,7 +2237,7 @@ size_t MainWindow::sendString(string msg, string end)
 
     try{
         string sended=msg + end;
-        bytes_transfered = arpet->portWrite(&sended);
+        bytes_transfered = arpet->portWrite(&sended,port_name.toStdString().c_str());
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
