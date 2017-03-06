@@ -1721,7 +1721,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3569,10 +3569,10 @@ Tensión: </string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>713</x>
-        <y>50</y>
-        <width>724</width>
-        <height>194</height>
+        <x>700</x>
+        <y>40</y>
+        <width>281</width>
+        <height>181</height>
        </rect>
       </property>
       <property name="font">

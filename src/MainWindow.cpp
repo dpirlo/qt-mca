@@ -1723,7 +1723,8 @@ void MainWindow::on_pushButton_reset_clicked()
     case PMT:
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
         resetHitsValues();
-        setPMTCustomPlotEnvironment(pmt_selected_list);
+
+        (pmt_selected_list);
         removeAllGraphsPMT();
         break;
     case CABEZAL:
@@ -3072,6 +3073,8 @@ void MainWindow::on_pushButton_clicked()
     // Calibro
     cout<<"Calibrador..."<<endl;
     cout<<"Soltando puerto serie de arpet..."<<endl;
-    calibrador->calibrar_simple();
+    arpet->portDisconnect();
+    calibrador->calibrar_simple(ui->specPMTs_2);
     cout<<"Devolviendo puerto serie de arpet..."<<endl;
+    arpet->portConnect(port_name.toStdString().c_str());
 }
