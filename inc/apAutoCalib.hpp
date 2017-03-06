@@ -49,7 +49,9 @@ namespace ap {
 
         private:
             // Pedir MCA
-            void pedir_MCA_PMT(int Cabezal, int PMT, int canales);
+            void pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib);
+            // Setear HV dinodo PMT
+            void modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo);
 
             QList<int> PMTs_List;
             QList<int> Cab_List;
