@@ -10,7 +10,7 @@ AutoCalib::AutoCalib()
 
 
 
-bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand )
+bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 {
     portConnect(port_name.toStdString().c_str());
 
@@ -27,28 +27,89 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand )
 
 
 
-    //cout << "Enviando a cabezal "<<Cab_List[0]<<" PMT "<<PMTs_List[0]<<endl;
 
-    // Leo el HV actual
-    int dinodo_act = getHVMCA();
-    pedir_MCA_PMT(Cab_List[0] , PMTs_List[0], 256, 0);
-    cout<<getHVMCA()<<endl;
+    int PMT_index = 0;
+    int Cab_index = 0;
 
-    // Pido MCA de calibracion del PMT actual
-    pedir_MCA_PMT(Cab_List[0] , PMTs_List[0], 1024, 1);
-
-    // Seteo HV de dinodo
-    modificar_HV_PMT(Cab_List[0] , PMTs_List[0], dinodo_act+10);
-
-    // Reseteo la memoria de SP6
-    reset_Mem_Cab(Cab_List[0]);
-
+    int PMT_actual = PMTs_List[PMT_index];
+    int Cab_actual = Cab_List[Cab_index];
 
     QString nombre_plot;
-    nombre_plot = "PMT "+ QString::number(PMTs_List[0]);
+    nombre_plot = "PMT "+ QString::number(PMT_actual);
+
+    // Borro memoria
+    for (int i=1 ; i < PMTs ; i++)
+    {
+        Acum_PMT[PMT_actual-1][i] = 0;
+    };
+
+    // Reseteo la memoria de SP6
+    reset_Mem_Cab(Cab_actual);
+
+    // Espero el tiempo indicado
+    sleep(tiempo_adq);
+
+    // Acumulo estadistica
+    for (int i=1 ; i<PMTs ; i++)
+    {
+
+        // Pido MCA de calibracion del PMT actual
+        pedir_MCA_PMT(Cab_actual , i+1, CHANNELS, 1);
+
+        // Leo los hits y los paso a double
+        QVector<double> aux_hits;
+        aux_hits = getHitsMCA();
+        double aux_double_hits[CHANNELS];
+        for (int i = 1 ; i < CHANNELS ; i++)
+        {
+          aux_double_hits[i] = aux_hits[i];
+        }
+
+        // Acumulo en mi memoria
+        for (int j=1 ; j < PMTs ; j++)
+        {
+            Acum_PMT[i][j] = Acum_PMT[i][j] +  aux_double_hits[j];
+        };
+
+        // Paso a Qvector y ploteo
+        std::vector<double> auxVector;
+        auxVector.assign(Acum_PMT[i], Acum_PMT[i] + CHANNELS);
+        aux_hits.fromStdVector(auxVector);
+        plot_MCA(aux_hits, plot_hand , nombre_plot, param);
+
+    }
 
 
-    plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
+
+
+
+
+
+    //cout << "Enviando a cabezal "<<Cab_actual<<" PMT "<<PMT_actual<<endl;
+
+    // Leo el HV actual
+    pedir_MCA_PMT(Cab_actual , PMT_actual, 256, 0);
+    cout<<getHVMCA()<<endl;
+    int dinodo_act = getHVMCA();
+
+
+
+
+
+
+
+
+    // Seteo HV de dinodo
+    modificar_HV_PMT(Cab_actual , PMT_actual, 1100+10);
+
+
+
+
+
+
+    // Ploteo
+    //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
+
 
     portDisconnect();
 
@@ -86,7 +147,8 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     portFlush();
 
     //cout << "Enviando a cabezal "<<Cabezal_str.toStdString()<<" PMT "<<PMT_str.toStdString()<<endl;
-    //cout<<sended<<endl;
+    cout<<"Get MCA PMT"<<endl;
+    cout<<sended<<endl;
 
 
     try
@@ -95,7 +157,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     }
     catch(boost::system::system_error e)
     {
-      cout << "No se puede acceder al puerto serie."<<endl;
+      cout << "No se puede acceder al puerto serie. (pedir MCA)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
     }
 
@@ -106,7 +168,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     }
     catch( Exceptions & ex )
     {
-      cout << "No se puede leer."<<endl;
+      cout << "No se puede leer. (pedir MCA)"<<endl;
          Exceptions exception_stop(ex.excdesc);
 
     }
@@ -118,7 +180,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
              portReadBufferString(&msg_data,canales*6+16, port_name.toStdString().c_str());    //   msg_data = readBufferString(channels*6+16);
         }
         catch( Exceptions & ex ){
-          cout << "No se leer... aparentemente..."<<endl;
+          cout << "No se leer... aparentemente... (pedir MCA)"<<endl;
              Exceptions exception_stop(ex.excdesc);
         }
 
@@ -162,7 +224,8 @@ void AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
     portFlush();
 
     //cout << "Enviando a cabezal "<<Cabezal_str.toStdString()<<" PMT "<<PMT_str.toStdString()<<endl;
-    //cout<<sended<<endl;
+    cout<<"Set HV dinodo"<<endl;
+    cout<<sended<<endl;
 
 
     try
@@ -171,18 +234,18 @@ void AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
     }
     catch(boost::system::system_error e)
     {
-      cout << "No se puede acceder al puerto serie."<<endl;
+      cout << "No se puede acceder al puerto serie. (modif HV)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
     }
 
-    cout << "Leyendo"<<endl;
+    //cout << "Leyendo"<<endl;
     try
     {
          portReadString(&msg,'\r', port_name.toStdString().c_str());                  //     msg = readString();
     }
     catch( Exceptions & ex )
     {
-      cout << "No se puede leer."<<endl;
+      cout << "No se puede leer. (modif HV)"<<endl;
          Exceptions exception_stop(ex.excdesc);
 
     }
@@ -198,6 +261,8 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
 
     QString Cabezal_str, PMT_str, val_dinodo_str;
     Cabezal_str = QString::number(Cabezal);
+    val_dinodo_str = "000";
+    PMT_str = "00";
 
     setHeader_MCAE(getHead_MCAE() + Cabezal_str.toStdString() + getFunCHead());
 
@@ -209,7 +274,8 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     portFlush();
 
     //cout << "Enviando a cabezal "<<Cabezal_str.toStdString()<<" PMT "<<PMT_str.toStdString()<<endl;
-    //cout<<sended<<endl;
+    cout<<"Reset Cabezal"<<endl;
+    cout<<sended<<endl;
 
 
     try
@@ -218,7 +284,7 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     }
     catch(boost::system::system_error e)
     {
-      cout << "No se puede acceder al puerto serie."<<endl;
+      cout << "No se puede acceder al puerto serie. (Reset Cab)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
     }
 
@@ -229,10 +295,11 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     }
     catch( Exceptions & ex )
     {
-      cout << "No se puede leer."<<endl;
+      cout << "No se puede leer. (Reset Cab)"<<endl;
          Exceptions exception_stop(ex.excdesc);
 
     }
+    cout << msg<<endl;
 }
 
 
@@ -265,4 +332,3 @@ void AutoCalib::plot_MCA(QVector<double> hits, QCustomPlot *graph, QString graph
 
 
 }
-

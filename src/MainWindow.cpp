@@ -3048,6 +3048,18 @@ void MainWindow::on_pushButton_clicked()
     }
     calibrador->setCanal_Obj(Canal_obj.toInt());
 
+    // Recupero el tiempo de adquisicion
+    QString Tiempo_adq = ui->Tiempo_adq_box->text();
+    if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+    {
+        messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    calibrador->setTiempo_adq(Tiempo_adq.toInt());
+
+
+
     // Recupero los cabezales
     for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
     {

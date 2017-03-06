@@ -43,8 +43,11 @@ namespace ap {
             void setCab_List(QList<int> checked_Cab) {this->Cab_List = checked_Cab;}
             // Set de canal objetivo
             void setCanal_Obj(int Canal_Obj_par) {this->Canal_Obj = Canal_Obj_par;}
+            // Set de tiempo adquisicion
+            void setTiempo_adq(int tiempo_adq_par) {this->tiempo_adq = tiempo_adq_par;}
             // Set de puerto serie
             void setPort_Name(QString port_name_par) {this->port_name = port_name_par;}
+
 
 
         private:
@@ -55,10 +58,20 @@ namespace ap {
             // Reseteo memoria cabezal (SP6)
             void reset_Mem_Cab(int Cabezal);
 
+            // Datos calibracion
             QList<int> PMTs_List;
             QList<int> Cab_List;
-            int  Canal_Obj;
+            int  Canal_Obj, tiempo_adq;
+
+            // Puerto serie
             QString port_name;
+
+            // Memoria de los PMT
+            double Acum_PMT[PMTs][CHANNELS];
+
+            // Blancas Ajedres
+            const int weisse[24]      = {1 , 3 , 5 , 7 , 10 , 12 , 14 , 16 , 17 , 19 , 21 , 23 , 26 , 28 , 30 , 32 , 33 , 35 , 37 , 39 , 42 , 44 , 46 , 48};
+            const int schwarze[24]    = {2 , 4 , 6 , 8 , 9 , 11 , 13 , 15 , 18 , 20 , 22 , 24 , 25 , 27 , 29 , 31 , 34 , 36 , 38 , 40 , 41 , 43 , 45 , 47};
     };
 }
 
