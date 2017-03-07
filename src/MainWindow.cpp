@@ -1776,13 +1776,14 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     {
         q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value)<<endl;
+        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+"\nCanal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+"\nConfiguración OK.");
     }
     catch (Exceptions ex)
     {
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-
+    ui->label_title_output->setText("Tensión de Dinodo");
     if (debug)
         {
             showMCAEStreamDebugMode(q_msg.toStdString());
@@ -2187,7 +2188,7 @@ string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
-        arpet->portReadString(&msg,delimeter, port_name.toStdString().c_str());
+        msg = arpet->readString(delimeter, port_name.toStdString());
     }
     catch( Exceptions & ex ){
         Exceptions exception_stop(ex.excdesc);
@@ -2207,7 +2208,7 @@ string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
-        arpet->portReadBufferString(&msg,buffer_size, port_name.toStdString().c_str());
+        msg = arpet->readBufferString(buffer_size,port_name.toStdString());
     }
     catch( Exceptions & ex ){
         Exceptions exception_stop(ex.excdesc);
@@ -2230,8 +2231,7 @@ size_t MainWindow::sendString(string msg, string end)
     size_t bytes_transfered = 0;
 
     try{
-        string sended=msg + end;
-        bytes_transfered = arpet->portWrite(&sended, port_name.toStdString().c_str());
+        bytes_transfered = arpet->sendString(msg, end, port_name.toStdString());
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
