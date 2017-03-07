@@ -82,6 +82,9 @@ namespace ap {
         void portReadString(string *msg, char delimeter, const char *tty_port_name);
         void portReadBufferString(string *msg, int buffer_size, const char *tty_port_name);
         size_t portWrite(string *msg, const char *tty_port_name);
+        size_t sendString(string msg, string end, string port_name);
+        string readString(char delimeter, string port_name);
+        string readBufferString(int buffer_size, string port_name);
         error_code portFlush();
         error_code portConnect(const char *tty_port_name);
         error_code portDisconnect();
@@ -92,6 +95,11 @@ namespace ap {
         void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
         void setPSOCEStream(string function, string psoc_value_dec="");
         bool verifyMCAEStream(string data_received, string data_to_compare);
+        string getMCA(string pmt, string function, string head, int channels, string port_name);
+        string setHV(string head, string pmt, string channel_dec, string port_name);
+        string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
+        string setTime(string head, double time_value, string pmt, string port_name);
+        string getTemp(string head, string pmt, string port_name);
         QVector<QString> parserPSOCStream(string stream);
         double getPMTTemperature(string temp_stream);
         bool isPortOpen();        

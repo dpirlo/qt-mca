@@ -153,6 +153,7 @@ size_t MCAE::portWrite(string *msg, const char *tty_port_name)
     char c_msg[msg->size()+1];
     strcpy(c_msg, msg->c_str());
     size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
+
     portDisconnect();
 
     return bytes_transferred;
@@ -382,6 +383,74 @@ error_code MCAE::portFlush()
         ec = error_code(errno,error::get_system_category());
 
     return ec;
+}
+/**
+ * @brief MCAE::sendString
+ *
+ * Envío de la trama 'msg' al puerto serie
+ *
+ * @param msg
+ * @param end
+ * @param port_name
+ * @return
+ */
+size_t MCAE::sendString(string msg, string end, string port_name)
+{
+    portFlush();
+    size_t bytes_transfered = 0;
+
+    try{
+        string sended= msg + end;
+        bytes_transfered = portWrite(&sended, port_name.c_str());
+    }
+    catch(boost::system::system_error e){
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
+
+    return bytes_transfered;
+}
+/**
+ * @brief MCAE::readString
+ *
+ * Lectura del 'buffer' serie hasta recibir el _delimeter_
+ *
+ * @param delimeter
+ * @param port_name
+ * @return
+ */
+string MCAE::readString(char delimeter, string port_name)
+{
+    string msg;
+    try{
+         portReadString(&msg,delimeter, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+    return msg;
+}
+/**
+ * @brief MCAE::readBufferString
+ *
+ * Lectura de un buffer de tamaño 'buffer_size'
+ *
+ * @param buffer_size
+ * @param port_name
+ * @return
+ */
+string MCAE::readBufferString(int buffer_size, string port_name)
+{
+    string msg;
+    try{
+         portReadBufferString(&msg,buffer_size, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+    return msg;
 }
 /**
  * @brief MCAE::convertHexToDec
@@ -1108,3 +1177,227 @@ QVector<QString> MCAE::parserPSOCStream(string stream)
 
     return line;
 }
+/**
+ * @brief MCAE::getMCA
+ *
+ * Adquisición de MCA
+ *
+ * @param pmt
+ * @param function
+ * @param head
+ * @param channels
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::getMCA(string pmt, string function, string head, int channels, string port_name)
+{
+      setHeader_MCAE(getHead_MCAE() + head + function);
+      setMCAEStream(pmt, channels*6+16, getData_MCA());
+      char delimeter='\r';
+      string msg, msg_data;
+
+      //sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+
+      /* Solicitud de MCA */
+      portFlush();
+      size_t bytes_transfered = 0;
+      try{
+          string sended= getTrama_MCAE() + getEnd_MCA();
+          bytes_transfered = portWrite(&sended, port_name.c_str());
+      }
+      catch(boost::system::system_error e){
+          Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+          throw exception_serial_port;
+      }
+
+      /* Respuesta del protocolo */
+      try{
+           portReadString(&msg,delimeter, port_name.c_str());
+      }
+      catch( Exceptions & ex ){
+           Exceptions exception_stop(ex.excdesc);
+           throw exception_stop;
+      }
+
+      /* Recepción de los datos MCA y parseado de los mismos */
+      try{
+           portReadBufferString(&msg_data,channels*6+16, port_name.c_str());
+      }
+      catch( Exceptions & ex ){
+           Exceptions exception_stop(ex.excdesc);
+           throw exception_stop;
+      }
+
+      getMCASplitData(msg_data, channels);
+
+      return msg;
+}
+/**
+ * @brief MCAE::setHV
+ *
+ * Configuración de la tensión de dinodo del PMT
+ *
+ * @param head
+ * @param pmt
+ * @param channel_dec
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setHV(string head, string pmt, string channel_dec, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, 0, getSetHV_MCA(), channel_dec);
+    char delimeter='\r';
+    string msg;
+
+    /* Configuración de HV */
+    portFlush();
+    size_t bytes_transfered = 0;
+    try{
+        string sended= getTrama_MCAE() + getEnd_MCA();
+        bytes_transfered = portWrite(&sended, port_name.c_str());
+    }
+    catch(boost::system::system_error e){
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
+
+    /* Respuesta del protocolo */
+    try{
+         portReadString(&msg,delimeter, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+
+    return msg;
+}
+/**
+ * @brief MCAE::setCalibTable
+ *
+ * Configuración de las tablas de calibración
+ *
+ * @param head
+ * @param calib_function
+ * @param table
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setCalibTable(string head, string calib_function, QVector<double> table, string port_name)
+{
+        setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+        setMCAEStream(calib_function, table);
+        char delimeter='\r';
+        string msg;
+
+        /* Configuración de HV */
+        portFlush();
+        size_t bytes_transfered = 0;
+        try{
+            string sended= getTrama_MCAE() + getEnd_MCA();
+            bytes_transfered = portWrite(&sended, port_name.c_str());
+        }
+        catch(boost::system::system_error e){
+            Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+            throw exception_serial_port;
+        }
+
+        /* Respuesta del protocolo */
+        try{
+             portReadString(&msg,delimeter, port_name.c_str());
+        }
+        catch( Exceptions & ex ){
+             Exceptions exception_stop(ex.excdesc);
+             throw exception_stop;
+        }
+
+        return msg;
+}
+/**
+ * @brief MCAE::setTime
+ *
+ * Configuración de los tiempos ....
+ *
+ * @param head
+ * @param time_value
+ * @param pmt
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setTime(string head, double time_value, string pmt, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, getSet_Time_MCA(), time_value);
+    char delimeter='\r';
+    string msg;
+
+    /* Configuración de HV */
+    portFlush();
+    size_t bytes_transfered = 0;
+    try{
+        string sended = getTrama_MCAE() + getEnd_MCA();
+        bytes_transfered = portWrite(&sended, port_name.c_str());
+    }
+    catch(boost::system::system_error e){
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
+
+    /* Respuesta del protocolo */
+    try{
+         portReadString(&msg,delimeter, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+
+    return msg;
+}
+/**
+ * @brief MCAE::getTemp
+ *
+ * Método que obtiene la temperatura del PMT
+ *
+ * @param head
+ * @param pmt
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::getTemp(string head, string pmt, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, 0, getTemp_MCA());
+
+    char delimeter='\r';
+    string msg;
+
+    /* Configuración de HV */
+    portFlush();
+    size_t bytes_transfered = 0;
+    try{
+        string sended = getTrama_MCAE() + getEnd_MCA();
+        bytes_transfered = portWrite(&sended, port_name.c_str());
+    }
+    catch(boost::system::system_error e){
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
+
+    /* Respuesta del protocolo */
+    try{
+         portReadString(&msg,delimeter, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+         Exceptions exception_stop(ex.excdesc);
+         throw exception_stop;
+    }
+
+    return msg;
+}
+
+/*
+sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+msg = readString();
+*/
