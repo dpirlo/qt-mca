@@ -25,37 +25,37 @@
 using namespace std;
 
 namespace Ui {
-class SetPreferences;
+  class SetPreferences;
 }
 
 class SetPreferences : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit SetPreferences(QWidget *parent = 0);    
-    void accept();
-    void reject();
-    ~SetPreferences();
+  explicit SetPreferences(QWidget *parent = 0);
+  void accept();
+  void reject();
+  ~SetPreferences();
 
 private:    
-    Ui::SetPreferences *ui;
-    /**
+  Ui::SetPreferences *ui;
+  /**
      * @brief debconsole
      *
      * Variable _booleana_ que indica si la aplicación tiene activado el modo _debug_.
      */
-    bool debconsole;
+  bool debconsole;
 
 public:
-    /**
+  /**
      * @brief GetDegugConsoleValue
      *
      * Obtiene el estado de la variable _booleana_ debconsole.
      * @return debconsole
      * @see debconsole
      */
-    bool GetDegugConsoleValue() const { return debconsole; }
+  bool GetDegugConsoleValue() const { return debconsole; }
 
 };
 

@@ -8,10 +8,10 @@
  * @param parent
  */
 SetPreferences::SetPreferences(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SetPreferences)
+  QDialog(parent),
+  ui(new Ui::SetPreferences)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
 }
 /**
  * @brief SetPreferences::accept
@@ -19,8 +19,8 @@ SetPreferences::SetPreferences(QWidget *parent) :
  */
 void SetPreferences::accept()
 {
-   debconsole = ui->checkBox_Debug->isChecked();
-   QDialog::accept();
+  debconsole = ui->checkBox_Debug->isChecked();
+  QDialog::accept();
 }
 /**
  * @brief SetPreferences::reject
@@ -28,8 +28,8 @@ void SetPreferences::accept()
  */
 void SetPreferences::reject()
 {
-   ui->checkBox_Debug->setChecked(debconsole);
-   QDialog::reject();
+  ui->checkBox_Debug->setChecked(debconsole);
+  QDialog::reject();
 }
 /**
  * @brief SetPreferences::~SetPreferences
@@ -38,5 +38,5 @@ void SetPreferences::reject()
  */
 SetPreferences::~SetPreferences()
 {
-    delete ui;
+  delete ui;
 }
