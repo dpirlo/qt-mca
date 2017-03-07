@@ -38,10 +38,11 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
     nombre_plot = "PMT "+ QString::number(PMT_actual);
 
     // Borro memoria
-    for (int i=1 ; i < PMTs ; i++)
+    for (int i=0 ; i < CHANNELS ; i++)
     {
         Acum_PMT[PMT_actual-1][i] = 0;
     };
+    Picos_PMT[PMT_actual-1] = 0;
 
     // Reseteo la memoria de SP6
     reset_Mem_Cab(Cab_actual);
@@ -50,7 +51,8 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
     sleep(tiempo_adq);
 
     // Acumulo estadistica
-    for (int i=1 ; i<PMTs ; i++)
+    //for (int i=0 ; i<PMTs ; i++)
+    int i = PMT_actual-1;
     {
 
         // Pido MCA de calibracion del PMT actual
@@ -60,16 +62,20 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         QVector<double> aux_hits;
         aux_hits = getHitsMCA();
         double aux_double_hits[CHANNELS];
-        for (int i = 1 ; i < CHANNELS ; i++)
+        for (int j = 0 ; j < CHANNELS ; j++)
         {
-          aux_double_hits[i] = aux_hits[i];
+          aux_double_hits[j] = aux_hits[j];
         }
 
         // Acumulo en mi memoria
-        for (int j=1 ; j < PMTs ; j++)
+        for (int j=0 ; j < PMTs ; j++)
         {
             Acum_PMT[i][j] = Acum_PMT[i][j] +  aux_double_hits[j];
         };
+
+        // Busco el pico
+        Picos_PMT[i] = Buscar_Pico(Acum_PMT[i], CHANNELS);
+        cout<<Picos_PMT[i]<<endl;
 
         // Paso a Qvector y ploteo
         std::vector<double> auxVector;
@@ -77,7 +83,9 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         aux_hits.fromStdVector(auxVector);
         plot_MCA(aux_hits, plot_hand , nombre_plot, param);
 
+
     }
+
 
 
 
@@ -117,6 +125,81 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 }
 
 
+double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
+{
+    int window_size = num_canales/20;
+    int span = (window_size/2);
+    int min_count_diff = 25;
+    bool ascendiente, descendiente, estable;
+    double Low_win, High_win;
+
+    char Estados[3] = {0 , 0 , 0};
+    int ind_estado = 0;
+
+    // La busqueda arranca en el ultimo canal
+    for (int i = num_canales ; i >= window_size ; i--)
+    {
+        // Reseteo las ventanas
+        Low_win = 0;
+        High_win = 0;
+
+        // Calculo los valores de las ventanas
+        for (int j = 0 ; j < window_size ; j ++)
+        {
+            High_win += Canales[num_canales - i - j];
+        }
+
+        for (int j = 0 ; j < window_size ; j ++)
+        {
+            Low_win += Canales[num_canales - i - window_size - span - j];
+        }
+
+        // Me fijo la direccion
+        if ((Low_win - High_win) > min_count_diff)
+        {
+            ascendiente = true;
+        }
+        else if (-(Low_win - High_win) > min_count_diff)
+        {
+            descendiente = true;
+        }
+        else
+        {
+            estable = true;
+        }
+
+        // Si el estado cambio lo actualizo
+        if (Estados[ind_estado-1] != Estados[ind_estado])
+        {
+            if (ascendiente) {Estados[ind_estado] = 1;}
+            if (descendiente) {Estados[ind_estado] = -1;}
+            if (estable) {Estados[ind_estado] = 0;}
+            ind_estado++;
+        }
+
+        // Checkeo si encontre pico
+        if (ind_estado == 3)
+        {
+            if( Estados[0] == 1 && Estados[1] == 0 && Estados[2] == -1 &&  (Estados[3] == 1 || Estados[3] == 0 ) )
+            {
+                return ((num_canales - i)+(span/2));
+            }
+        }
+
+
+
+    }
+
+    return -1;
+
+}
+
+
+
+/* -------------------------------------------------------------------
+ * --------------------Funciones MCAE---------------------------------
+ * -------------------------------------------------------------------
+ */
 
 void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
 {
@@ -301,6 +384,13 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     }
     cout << msg<<endl;
 }
+
+
+
+/* -------------------------------------------------------------------
+ * --------------------Funciones Varias-------------------------------
+ * -------------------------------------------------------------------
+ */
 
 
 

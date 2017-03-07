@@ -34,6 +34,9 @@ namespace ap {
             // Calibracion Simple
             bool calibrar_simple(QCustomPlot* plot_hand);
 
+            // Busqueda de pico sobre vector
+            double Buscar_Pico(double* Canales, int num_canales);
+
             // Plot de MCA actual
             void plot_MCA(QVector<double> hits, QCustomPlot *graph, QString graph_legend, QVector<int> param);
 
@@ -68,6 +71,8 @@ namespace ap {
 
             // Memoria de los PMT
             double Acum_PMT[PMTs][CHANNELS];
+            // Posiciones de los picos
+            double Picos_PMT[PMTs];
 
             // Blancas Ajedres
             const int weisse[24]      = {1 , 3 , 5 , 7 , 10 , 12 , 14 , 16 , 17 , 19 , 21 , 23 , 26 , 28 , 30 , 32 , 33 , 35 , 37 , 39 , 42 , 44 , 46 , 48};
