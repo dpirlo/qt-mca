@@ -1157,10 +1157,8 @@ void MainWindow::drawTemperatureBoard()
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-            string msg = readString();
-            temp=arpet->getPMTTemperature(msg);
+            string msg = arpet->getTemp(getHead("mca").toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+            temp = arpet->getPMTTemperature(msg);
             if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
             if(debug)
             {
@@ -1371,14 +1369,16 @@ QString MainWindow::getMultiMCA(string tab)
  */
 QString MainWindow::getMCA(string tab, string function, bool multimode, int channels, string pmt)
 {
-    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(), channels*6+16);
-    string msg, msg_data;
-
-    sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
-    msg = readString();
-    msg_data = readBufferString(channels*6+16);
-
-    arpet->getMCASplitData(msg_data, channels);
+    string msg;
+    try
+    {
+        msg= arpet->getMCA(pmt, function, getHead(tab).toStdString(), channels, port_name.toStdString());
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_mca(ex.excdesc);
+        throw exception_mca;
+    }
 
     long long time_mca;
     int frame, HV_pmt, offset, var;
@@ -1427,17 +1427,15 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, int chan
  */
 QString MainWindow::setCalibTable(string function, QVector<double> table, string msg_compare)
 {
-    setMCAEDataStream("config", function, table);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setCalibTable( getHead("config").toStdString(), function, table, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
-        Exceptions exception_time_out(ex.excdesc);
-        throw exception_time_out;
+        Exceptions exception_calib(ex.excdesc);
+        throw exception_calib;
     }
 
     if(!arpet->verifyMCAEStream(msg, msg_compare))
@@ -1460,17 +1458,15 @@ QString MainWindow::setCalibTable(string function, QVector<double> table, string
  */
 QString MainWindow::setTime(string tab, double time_value, string pmt)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSet_Time_MCA(), time_value);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setTime(getHead(tab).toStdString(), time_value, pmt, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
-        Exceptions exception_hv(ex.excdesc);
-        throw exception_hv;
+        Exceptions exception_time(ex.excdesc);
+        throw exception_time;
     }
 
     return QString::fromStdString(msg);
@@ -1487,12 +1483,10 @@ QString MainWindow::setTime(string tab, double time_value, string pmt)
  */
 QString MainWindow::setHV(string tab, string hv_value, string pmt)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSetHV_MCA(),0, hv_value);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setHV(getHead(tab).toStdString(), pmt, hv_value, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
