@@ -1305,8 +1305,7 @@ QString MainWindow::getHeadMCA(string tab)
         setButtonAdquireState(true);
         msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
         if(debug) showMCAEStreamDebugMode(msg.toStdString());
-        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
-        ui->specHead->rescaleAxes();
+        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);        
     }
     catch(Exceptions & ex)
     {
@@ -1350,8 +1349,7 @@ QString MainWindow::getMultiMCA(string tab)
                         cout<<"PMT: "<<pmt<<" "<<endl;
                         showMCAEStreamDebugMode(msg.toStdString());
                     }
-                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
-                ui->specPMTs->rescaleAxes();
+                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);                
             }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
     }
@@ -2135,7 +2133,7 @@ void MainWindow::setButtonState(bool state, QPushButton * button, bool disable)
  */
 void MainWindow::setButtonAdquireState(bool state, bool disable)
 {
-    QString color, qt_text;
+    QString qt_text;
 
     if (state && !disable)
         {
@@ -2153,7 +2151,6 @@ void MainWindow::setButtonAdquireState(bool state, bool disable)
            setButtonState(state,ui->pushButton_adquirir,disable);
         }
     ui->pushButton_adquirir->setText(qt_text);
-    ui->pushButton_adquirir->setStyleSheet(color);
     ui->pushButton_adquirir->update();
 }
 
@@ -2651,6 +2648,7 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
     graph->legend->setRowSpacing(1);
     graph->legend->setColumnSpacing(2);
     graph->replot();
+    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::axisLabelDoubleClickPMT
