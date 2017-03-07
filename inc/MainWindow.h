@@ -182,7 +182,8 @@ private:
   void setInitialConfigurations();
   void setLabelState(bool state, QLabel *label);
   void setTextBrowserState(bool state, QTextBrowser *tbro);
-  void SetButtonState(bool state, QPushButton * button, bool disable=false);
+  void setButtonState(bool state, QPushButton * button, bool disable=false);
+  void setButtonAdquireState(bool state, bool disable=false);
   string readString(char delimeter='\r');
   string readBufferString(int buffer_size);
   size_t sendString(string msg, string end);

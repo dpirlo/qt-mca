@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2135,7 +2135,7 @@ Tensión: </string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -3083,10 +3083,10 @@ Tensión: </string>
      <widget class="QFrame" name="frame_MCA">
       <property name="geometry">
        <rect>
-        <x>820</x>
+        <x>817</x>
         <y>479</y>
-        <width>171</width>
-        <height>71</height>
+        <width>175</width>
+        <height>81</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3118,7 +3118,7 @@ Tensión: </string>
       <widget class="QCheckBox" name="checkBox_continue">
        <property name="geometry">
         <rect>
-         <x>60</x>
+         <x>70</x>
          <y>2</y>
          <width>101</width>
          <height>31</height>
@@ -3132,9 +3132,9 @@ Tensión: </string>
      <widget class="QFrame" name="frame_HV">
       <property name="geometry">
        <rect>
-        <x>820</x>
+        <x>818</x>
         <y>151</y>
-        <width>171</width>
+        <width>175</width>
         <height>161</height>
        </rect>
       </property>
@@ -3356,9 +3356,9 @@ Tensión: </string>
      <widget class="QFrame" name="frame_PMT">
       <property name="geometry">
        <rect>
-        <x>820</x>
+        <x>818</x>
         <y>7</y>
-        <width>171</width>
+        <width>175</width>
         <height>141</height>
        </rect>
       </property>
@@ -3482,9 +3482,9 @@ Tensión: </string>
      <widget class="QFrame" name="frame_output">
       <property name="geometry">
        <rect>
-        <x>820</x>
+        <x>818</x>
         <y>315</y>
-        <width>171</width>
+        <width>175</width>
         <height>161</height>
        </rect>
       </property>
@@ -3533,9 +3533,9 @@ Tensión: </string>
      <widget class="QPushButton" name="pushButton_adquirir">
       <property name="geometry">
        <rect>
-        <x>828</x>
+        <x>823</x>
         <y>510</y>
-        <width>71</width>
+        <width>99</width>
         <height>31</height>
        </rect>
       </property>
@@ -3546,9 +3546,9 @@ Tensión: </string>
      <widget class="QPushButton" name="pushButton_reset">
       <property name="geometry">
        <rect>
-        <x>914</x>
+        <x>926</x>
         <y>510</y>
-        <width>71</width>
+        <width>62</width>
         <height>31</height>
        </rect>
       </property>

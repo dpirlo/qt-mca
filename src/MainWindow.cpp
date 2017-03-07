@@ -349,12 +349,12 @@ void MainWindow::getARPETStatus()
         msg = readString();
         if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
             {
-                SetButtonState(true,ui->pushButton_arpet_on);
-                SetButtonState(true,ui->pushButton_arpet_off, true);
+                setButtonState(true,ui->pushButton_arpet_on);
+                setButtonState(true,ui->pushButton_arpet_off, true);
             } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
             {
-                SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-                SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
             }
     }
     catch(Exceptions & ex)
@@ -439,8 +439,8 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         sleep(1);
         sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         msg = readString();
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
         if(debug) cout<<"AR-PET ENCENDIDO"<<endl;
 
     }
@@ -448,7 +448,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
     {
         if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -466,15 +466,15 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     {
         sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
         msg = readString();
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
         if(debug) cout<<"AR-PET APAGADO"<<endl;
     }
     catch(Exceptions & ex)
     {
         if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -1155,6 +1155,7 @@ void MainWindow::drawTemperatureBoard()
 
     try
     {
+        setButtonAdquireState(true);
         for(int pmt = 0; pmt < PMTs; pmt++)
             {
                 string msg = arpet->getTemp(getHead("mca").toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
@@ -1173,10 +1174,12 @@ void MainWindow::drawTemperatureBoard()
     }
     catch( Exceptions & ex )
     {
+        setButtonAdquireState(false);
         if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
+    setButtonAdquireState(true, true);
     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
     double t_max = *max_element(temp_vec.begin(),temp_vec.end());
     double t_min = *min_element(temp_vec.begin(),temp_vec.end());
@@ -1299,16 +1302,19 @@ QString MainWindow::getHeadMCA(string tab)
     ui->specHead->clearGraphs();
     try
     {
+        setButtonAdquireState(true);
         msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
         if(debug) showMCAEStreamDebugMode(msg.toStdString());
         addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
+        ui->specHead->rescaleAxes();
     }
     catch(Exceptions & ex)
     {
+        setButtonAdquireState(false);
         if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->specHead->rescaleAxes();
+    setButtonAdquireState(true, true);
 
     return msg;
 }
@@ -1334,6 +1340,7 @@ QString MainWindow::getMultiMCA(string tab)
     ui->specPMTs->clearGraphs();
     try
     {
+        setButtonAdquireState(true);
         for (int index=0;index<size_pmt_selected;index++)
             {
                 string pmt = pmt_selected_list.at(index).toStdString();
@@ -1344,15 +1351,18 @@ QString MainWindow::getMultiMCA(string tab)
                         showMCAEStreamDebugMode(msg.toStdString());
                     }
                 addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
+                ui->specPMTs->rescaleAxes();
             }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
     }
     catch(Exceptions & ex)
     {
+        setButtonAdquireState(false);
         if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->specPMTs->rescaleAxes();
+    setButtonAdquireState(true, true);
+
     return msg;
 }
 /**
@@ -2057,7 +2067,7 @@ void MainWindow::getPaths()
 }
 
 /**
- * @brief MainWindow::SetLabelState
+ * @brief MainWindow::setLabelState
  * @param state
  * @param label
  */
@@ -2093,12 +2103,12 @@ void MainWindow::setTextBrowserState(bool state, QTextBrowser *tbro)
         }
 }
 /**
- * @brief MainWindow::SetButtonState
+ * @brief MainWindow::setButtonState
  * @param state
  * @param button
  * @param disable
  */
-void MainWindow::SetButtonState(bool state, QPushButton * button, bool disable)
+void MainWindow::setButtonState(bool state, QPushButton * button, bool disable)
 {
     QString color;
 
@@ -2117,6 +2127,34 @@ void MainWindow::SetButtonState(bool state, QPushButton * button, bool disable)
     button->setStyleSheet(color);
     button->update();
     button->setChecked(!disable);
+}
+/**
+ * @brief MainWindow::setButtonAdquireState
+ * @param state
+ * @param disable
+ */
+void MainWindow::setButtonAdquireState(bool state, bool disable)
+{
+    QString color, qt_text;
+
+    if (state && !disable)
+        {
+           qt_text="Adquiriendo";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    else if (!state && !disable)
+        {
+           qt_text="Error";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    else
+        {
+           qt_text="Adquirir";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    ui->pushButton_adquirir->setText(qt_text);
+    ui->pushButton_adquirir->setStyleSheet(color);
+    ui->pushButton_adquirir->update();
 }
 
 /**
