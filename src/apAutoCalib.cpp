@@ -23,6 +23,11 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
     param[4]=14+1;//ScatterShape
     param[5]=1/(double)RAND_MAX*2+1;//setWidthF
 
+    int paso_dinodo = 50;
+
+    // Armo el vector de canal objetivo
+    double Canal_Obj_vec[PMTs] = {Canal_Obj};
+    double Canal_Obj_dif[PMTs] = {0};
 
 
     int PMT_index = 0;
@@ -34,89 +39,165 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
     QString nombre_plot;
     nombre_plot = "PMT "+ QString::number(PMT_actual);
 
-    // Borro memoria
-    for (int i=0 ; i < CHANNELS ; i++)
+
+
+
+
+    while(1)
     {
-        Acum_PMT[PMT_actual-1][i] = 0;
-    };
-    Picos_PMT[PMT_actual-1] = 0;
+        paso_dinodo = paso_dinodo - (paso_dinodo/10);
 
-    // Reseteo la memoria de SP6
-    reset_Mem_Cab(Cab_actual);
-
-    // Espero el tiempo indicado
-    sleep(tiempo_adq);
-
-    // Acumulo estadistica
-    //for (int i=0 ; i<PMTs ; i++)
-    int i = PMT_actual-1;
-    {
-
-        // Pido MCA de calibracion del PMT actual
-        pedir_MCA_PMT(Cab_actual , i+1, CHANNELS, 1);
-
-        // Leo los hits y los paso a double
-        QVector<double> aux_hits;
-        aux_hits = getHitsMCA();
-        double aux_double_hits[CHANNELS];
-        for (int j = 0 ; j < CHANNELS ; j++)
+        // Borro memoria
+        for (int i=0 ; i < CHANNELS ; i++)
         {
-          aux_double_hits[j] = aux_hits[j];
+            Acum_PMT[PMT_actual-1][i] = 0;
+        };
+        Picos_PMT[PMT_actual-1] = 0;
+
+        // Reseteo la memoria de SP6
+        reset_Mem_Cab(Cab_actual);
+
+        // Espero el tiempo indicado
+        sleep(tiempo_adq);
+
+        // Acumulo estadistica
+        for (int i=0 ; i<PMTs ; i++)
+        //int i = PMT_actual-1;
+        {
+
+            // Pido MCA de calibracion del PMT actual
+            pedir_MCA_PMT(Cab_actual , i+1, CHANNELS, 1);
+
+            // Leo los hits y los paso a double
+            QVector<double> aux_hits;
+            aux_hits = getHitsMCA();
+            double aux_double_hits[CHANNELS];
+            for (int j = 0 ; j < CHANNELS ; j++)
+            {
+              aux_double_hits[j] = aux_hits[j];
+              //cout<<aux_hits[j]<<",";
+            }
+
+            // Acumulo en mi memoria
+            for (int j=0 ; j < CHANNELS ; j++)
+            {
+                Acum_PMT[i][j] = Acum_PMT[i][j] +  aux_double_hits[j];
+            };
+
+            // Busco el pico
+            Picos_PMT[i] = Buscar_Pico(Acum_PMT[i], CHANNELS);
+            cout<<"PMT: "<< i << endl;
+            cout<<Picos_PMT[i]<<endl;
+
+
+            /*
+            // Paso a Qvector y ploteo
+            std::vector<double> auxVector;
+            auxVector.assign(Acum_PMT[i], Acum_PMT[i] + CHANNELS);
+            aux_hits.fromStdVector(auxVector);
+            //plot_MCA(aux_hits, plot_hand , nombre_plot, param);
+            plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
+            */
+
+
+            // Leo el HV actual
+            pedir_MCA_PMT(Cab_actual , i+1, 256, 0);
+            Dinodos_PMT[i] = getHVMCA();
+
+
         }
 
-        // Acumulo en mi memoria
-        for (int j=0 ; j < PMTs ; j++)
+        // Comparo la posición actual con la objetivo
+        // usando armadillo
+        mat Canal_Obj_vec_arma(Canal_Obj_vec, PMTs, 1);
+        mat Canal_Obj_dif_arma(Canal_Obj_dif, PMTs, 1);
+        mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
+
+        // Diferencia cuadratica
+        Canal_Obj_dif_arma = (Canal_Obj_vec_arma - Picos_PMT_arma);
+        mat Canal_Obj_dif_arma_cuad = Canal_Obj_dif_arma % Canal_Obj_dif_arma;
+
+
+        // Busco el que está mas lejamo
+        int ind_max_dif = Canal_Obj_dif_arma_cuad.index_max();
+
+
+
+
+
+        // Modo tablero de ajedrez
+        const double *color_tablero;
+
+        // Paso los colores a matrices
+        //mat blancas(weisse, PMTs/2, 1);
+        //mat negras(schwarze, PMTs/2, 1);
+        mat blancas(weisse, 2, 1);
+        mat negras(schwarze,2, 1);
+
+        // Me fijo en que color quedo el más lejano
+        uvec fins_salida = find(blancas == ind_max_dif);
+
+        if (sum(fins_salida) > 0)
         {
-            Acum_PMT[i][j] = Acum_PMT[i][j] +  aux_double_hits[j];
-        };
+            color_tablero = weisse;
+        }
+        else
+        {
+            color_tablero = schwarze;
+        }
 
-        // Busco el pico
-        Picos_PMT[i] = Buscar_Pico(Acum_PMT[i], CHANNELS);
-        cout<<Picos_PMT[i]<<endl;
+        // Recorro y modifico todos los PMT del color
+        //for (int i = 0 ; i < PMTs/2 ; i++)
+        for (int i = 0 ; i < 2 ; i++)
+        {
+            int PMT_mover = color_tablero[i]-1;
+            if (Canal_Obj_dif_arma(PMT_mover) > 0)
+            {
+                modificar_HV_PMT(Cab_actual , PMT_mover, Dinodos_PMT[PMT_mover] + paso_dinodo);
+            }
+            else
+            {
+                modificar_HV_PMT(Cab_actual , PMT_mover, Dinodos_PMT[PMT_mover] - paso_dinodo);
+            }
 
-        // Paso a Qvector y ploteo
-        std::vector<double> auxVector;
-        auxVector.assign(Acum_PMT[i], Acum_PMT[i] + CHANNELS);
-        aux_hits.fromStdVector(auxVector);
-        //plot_MCA(aux_hits, plot_hand , nombre_plot, param);
+        }
+
+
+
+        // Pido el total del cabezal y ploteo
+        //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
+
+
+
+        pedir_MCA_PMT(Cab_actual , 0, CHANNELS, 1);
         plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
 
 
+
+
+        //cout << "Enviando a cabezal "<<Cab_actual<<" PMT "<<PMT_actual<<endl;
+
+
+
+
+
+
+
+
+
+
+        // Seteo HV de dinodo
+        //modificar_HV_PMT(Cab_actual , PMT_actual, 600+10);
+
+
+
+
+
+
+        // Ploteo
+        //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
+
     }
-
-
-
-
-
-
-
-
-    //cout << "Enviando a cabezal "<<Cab_actual<<" PMT "<<PMT_actual<<endl;
-
-    // Leo el HV actual
-    pedir_MCA_PMT(Cab_actual , PMT_actual, 256, 0);
-    cout<<getHVMCA()<<endl;
-    int dinodo_act = getHVMCA();
-
-
-
-
-
-
-
-
-    // Seteo HV de dinodo
-    modificar_HV_PMT(Cab_actual , PMT_actual, 1100+10);
-
-
-
-
-
-
-    // Ploteo
-    //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
-
-
     portDisconnect();
 
     return 1;
@@ -126,14 +207,16 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 {
     int window_size = num_canales/60;
-    int span = (window_size/2);
-    int min_count_diff = 2;
+    int span = (window_size/3)*2;
+    int min_count_diff = 15;
     double Low_win, High_win;
     char Estados[4] = {0 , 0 , 0, 0};
     char Estado_aux;
     int ind_estado = 0;
     int outpoint = -1, low_extrema = -1;
 
+    //for(int i=0; i<1024 ;i++) { cout<<Canales[i]<<","; }
+    //cout<<endl;
 
     // La busqueda arranca en el ultimo canal
     for (int i = num_canales ; i >= window_size ; i--)
@@ -180,8 +263,8 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         {
             if( Estados[0] == 1 && Estados[1] == 0 && Estados[2] == -1 &&  (Estados[3] == 1 || Estados[3] == 0 ) )
             {
-                //cout<<(i - (2*window_size) - span)<<endl;
-                //cout<<(i)<<endl;
+                cout<<(i - (2*window_size) - span)<<endl;
+                cout<<(i)<<endl;
                 //outpoint = (i - (2*window_size) - span) + ((2*window_size) - span)/2;
 
                 // Retorno lo que encontre
@@ -201,6 +284,8 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         }
 
     }
+    if (outpoint == -1) {return -1;};
+    if (low_extrema < 0) {return -1;};
 
 
 
@@ -211,7 +296,8 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     mat Canales_mat(Canales,num_canales,1);
     // Me quedo solo con los canales que me interesan, los que estan dentro de las ventanas
     mat canales_peak;
-    canales_peak = Canales_mat.rows(low_extrema+window_size,outpoint+window_size);
+    //canales_peak = Canales_mat.rows(low_extrema-window_size,outpoint+window_size);
+    canales_peak = Canales_mat.rows(low_extrema-window_size,num_canales-1);
 
     // Maximo de la gausseana
     uword max_idx, std_idx;
@@ -306,7 +392,8 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     */
 
     // Retorno el valor de la media de gauss calculada
-    return low_extrema+window_size+Gauss_mean_AUX;
+    //return low_extrema+window_size+Gauss_mean_AUX;
+    return low_extrema-window_size+Gauss_mean_AUX;
 
 }
 

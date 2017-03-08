@@ -76,10 +76,14 @@ namespace ap {
             double Acum_PMT[PMTs][CHANNELS];
             // Posiciones de los picos
             double Picos_PMT[PMTs];
+            // Valor de los dinodos
+            double Dinodos_PMT[PMTs];
 
             // Blancas Ajedres
-            const int weisse[24]      = {1 , 3 , 5 , 7 , 10 , 12 , 14 , 16 , 17 , 19 , 21 , 23 , 26 , 28 , 30 , 32 , 33 , 35 , 37 , 39 , 42 , 44 , 46 , 48};
-            const int schwarze[24]    = {2 , 4 , 6 , 8 , 9 , 11 , 13 , 15 , 18 , 20 , 22 , 24 , 25 , 27 , 29 , 31 , 34 , 36 , 38 , 40 , 41 , 43 , 45 , 47};
+            //const double weisse[24]      = {1 , 3 , 5 , 7 , 10 , 12 , 14 , 16 , 17 , 19 , 21 , 23 , 26 , 28 , 30 , 32 , 33 , 35 , 37 , 39 , 42 , 44 , 46 , 48};
+            //const double schwarze[24]    = {2 , 4 , 6 , 8 , 9 , 11 , 13 , 15 , 18 , 20 , 22 , 24 , 25 , 27 , 29 , 31 , 34 , 36 , 38 , 40 , 41 , 43 , 45 , 47};
+            const double weisse[2]      = {1 , 3 };
+            const double schwarze[2]    = {2 , 4 };
     };
 }
 
