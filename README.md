@@ -26,13 +26,13 @@ Se recibe las tramas MCA y se grafican sus resultados.
 #### Fotomultiplicador
 Se adquiere la trama MCA a un número de PMTs seleccionados previamente.
 
-<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_pmt_selection.png" width="600"></p>
-<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_mca.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/master/img/img_pmt_selection.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/master/img/img_mca.png" width="600"></p>
 
 #### Cabezal
 Trama MCA a partir del cabezal seleccionado.
 
-<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/c22be56d74955b6b8e30f9cfdcbddb4bf82e5110/img/img_mca_head.png" width="600"></p>
+<p align="center"><img src="https://github.com/ahestevenz/qt-mca/blob/master/img/img_mca_head.png" width="600"></p>
 
 #### Temperatura
 Se obtienen los valores de temperatura de cada PMT. Por otro lado se muestran el valor mayor, menor y promedio de las temperaturas obtenidas. Se descartan valores de temperaturas menores a 20ºC (se lo considera como un valor erróneo).
