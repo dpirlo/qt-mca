@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3777,8 +3777,8 @@ Tensión: </string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>677</x>
-        <y>46</y>
+        <x>678</x>
+        <y>45</y>
         <width>321</width>
         <height>181</height>
        </rect>
