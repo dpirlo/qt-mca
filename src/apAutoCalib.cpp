@@ -25,9 +25,6 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
 
-
-
-
     int PMT_index = 0;
     int Cab_index = 0;
 
@@ -81,7 +78,8 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         std::vector<double> auxVector;
         auxVector.assign(Acum_PMT[i], Acum_PMT[i] + CHANNELS);
         aux_hits.fromStdVector(auxVector);
-        plot_MCA(aux_hits, plot_hand , nombre_plot, param);
+        //plot_MCA(aux_hits, plot_hand , nombre_plot, param);
+        plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
 
 
     }
@@ -127,14 +125,15 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 {
-    int window_size = num_canales/20;
+    int window_size = num_canales/60;
     int span = (window_size/2);
-    int min_count_diff = 25;
-    bool ascendiente, descendiente, estable;
+    int min_count_diff = 2;
     double Low_win, High_win;
-
-    char Estados[3] = {0 , 0 , 0};
+    char Estados[4] = {0 , 0 , 0, 0};
+    char Estado_aux;
     int ind_estado = 0;
+    int outpoint = -1, low_extrema = -1;
+
 
     // La busqueda arranca en el ultimo canal
     for (int i = num_canales ; i >= window_size ; i--)
@@ -146,35 +145,34 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         // Calculo los valores de las ventanas
         for (int j = 0 ; j < window_size ; j ++)
         {
-            High_win += Canales[num_canales - i - j];
+            High_win += Canales[i - j];
         }
-
+        High_win = High_win/window_size;
         for (int j = 0 ; j < window_size ; j ++)
         {
-            Low_win += Canales[num_canales - i - window_size - span - j];
+            Low_win += Canales[i - window_size - span - j];
         }
+        Low_win = Low_win/window_size;
 
         // Me fijo la direccion
         if ((Low_win - High_win) > min_count_diff)
         {
-            ascendiente = true;
+            Estado_aux = 1;
         }
         else if (-(Low_win - High_win) > min_count_diff)
         {
-            descendiente = true;
+            Estado_aux = -1;
         }
         else
         {
-            estable = true;
+            Estado_aux = 0;
         }
 
         // Si el estado cambio lo actualizo
-        if (Estados[ind_estado-1] != Estados[ind_estado])
+        if (Estados[ind_estado] != Estado_aux)
         {
-            if (ascendiente) {Estados[ind_estado] = 1;}
-            if (descendiente) {Estados[ind_estado] = -1;}
-            if (estable) {Estados[ind_estado] = 0;}
             ind_estado++;
+            Estados[ind_estado] = Estado_aux;
         }
 
         // Checkeo si encontre pico
@@ -182,15 +180,133 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         {
             if( Estados[0] == 1 && Estados[1] == 0 && Estados[2] == -1 &&  (Estados[3] == 1 || Estados[3] == 0 ) )
             {
-                return ((num_canales - i)+(span/2));
+                //cout<<(i - (2*window_size) - span)<<endl;
+                //cout<<(i)<<endl;
+                //outpoint = (i - (2*window_size) - span) + ((2*window_size) - span)/2;
+
+                // Retorno lo que encontre
+                low_extrema = (i - (2*window_size) - span);
+                outpoint = i;
+                break;
+            }
+            else
+            {
+                // Si no encontre nada corro la ventana de estados
+                Estados[0] =  Estados[1];
+                Estados[1] =  Estados[2];
+                Estados[2] =  Estados[3];
+                Estados[3] =  0;
+                ind_estado = 2;
             }
         }
 
-
-
     }
 
-    return -1;
+
+
+    // Una vez encontrado el pico de manera rudimentaria, le fiteo una gauss
+    // y sale el armadillo
+
+    // Copio los canales a una matriz
+    mat Canales_mat(Canales,num_canales,1);
+    // Me quedo solo con los canales que me interesan, los que estan dentro de las ventanas
+    mat canales_peak;
+    canales_peak = Canales_mat.rows(low_extrema+window_size,outpoint+window_size);
+
+    // Maximo de la gausseana
+    uword max_idx, std_idx;
+    double Gauss_max = canales_peak.max(max_idx);
+
+    // Busco el 68 % desde el lado de mas alta energia
+    uvec mayores_std = find(canales_peak > 0.68*Gauss_max);
+    mayores_std.max(std_idx);
+
+    double Gauss_mean = max_idx;
+    double Gauss_std = std_idx;
+
+    // Calculo el vector de gauss para varias posiciones de media y distintos desvios
+    int MOV_MEAN = 30, MOV_STD = 12;
+    mat gauss_curve_aux(MOV_MEAN, canales_peak.n_elem);
+    mat Dot_prods(MOV_MEAN,MOV_STD);
+    double Gauss_mean_AUX, Gauss_std_AUX;
+
+    for (int k=0 ; k < MOV_STD; k ++)
+    {
+        // Adquiero el valor de desvio estandar actual
+        Gauss_std_AUX = Gauss_std - (MOV_STD/2) + k;
+
+        for (int j=0 ; j < MOV_MEAN; j ++)
+        {
+            // Adquiero el valor de media actual
+            Gauss_mean_AUX = Gauss_mean - (MOV_MEAN/2) + j;
+
+            for (int i=0 ; i < canales_peak.size() ; i ++)
+            {
+                gauss_curve_aux(j,i) = (1/sqrt(2*Gauss_std_AUX*Gauss_std_AUX*3.1415))*exp(-( ( (i -Gauss_mean_AUX) * (i -Gauss_mean_AUX) ) / (2*Gauss_std_AUX*Gauss_std_AUX) ));
+            }
+
+            // Normalizo la curva calculada
+            float aux_max_gen = gauss_curve_aux.row(j).max();
+            for (int i=0 ; i < canales_peak.size() ; i ++)
+            {
+                gauss_curve_aux(j,i) = gauss_curve_aux(j,i) * (Gauss_max / aux_max_gen);
+            }
+
+            // Calculo la correlacion entre la campana propuesta y la medicion
+            Dot_prods(j,k) = norm_dot(canales_peak,gauss_curve_aux.row(j));
+        }
+    }
+
+    // Busco el máximo
+    uword dot_max_idx = Dot_prods.index_max();
+    uvec sub = ind2sub( arma::size(Dot_prods), dot_max_idx );
+
+    // Lo paso a desvio y media
+    Gauss_std_AUX = Gauss_std - (MOV_STD/2) + sub(1);
+    Gauss_mean_AUX = Gauss_mean - (MOV_MEAN/2) + sub(0);
+
+
+    /*
+    cout << Gauss_std_AUX<<endl;
+    cout << Gauss_mean_AUX<<endl;
+
+    for (int i=0 ; i < canales_peak.size() ; i ++)
+    {
+        gauss_curve_aux(1,i) = (1/sqrt(2*Gauss_std_AUX*Gauss_std_AUX*3.1415))*exp(-( ( (i -Gauss_mean_AUX) * (i -Gauss_mean_AUX) ) / (2*Gauss_std_AUX*Gauss_std_AUX) ));
+    }
+
+    // normalizo
+    float aux_max_gen = gauss_curve_aux.row(1).max();
+    for (int i=0 ; i < canales_peak.size() ; i ++)
+    {
+        gauss_curve_aux(1,i) = gauss_curve_aux(1,i) * (Gauss_max / aux_max_gen);
+    }
+
+    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(1,i)<<","; }
+    cout<<endl;
+
+
+
+
+
+    cout<<Gauss_mean<<endl;
+    cout<<Gauss_std<<endl;
+    cout<<Gauss_max<<endl;
+
+
+    for(int i=0; i<canales_peak.size();i++) { cout<<canales_peak[i]<<","; }
+    cout<<endl;
+
+    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(5,i)<<","; }
+    cout<<endl;
+    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(15,i)<<","; }
+    cout<<endl;
+    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(24,i)<<","; }
+    cout<<endl;
+    */
+
+    // Retorno el valor de la media de gauss calculada
+    return low_extrema+window_size+Gauss_mean_AUX;
 
 }
 

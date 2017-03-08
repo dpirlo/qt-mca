@@ -36,6 +36,11 @@ FORMS += \
         ui/MainWindow.ui \
         ui/SetPMTs.ui
 
+INCLUDEPATH +=/opt/armadillo/include
+LIBS +=-lblas
+LIBS +=-llapack
+
+
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug
 } else {

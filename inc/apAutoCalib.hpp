@@ -22,7 +22,10 @@
 
 #include "qcustomplot.h"
 #include "apMCAE.hpp"
+#include <armadillo>
 
+
+using namespace arma;
 
 namespace ap {
 
