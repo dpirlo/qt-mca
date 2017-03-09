@@ -641,8 +641,22 @@ void MainWindow::on_pushButton_initialize_clicked()
             return;
         }
 
-    int head_index=getHead("config").toInt();
+    string msg;
+    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        hv_status_table[head_index-1]->setText(psoc_alta);
+        if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
+    }
+    catch(Exceptions & ex)
+    {
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
 
     /* Configuración de las tablas de calibración */
     setCalibrationTables(head_index);
@@ -663,7 +677,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
-        if(debug) cout<< "HV configurado"<<endl;
+        if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
     catch(Exceptions & ex)
     {
@@ -2010,15 +2024,15 @@ int MainWindow::parseConfigurationFile(QString filename)
 
     QSettings settings(filename, QSettings::IniFormat);
 
-    /* Parameters */
-    AT = settings.value("SetUp/AT", "US").toInt();
-    LowLimit = settings.value("SetUp/LowLimit", "US").toInt();
-
     /* Paths to the configuration files */
 
     QString head= getHead("config");
     QString root=settings.value("Paths/root", "US").toString();
 
+    /* Parameters */
+    AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
+    LowLimit = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
+    Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
     coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
     hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
     coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();

@@ -172,8 +172,7 @@ private:
   QString openConfigurationFile();
   void getPaths();
   int parseConfigurationFile(QString filename);
-  QStringList availablePortsName();
-  QString port_name;
+  QStringList availablePortsName();  
   string getLocalDateAndTime();
   QString getHead(string tab);
   string initHead(int head);
@@ -232,6 +231,7 @@ private:
   SetPMTs *pmt_select;
   shared_ptr<MCAE> arpet;
   string initfile;
+  QString port_name;
   QList<QComboBox*> heads_coin_table;
   QList<QLabel*> pmt_label_table;
   QList<QLabel*> head_status_table;
@@ -245,7 +245,7 @@ private:
   QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
   QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
   QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
-  int  AT, LowLimit;
+  int  AT, LowLimit, Target;
   QVector<double> channels_ui;
   int pmt_ui_current, pmt_ui_previous;
 
@@ -286,6 +286,27 @@ public:
      * @param status
      */
   void setHitsInit(bool status) { init = status;}
+  /**
+     * @brief getAT
+     *
+     * Obtiene el valor de alta tensión del cabezal seleccionado
+     *
+     */
+  int getAT() const {return AT;}
+  /**
+     * @brief getLowLimit
+     *
+     * Obtiene el límite de ventana inferior para el cabezal seleccionado
+     *
+     */
+  int getLowLimit() const {return LowLimit;}
+  /**
+     * @brief getTarget
+     *
+     * Obtiene el canal de _target_ donde se realizó la calibración. Se utiliza en autocalibración.
+     *
+     */
+  int getTarget() const {return Target;}
 };
 
 #endif // MAINWINDOW_H
