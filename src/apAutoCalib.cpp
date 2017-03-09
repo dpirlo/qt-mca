@@ -23,11 +23,23 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
     param[4]=14+1;//ScatterShape
     param[5]=1/(double)RAND_MAX*2+1;//setWidthF
 
-    int paso_dinodo = 50;
+    // Paso inicial del hv dinodo
+    int paso_dinodo[PMTs];
+    fill_n(paso_dinodo, PMTs, BASE_MOV_DIN);
 
     // Armo el vector de canal objetivo
-    double Canal_Obj_vec[PMTs] = {Canal_Obj};
-    double Canal_Obj_dif[PMTs] = {0};
+    double Canal_Obj_vec[PMTs];
+    fill_n(Canal_Obj_vec, PMTs, Canal_Obj);
+    double Canal_Obj_dif[PMTs];
+
+    // Memoria del paso previo
+    double Picos_PMT_ant[PMTs];
+    double Dinodos_PMT_ant[PMTs];
+
+    // Parametros de linealización de paso
+    double A_param[PMTs];
+    double B_param[PMTs];
+
 
 
     int PMT_index = 0;
@@ -42,17 +54,21 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
 
-
+    // Loop de calibracion
+    int iter_actual = 0;
     while(1)
     {
-        paso_dinodo = paso_dinodo - (paso_dinodo/10);
 
-        // Borro memoria
-        for (int i=0 ; i < CHANNELS ; i++)
+
+        // Borro memoria de la clase
+        for (int j=0 ; j < PMTs ; j++)
         {
-            Acum_PMT[PMT_actual-1][i] = 0;
-        };
-        Picos_PMT[PMT_actual-1] = 0;
+            for (int i=0 ; i < CHANNELS ; i++)
+            {
+                Acum_PMT[j][i] = 0;
+            }
+            Picos_PMT[j] = 0;
+        }
 
         // Reseteo la memoria de SP6
         reset_Mem_Cab(Cab_actual);
@@ -60,8 +76,9 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         // Espero el tiempo indicado
         sleep(tiempo_adq);
 
-        // Acumulo estadistica
-        for (int i=0 ; i<PMTs ; i++)
+        // LLeno los buffers de memoria de la clase
+        //for (int i=0 ; i<PMTs ; i++)
+        for (int i=0 ; i<4 ; i++)
         //int i = PMT_actual-1;
         {
 
@@ -75,7 +92,6 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
             for (int j = 0 ; j < CHANNELS ; j++)
             {
               aux_double_hits[j] = aux_hits[j];
-              //cout<<aux_hits[j]<<",";
             }
 
             // Acumulo en mi memoria
@@ -86,8 +102,6 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
             // Busco el pico
             Picos_PMT[i] = Buscar_Pico(Acum_PMT[i], CHANNELS);
-            cout<<"PMT: "<< i << endl;
-            cout<<Picos_PMT[i]<<endl;
 
 
             /*
@@ -100,12 +114,14 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
             */
 
 
-            // Leo el HV actual
+            // Leo el HV actual y lo guardo en memoria
             pedir_MCA_PMT(Cab_actual , i+1, 256, 0);
             Dinodos_PMT[i] = getHVMCA();
 
+            cout<<"PMT: "<< i+1 << "--" <<Picos_PMT[i]<<"---"<<Dinodos_PMT[i]<<endl;
 
         }
+
 
         // Comparo la posición actual con la objetivo
         // usando armadillo
@@ -113,55 +129,216 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         mat Canal_Obj_dif_arma(Canal_Obj_dif, PMTs, 1);
         mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
 
-        // Diferencia cuadratica
+        // Diferencia
         Canal_Obj_dif_arma = (Canal_Obj_vec_arma - Picos_PMT_arma);
+        // Diferencia cuadratica
         mat Canal_Obj_dif_arma_cuad = Canal_Obj_dif_arma % Canal_Obj_dif_arma;
 
 
-        // Busco el que está mas lejamo
-        int ind_max_dif = Canal_Obj_dif_arma_cuad.index_max();
+        // Ignoro los PMT no seleccionados
+        bool adentro = false;
+        for (int j = 0 ;j < PMTs ; j++)
+        {
+            adentro = false;
+            for(int i = 0 ; i < PMTs_List.length() ; i++)
+            {
+                if ((PMTs_List[i]-1) == j)
+                {
+                    adentro = true;
+                }
+            }
+            if (!adentro)
+            {
+                Canal_Obj_dif_arma_cuad[j] = 0;
+                Canal_Obj_dif_arma[j] = 0;
+                Picos_PMT[j] == -1;
+            }
+        }
 
 
 
+        // Calculo el step linealizando
+
+        if (iter_actual > 0 )
+        {
+            for (int j = 0 ; j < PMTs ; j++)
+            {
+
+                // Si falle al encontrar el pico, no me muevo
+                if (Picos_PMT[j] == -1)
+                {
+                    paso_dinodo[j] = 0;
+                }
+                else
+                {
+                    //Calculo la recta entre picos
+
+                    A_param[j] = (Picos_PMT_ant[j] - Picos_PMT[j])/(Dinodos_PMT_ant[j]-Dinodos_PMT[j]);
+                    B_param[j] = Picos_PMT[j] - A_param[j] * Dinodos_PMT[j];
+
+                    // Checkeo que debido a ruido en la posicion del pico no este haciendo fruta
+                    if (A_param[j] > 0 && A_param[j] < 100000)
+                    {
+
+                        // Calculo la posicion final del dinodo para llegar al objetivo
+                        paso_dinodo[j] = Dinodos_PMT[j] - ( (Canal_Obj_vec_arma[j] - B_param[j])/ A_param[j] );
+
+                        // Peso el valor del dinodo con el coeficiente de PMT centroide a total de energia
+                        paso_dinodo[j] = paso_dinodo[j] * 0.65;
+
+                        // Checkeo que debido a una pendiente muy baja no me mande al diablo y saturo
+                        if (paso_dinodo[j]*paso_dinodo[j] > MAX_MOV_DIN*MAX_MOV_DIN)
+                        {
+                            if (paso_dinodo[j] < 0)
+                            {
+                                paso_dinodo[j] = -MAX_MOV_DIN;
+                            }
+                            else
+                            {
+                                paso_dinodo[j] = MAX_MOV_DIN;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Canal_Obj_dif_arma[j] > 0)
+                        {
+                            paso_dinodo[j] = BASE_MOV_DIN;
+                        }
+                        else if (Canal_Obj_dif_arma[j] < 0)
+                        {
+                            paso_dinodo[j] = -BASE_MOV_DIN;
+                        }
+                        else
+                        {
+                            paso_dinodo[j] = 0;
+                        }
+                    }
+                }
+            }
 
 
-        // Modo tablero de ajedrez
+        }
+
+
+
+        // Puntero al color del paso actual
         const double *color_tablero;
 
+
+        /*
+        cout<<paso_dinodo[0]<<" - "<<paso_dinodo[1]<<" - "<<paso_dinodo[2]<<" - "<<paso_dinodo[3]<<endl;
+
+        for(int i=0; i<Canal_Obj_dif_arma_cuad.size();i++) { cout<<Canal_Obj_dif_arma_cuad[i]<<","; }
+        cout<<endl;
+        for(int i=0; i<Canal_Obj_dif_arma.size();i++) { cout<<Canal_Obj_dif_arma[i]<<","; }
+        cout<<endl;
+        for(int i=0; i<Picos_PMT_arma.size();i++) { cout<<Picos_PMT_arma[i]<<","; }
+        cout<<endl;
+
+        /*
+
+
+        // --- Modo tablero de ajedrez
+        /*
+        // Busco el que está mas lejamo
+        int ind_max_dif = Canal_Obj_dif_arma_cuad.index_max();
+        cout<<ind_max_dif<<endl;
+
+
         // Paso los colores a matrices
-        //mat blancas(weisse, PMTs/2, 1);
-        //mat negras(schwarze, PMTs/2, 1);
-        mat blancas(weisse, 2, 1);
-        mat negras(schwarze,2, 1);
+        mat blancas(weisse, PMTs/2, 1);
+        mat negras(schwarze, PMTs/2, 1);
 
         // Me fijo en que color quedo el más lejano
-        uvec fins_salida = find(blancas == ind_max_dif);
+        uvec fins_salida = find(blancas == (ind_max_dif));
+        for(int i=0; i<fins_salida.size();i++) { cout<<fins_salida(i)<<","; }
+        cout<<endl;
+
 
         if (sum(fins_salida) > 0)
         {
+            cout<<"blancas.."<<endl;
             color_tablero = weisse;
         }
         else
         {
+            cout<<"negras.."<<endl;
             color_tablero = schwarze;
         }
+        */
+
+        // Busco el de mayor diferencia
+        int ind_max_dif = -1;
+        double aux_maximo= 0;
+        for (int i=0 ; i < Canal_Obj_dif_arma_cuad.size() ; i++)
+        {
+            if (Canal_Obj_dif_arma_cuad[i] > aux_maximo)
+            {
+                ind_max_dif = i;
+                aux_maximo = Canal_Obj_dif_arma_cuad[i];
+            }
+        }
+        cout<<ind_max_dif<<endl;
+
+        // Busco el color
+        for (int i = 0 ; i < PMTs/2 ; i++)
+        {
+          if (weisse[i] == ind_max_dif+1)
+          {
+            cout<<"blancas.."<<endl;
+            color_tablero = weisse;
+          }
+        }
+        for (int i = 0 ; i < PMTs/2 ; i++)
+        {
+          if (schwarze[i] == ind_max_dif+1)
+          {
+            cout<<"negras.."<<endl;
+            color_tablero = schwarze;
+          }
+        }
+
 
         // Recorro y modifico todos los PMT del color
-        //for (int i = 0 ; i < PMTs/2 ; i++)
-        for (int i = 0 ; i < 2 ; i++)
+        for (int i = 0 ; i < PMTs/2 ; i++)
         {
             int PMT_mover = color_tablero[i]-1;
-            if (Canal_Obj_dif_arma(PMT_mover) > 0)
+
+            if (iter_actual == 0)
             {
-                modificar_HV_PMT(Cab_actual , PMT_mover, Dinodos_PMT[PMT_mover] + paso_dinodo);
+                if (Canal_Obj_dif_arma(PMT_mover) > 0)
+                {
+                    cout<< "Subiendo PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
+                    modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]));
+                }
+                else
+                {
+                    cout<< "Bajando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover])<<endl;
+                    modificar_HV_PMT(Cab_actual , PMT_mover+1, Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover]);
+                }
             }
             else
             {
-                modificar_HV_PMT(Cab_actual , PMT_mover, Dinodos_PMT[PMT_mover] - paso_dinodo);
+                cout<< "Modificando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
+                modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]));
             }
 
         }
 
+
+       // paso_dinodo = paso_dinodo - (paso_dinodo/10);
+
+
+
+
+        for (int i=0 ; i< PMTs ; i++)
+        {
+            Picos_PMT_ant[i] =  Picos_PMT[i];
+            Dinodos_PMT_ant[i] = Dinodos_PMT[i];
+        }
+
+        iter_actual++;
 
 
         // Pido el total del cabezal y ploteo
@@ -169,7 +346,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
 
-        pedir_MCA_PMT(Cab_actual , 0, CHANNELS, 1);
+        pedir_MCA_PMT(Cab_actual , 1, CHANNELS, 1);
         plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
 
 
@@ -206,9 +383,9 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 {
-    int window_size = num_canales/60;
-    int span = (window_size/3)*2;
-    int min_count_diff = 15;
+    int window_size = num_canales/20;
+    int span = (window_size);
+    int min_count_diff = 50;
     double Low_win, High_win;
     char Estados[4] = {0 , 0 , 0, 0};
     char Estado_aux;
@@ -217,6 +394,16 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
     //for(int i=0; i<1024 ;i++) { cout<<Canales[i]<<","; }
     //cout<<endl;
+
+    // Seteo el limite
+    // Copio los canales a una matriz
+    mat Canales_mat(Canales,num_canales,1);
+    min_count_diff = (int) sum(sum(Canales_mat))*0.003;
+    cout<<"minimooooo "<<min_count_diff<<endl;
+
+
+
+
 
     // La busqueda arranca en el ultimo canal
     for (int i = num_canales ; i >= window_size ; i--)
@@ -285,15 +472,14 @@ double AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
     }
     if (outpoint == -1) {return -1;};
-    if (low_extrema < 0) {return -1;};
+    if (low_extrema < window_size) {return -1;};
 
 
 
     // Una vez encontrado el pico de manera rudimentaria, le fiteo una gauss
     // y sale el armadillo
 
-    // Copio los canales a una matriz
-    mat Canales_mat(Canales,num_canales,1);
+
     // Me quedo solo con los canales que me interesan, los que estan dentro de las ventanas
     mat canales_peak;
     //canales_peak = Canales_mat.rows(low_extrema-window_size,outpoint+window_size);
@@ -547,7 +733,7 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
 
     QString Cabezal_str, PMT_str, val_dinodo_str;
     Cabezal_str = QString::number(Cabezal);
-    val_dinodo_str = "000";
+    val_dinodo_str = "150";
     PMT_str = "00";
 
     setHeader_MCAE(getHead_MCAE() + Cabezal_str.toStdString() + getFunCHead());
