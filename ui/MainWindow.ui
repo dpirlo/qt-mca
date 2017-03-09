@@ -3569,9 +3569,9 @@ Tensión: </string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>700</x>
-        <y>40</y>
-        <width>281</width>
+        <x>720</x>
+        <y>60</y>
+        <width>271</width>
         <height>181</height>
        </rect>
       </property>
@@ -4832,8 +4832,8 @@ Tensión: </string>
      <widget class="QLabel" name="label_53">
       <property name="geometry">
        <rect>
-        <x>700</x>
-        <y>0</y>
+        <x>680</x>
+        <y>30</y>
         <width>51</width>
         <height>21</height>
        </rect>
@@ -4933,6 +4933,19 @@ Tensión: </string>
       </property>
       <property name="text">
        <string>Tiempo Acumulacion</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_Cab_Completo">
+      <property name="geometry">
+       <rect>
+        <x>790</x>
+        <y>10</y>
+        <width>161</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cabezal Completo</string>
       </property>
      </widget>
     </widget>

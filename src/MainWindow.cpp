@@ -3022,21 +3022,33 @@ void MainWindow::on_pushButton_clicked()
     QMessageBox messageBox;
 
 
-    // Recupero los PMT checkeados
-    for(int i = 0;  i< PMTs ; i++ )
+    if (ui->checkBox_Cab_Completo->isChecked())
     {
-        if (pmt_button_table[i]->isChecked())
+        for(int i = 0;  i< PMTs ; i++ )
         {
             checked_PMTs.append(i+1);
         }
     }
-    if(checked_PMTs.length() == 0)
+    else
     {
-        messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
-        messageBox.setFixedSize(500,200);
-        return;
+        // Recupero los PMT checkeados
+        for(int i = 0;  i< PMTs ; i++ )
+        {
+            if (pmt_button_table[i]->isChecked())
+            {
+                checked_PMTs.append(i+1);
+            }
+        }
+        if(checked_PMTs.length() == 0)
+        {
+            messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
+            messageBox.setFixedSize(500,200);
+            return;
+        }
+        calibrador->setPMT_List(checked_PMTs);
     }
-    calibrador->setPMT_List(checked_PMTs);
+
+
 
     // Recupero el canal objetivo
     QString Canal_obj = ui->Canal_objetivo->text();
