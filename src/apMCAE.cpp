@@ -781,8 +781,7 @@ void MCAE::setPSOCStream(string function, string psoc_value)
 /**
  * @brief MCAE::convertDoubleToInt
  *
- * Conversión de un valor en _double_ multiplicado por 1000 a _int_
- * double=double*1000;
+ * Conversión de un valor en _double_ a _int_
  * int=(int)round(double)
  *
  * @param value
@@ -791,7 +790,7 @@ void MCAE::setPSOCStream(string function, string psoc_value)
 int MCAE::convertDoubleToInt(double value)
 {
   int value_int;
-  value=value*1000;
+  /** @todo: Se elimina esta línea: value=value*1000; Modificado en el firmware de FPGA*/
 
   return value_int=(int)round(value);
 }
