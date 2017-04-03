@@ -25,6 +25,9 @@
 #include <armadillo>
 #include <sys/sysinfo.h>
 
+#include <fstream>
+#include <math.h>
+
 
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 250
@@ -37,6 +40,7 @@
 // Definiciones para levantar archivos
 #define     BYTES                       8
 #define     CANTIDADdEpMTS              48
+#define     CANTIDADdEcABEZALES         6
 #define     CANTIDADdEbYTEShEADER   	2
 #define     CANTIDADdEbYTEStIMEsTAMP    4
 #define     CANTIDADdEbYTESpMTS     	(CANTIDADdEpMTS*12)/BYTES
@@ -62,10 +66,34 @@
 
 #define     BinsHist                            256
 #define     NUM_EVENT_CENTRO                    5000
+#define     MAX_ITER_ENERGIA                    25
 
 using namespace arma;
 
 namespace ap {
+
+    // Retorno del buscador de pico
+    struct Pico_espectro {
+        double canal_pico;
+        int limites_FWHM[2];
+        int limites_FWTM[2];
+        double FWHM;
+        double FWTM;
+        int limites_Pico[2];
+    };
+
+
+    // Parte del newton-gauss de juan
+    typedef struct {
+            double *Z0;
+            double *Z0T;
+            double *Z0C;
+            double *Z0I;
+            double *D;
+            double *ZTD;
+            double *A;
+        }estadogna;
+
 
     class AutoCalib: public MCAE
     {
@@ -122,8 +150,8 @@ namespace ap {
             QString port_name;
 
             // Ventanas emergentes
-            QCustomPlot Espectro_emergente[6];
-            QCustomPlot Espectro_PMT_emergente[6];
+            QCustomPlot Espectro_emergente[CANTIDADdEcABEZALES];
+            QCustomPlot Espectro_PMT_emergente[CANTIDADdEcABEZALES];
 
 
             // Memoria de los PMT
@@ -138,20 +166,26 @@ namespace ap {
             const double schwarze[24]    = {2 , 4 , 6 , 8 ,  9 , 11 , 13 , 15 , 18 , 20 , 22 , 24 , 25 , 27 , 29 , 31 , 34 , 36 , 38 , 40 , 41 , 43 , 45 , 47};
 
             // Archivos de adquisición
-            string adq_cab[6];
+            string adq_cab[CANTIDADdEcABEZALES];
             string adq_coin;
 
             // Archivos parseados
-            mat Energia_calib[6];
-            mat Tiempos_calib[6];
-            mat Tiempos_full_calib[6];
-            mat TimeStamp_calib[6];
+            mat Energia_calib[CANTIDADdEcABEZALES];
+            mat Tiempos_calib[CANTIDADdEcABEZALES];
+            mat Tiempos_full_calib[CANTIDADdEcABEZALES];
+            mat TimeStamp_calib[CANTIDADdEcABEZALES];
 
             // Matriz de energia promedio en centroides
-            mat E_prom_PMT;
+            mat E_prom_PMT[CANTIDADdEcABEZALES];
+            double Ce[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
 
+            // Preprocesamiento de datos planar
+            bool preprocesar_info_planar(int cab_num_act);
             // Calibración fina de eneregía
             bool calibrar_fina_energia(int cab_num_act);
+            // Guardar tablas
+            void guardar_tablas(int cab_num_act, bool* tipo);
+
 
             // Levantar archivo de calibración
             bool LevantarArchivo_Planar(int cab_num_act);
@@ -161,16 +195,52 @@ namespace ap {
             // Flag de RAM
             bool IsLowRAM;
 
+
+
+
+
+
+            // Newton-Gauss de juan
+            double f_gauss(double X,double *P);
+            double df_gauss(double X, double *P, int nP);
+            // -- Matrices
+            double 	getelemento(double *matriz, int fila, int col, int nFila, int nCol);
+            void 	setelemento(double *matriz, int fila, int col, int nFila, int nCol,double val);
+            void 	imprimirMatriz(double *matriz, int nFilas, int nCols,int decimales,char formato);
+            double*	llenarMatriz(double *matriz,int nFilas,int nCols, double val);
+            double*	identidadMatriz(double *matriz,int n, double val);
+            double*	productoporescalarMatriz(double *morg,int nFilas, int nCols, double *mdst, double val);
+            double*	trasponerMatriz(double *morg,int nFilasOrg, int nColsOrg, double *mdst);
+            double*	sumarMatrices(double *mop1,int nFilasOrg, int nColsOrg, double *mop2, double *mdst);
+            double*	restarMatrices(double *mop1,int nFilasOrg, int nColsOrg, double *mop2, double *mdst);
+            double*	multiplicarMatrices(double *mop1,int nFilasop1, int nColsop1, double *mop2, int nFilasop2, int nColsop2, double *mdst);
+            double*	permutarMatriz(double *matriz,int fila1, int fila2, int nFilas, int nCols);
+            double	determinante(double *matriz, int n);
+            double*	matrizmenorMatriz(double *matriz, int nofila, int nocol, int nFilas, int nCols,double *mdst);
+            double*	matrizInversa(double *matriz,int n, double *inversa);
+            // -- GNA
+            double sumacuadrados(double *x,  double *y, int ndatos, double *P,double (AutoCalib::*fx)(double X, double *P));
+            void jacobiano(double *matriz, double *x, int ndatos, double *P, int nparam, double (AutoCalib::*dfx)(double X, double *P, int nP));
+            int  inicializargna(estadogna *estado,int ndatos, int nparam);
+            void liberargna(estadogna *estado);
+            void acotarparametros(double *p, double *pmax, double *pmin, int nparam);
+            int gaussnewton(	double	*x,
+                        double	*y,
+                        int 	ndatos,
+                        double	*P,
+                        int 	nparam,
+                        double 	paso,
+                        double 	(AutoCalib::*fx)(double X, double *P),
+                        double (AutoCalib::*dfx)(double X, double *P,int nP),
+                        estadogna *estado);
+
     };
 
-    struct Pico_espectro {
-        double canal_pico;
-        double limites_FWHM[2];
-        double limites_FWTM[2];
-        double FWHM;
-        double FWTM;
-        double limites_Pico[2];
-    };
+
+
+
+
+
 }
 
 #endif // AUTOCALIB_H

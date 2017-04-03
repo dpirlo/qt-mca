@@ -38,8 +38,13 @@ AutoCalib::AutoCalib()
     }
 
 
+    // Preparo las estructuras de datos
+    for(int i = 0 ; i < CANTIDADdEcABEZALES ; i ++)
+    {
+        E_prom_PMT[i].set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
+        desv_temp_media_central[i].set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
+    }
 
-    E_prom_PMT.set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
 
 
 }
@@ -444,185 +449,17 @@ bool AutoCalib::calibrar_fina(void)
             int cab_num_act = Cab_List[i]-1;
 
             // Cargo el cabezal actual en memoria
-            //LevantarArchivo_Planar(cab_num_act);
+            LevantarArchivo_Planar(cab_num_act);
+
+            // Busco eventos promedio y calculo la posición del pico
+            preprocesar_info_planar(cab_num_act);
 
             // Calibro energía
-            //calibrar_fina_energia(cab_num_act);
+            calibrar_fina_energia(cab_num_act);
 
-
-
-
-
-            E_prom_PMT.load("/home/rgrodriguez/Desktop/lala.mat", raw_ascii);
-
-            // Calculo el primer paso de calibracion en energia
-            // E_prom\Ener_obj  == solve(E_prom,Ener_obj)
-            colvec Ener_obj;
-            Ener_obj.set_size(CANTIDADdEpMTS,1);
-            //Ener_obj = Ener_obj + 511;
-            Ener_obj.zeros(CANTIDADdEpMTS,1);
-            Ener_obj = Ener_obj + 511;
-            //cout<<Ener_obj.n_rows<<" - "<<Ener_obj.n_cols<<endl;
-
-
-
-            mat L, U, P, Y;
-
-            lu(L, U, P, E_prom_PMT);
-/*
-            int m = E_prom_PMT.n_rows;
-
-            U=E_prom_PMT;
-
-
-
-
-            L.eye(m,m);
-
-            mat pivee;
-            pivee.set_size(48,1);
-            double piv;
-            double mult;
-            for (int i=0 ; i < m-1 ; i++)
-            {
-                piv = U(i,i);
-                pivee(i) = piv;
-
-                      for (int k=i+1 ; k<m ; k++)
-                      {
-                          mult = U(k,i)/piv;
-
-                          U.row(k) = -mult*U.row(i) + U.row(k);
-                          L(k,i) = mult;
-
-                      }
-            }
-
-            //cout<<L<<endl;
-            L.save("/home/rgrodriguez/Desktop/lala_L.mat", raw_ascii);
-            pivee.save("/home/rgrodriguez/Desktop/lala_P.mat", raw_ascii);
-*/
-
-
-
-            // perform forwards substitution
-            int n = CANTIDADdEpMTS-1;
-            mat x;
-            x.set_size(CANTIDADdEpMTS,1);
-            x.zeros();
-            x(0)=Ener_obj(0)/L(0,0);
-
-            for (int i=1 ; i<=n ; i++)
-            {
-
-                mat aux = ( Ener_obj(i)   -  ( L.row(i).cols(0,i-1) * x.rows(0,i-1) )  )    /    L(i,i);
-                x(i)= aux(0);
-
-
-
-                /*
-                double lal = 0;
-                for (int r = 0 ; r<= (i-1) ; r++)
-                {
-                    cout<<L(i,r) * x(r)<<endl;
-                    lal = lal + L(i,r) * x(r)   ;
-                }
-                cout<<i<<endl;
-
-                x(i) = ( Ener_obj(i)   -  ( lal )  )    /    L(i,i);
-                */
-
-                /*
-                mat lal, aux;
-                lal.set_size(i,1);
-                for (int r = 0 ; r<= (i-1) ; r++)
-                {
-                    lal(r) = L(i,r) * x(r)   ;
-                    cout<<L(i,r)<<endl;
-                    cout<<x(r)<<endl;
-                    cout<<lal(r)<<endl;
-
-                }
-                aux = sum(sort(lal));
-                cout<<"aux"<<aux<<endl;
-
-                x(i) = ( Ener_obj(i)   -  ( aux(0) )  )    /    L(i,i);
-                cout<<Ener_obj(i)<<endl;
-                cout<<L(i,i)<<endl;
-                cout<<"xi"<<x(i)<<endl;
-                */
-            }
-            Y = x;
-
-            Y.save("/home/rgrodriguez/Desktop/lala_Y.mat", raw_ascii);
-
-            cout<<"pa delante"<<endl;
-
-            cout<<x<<endl;
-
-
-
-
-            // perform backwards substitution
-            x.set_size(CANTIDADdEpMTS,1);
-            x.zeros();
-
-            x(n)=Y(n)/U(n,n);
-            for (int i=n-1 ; i >=0 ; i--)
-            {
-                   //x(i)=(Y(i)-U(i,i+1:n)*x(i+1:n))/U(i,i);
-                //mat aux = ( Y(i)   -   U( span(i,i), span(i+1,n) ) *x.cols(i+1,n)   )    /    U(i,i);
-                mat aux = ( Y(i)   -  ( U.row(i).cols(i+1,n) * x.rows(i+1,n) )  )    /    U(i,i);
-                x(i)= aux(0);
-
-/*
-                double lal = 0;
-                for (int r = 0 ; r<= (i+1) ; r++)
-                {
-                    lal = lal + U(i,r) * x(r)   ;
-                }
-                x(i) = ( Y(i)   -  ( lal )  )    /    U(i,i);
-*/
-/*
-                mat lal, aux;
-                lal.set_size(i,1);
-                for (int r = 0 ; r<= (i+1) ; r++)
-                {
-                    lal(r) = U(i,r) * x(r)   ;
-                }
-                aux = sum(sort(lal));
-                x(i) = ( Y(i)   -  ( aux(0) )  )    /    U(i,i);
-*/
-            }
-            cout<<"pa tra"<<endl;
-
-            colvec Ce = x;
-
-
-
-
-
-
-
-            cout<<Ce<<endl;
-
-            Y = solve(trimatl(L),Ener_obj);
-            colvec Ce2 = solve(trimatu(U),Y);
-            cout<<Ce2<<endl;
-
-            colvec Ce3 = solve(E_prom_PMT,Ener_obj);
-            cout<<Ce3<<endl;
-
-
-
-
-
-
-
-
-
-
-
+            // Guardo
+            bool tipo[3] = {1,1,1};
+            guardar_tablas(cab_num_act, tipo);
 
 
             // Libero la memoria del cabezal actual
@@ -646,9 +483,7 @@ bool AutoCalib::calibrar_fina(void)
 }
 
 
-
-
-bool AutoCalib::calibrar_fina_energia(int cab_num_act)
+bool AutoCalib::preprocesar_info_planar(int cab_num_act)
 {
     // Saco la suma de los canales del evento
     rowvec Suma_canales = sum( Energia_calib[cab_num_act], 0);
@@ -700,12 +535,13 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 
     // Conservo solo los eventos dentro del FWTM
+    mat Energia_calib_FWHM;
     uvec indices_aux = find(Suma_canales > centros_hist(pico_sin_calib.limites_FWTM[0]));
     rowvec suma_aux = Suma_canales.elem(indices_aux).t();
-    Energia_calib[cab_num_act] = Energia_calib[cab_num_act].cols(indices_aux);
+    Energia_calib_FWHM = Energia_calib[cab_num_act].cols(indices_aux);
     indices_aux = find(suma_aux < centros_hist(pico_sin_calib.limites_FWTM[1]));
     suma_aux = suma_aux.elem(indices_aux).t();
-    Energia_calib[cab_num_act] = Energia_calib[cab_num_act].cols(indices_aux);
+    Energia_calib_FWHM = Energia_calib_FWHM.cols(indices_aux);
 
 
 
@@ -719,11 +555,11 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
         // Extraigo los eventos en los cuales el PMT fue maximo
-        indices_maximo_PMT = index_max( Energia_calib[cab_num_act], 0 );
+        indices_maximo_PMT = index_max( Energia_calib_FWHM, 0 );
         //cout<<indices_maximo_PMT.n_elem<<endl;
         indices_aux = find(indices_maximo_PMT == index_PMT_cent);
         //cout<<indices_aux.n_elem<<endl;
-        Eventos_max_PMT =  Energia_calib[cab_num_act].cols(indices_aux);
+        Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux);
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
 
 
@@ -771,192 +607,170 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
         qApp->processEvents();
 
         // Calculo la energia promedio de todos los PMT para este centroide
-        E_prom_PMT.row(index_PMT_cent) = mean(Eventos_max_PMT,1).t();
-        //cout<<mean(Eventos_max_PMT,1).t()<<";"<<endl;
-
+        E_prom_PMT[cab_num_act].row(index_PMT_cent) = mean(Eventos_max_PMT,1).t();
 
     }
+}
 
-    E_prom_PMT.save("/home/rgrodriguez/Desktop/lala.mat", raw_ascii);
 
+bool AutoCalib::calibrar_fina_energia(int cab_num_act)
+{
+    // Creo el vector de energía objetivo
+    colvec Ener_obj;
+    Ener_obj.set_size(CANTIDADdEpMTS,1);
+    Ener_obj.zeros(CANTIDADdEpMTS,1);
+    Ener_obj = Ener_obj + 511;
 
     // Calculo el primer paso de calibracion en energia
     // E_prom\Ener_obj  == solve(E_prom,Ener_obj)
-    colvec Ener_obj(CANTIDADdEpMTS);
-    Ener_obj = Ener_obj + 511;
-    //cout<<Ener_obj.n_rows<<" - "<<Ener_obj.n_cols<<endl;
-
-    // Parche
-    /*
-    mat E_prom_PMT_aux = E_prom_PMT;
-    for (int i=0 ; i < CANTIDADdEpMTS ; i++ )
-    {
-        for (int j=0 ; j < CANTIDADdEpMTS ; j++ )
-        {
-            if (i != j)
-            {
-                E_prom_PMT_aux(i,j) = (E_prom_PMT(i,j) + E_prom_PMT(j,i))/2;
-            }
-
-        }
-    }
-    E_prom_PMT = E_prom_PMT_aux;
-    */
-
-    //colvec Ce = solve(E_prom_PMT,Ener_obj);
-    //colvec Ce = inv(E_prom_PMT)*Ener_obj;
-    //colvec Ce = qr_solve2(E_prom_PMT,Ener_obj);
-    //colvec Ce = pinv(E_prom_PMT,0.01,"std")*Ener_obj;
-    //colvec Ce = LU_solve(E_prom_PMT,Ener_obj);
-
-    mat L, U, P, Y;
-
-    //lu(L, U, P, E_prom_PMT);
-
-    int m = E_prom_PMT.n_rows;
-
-    U=E_prom_PMT;
-/*
-    for (int i = 0 ; i<U.n_rows ; i++)
-    {
-        for (int k = 0 ; k<U.n_cols ; k++)
-        {
-            if(U(i,k) < 150)
-            {
-                U(i,k) = 0;
-            }
-        }
-    }
-*/
+    colvec Ce_arma = solve(E_prom_PMT[cab_num_act],Ener_obj);
+    colvec Ce_iter;
 
 
+    // Paso toda la matriz de eventos a energia calibrada
+    mat Energia_calib_aux = Energia_calib[cab_num_act];
+    Energia_calib_aux.each_col() %= Ce_arma;
 
-    L.eye(m,m);
-
-    double piv;
-    double mult;
-    for (int i=0 ; i < m-1 ; i++)
-    {
-        piv = U(i,i);
-
-              for (int k=i+1 ; k<m ; k++)
-              {
-                  mult = U(k,i)/piv;
-
-                  U.row(k) = -mult*U.row(i) + U.row(k);
-                  L(k,i) = mult;
-
-              }
-    }
-
-    cout<<L<<endl;
-
-
-
-
-
-    //Y = solve(trimatl(L),Ener_obj);
-    //colvec Ce = solve(trimatu(U),Y);
-    //colvec Ce = solve(trimatu(U), solve(trimatl(L), P*Ener_obj) );
-
-    // perform forwards substitution
-    int n = CANTIDADdEpMTS-1;
-    mat x;
-    x.set_size(CANTIDADdEpMTS,1);
-    x.zeros();
-    x(0)=Ener_obj(0)/L(0,0);
-
-    for (int i=1 ; i<=n ; i++)
-    {
-
-        //cout<<Ener_obj(i)<<endl;
-        //cout<<L(i,i)<<endl;
-        //cout<<x.rows(0,i-1)<<endl;
-        //cout<< L.row(i).cols(0,i-1)<<endl;
-
-        //cout<<L.row(i).cols(0,i-1) *x.rows(0,i-1)<<endl;
-
-        //x(i)=  ( Bp(i)   -   L(i,1:i-1)*x(1:i-1)   )    /    L(i,i);
-        //mat aux = ( Ener_obj(i)   -  ( L.row(i).cols(0,i-1) * x.rows(0,i-1) )  )    /    L(i,i);
-
-        double lal = 0;
-        for (int r = 0 ; r<= (i-1) ; r++)
-        {
-            lal = lal + L(i,r) * x(r)   ;
-        }
-
-        x(i) = ( Ener_obj(i)   -  ( lal )  )    /    L(i,i);
-
-        //cout<<aux<<endl;
-        //cout<<"2a"<<endl;
-        cout<<i<<endl;
-        //x(i)= aux(0);
-        //cout<<"1a"<<endl;
-
-    }
-    Y = x;
-
-    cout<<"pa delante"<<endl;
-
-    cout<<x<<endl;
-
-
-
-
-    // perform backwards substitution
-    x.set_size(CANTIDADdEpMTS,1);
-    x.zeros();
-
-    x(n)=Y(n)/U(n,n);
-    for (int i=n-1 ; i >=0 ; i--)
-    {
-           //x(i)=(Y(i)-U(i,i+1:n)*x(i+1:n))/U(i,i);
-        //mat aux = ( Y(i)   -   U( span(i,i), span(i+1,n) ) *x.cols(i+1,n)   )    /    U(i,i);
-        mat aux = ( Y(i)   -  ( U.row(i).cols(i+1,n) * x.rows(i+1,n) )  )    /    U(i,i);
-        x(i)= aux(0);
-    }
-    cout<<"pa tra"<<endl;
-
-    colvec Ce = x;
-
-
-
-
-
-
-
-    cout<<Ce<<endl;
-
-
-
-
-    colvec lala = Energia_calib[cab_num_act].t() * Ce;
-
-
-
-
+    // Calculo la suma
+    rowvec Energia_calib_suma = sum(Energia_calib_aux,0);
 
     // Creo el vector de centros para el histograma
-    colvec centros_hist_2 = linspace<vec>(0,1024,BinsHist);
-    // Calculo el histograma
-    espectro_suma_crudo = hist(lala.t(), centros_hist_2);
+    colvec centros_hist = linspace<vec>(0,1024,BinsHist);
 
+    // Calculo el espectro
+    urowvec espectro_suma = hist(Energia_calib_suma, centros_hist);
+
+
+    // Busco el pico
+    struct Pico_espectro pico_calib;
+    double aux_espectro[BinsHist];
     // Calculo el FWHM
     for (int i=0 ; i < BinsHist ; i++)
     {
-        aux_espectro[i] = espectro_suma_crudo(i);
+        aux_espectro[i] = espectro_suma(i);
     }
-    pico_sin_calib = Buscar_Pico(aux_espectro, BinsHist);
-    cout<<"Sin Calibrar:"<<endl;
-    cout<<"FWHM: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
+    pico_calib = Buscar_Pico(aux_espectro, BinsHist);
+    cout<<"Primer paso Calibrar:  "<<pico_calib.FWHM*100<<"%"<<endl;
+
+    // Guardo los parametros iniciales
+    double FWHM_mejor = pico_calib.FWHM;
+    colvec Ce_mejor = Ce_arma;
+
+
+    // Itero para mejorar el FWHM
+    for(int iter_act = 0 ; iter_act < MAX_ITER_ENERGIA ; iter_act ++)
+    {
+
+        // Recorto los eventos dentro del FWTM de la matriz de eventos pre-calibrada
+        mat Energia_calib_FWHM;
+        uvec indices_aux = find(Energia_calib_suma > centros_hist(pico_calib.limites_FWTM[0]));
+        rowvec suma_aux = Energia_calib_suma.elem(indices_aux).t();
+        Energia_calib_FWHM = Energia_calib_aux.cols(indices_aux);
+        indices_aux = find(suma_aux < centros_hist(pico_calib.limites_FWTM[1]));
+        suma_aux = suma_aux.elem(indices_aux).t();
+        Energia_calib_FWHM = Energia_calib_FWHM.cols(indices_aux);
+
+        // Re-calculo la matrix de energias promedios
+        mat E_prom_PMT_aux;
+        E_prom_PMT_aux.set_size(48,48);
+        urowvec indices_maximo_PMT;
+        mat Eventos_max_PMT;
+        rowvec Fila_max_PMT;
+        double maximo_abs_PMT;
+        double limite_actual;
+        int eventos_centroide;
+        // Busco los elementos centroides de cada PMT
+        for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+        {
+            // Extraigo los eventos en los cuales el PMT fue maximo
+            indices_maximo_PMT = index_max( Energia_calib_FWHM, 0 );
+            indices_aux = find(indices_maximo_PMT == index_PMT_cent);
+            Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux);
+            Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
+
+            // Calculo el maximo valor de energia encontrado en este subset
+            maximo_abs_PMT = Fila_max_PMT.max();
+            limite_actual = maximo_abs_PMT;
+
+            // Itero hasta conseguir la cantidad deseada
+            eventos_centroide = 0;
+
+            while (eventos_centroide < NUM_EVENT_CENTRO)
+            {
+                // Cuento cuantos eventos encontre hasta el punto actual
+                indices_aux = find(Fila_max_PMT > limite_actual);
+                eventos_centroide = indices_aux.n_elem;
+
+                // Actualizo el limite
+                limite_actual = limite_actual - (maximo_abs_PMT*0.01);
+            }
+
+            // Me quedo con los eventos en el centroide
+            Eventos_max_PMT =  Eventos_max_PMT.cols(indices_aux);
+
+            // Calculo la energia promedio de todos los PMT para este centroide
+            E_prom_PMT_aux.row(index_PMT_cent) = mean(Eventos_max_PMT,1).t();
+
+        }
+
+
+
+        // Re calculo el nuevo Ce
+        Ce_iter = solve(E_prom_PMT_aux,Ener_obj);
+        // Actualizo al Ce recien calculado
+        Ce_arma = Ce_arma%Ce_iter;
+
+        // Paso todos los eventos a eventos en energía calibrada
+        Energia_calib_aux.each_col() %= Ce_iter;
+        // Calculo la suma
+        Energia_calib_suma = sum(Energia_calib_aux,0);
+        // Calculo el espectro
+        espectro_suma = hist(Energia_calib_suma, centros_hist);
+        // Calculo el FWHM
+        for (int i=0 ; i < BinsHist ; i++)
+        {
+            aux_espectro[i] = espectro_suma(i);
+        }
+        pico_calib = Buscar_Pico(aux_espectro, BinsHist);
+
+
+        if (FWHM_mejor > pico_calib.FWHM)
+        {
+            FWHM_mejor = pico_calib.FWHM;
+            Ce_mejor = Ce_arma;
+        }
+        if ((FWHM_mejor - pico_calib.FWHM)*(FWHM_mejor - pico_calib.FWHM) < 0.001*0.001)
+        {
+            break;
+        }
+
+        cout<<"Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
+
+        // que no se apague la pantalla
+        qApp->processEvents();
+
+
+    }
+
+
+    for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
+    {
+        Ce[cab_num_act][i] = Ce_mejor(i);
+    }
+
+    cout<<"Final: "<<pico_calib.FWHM*100<<"%"<<endl;
 
 
     // ----------------------- Ploteo
     // Paso los vectores a Qvector para plotear
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist_2(i);}
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-    nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1);
+    QVector<double> aux_qvec_cent(BinsHist);
+    for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+    QVector<double> aux_qvec(BinsHist);
+    for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma(i);}
+
+    QString nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(FWHM_mejor*100) + "%";
     // Parametros del ploteo
+    QVector<int> param(6);
     param[0]=0;//R
     param[1]=61;//G
     param[2]=245;//B
@@ -974,6 +788,11 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 
 
+
+bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
+{
+    return 1;
+}
 
 
 
@@ -1011,21 +830,10 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     int ind_estado = 0;
     int outpoint = -1, low_extrema = -1;
 
-    //for(int i=0; i<1024 ;i++) { cout<<Canales[i]<<","; }
-    //cout<<endl;
-
     // Seteo el limite
     // Copio los canales a una matriz
     mat Canales_mat(Canales,num_canales,1);
     min_count_diff = (int) (sum(sum(Canales_mat))*0.003);
-    //double aux_suma = 0;
-    //for(int i=0; i<num_canales ; i++){aux_suma = aux_suma + Canales[i];}
-    //min_count_diff = aux_suma*0.003;
-    cout<<"minimooooo "<<min_count_diff<<" ' "<<(sum(sum(Canales_mat)))<<endl;
-
-
-
-
 
     // La busqueda arranca en el ultimo canal
     for (int i = num_canales ; i >= window_size ; i--)
@@ -1072,10 +880,6 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         {
             if( Estados[0] == 1 && Estados[1] == 0 && Estados[2] == -1 &&  (Estados[3] == 1 || Estados[3] == 0 ) )
             {
-                cout<<(i - (2*window_size) - span)<<endl;
-                cout<<(i)<<endl;
-                //outpoint = (i - (2*window_size) - span) + ((2*window_size) - span)/2;
-
                 // Retorno lo que encontre
                 low_extrema = (i - (2*window_size) - span);
                 outpoint = i;
@@ -1102,124 +906,110 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
 
 
+    // Fitteo la curva gausseana por newton-gauss by Juan
+    int NP = 3;
+
+    // Me quedo solo con los eventos en el limite encontrado
+    //int ndatos = Pico_calculado.limites_Pico[1] - Pico_calculado.limites_Pico[0];
+    int ndatos = (num_canales-1) - (low_extrema-window_size);
+    double* x;
+    double* y;
+    x = new double[ndatos];
+    y = new double[ndatos];
+    for (int i=0 ; i<ndatos ; i++)
+    {
+        x[i] = (low_extrema-window_size) + i;
+        int aux = x[i];
+        y[i] = Canales[aux];
+    }
+
+
+    // Defino los parametros
     // Una vez encontrado el pico de manera rudimentaria, le fiteo una gauss
     // y sale el armadillo
 
 
     // Me quedo solo con los canales que me interesan, los que estan dentro de las ventanas
-    mat canales_peak;
-    //canales_peak = Canales_mat.rows(low_extrema-window_size,outpoint+window_size);
-    canales_peak = Canales_mat.rows(low_extrema-window_size,num_canales-1);
+    mat canales_peak(y,ndatos,1);
 
     // Maximo de la gausseana
     uword max_idx, std_idx;
     double Gauss_max = canales_peak.max(max_idx);
-
+    double Gauss_mean = max_idx;
     // Busco el 68 % desde el lado de mas alta energia
     uvec mayores_std = find(canales_peak > 0.68*Gauss_max);
     mayores_std.max(std_idx);
-
-    double Gauss_mean = max_idx;
     double Gauss_std = std_idx;
 
-    // Calculo el vector de gauss para varias posiciones de media y distintos desvios
-    int MOV_MEAN = 30, MOV_STD = 12;
-    mat gauss_curve_aux(MOV_MEAN, canales_peak.n_elem);
-    mat Dot_prods(MOV_MEAN,MOV_STD);
-    double Gauss_mean_AUX, Gauss_std_AUX;
+    double p[NP];
+    p[0] = 1;
+    p[1] = Gauss_mean+(low_extrema-window_size);
+    p[2] = Gauss_std*2*3.14;
+    double paso = 0.1;
+    int len = 100;
 
-    for (int k=0 ; k < MOV_STD; k ++)
+    estadogna estado;
+
+    if(inicializargna(&estado,ndatos,NP))
     {
-        // Adquiero el valor de desvio estandar actual
-        Gauss_std_AUX = Gauss_std - (MOV_STD/2) + k;
+        fprintf(stderr,"Sin memoria suficiente\n");
+        Pico_calculado.canal_pico = -1;
+        Pico_calculado.limites_FWHM[0] = 0;
+        Pico_calculado.limites_FWHM[1] = 0;
+        Pico_calculado.limites_FWTM[0] = 0;
+        Pico_calculado.limites_FWTM[1] = 0;
+        Pico_calculado.limites_Pico[0] = 0;
+        Pico_calculado.limites_Pico[1] = 0;
+        return Pico_calculado;
+    }
 
-        for (int j=0 ; j < MOV_MEAN; j ++)
+    double tmp;
+    for(int i=0;i<ndatos;i++)
         {
-            // Adquiero el valor de media actual
-            Gauss_mean_AUX = Gauss_mean - (MOV_MEAN/2) + j;
-
-            for (int i=0 ; i < canales_peak.size() ; i ++)
-            {
-                gauss_curve_aux(j,i) = (1/sqrt(2*Gauss_std_AUX*Gauss_std_AUX*3.1415))*exp(-( ( (i -Gauss_mean_AUX) * (i -Gauss_mean_AUX) ) / (2*Gauss_std_AUX*Gauss_std_AUX) ));
-            }
-
-            // Normalizo la curva calculada
-            float aux_max_gen = gauss_curve_aux.row(j).max();
-            for (int i=0 ; i < canales_peak.size() ; i ++)
-            {
-                gauss_curve_aux(j,i) = gauss_curve_aux(j,i) * (Gauss_max / aux_max_gen);
-            }
-
-            // Calculo la correlacion entre la campana propuesta y la medicion
-            Dot_prods(j,k) = norm_dot(canales_peak,gauss_curve_aux.row(j));
+            if(!i) tmp = y[i];
+            if(i && y[i]>tmp) tmp=y[i];
         }
-    }
-
-    // Busco el máximo
-    uword dot_max_idx = Dot_prods.index_max();
-    uvec sub = ind2sub( arma::size(Dot_prods), dot_max_idx );
-
-    // Lo paso a desvio y media
-    Gauss_std_AUX = Gauss_std - (MOV_STD/2) + sub(1);
-    Gauss_mean_AUX = Gauss_mean - (MOV_MEAN/2) + sub(0);
+    for(int i=0;i<ndatos;i++)  y[i]/=tmp;
 
 
-    /*
-    cout << Gauss_std_AUX<<endl;
-    cout << Gauss_mean_AUX<<endl;
+    //for (int i = 0 ; i < ndatos ; i++) cout<<y[i]<<endl;
+    //for (int i = 0 ; i < ndatos ; i++) cout<<f_gauss(x[i],p)<<endl;
 
-    for (int i=0 ; i < canales_peak.size() ; i ++)
+
+
+    double sseprev=0.0;
+    for(int i=0,sseprev=0.0;i<len;i++)
     {
-        gauss_curve_aux(1,i) = (1/sqrt(2*Gauss_std_AUX*Gauss_std_AUX*3.1415))*exp(-( ( (i -Gauss_mean_AUX) * (i -Gauss_mean_AUX) ) / (2*Gauss_std_AUX*Gauss_std_AUX) ));
+        double sse = sumacuadrados(x,y,ndatos,p,&AutoCalib::f_gauss);
+        printf("(%d)\tsse: %f\n",i+1,sse);
+        if(gaussnewton(x,y,ndatos,p,NP,paso,&AutoCalib::f_gauss,&AutoCalib::df_gauss,&estado)<0) break;
+        if(sse>sseprev && i) break;
+        sseprev=sse;
     }
+    //printf("\n\n");
+    //printf("ym: %f\n",tmp);
+    //for(int i=0;i<NP;i++)
+    //{
+    //    printf("p%d: %f\n",i,p[i]);
+    //}
+    //printf("%0.01f\n",p[1]+(double)min);
+    liberargna(&estado);
+    delete(x);
+    delete(y);
 
-    // normalizo
-    float aux_max_gen = gauss_curve_aux.row(1).max();
-    for (int i=0 ; i < canales_peak.size() ; i ++)
-    {
-        gauss_curve_aux(1,i) = gauss_curve_aux(1,i) * (Gauss_max / aux_max_gen);
-    }
-
-    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(1,i)<<","; }
-    cout<<endl;
-
-
-
-
-
-    cout<<Gauss_mean<<endl;
-    cout<<Gauss_std<<endl;
-    cout<<Gauss_max<<endl;
-
-
-    for(int i=0; i<canales_peak.size();i++) { cout<<canales_peak[i]<<","; }
-    cout<<endl;
-
-    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(5,i)<<","; }
-    cout<<endl;
-    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(15,i)<<","; }
-    cout<<endl;
-    for(int i=0; i<gauss_curve_aux.n_cols ;i++) { cout<<gauss_curve_aux(24,i)<<","; }
-    cout<<endl;
-    */
-
-    // Retorno el valor de la media de gauss calculada
-    //return low_extrema+window_size+Gauss_mean_AUX;
-
-    //return low_extrema-window_size+Gauss_mean_AUX;
-    Pico_calculado.canal_pico = low_extrema-window_size+Gauss_mean_AUX;
+    Pico_calculado.canal_pico = p[1];
 
 
 
     double maximo_pico = canales_peak.max();
+
     // Calculo el FWHM
     int i = 0;
     while (Pico_calculado.limites_FWHM[0] == 0)
     {
         if (maximo_pico*0.5 >=  Canales_mat[Pico_calculado.canal_pico - i]  )
         {
-           Pico_calculado.limites_FWHM[0] =  Pico_calculado.canal_pico - i +1
-                   ;
+           Pico_calculado.limites_FWHM[0] =  Pico_calculado.canal_pico - i +1;
         }
         i++;
     }
@@ -1510,6 +1300,32 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
  * -------------------------------------------------------------------
  */
 
+void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
+{
+    QString nombre_cab = QString::number(cab_num_act+1);
+    QString path_salida = "Salidas/";
+
+    if (tipo[0] == 1)
+    {
+        QString nombre_ener = path_salida+"Coef_Energia_Cabezal_"+nombre_cab+".txt";
+
+        QFile file(nombre_ener);
+
+        if (file.open(QIODevice::ReadWrite))
+        {
+            QTextStream stream(&file);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                stream << Ce[cab_num_act][i]  << endl;
+            }
+        }
+
+    }
+
+
+}
+
+
 
 
 void AutoCalib::plot_MCA(QVector<double> hits, QVector<double> channels_ui, QCustomPlot *graph, QString graph_legend, QVector<int> param, bool clear )
@@ -1786,52 +1602,296 @@ unsigned char * AutoCalib::Trama(unsigned char *tramaEntrada,int tamanioTramaEnt
 
 
 /* -------------------------------------------------------------------
- * --------------------Matematika ------------------------------------
+ * --------------------Newton-Gauss Juan -----------------------------
  * -------------------------------------------------------------------
  */
 
-arma::mat LU_solve(const arma::mat &A,const arma::mat &B)
+
+double AutoCalib::f_gauss(double X,double *P)
 {
+    return P[0]*exp(-pow((X-P[1])/P[2],2));
+}
 
-    mat L, U, P, Y;
+double AutoCalib::df_gauss(double X, double *P, int nP)
+{
+    double ret = 0.0;
+        switch(nP)
+        {
+            case 0: ret=exp(-pow((X-P[1])/P[2],2)); break;
+            case 1: ret=P[0]*(2.0*(X-P[1])/pow(P[2],2))*exp(-pow((X-P[1])/P[2],2));break;
+            case 2: ret=P[0]*2.0*pow(X-P[1],2)*pow(P[2],-3)*exp(-pow((X-P[1])/P[2],2)); break;
+        }
+    return ret;
+}
 
-    lu(L, U, P, A);
-
-    Y = solve(L,B);
-
-    return solve(U,Y);
 
 
+double AutoCalib::sumacuadrados(double *x,  double *y, int ndatos, double *P,double (AutoCalib::*fx)(double X, double *P))
+{
+    int i;
+    double cuadrados=0;
+    for(i=0;i<ndatos;i++)
+        cuadrados+=pow(y[i]-(this->*fx)(x[i],P),2);
+    return cuadrados;
+}
 
+void AutoCalib::jacobiano(double *matriz, double *x, int ndatos, double *P, int nparam, double (AutoCalib::*dfx)(double X, double *P, int nP))
+{
+    int i,j;
+    for(i=0; i<ndatos; i++)
+        for(j=0; j<nparam; j++)
+        setelemento(matriz,i,j,ndatos,nparam,(this->*dfx)(x[i],P,j));
+}
+
+int AutoCalib::inicializargna(estadogna *estado, int ndatos, int nparam)
+{
+    estado->Z0 = (double*) malloc(sizeof(double)*ndatos*nparam);
+    estado->Z0T= (double*) malloc(sizeof(double)*nparam*ndatos);
+    estado->Z0C= (double*) malloc(sizeof(double)*nparam*nparam);
+    estado->Z0I= (double*) malloc(sizeof(double)*nparam*nparam);
+    estado->D  = (double*) malloc(sizeof(double)*ndatos*1);
+    estado->ZTD= (double*) malloc(sizeof(double)*nparam*1);
+    estado->A  = (double*) malloc(sizeof(double)*nparam*1);
+    if(!estado->Z0)		return -1;
+    if(!estado->Z0T) 	return -1;
+    if(!estado->Z0C)	return -1;
+    if(!estado->Z0I)	return -1;
+    if(!estado->D)		return -1;
+    if(!estado->ZTD)	return -1;
+    if(!estado->A)		return -1;
+    return 0;
+}
+
+void AutoCalib::liberargna(estadogna *estado)
+{
+    free(estado->Z0);
+    free(estado->Z0T);
+    free(estado->Z0C);
+    free(estado->Z0I);
+    free(estado->D);
+    free(estado->ZTD);
+    free(estado->A);
+}
+
+int AutoCalib::gaussnewton(	double	*x,
+            double	*y,
+            int 	ndatos,
+            double	*p,
+            int 	nparam,
+            double 	paso,
+            double 	(AutoCalib::*fx)(double X, double *P),
+            double (AutoCalib::*dfx)(double X, double *P,int nP),
+            estadogna *estado)
+{
+    int i,j;
+    jacobiano(estado->Z0,x,ndatos,p,nparam,dfx);
+    trasponerMatriz(estado->Z0,ndatos,nparam,estado->Z0T);
+    multiplicarMatrices(estado->Z0T,nparam,ndatos,estado->Z0,ndatos,nparam,estado->Z0C);
+    matrizInversa(estado->Z0C,nparam,estado->Z0I);
+    for(i=0;i<nparam;i++)
+        for(j=0;j<nparam;j++)
+            if(isnan(getelemento(estado->Z0I,i,j,nparam,nparam)))
+                return -1;
+    for(i=0;i<ndatos;i++) setelemento(estado->D,i,0,ndatos,1,y[i]-(this->*fx)(x[i],p));
+    multiplicarMatrices(estado->Z0T,nparam,ndatos,estado->D,ndatos,1,estado->ZTD);
+    multiplicarMatrices(estado->Z0I,nparam,nparam,estado->ZTD,nparam,1,estado->A);
+    productoporescalarMatriz(estado->A,nparam,1,estado->A,paso);
+    sumarMatrices(estado->A,nparam,1,p,p);
+    return 0;
+}
+
+void AutoCalib::acotarparametros(double *p, double *pmax, double *pmin, int nparam)
+{
+    int i;
+    for(i=0;i<nparam;i++)
+    {
+        if(p[i]>pmax[i]) p[i]=pmax[i];
+        if(p[i]<pmin[i]) p[i]=pmin[i];
+    }
 }
 
 
 
 
+double AutoCalib::getelemento(double *matriz, int fila, int col, int nFila, int nCol)
+{
+    return matriz[fila*nCol+col];
+}
 
+void AutoCalib::setelemento(double *matriz, int fila, int col, int nFila, int nCol,double val)
+{
+    matriz[fila*nCol+col]=val;
+}
 
-arma::mat qr_solve2(const arma::mat &A,const arma::mat &B)
+void AutoCalib::imprimirMatriz(double *matriz, int nFilas, int nCols,int decimales,char formato)
+{
+    char buf[16];
+    int i,j;
+
+    memset(buf,0,16);
+    sprintf(buf,"%%0.0%d%c\t",decimales,formato);
+    for(i=0;i<nFilas;i++)
     {
-    arma::mat Q, R;
-    arma::qr(Q,R,A);
-    unsigned int s = R.n_rows-1;
-    arma::mat R_ = R( arma::span(0,s), arma::span(0,s-1) ) ;
+        for(j=0;j<nCols;j++)
+            printf(buf,getelemento(matriz,i,j,nFilas,nCols));
+        printf("\n");
+    }
+}
 
-    R_ = arma::join_horiz(R_,R.col(s+1));
-    arma::mat newB = Q.t()*B;
-    arma::mat X(s+1,1);
+double* AutoCalib::llenarMatriz(double *matriz,int nFilas,int nCols, double val)
+{
+    int i,j;
+    for(i=0;i<nFilas;i++)
+        for(j=0;j<nCols;j++)
+            setelemento(matriz,i,j,nFilas,nCols,val);
+    return matriz;
+}
 
-    for (int i = s; i >= 0; i--)
+double* AutoCalib::identidadMatriz(double *matriz,int n, double val)
+{
+    int i,j;
+    for(i=0;i<n;i++)
+        for(j=0;j<n;j++)
+            if(i==j)
+                setelemento(matriz,i,j,n,n,val);
+            else
+                setelemento(matriz,i,j,n,n,0.0);
+    return matriz;
+}
+
+double* AutoCalib::productoporescalarMatriz(double *morg,int nFilas, int nCols, double *mdst, double val)
+{
+    int i,j;
+    for(i=0;i<nFilas;i++)
+        for(j=0;j<nCols;j++)
+            setelemento(mdst,i,j,nFilas,nCols,getelemento(morg,i,j,nFilas,nCols)*val);
+    return mdst;
+}
+
+double* AutoCalib::trasponerMatriz(double *morg,int nFilasOrg, int nColsOrg, double *mdst)
+{
+    int i,j;
+    for(i=0;i<nFilasOrg;i++)
+        for(j=0;j<nColsOrg;j++)
+            setelemento(mdst,j,i,nColsOrg,nFilasOrg,getelemento(morg,i,j,nFilasOrg,nColsOrg));
+    return mdst;
+}
+
+double* AutoCalib::sumarMatrices(double *mop1,int nFilasOrg, int nColsOrg, double *mop2, double *mdst)
+{
+    int i,j;
+    for(i=0;i<nFilasOrg;i++)
+        for(j=0;j<nColsOrg;j++)
+            setelemento(mdst,i,j,nFilasOrg,nColsOrg,getelemento(mop1,i,j,nFilasOrg,nColsOrg)+getelemento(mop2,i,j,nFilasOrg,nColsOrg));
+    return mdst;
+}
+
+double* AutoCalib::restarMatrices(double *mop1,int nFilasOrg, int nColsOrg, double *mop2, double *mdst)
+{
+    int i,j;
+    for(i=0;i<nFilasOrg;i++)
+        for(j=0;j<nColsOrg;j++)
+            setelemento(mdst,i,j,nFilasOrg,nColsOrg,getelemento(mop1,i,j,nFilasOrg,nColsOrg)-getelemento(mop2,i,j,nFilasOrg,nColsOrg));
+    return mdst;
+}
+
+double* AutoCalib::multiplicarMatrices(double *mop1,int nFilasop1, int nColsop1, double *mop2, int nFilasop2, int nColsop2, double *mdst)
+{
+    int i,j,k;
+    double tmp;
+    if(nColsop1!=nFilasop2) return NULL;
+
+    for(i=0;i<nFilasop1;i++)
+        for(j=0;j<nColsop2;j++)
         {
-        X[i] = newB[i];
-        for (int j = s; j != i; j--)
-            X[i] = X[i] - R_(i,j) * X[j];
-        X[i] = X[i]/R_(i,i);
+            tmp = 0.0;
+            for(k=0;k<nColsop1;k++)
+                tmp+=getelemento(mop1,i,k,nFilasop1,nColsop1)*getelemento(mop2,k,j,nFilasop2,nColsop2);
+            setelemento(mdst,i,j,nFilasop1,nColsop2,tmp);
+        }
+    return mdst;
+}
+
+double* AutoCalib::permutarMatriz(double *matriz,int fila1, int fila2, int nFilas, int nCols)
+{
+    int i;
+    double *filaswap=  (double*) malloc(sizeof(double)*nCols);
+    if(!filaswap) return NULL;
+    for(i=0;i<nCols;i++)
+    {
+        setelemento(filaswap,0,i,1,nCols,getelemento(matriz,fila1,i,nFilas,nCols));
+        setelemento(matriz,fila1,i,nFilas,nCols,getelemento(matriz,fila2,i,nFilas,nCols));
+        setelemento(matriz,fila2,i,nFilas,nCols,getelemento(filaswap,0,i,1,nCols));
+
+    }
+    free(filaswap);
+    return matriz;
+}
+
+double AutoCalib::determinante(double *matriz, int n)
+{
+    int i,j,k,s;
+    double r;
+    double d;
+    double *aux =  (double*) malloc(sizeof(double)*n*n);
+    if(!aux) return 0.0;
+    memcpy(aux,matriz,sizeof(double)*n*n);
+
+    //La eliminación trula con un cero en la diagonal. Permuto filas.
+    for(i=0,s=0;i<n;i++)
+        if(fabs(getelemento(aux,i,i,n,n))<1e-20)
+            for(j=i+1;j<n;j++)
+                if(fabs(getelemento(aux,j,i,n,n))>=1e-20)
+                {
+                    permutarMatriz(aux,i,j,n,n);
+                    s^=1;
+                    break;
+                }
+    for(i=0;i<n;i++)
+            for(j=0;j<n;j++)
+                    if(j>i)
+            {
+                r = getelemento(aux,j,i,n,n)/getelemento(aux,i,i,n,n);
+                        for(k=0;k<n;k++)
+                    setelemento(aux,j,k,n,n,getelemento(aux,j,k,n,n)-r*getelemento(aux,i,k,n,n));
+            }
+    d=1.0;
+    for(i=0;i<n;i++)
+        d*=getelemento(aux,i,i,n,n);
+    free(aux);
+    return (s)?-d:d;
+}
+
+double* AutoCalib::matrizmenorMatriz(double *matriz, int nofila, int nocol, int nFilas, int nCols,double *mdst)
+{
+    int i,j,k,l;
+    for(i=0,k=0;i<nFilas;i++)
+        if(i!=nofila)
+        {
+            for(j=0,l=0;j<nCols;j++)
+                if(j!=nocol)
+                    setelemento(mdst,k,l++,nFilas-1,nCols-1,getelemento(matriz,i,j,nFilas,nCols));
+            k++;
         }
 
-    arma::mat res = X( arma::span(0,s-1), arma::span(0,0) ) ;
+    return mdst;
+}
 
-    res =  arma::join_vert(res,arma::mat(1,1, arma::fill::zeros));
-    res = arma::join_vert(res,X.row(s));
-    return res;
-    }
+double* AutoCalib::matrizInversa(double *matriz,int n, double *inversa)
+{
+    int i,j;
+    double tmp;
+    double *min =  (double*) malloc(sizeof(double)*(n-1)*(n-1));
+    double det=determinante(matriz,n);
+    if(fabs(det)<1e-20 || !min) return NULL;
+    for(i=0;i<n;i++)
+        for(j=0;j<n;j++)
+        {
+            tmp = determinante(matrizmenorMatriz(matriz,i,j,n,n,min),n-1);
+            if(((i+j)%2)) tmp = -tmp;
+            tmp/=det;
+            setelemento(inversa,j,i,n,n,tmp);
+        }
+    free(min);
+    return inversa;
+}
