@@ -70,6 +70,9 @@
 
 #define     PORCENTUAL_ENERGIA_VECINO           40
 
+#define     PMTs_X                              8
+#define     PMTs_Y                              6
+
 using namespace arma;
 
 namespace ap {
@@ -190,6 +193,11 @@ namespace ap {
             double Ce[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
             // Matriz de desvios de tiempos en centroide
             mat desv_temp_media_central[CANTIDADdEcABEZALES];
+            // Coeficientes de Tiempo
+            double Ct[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
+            // Coeficientes de posicion
+            double Cx[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
+            double Cy[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
 
             // Preprocesamiento de datos planar
             bool preprocesar_info_planar(int cab_num_act);
@@ -197,6 +205,8 @@ namespace ap {
             bool calibrar_fina_energia(int cab_num_act);
             // Calibración fina de tiempos
             bool calibrar_fina_tiempos(int cab_num_act);
+            // Calibración fina de posiciones
+            bool calibrar_fina_posiciones(int cab_num_act);
             // Recursiva tiempo
             struct tiempos_recursiva tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist );
             // Guardar tablas

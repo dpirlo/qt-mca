@@ -464,6 +464,9 @@ bool AutoCalib::calibrar_fina(void)
             // Calibro en tiempos
             calibrar_fina_tiempos(cab_num_act);
 
+            // Calibro en posicion
+            calibrar_fina_posiciones(cab_num_act);
+
             // Guardo
             bool tipo[3] = {1,1,1};
             guardar_tablas(cab_num_act, tipo);
@@ -640,14 +643,22 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
             uvec indices_keep = find(Eventos_max_PMT.row(i) >= (porc_ener_aux/100)*mean(Eventos_max_PMT.row(index_PMT_cent)) );
 
             // Calculo la media del mismo
-            //double desv_temp_media = mean(dist_aux);
+            double desv_temp_media = mean(dist_aux);
 
             // Calculo el desvio
-            //double desv_temp_std = stddev(dist_aux);
+            double desv_temp_std = stddev(dist_aux);
 
             if (indices_keep.n_elem > 0)
             {
+                /*
+                // Un poco de integridad estadistica (TEST)
+                if (   ((desv_temp_std/sqrt(dist_aux.n_elem))/desv_temp_media) > 0.5    )
+                    desv_temp_media_central[cab_num_act](i,index_PMT_cent) = mean(dist_aux.elem(indices_keep));
+                else
+                    desv_temp_media_central[cab_num_act](i,index_PMT_cent) = datum::nan;
+                */
                 desv_temp_media_central[cab_num_act](i,index_PMT_cent) = mean(dist_aux.elem(indices_keep));
+
             }
             else
             {
@@ -841,10 +852,9 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
 {
-    cout<<desv_temp_media_central[cab_num_act]<<endl;
+    //cout<<desv_temp_media_central[cab_num_act]<<endl;
     // Bienvenido a la calibracion en tiempo, usted esta a punto de presenciar una funcion
-    // recursiva, ¿que, que digo? asi es recursiva, no leyo mal, un ejercicio de intrepido
-    // si los hay. Adelante disfrute comprendiendo el codigo.
+    // recursiva, que la fuerza lo acompañe.
 
 
     // PMT de referencia para la calibración
@@ -872,16 +882,17 @@ bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
     struct tiempos_recursiva Tiempos_finales = tiempos_a_vecino( PMT_Ref,  Correccion_Temporal,  Corregido,  Distancia,  desv_temp_media_central[cab_num_act] );
 
 
-    cout<<Tiempos_finales.Correccion_Temporal_out<<endl;
-    cout<<Tiempos_finales.Corregido_out<<endl;
-    cout<<Tiempos_finales.Distancia_out<<endl;
-
     // Para tener todos coeficientes todos positivos vuelvo a ajustar los
     // tiempos pero ahora con respecto al PMT mas rápido. Esto es necesario para
     // la correccion dentro del cabezal.
-    //time_corr = min(Correccion_Temporal_out);
+    double time_corr = min(Tiempos_finales.Correccion_Temporal_out);
 
-    //Correccion_Temporal_out = round(Correccion_Temporal_out + (-time_corr));
+    Tiempos_finales.Correccion_Temporal_out = round(Tiempos_finales.Correccion_Temporal_out + (-time_corr));
+
+    for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
+    {
+        Ct[cab_num_act][i] = Tiempos_finales.Correccion_Temporal_out(i);
+    }
 
     return 1;
 }
@@ -889,8 +900,6 @@ bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
 
 struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist )
 {
-
-    //cout<<"Recursandoooooo porrrr "<< PMT_Ref+1 <<endl;
 
     struct tiempos_recursiva salida_act;
 
@@ -925,7 +934,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
         N_Vecinos_aux = 4;
     }
 
-   // cout<<"tuto "<< N_Vecinos_aux <<endl;
 
     // Elimino los vecinos que no existan
     int N_vecinos = 0;
@@ -950,8 +958,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
     delete(Vecinos_aux);
 
-  //  cout<<"Vecinos sacadosss, Numero: "<<N_vecinos<<endl;
-
 
     // Elimino los vecinos cuya distancia a la referencia sea mejor que la
     // mia, ya que estaria volviendo hacia atras.
@@ -961,7 +967,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
         if (Distancia(Vecinos[i]) < Distancia(PMT_Ref))
         {
             kill_count ++;
-            //cout<<"--------asd   "<<i<<endl;
         }
     }
     int* label_matar;
@@ -977,7 +982,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
             if (Distancia(Vecinos[i]) < Distancia(PMT_Ref))
             {
                 label_matar[kill_count-1] = i;
-                //cout<<"--------sss   "<<i<<endl;
                 kill_count-- ;
             }
         }
@@ -998,7 +1002,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
             {
                 Vecinos_finales[cuenta_pasa] = Vecinos[i];
                 cuenta_pasa++ ;
-                //cout<<"--------ttt   "<<i<<endl;
             }
 
         }
@@ -1010,19 +1013,9 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
     }
 
-    //cout<<"Vecinos sacadosss  V2!, Numero: "<<N_vecinos<<endl;
-
     // Proceso si quedaron vecinos
     if (N_vecinos > 0 )
     {
-/*
-        cout<<N_vecinos<<" Vecinos en procesooo: ";
-        for (int i = 0 ; i < N_vecinos ; i++)
-        {
-            cout<<Vecinos[i]+1<<" - ";
-        }
-        cout<<endl;
-*/
 
 
         // Ajusto todos los vecinos a la referencia
@@ -1041,7 +1034,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
                 // Le asigno la distancia al PMT de referencia original.
                 Distancia(Vecinos[i]) = Distancia(PMT_Ref)+1;
 
-               // cout<<"          Crregido "<<Vecinos[i]+1<<"  valor  "<<Correccion_Temporal(Vecinos[i])<<endl;
             }
             // Estoy en una iteracion cuya corrección es mas cercana a la
             // referencia original que cuando se le asigno la corrección
@@ -1054,8 +1046,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
                 Distancia(Vecinos[i]) = Distancia(PMT_Ref)+1;
             }
         }
-
-       // cout<<"Vecinos ajustadoss"<<endl;
 
 
         // Ejecuto nuevamente la funcion para los vecinos encontrados,
@@ -1076,7 +1066,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
         Distancia_aux.zeros(N_vecinos,CANTIDADdEpMTS);
         Distancia_aux = Distancia_aux + 9999;
 
-   //     cout<<"Recursividad preparadaaaa"<<endl;
 
         // Ejecuto recursividad
         for (int i=0 ; i < N_vecinos ; i++)
@@ -1084,8 +1073,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
                 struct tiempos_recursiva Tiempos_aux = tiempos_a_vecino(Vecinos[i], Correccion_Temporal, Corregido, Distancia, desv_temp_max_hist);
 
-        //        cout<<"Sali de recusividaddddd"<<endl;
-                //cout<<Tiempos_aux.Correccion_Temporal_out<<endl;
 
                 // Guardo los resultados del camino de este vecino
                 Correcciones_vecinos.row(i) = Tiempos_aux.Correccion_Temporal_out;
@@ -1094,7 +1081,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
         }
 
-     //   cout<<"Sali de TODA recusividaddddd"<<endl;
 
 
         // Creo salidas
@@ -1108,7 +1094,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
         salida_act.Distancia_out.zeros(1,CANTIDADdEpMTS);
         salida_act.Distancia_out = salida_act.Distancia_out + 9999;
 
-    //    cout<<"Salida creada"<<endl;
 
         // Checkeo de correccion, para saber que PMTs ya fueron corregidos
         // al menos una vez
@@ -1122,8 +1107,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
         }
 
-
-           // cout<<"Salida checkeadaaa"<<endl;
 
         // Compilo las salidas de los vecinos en una unica salida
         // conservando los resultados con la menor distancia a la
@@ -1157,8 +1140,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
         }
 
-    //    cout<<"Salida compiladaaa"<<endl;
-
 
 
 
@@ -1166,8 +1147,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
     }
     else
     {
-       //cout<<"SIN VECINOS, ¿SOY EL ULTIMO?"<<endl;
-
         // Si estoy en una punta/PMT sin salida/Vecinos, retorno lo que
         // calcule (Punta de salida de la recursividad).
 
@@ -1176,9 +1155,6 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
         salida_act.Corregido_out = Corregido;
         salida_act.Distancia_out =  Distancia;
 
-        //cout<<Correccion_Temporal<<endl;
-        //cout<<Corregido<<endl;
-        //cout<<Distancia<<endl;
 
     }
 
@@ -1187,8 +1163,156 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
     // Retorno y rezo...
     return salida_act;
 
+
+    /* Y aqui termina esta odisea programatica en C, espero que halla
+     * recorrido sus estados con entusiasmo. Finalmente querria
+     * agradecerle a usted por leer este codigo, ¿Que? ¿yo agradecerle
+     * a usted? Si, esta en lo cierto, ya que disfrute tanto codiando
+     * estas lineas como usted en leerlas.
+     * */
+
 }
 
+
+
+
+
+bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
+{
+    double Lado_PMT = 53.5;
+    double Lado_X_Cabezal = (Lado_PMT*8)/2;
+    double Lado_Y_Cabezal = (Lado_PMT*6)/2;
+
+    // Convierto la matriz de medias en cuentas a medias en energía
+    mat E_prom_PMT_keV = E_prom_PMT[cab_num_act];
+    rowvec Ce_aux(Ce[cab_num_act], CANTIDADdEpMTS);
+    cout<<Ce_aux<<endl;
+    E_prom_PMT_keV = E_prom_PMT_keV.each_row()%Ce_aux;
+    cout<<E_prom_PMT_keV<<endl;
+
+
+    // Configuro los vectores de posición objetivo
+
+    double *vec_y;
+    double step_act = -(Lado_Y_Cabezal-(Lado_PMT/2));
+    int elem_vec = 1;
+    while ((Lado_Y_Cabezal-(Lado_PMT/2)) > step_act)
+    {
+        step_act += Lado_PMT;
+        elem_vec++;
+    }
+    vec_y = new double[elem_vec];
+    vec_y[0] = -(Lado_Y_Cabezal-(Lado_PMT/2));
+    for (int i=1 ; i < elem_vec ; i++)
+    {
+        vec_y[i] = vec_y[i-1] + Lado_PMT;
+    }
+
+    double *vec_x;
+    step_act = -(Lado_X_Cabezal-(Lado_PMT/2));
+    elem_vec = 1;
+    while ((Lado_X_Cabezal-(Lado_PMT/2)) > step_act)
+    {
+        step_act += Lado_PMT;
+        elem_vec++;
+    }
+    vec_x = new double[elem_vec];
+    vec_x[0] = -(Lado_X_Cabezal-(Lado_PMT/2));
+    for (int i=1 ; i < elem_vec ; i++)
+    {
+        vec_x[i] = vec_x[i-1] + Lado_PMT;
+    }
+
+
+    double Fx[CANTIDADdEpMTS], Fy[CANTIDADdEpMTS];
+
+    for (int j = 0 ; j < PMTs_Y ; j++)
+    {
+        for (int i = 0 ; i < PMTs_X ; i++)
+        {
+            Fx[i+((j)*PMTs_X)] = vec_x[i];
+            Fy[i+((j)*PMTs_X)] = vec_y[j];
+        }
+    }
+
+    colvec Fx_arma(Fx, CANTIDADdEpMTS);
+    colvec Fy_arma(Fy, CANTIDADdEpMTS);
+
+    // Despejo el par de ecuaciones
+    //   E_prom * Cx = Fx
+    //   E_prom * Cy = Fy
+    colvec Cx_arma = solve(E_prom_PMT_keV, Fx_arma);
+    colvec Cy_arma = solve(E_prom_PMT_keV, Fy_arma);
+
+    // Paso a double
+    for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
+    {
+        Cx[cab_num_act][i] = Cx_arma(i);
+        Cy[cab_num_act][i] = Cy_arma(i);
+    }
+
+
+
+
+
+
+
+
+    // Calculo la posición de todos los eventos (para el amohadon)
+
+
+
+    // Paso todos los eventos a energía calibrada
+    // Paso toda la matriz de eventos a energia calibrada
+    mat Energia_calib_aux = Energia_calib[cab_num_act];
+    colvec Ce_arma(Ce[cab_num_act], CANTIDADdEpMTS);
+    Energia_calib_aux.each_col() %= Ce_arma;
+
+
+    // Calculo la suma
+    rowvec Energia_calib_suma = sum(Energia_calib_aux,0);
+
+    // Creo el vector de centros para el histograma
+    colvec centros_hist = linspace<vec>(0,1024,BinsHist);
+
+    // Calculo el espectro
+    urowvec espectro_suma = hist(Energia_calib_suma, centros_hist);
+
+
+    // Busco el pico
+    struct Pico_espectro pico_calib;
+    double aux_espectro[BinsHist];
+    // Calculo el FWHM
+    for (int i=0 ; i < BinsHist ; i++)
+    {
+        aux_espectro[i] = espectro_suma(i);
+    }
+    pico_calib = Buscar_Pico(aux_espectro, BinsHist);
+
+    // Recorto los eventos dentro del FWTM de la matriz de eventos pre-calibrada
+    mat Energia_calib_FWHM;
+    uvec indices_aux = find(Energia_calib_suma > centros_hist(pico_calib.limites_FWHM[0]));
+    rowvec suma_aux = Energia_calib_suma.elem(indices_aux).t();
+    Energia_calib_FWHM = Energia_calib_aux.cols(indices_aux);
+    indices_aux = find(suma_aux < centros_hist(pico_calib.limites_FWHM[1]));
+    suma_aux = suma_aux.elem(indices_aux).t();
+    Energia_calib_FWHM = Energia_calib_FWHM.cols(indices_aux);
+
+    mat Posiciones_estimadas(Energia_calib_FWHM.n_cols, 2);
+    for (int ind_evento = 0 ; ind_evento < Energia_calib_FWHM.n_cols ; ind_evento++)
+    {
+        mat aux = Energia_calib_FWHM.col(ind_evento)*Cx_arma.t();
+        Posiciones_estimadas(ind_evento, 0) =  aux(0);
+        aux = Energia_calib_FWHM.col(ind_evento)*Cy_arma.t();
+        Posiciones_estimadas(ind_evento, 1) =  aux(0);
+    }
+
+
+
+
+
+    return 1;
+}
 
 
 
@@ -1699,6 +1823,7 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
     QString nombre_cab = QString::number(cab_num_act+1);
     QString path_salida = "Salidas/";
 
+    // Energías
     if (tipo[0] == 1)
     {
         QString nombre_ener = path_salida+"Coef_Energia_Cabezal_"+nombre_cab+".txt";
@@ -1711,6 +1836,63 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
                 stream << Ce[cab_num_act][i]  << endl;
+            }
+        }
+
+    }
+
+    // Tiempos
+    if (tipo[1] == 1)
+    {
+        QString nombre_tiempo = path_salida+"Tiempos_Cabezal_"+nombre_cab+".txt";
+
+        QFile file(nombre_tiempo);
+
+        if (file.open(QIODevice::ReadWrite))
+        {
+            QTextStream stream(&file);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                stream << Ct[cab_num_act][i]  << endl;
+            }
+        }
+
+    }
+
+    // Posicion
+    if (tipo[2] == 1)
+    {
+        QString nombre_pos_x = path_salida+"Cx_Cabezal_"+nombre_cab+".txt";
+
+        QFile file_x(nombre_pos_x);
+
+        if (file_x.open(QIODevice::ReadWrite))
+        {
+            QTextStream stream(&file_x);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                // Antes de grabar lo saturo en 10 bit
+                int aux_c;
+                aux_c = round(Cx[cab_num_act][i]*1000);
+                int c_sat = std::min(std::max(aux_c, -511), 511);
+                stream <<c_sat<< endl;
+            }
+        }
+
+        QString nombre_pos_y = path_salida+"Cy_Cabezal_"+nombre_cab+".txt";
+
+        QFile file_y(nombre_pos_y);
+
+        if (file_y.open(QIODevice::ReadWrite))
+        {
+            QTextStream stream(&file_y);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                // Antes de grabar lo saturo en 10 bit
+                int aux_c;
+                aux_c = round(Cy[cab_num_act][i]*1000);
+                int c_sat = std::min(std::max(aux_c, -511), 511);
+                stream <<c_sat<< endl;
             }
         }
 
