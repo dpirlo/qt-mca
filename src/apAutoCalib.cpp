@@ -451,11 +451,18 @@ bool AutoCalib::calibrar_fina(void)
             // Cargo el cabezal actual en memoria
             LevantarArchivo_Planar(cab_num_act);
 
+            //cout<<Energia_calib[cab_num_act].col(1)<<endl;
+            //cout<<Tiempos_calib[cab_num_act].col(1)<<endl;
+            //cout<<Tiempos_full_calib[cab_num_act].col(1)<<endl;
+
             // Busco eventos promedio y calculo la posición del pico
             preprocesar_info_planar(cab_num_act);
 
             // Calibro energía
             calibrar_fina_energia(cab_num_act);
+
+            // Calibro en tiempos
+            calibrar_fina_tiempos(cab_num_act);
 
             // Guardo
             bool tipo[3] = {1,1,1};
@@ -536,17 +543,21 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
 
     // Conservo solo los eventos dentro del FWTM
     mat Energia_calib_FWHM;
+    mat Tiempo_calib_FWHM;
     uvec indices_aux = find(Suma_canales > centros_hist(pico_sin_calib.limites_FWTM[0]));
     rowvec suma_aux = Suma_canales.elem(indices_aux).t();
     Energia_calib_FWHM = Energia_calib[cab_num_act].cols(indices_aux);
+    Tiempo_calib_FWHM = Tiempos_full_calib[cab_num_act].cols(indices_aux);
     indices_aux = find(suma_aux < centros_hist(pico_sin_calib.limites_FWTM[1]));
     suma_aux = suma_aux.elem(indices_aux).t();
     Energia_calib_FWHM = Energia_calib_FWHM.cols(indices_aux);
+    Tiempo_calib_FWHM = Tiempo_calib_FWHM.cols(indices_aux);
 
 
 
     urowvec indices_maximo_PMT;
     mat Eventos_max_PMT;
+    mat Tiempos_max_PMT;
     rowvec Fila_max_PMT;
     double maximo_abs_PMT;
     double limite_actual;
@@ -561,6 +572,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
         //cout<<indices_aux.n_elem<<endl;
         Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux);
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
+
+        //Saco tiempos
+        Tiempos_max_PMT =  Tiempo_calib_FWHM.cols(indices_aux);
 
 
         // Calculo el maximo valor de energia encontrado en este subset
@@ -584,11 +598,14 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
 
         // Me quedo con los eventos en el centroide
         Eventos_max_PMT =  Eventos_max_PMT.cols(indices_aux);
+        Tiempos_max_PMT =  Tiempos_max_PMT.cols(indices_aux);
+
+
+
 
         // Ploteo el histograma de suma para este PMT
         suma_aux = sum( Eventos_max_PMT,  0);
         espectro_suma_crudo = hist(suma_aux, centros_hist);
-
         // ----------------------- Ploteo
         // Paso los vectores a Qvector para plotear
         for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
@@ -606,8 +623,41 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
         Espectro_PMT_emergente[cab_num_act].resize(1000,500);
         qApp->processEvents();
 
+
+
         // Calculo la energia promedio de todos los PMT para este centroide
         E_prom_PMT[cab_num_act].row(index_PMT_cent) = mean(Eventos_max_PMT,1).t();
+
+
+        // Calculo la diferencia de tiempo entre el PMT actual y todo el resto.
+        for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
+        {
+            // Le resto a todos los PMT la referencia actual
+            rowvec dist_aux = Tiempos_max_PMT.row(i)-Tiempos_max_PMT.row(index_PMT_cent);
+
+            // Me quedo solo con los eventos con energía superior a una fracción del pico medio observado
+            double porc_ener_aux = PORCENTUAL_ENERGIA_VECINO;
+            uvec indices_keep = find(Eventos_max_PMT.row(i) >= (porc_ener_aux/100)*mean(Eventos_max_PMT.row(index_PMT_cent)) );
+
+            // Calculo la media del mismo
+            //double desv_temp_media = mean(dist_aux);
+
+            // Calculo el desvio
+            //double desv_temp_std = stddev(dist_aux);
+
+            if (indices_keep.n_elem > 0)
+            {
+                desv_temp_media_central[cab_num_act](i,index_PMT_cent) = mean(dist_aux.elem(indices_keep));
+            }
+            else
+            {
+                desv_temp_media_central[cab_num_act](i,index_PMT_cent) = datum::nan;
+            }
+
+
+        }
+
+        //desv_temp_media_central[cab_num_act].row(index_PMT_cent) = mean(Tiempos_max_PMT,1).t();
 
     }
 }
@@ -791,9 +841,353 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
 {
+    cout<<desv_temp_media_central[cab_num_act]<<endl;
+    // Bienvenido a la calibracion en tiempo, usted esta a punto de presenciar una funcion
+    // recursiva, ¿que, que digo? asi es recursiva, no leyo mal, un ejercicio de intrepido
+    // si los hay. Adelante disfrute comprendiendo el codigo.
+
+
+    // PMT de referencia para la calibración
+    int PMT_Ref = 20-1;
+
+    // Preparo el inicio de la funcion recursiva.
+
+    rowvec Correccion_Temporal;
+    Correccion_Temporal.set_size(1,CANTIDADdEpMTS);
+    Correccion_Temporal.zeros(1,CANTIDADdEpMTS);
+
+    rowvec Corregido;
+    Corregido.set_size(1,CANTIDADdEpMTS);
+    Corregido.zeros(1,CANTIDADdEpMTS);
+
+    rowvec Distancia;
+    Distancia.set_size(1,CANTIDADdEpMTS);
+    Distancia.zeros(1,CANTIDADdEpMTS);
+    Distancia = Distancia + 9999;
+
+    Corregido(PMT_Ref) = 1;
+    Distancia(PMT_Ref) = 0;
+
+    // ¡Inicio la recursividad!
+    struct tiempos_recursiva Tiempos_finales = tiempos_a_vecino( PMT_Ref,  Correccion_Temporal,  Corregido,  Distancia,  desv_temp_media_central[cab_num_act] );
+
+
+    cout<<Tiempos_finales.Correccion_Temporal_out<<endl;
+    cout<<Tiempos_finales.Corregido_out<<endl;
+    cout<<Tiempos_finales.Distancia_out<<endl;
+
+    // Para tener todos coeficientes todos positivos vuelvo a ajustar los
+    // tiempos pero ahora con respecto al PMT mas rápido. Esto es necesario para
+    // la correccion dentro del cabezal.
+    //time_corr = min(Correccion_Temporal_out);
+
+    //Correccion_Temporal_out = round(Correccion_Temporal_out + (-time_corr));
+
     return 1;
 }
 
+
+struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist )
+{
+
+    //cout<<"Recursandoooooo porrrr "<< PMT_Ref+1 <<endl;
+
+    struct tiempos_recursiva salida_act;
+
+    // Busco los vecinos inmediatos (NO en diagonales)
+    // El caso de ser un borde es particular, ya que por ejemplo el 40 y el
+    // 41 no serian vecinos, recalculo los vecinos.
+    int *Vecinos_aux;
+    int N_Vecinos_aux = 0;
+    if (PMT_Ref == 8-1 || PMT_Ref == 16-1 || PMT_Ref == 24-1 || PMT_Ref == 32-1 || PMT_Ref == 40-1)
+    {
+        Vecinos_aux = new int[3];
+        Vecinos_aux [0] = PMT_Ref-1;
+        Vecinos_aux [1] = PMT_Ref+8;
+        Vecinos_aux [2] = PMT_Ref-8;
+        N_Vecinos_aux = 3;
+    }
+    else if (PMT_Ref == 9-1 || PMT_Ref == 17-1 || PMT_Ref == 25-1 || PMT_Ref == 33-1 || PMT_Ref == 41-1)
+    {
+        Vecinos_aux = new int[3];
+        Vecinos_aux [0] = PMT_Ref+1;
+        Vecinos_aux [1] = PMT_Ref+8;
+        Vecinos_aux [2] = PMT_Ref-8;
+        N_Vecinos_aux = 3;
+    }
+    else
+    {
+        Vecinos_aux = new int[4];
+        Vecinos_aux [0] = PMT_Ref+1;
+        Vecinos_aux [1] = PMT_Ref-1;
+        Vecinos_aux [2] = PMT_Ref+8;
+        Vecinos_aux [3] = PMT_Ref-8;
+        N_Vecinos_aux = 4;
+    }
+
+   // cout<<"tuto "<< N_Vecinos_aux <<endl;
+
+    // Elimino los vecinos que no existan
+    int N_vecinos = 0;
+    for(int i = 0 ; i < N_Vecinos_aux ; i++ )
+    {
+        if (Vecinos_aux[i] >= 0 && Vecinos_aux[i] < CANTIDADdEpMTS)
+        {
+            N_vecinos++ ;
+        }
+    }
+    int* Vecinos;
+    Vecinos = new int[N_vecinos];
+    int cuenta_pasa = 0;
+    for(int i = 0 ; i < N_Vecinos_aux ; i++ )
+    {
+        if (Vecinos_aux[i] >= 0 && Vecinos_aux[i] < CANTIDADdEpMTS)
+        {
+            Vecinos[cuenta_pasa] = Vecinos_aux[i];
+            cuenta_pasa++;
+        }
+    }
+
+    delete(Vecinos_aux);
+
+  //  cout<<"Vecinos sacadosss, Numero: "<<N_vecinos<<endl;
+
+
+    // Elimino los vecinos cuya distancia a la referencia sea mejor que la
+    // mia, ya que estaria volviendo hacia atras.
+    int kill_count = 0;
+    for ( int i=0 ; i < N_vecinos ; i++ )
+    {
+        if (Distancia(Vecinos[i]) < Distancia(PMT_Ref))
+        {
+            kill_count ++;
+            //cout<<"--------asd   "<<i<<endl;
+        }
+    }
+    int* label_matar;
+    int* Vecinos_finales;
+    if (kill_count > 0)
+    {
+        int N_vecinos_finales = N_vecinos - kill_count;
+        int kill_count_aux = kill_count;
+
+        label_matar = new int[kill_count];
+        for ( int i=0 ; i < N_vecinos ; i++ )
+        {
+            if (Distancia(Vecinos[i]) < Distancia(PMT_Ref))
+            {
+                label_matar[kill_count-1] = i;
+                //cout<<"--------sss   "<<i<<endl;
+                kill_count-- ;
+            }
+        }
+
+
+        Vecinos_finales = new int[N_vecinos_finales];
+        bool matar = 0;
+        cuenta_pasa = 0;
+        for (int i = 0 ; i < N_vecinos ; i++)
+        {
+            matar = 0;
+            for (int j = 0 ; j <kill_count_aux ; j++)
+            {
+                if (i == label_matar[j])
+                    matar = 1;
+            }
+            if (!matar)
+            {
+                Vecinos_finales[cuenta_pasa] = Vecinos[i];
+                cuenta_pasa++ ;
+                //cout<<"--------ttt   "<<i<<endl;
+            }
+
+        }
+
+        delete(Vecinos);
+        Vecinos = Vecinos_finales;
+        N_vecinos = N_vecinos_finales;
+
+
+    }
+
+    //cout<<"Vecinos sacadosss  V2!, Numero: "<<N_vecinos<<endl;
+
+    // Proceso si quedaron vecinos
+    if (N_vecinos > 0 )
+    {
+/*
+        cout<<N_vecinos<<" Vecinos en procesooo: ";
+        for (int i = 0 ; i < N_vecinos ; i++)
+        {
+            cout<<Vecinos[i]+1<<" - ";
+        }
+        cout<<endl;
+*/
+
+
+        // Ajusto todos los vecinos a la referencia
+        for (int i=0 ; i < N_vecinos ; i++)
+        {
+            // Ajusto en los siguientes casos:
+
+            // Nunca fue corregido
+            if ( !Corregido(Vecinos[i]) )
+            {
+                // Asigno la corrección temporal y le sumo la correccion del
+                // PMT de referencia.
+                Correccion_Temporal(Vecinos[i]) = -desv_temp_max_hist(Vecinos[i],PMT_Ref) + Correccion_Temporal(PMT_Ref);
+                // Marco el PMT como correjido
+                Corregido(Vecinos[i]) = 1;
+                // Le asigno la distancia al PMT de referencia original.
+                Distancia(Vecinos[i]) = Distancia(PMT_Ref)+1;
+
+               // cout<<"          Crregido "<<Vecinos[i]+1<<"  valor  "<<Correccion_Temporal(Vecinos[i])<<endl;
+            }
+            // Estoy en una iteracion cuya corrección es mas cercana a la
+            // referencia original que cuando se le asigno la corrección
+            // ya existente.
+            else if (Distancia(Vecinos[i]) > (Distancia(PMT_Ref)+1))
+            {
+                // idem caso anterior
+                Correccion_Temporal(Vecinos[i]) = -desv_temp_max_hist(Vecinos[i],PMT_Ref) + Correccion_Temporal(PMT_Ref);
+                Corregido(Vecinos[i]) = 1;
+                Distancia(Vecinos[i]) = Distancia(PMT_Ref)+1;
+            }
+        }
+
+       // cout<<"Vecinos ajustadoss"<<endl;
+
+
+        // Ejecuto nuevamente la funcion para los vecinos encontrados,
+        // siendo ahora estos mismos el PMT de referencia, ya que quedaron
+        // corregidos por esta llamada.
+
+        // Matriz que va a contener las salidas
+        mat Correcciones_vecinos;
+        Correcciones_vecinos.set_size(N_vecinos,CANTIDADdEpMTS);
+        Correcciones_vecinos.zeros(N_vecinos,CANTIDADdEpMTS);
+
+        mat Corregido_aux;
+        Corregido_aux.set_size(N_vecinos,CANTIDADdEpMTS);
+        Corregido_aux.zeros(N_vecinos,CANTIDADdEpMTS);
+
+        mat Distancia_aux;
+        Distancia_aux.set_size(N_vecinos,CANTIDADdEpMTS);
+        Distancia_aux.zeros(N_vecinos,CANTIDADdEpMTS);
+        Distancia_aux = Distancia_aux + 9999;
+
+   //     cout<<"Recursividad preparadaaaa"<<endl;
+
+        // Ejecuto recursividad
+        for (int i=0 ; i < N_vecinos ; i++)
+        {
+
+                struct tiempos_recursiva Tiempos_aux = tiempos_a_vecino(Vecinos[i], Correccion_Temporal, Corregido, Distancia, desv_temp_max_hist);
+
+        //        cout<<"Sali de recusividaddddd"<<endl;
+                //cout<<Tiempos_aux.Correccion_Temporal_out<<endl;
+
+                // Guardo los resultados del camino de este vecino
+                Correcciones_vecinos.row(i) = Tiempos_aux.Correccion_Temporal_out;
+                Corregido_aux.row(i) = Tiempos_aux.Corregido_out;
+                Distancia_aux.row(i) = Tiempos_aux.Distancia_out;
+
+        }
+
+     //   cout<<"Sali de TODA recusividaddddd"<<endl;
+
+
+        // Creo salidas
+        salida_act.Correccion_Temporal_out.set_size(1,CANTIDADdEpMTS);
+        salida_act.Correccion_Temporal_out.zeros(1,CANTIDADdEpMTS);
+
+        salida_act.Corregido_out.set_size(1,CANTIDADdEpMTS);
+        salida_act.Corregido_out.zeros(1,CANTIDADdEpMTS);
+
+        salida_act.Distancia_out.set_size(1,CANTIDADdEpMTS);
+        salida_act.Distancia_out.zeros(1,CANTIDADdEpMTS);
+        salida_act.Distancia_out = salida_act.Distancia_out + 9999;
+
+    //    cout<<"Salida creada"<<endl;
+
+        // Checkeo de correccion, para saber que PMTs ya fueron corregidos
+        // al menos una vez
+        for (int i=0 ; i < N_vecinos ; i++)
+        {
+            for (int j=0 ; j < CANTIDADdEpMTS ; j++)
+            {
+                if (Corregido_aux(i,j) == 1 || Corregido(j) == 1)
+                    salida_act.Corregido_out(j) = 1;
+            }
+
+        }
+
+
+           // cout<<"Salida checkeadaaa"<<endl;
+
+        // Compilo las salidas de los vecinos en una unica salida
+        // conservando los resultados con la menor distancia a la
+        // referencia.
+        for (int i=0 ; i < CANTIDADdEpMTS ; i++)
+        {
+            // Solo opero si fue corrgido alguna vez.
+            if (salida_act.Corregido_out(i))
+            {
+                rowvec distancia_check;
+                distancia_check.set_size(1,N_vecinos);
+                distancia_check.zeros(1,N_vecinos);
+
+                // Levanto la distancia de correccion del PMT actual que
+                // medieron los caminos de los vecinos.
+                for ( int j=0 ; j< N_vecinos ; j++ )
+                {
+                    distancia_check(j) = Distancia_aux(j,i);
+                }
+
+
+
+                // Busco la minima de todas las distancias
+                int index_nivel = distancia_check.index_min();
+                double nivel = distancia_check.min();
+
+                // Asigno a la salida la distancia menor.
+                salida_act.Distancia_out(i) = nivel;
+                salida_act.Correccion_Temporal_out(i) = Correcciones_vecinos(index_nivel,i);
+            }
+
+        }
+
+    //    cout<<"Salida compiladaaa"<<endl;
+
+
+
+
+
+    }
+    else
+    {
+       //cout<<"SIN VECINOS, ¿SOY EL ULTIMO?"<<endl;
+
+        // Si estoy en una punta/PMT sin salida/Vecinos, retorno lo que
+        // calcule (Punta de salida de la recursividad).
+
+        // Creo salidas
+        salida_act.Correccion_Temporal_out = Correccion_Temporal;
+        salida_act.Corregido_out = Corregido;
+        salida_act.Distancia_out =  Distancia;
+
+        //cout<<Correccion_Temporal<<endl;
+        //cout<<Corregido<<endl;
+        //cout<<Distancia<<endl;
+
+    }
+
+
+
+    // Retorno y rezo...
+    return salida_act;
+
+}
 
 
 

@@ -68,6 +68,8 @@
 #define     NUM_EVENT_CENTRO                    5000
 #define     MAX_ITER_ENERGIA                    25
 
+#define     PORCENTUAL_ENERGIA_VECINO           40
+
 using namespace arma;
 
 namespace ap {
@@ -80,6 +82,13 @@ namespace ap {
         double FWHM;
         double FWTM;
         int limites_Pico[2];
+    };
+
+    // Retorno de la exploracion de tiempos entre PMT
+    struct tiempos_recursiva {
+        rowvec Correccion_Temporal_out;
+        rowvec Corregido_out;
+        rowvec Distancia_out;
     };
 
 
@@ -177,12 +186,19 @@ namespace ap {
 
             // Matriz de energia promedio en centroides
             mat E_prom_PMT[CANTIDADdEcABEZALES];
+            // Coeficientes de energía
             double Ce[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
+            // Matriz de desvios de tiempos en centroide
+            mat desv_temp_media_central[CANTIDADdEcABEZALES];
 
             // Preprocesamiento de datos planar
             bool preprocesar_info_planar(int cab_num_act);
             // Calibración fina de eneregía
             bool calibrar_fina_energia(int cab_num_act);
+            // Calibración fina de tiempos
+            bool calibrar_fina_tiempos(int cab_num_act);
+            // Recursiva tiempo
+            struct tiempos_recursiva tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist );
             // Guardar tablas
             void guardar_tablas(int cab_num_act, bool* tipo);
 
