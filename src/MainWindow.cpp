@@ -3124,6 +3124,8 @@ void MainWindow::on_pushButton_2_clicked()
     QMessageBox messageBox;
 
 
+
+
     // Recupero los cabezales
     for(int i = 0; i < ui->frame_multihead_graph_3->children().size(); i++)
     {

@@ -43,7 +43,9 @@ AutoCalib::AutoCalib()
     {
         E_prom_PMT[i].set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
         desv_temp_media_central[i].set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
+        almohadon[i].set_size(BinsAlmohadon,BinsAlmohadon);
     }
+
 
 
 
@@ -436,7 +438,6 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 bool AutoCalib::calibrar_fina(void)
 {
-
     // Para todos los cabezales que se seleccionaron
     for(int i = 0 ; i < Cab_List.length() ; i++)
     {
@@ -537,11 +538,11 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
 
     cout<<"Sin Calibrar:"<<endl;
     cout<<"FWHM: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
-    /*
+
     cout<<pico_sin_calib.FWHM<<" - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
     cout<<pico_sin_calib.FWTM<<" - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
     cout<<centros_hist(pico_sin_calib.canal_pico)<<endl;
-    */
+
 
 
     // Conservo solo los eventos dentro del FWTM
@@ -733,7 +734,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
         // Re-calculo la matrix de energias promedios
         mat E_prom_PMT_aux;
-        E_prom_PMT_aux.set_size(48,48);
+        E_prom_PMT_aux.set_size(CANTIDADdEpMTS,CANTIDADdEpMTS);
         urowvec indices_maximo_PMT;
         mat Eventos_max_PMT;
         rowvec Fila_max_PMT;
@@ -800,7 +801,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
             FWHM_mejor = pico_calib.FWHM;
             Ce_mejor = Ce_arma;
         }
-        if ((FWHM_mejor - pico_calib.FWHM)*(FWHM_mejor - pico_calib.FWHM) < 0.001*0.001)
+        if ((FWHM_mejor - pico_calib.FWHM)*(FWHM_mejor - pico_calib.FWHM) < 0.001*0.001 || pico_calib.FWHM > FWHM_mejor)
         {
             break;
         }
@@ -1179,9 +1180,9 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
 bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
 {
-    double Lado_PMT = 53.5;
-    double Lado_X_Cabezal = (Lado_PMT*8)/2;
-    double Lado_Y_Cabezal = (Lado_PMT*6)/2;
+
+    double Lado_X_Cabezal = (Lado_PMT*PMTs_X)/2;
+    double Lado_Y_Cabezal = (Lado_PMT*PMTs_Y)/2;
 
     // Convierto la matriz de medias en cuentas a medias en energía
     mat E_prom_PMT_keV = E_prom_PMT[cab_num_act];
@@ -1252,11 +1253,24 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     }
 
 
+    // Calculo el alhoadon
+    calcular_almohadon(cab_num_act);
+
+    // Dibujo el almohadon en pantalla
+    mostrar_almohadon(cab_num_act);
 
 
+    delete(vec_y);
+    delete(vec_x);
+
+    return 1;
+}
 
 
-
+bool AutoCalib::calcular_almohadon(int cab_num_act)
+{
+    colvec Cx_arma(Cx[cab_num_act], CANTIDADdEpMTS);
+    colvec Cy_arma(Cy[cab_num_act], CANTIDADdEpMTS);
 
     // Calculo la posición de todos los eventos (para el amohadon)
 
@@ -1298,12 +1312,17 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     suma_aux = suma_aux.elem(indices_aux).t();
     Energia_calib_FWHM = Energia_calib_FWHM.cols(indices_aux);
 
+
+
+
+
+    // Calculo la posición de los mismos
     mat Posiciones_estimadas(Energia_calib_FWHM.n_cols, 2);
     for (int ind_evento = 0 ; ind_evento < Energia_calib_FWHM.n_cols ; ind_evento++)
     {
-        mat aux = Energia_calib_FWHM.col(ind_evento)*Cx_arma.t();
+        mat aux = Energia_calib_FWHM.col(ind_evento).t()*Cx_arma;
         Posiciones_estimadas(ind_evento, 0) =  aux(0);
-        aux = Energia_calib_FWHM.col(ind_evento)*Cy_arma.t();
+        aux = Energia_calib_FWHM.col(ind_evento).t()*Cy_arma;
         Posiciones_estimadas(ind_evento, 1) =  aux(0);
     }
 
@@ -1311,7 +1330,142 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
 
 
 
+    // Armo la grilla objetivo
+    double Largo_Cab = Lado_PMT*PMTs_X;
+    double Alto_Cab = Lado_PMT*PMTs_Y;
+
+    // Paso entre bines
+    double paso_x = Largo_Cab/ BinsAlmohadon;
+    double paso_y = Alto_Cab/BinsAlmohadon;
+
+    // Reservo memoria para los vectores de X e Y
+    double *vec_x, *vec_y;
+    vec_x = new double[BinsAlmohadon];
+    vec_y = new double[BinsAlmohadon];
+
+    vec_x[0] = -Largo_Cab/2;
+    vec_y[0] = -Alto_Cab/2;
+
+    // Los lleno
+    for(int i = 1 ; i < BinsAlmohadon ; i++ )
+    {
+        vec_x[i] = vec_x[i-1] + paso_x;
+        vec_y[i] = vec_y[i-1] + paso_y;
+    }
+
+
+
+    // Voy ubicando los eventos
+    for (int ind_evento = 0 ; ind_evento < Posiciones_estimadas.n_rows ; ind_evento++)
+    {
+        double pos_evento_x = Posiciones_estimadas(ind_evento,0);
+        double pos_evento_y = Posiciones_estimadas(ind_evento,1);
+
+        // Busco el indice de x
+        double x_step = vec_x[0];
+        int x_indice = 0;
+        while(x_step < pos_evento_x && x_indice < BinsAlmohadon-1)
+        {
+            x_indice++;
+            x_step = vec_x[x_indice];
+        }
+
+        double y_step = vec_y[0];
+        int y_indice = 0;
+        while(y_step < pos_evento_y && y_indice < BinsAlmohadon-1)
+        {
+            y_indice++;
+            y_step = vec_y[y_indice];
+        }
+
+        almohadon[cab_num_act](x_indice, y_indice) = almohadon[cab_num_act](x_indice, y_indice) + 1;
+
+
+    }
+
+
+
+
+
+    delete(vec_y);
+    delete(vec_x);
+
     return 1;
+}
+
+
+bool AutoCalib::mostrar_almohadon(int cab_num_act)
+{
+    // Recta de escala de colores
+    double val_max = almohadon[cab_num_act].max();
+    double val_mid = val_max/2;
+    double val_min = 0;
+    double Y1, X1, Y2, X2;
+
+
+    X1 = val_min;
+    Y1 = 255;
+    X2 = val_mid;
+    Y2 = 0;
+    double a_b = ((Y2-Y1)/(X2-X1)) , b_b = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_min;
+    Y1 = 0;
+    X2 = val_mid;
+    Y2 = 255;
+    double a_g_1 = ((Y2-Y1)/(X2-X1)) , b_g_1 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_mid;
+    Y1 = 255;
+    X2 = val_max;
+    Y2 = 0;
+    double a_g_2 = ((Y2-Y1)/(X2-X1)) , b_g_2 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_mid;
+    Y1 = 0;
+    X2 = val_max;
+    Y2 = 255;
+    double a_r = ((Y2-Y1)/(X2-X1)) , b_r = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+
+    cube aux_save;
+    aux_save.set_size(BinsAlmohadon,BinsAlmohadon,3);
+
+    for(int i = 0 ; i<BinsAlmohadon ; i++)
+    {
+        for(int j = 0 ; j<BinsAlmohadon ; j++)
+        {
+            aux_save(i,j,0) = almohadon[cab_num_act](i,j)*a_r + b_r;
+
+            double green_aux = almohadon[cab_num_act](i,j)*a_g_1 + b_g_1 ;
+            if (green_aux > 255 || green_aux < 0)
+            {
+                aux_save(i,j,1) = almohadon[cab_num_act](i,j)*a_g_2 + b_g_2 ;
+            }
+            else
+            {
+                aux_save(i,j,1) = green_aux;
+            }
+
+            aux_save(i,j,2) = almohadon[cab_num_act](i,j)*a_b + b_b;
+        }
+    }
+
+
+    // Guardo las imagenes
+    QString nombre_cab = QString::number(cab_num_act+1);
+    QString path_salida = "Salidas/";
+    QString nombre_almohadon = path_salida+"Almohadon_Cabezal_"+nombre_cab+".pgm";
+    almohadon[cab_num_act].save(nombre_almohadon.toStdString(), pgm_binary);
+     nombre_almohadon = path_salida+"Almohadon_Cabezal_"+nombre_cab+".ppm";
+    aux_save.save(nombre_almohadon.toStdString(), ppm_binary);
+
+    // Las muestro
+    QPixmap file(nombre_almohadon);
+    Almohadon_emergente[cab_num_act].setPixmap(file);
+    Almohadon_emergente[cab_num_act].show();
+    Almohadon_emergente[cab_num_act].setScaledContents(true);
+
 }
 
 
@@ -1515,17 +1669,26 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     delete(x);
     delete(y);
 
-    Pico_calculado.canal_pico = p[1];
+
+    // TODO: CHECKEAR EL BUSCADOR DE PICO!!!!!
+    //Pico_calculado.canal_pico = p[1];
+    Pico_calculado.canal_pico = Gauss_mean+(low_extrema-window_size);
 
 
 
     double maximo_pico = canales_peak.max();
-
+    /*
+    cout<<Gauss_mean+(low_extrema-window_size)<<endl;
+    cout<<Gauss_max<<endl;
+    cout<<p[1]<<endl;
+    cout<<Canales_mat(round(Pico_calculado.canal_pico))<<endl;
+    cout<<maximo_pico<<endl;
+*/
     // Calculo el FWHM
     int i = 0;
     while (Pico_calculado.limites_FWHM[0] == 0)
     {
-        if (maximo_pico*0.5 >=  Canales_mat[Pico_calculado.canal_pico - i]  )
+        if (maximo_pico*0.5 >=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
         {
            Pico_calculado.limites_FWHM[0] =  Pico_calculado.canal_pico - i +1;
         }
@@ -1534,7 +1697,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     i = 0;
     while (Pico_calculado.limites_FWHM[1] == 0)
     {
-        if (maximo_pico*0.5 >=  Canales_mat[Pico_calculado.canal_pico + i]  )
+        if (maximo_pico*0.5 >=  Canales_mat(round(Pico_calculado.canal_pico + i))  )
         {
            Pico_calculado.limites_FWHM[1] =  Pico_calculado.canal_pico + i -1;
         }
@@ -1546,7 +1709,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     i = 0;
     while (Pico_calculado.limites_FWTM[0] == 0)
     {
-        if (maximo_pico*0.1 >=  Canales_mat[Pico_calculado.canal_pico - i]  )
+        if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
         {
            Pico_calculado.limites_FWTM[0] =  Pico_calculado.canal_pico - i +1;
         }
@@ -1555,13 +1718,14 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     i = 0;
     while (Pico_calculado.limites_FWTM[1] == 0)
     {
-        if (maximo_pico*0.1 >=  Canales_mat[Pico_calculado.canal_pico + i]  )
+        if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico + i))  )
         {
            Pico_calculado.limites_FWTM[1] =  Pico_calculado.canal_pico + i -1;
         }
         i++;
     }
     Pico_calculado.FWTM = (Pico_calculado.limites_FWTM[1]-Pico_calculado.limites_FWTM[0])/Pico_calculado.canal_pico;
+
 
 
 
@@ -1957,7 +2121,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     cout<<nombre_adq.c_str()<<endl;
 
     // abro archivo
-    FILE * archivo = fopen(nombre_adq.c_str(), "r+");
+    FILE * archivo = fopen(nombre_adq.c_str(), "r");
 
     if (archivo == NULL)
     {

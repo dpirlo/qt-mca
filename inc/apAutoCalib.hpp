@@ -65,13 +65,16 @@
 
 
 #define     BinsHist                            256
-#define     NUM_EVENT_CENTRO                    5000
-#define     MAX_ITER_ENERGIA                    25
+#define     BinsAlmohadon                       256
+#define     NUM_EVENT_CENTRO                    2500
+#define     MAX_ITER_ENERGIA                    10
 
 #define     PORCENTUAL_ENERGIA_VECINO           40
 
 #define     PMTs_X                              8
 #define     PMTs_Y                              6
+
+#define     Lado_PMT                            53.5
 
 using namespace arma;
 
@@ -164,6 +167,7 @@ namespace ap {
             // Ventanas emergentes
             QCustomPlot Espectro_emergente[CANTIDADdEcABEZALES];
             QCustomPlot Espectro_PMT_emergente[CANTIDADdEcABEZALES];
+            QLabel Almohadon_emergente[CANTIDADdEcABEZALES];
 
 
             // Memoria de los PMT
@@ -198,6 +202,8 @@ namespace ap {
             // Coeficientes de posicion
             double Cx[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
             double Cy[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
+            // Almohadones
+            mat almohadon[CANTIDADdEcABEZALES];
 
             // Preprocesamiento de datos planar
             bool preprocesar_info_planar(int cab_num_act);
@@ -211,6 +217,11 @@ namespace ap {
             struct tiempos_recursiva tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist );
             // Guardar tablas
             void guardar_tablas(int cab_num_act, bool* tipo);
+
+            // Calcular alohadon
+            bool calcular_almohadon(int cab_num_act);
+            // Mostrar almohadon
+            bool mostrar_almohadon(int cab_num_act);
 
 
             // Levantar archivo de calibración
