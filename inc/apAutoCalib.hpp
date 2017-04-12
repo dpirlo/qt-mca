@@ -28,6 +28,8 @@
 #include <fstream>
 #include <math.h>
 
+#include <ctime>
+
 
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 250
@@ -67,6 +69,7 @@
 #define     BinsHist                            256
 #define     BinsAlmohadon                       256
 #define     NUM_EVENT_CENTRO                    2500
+#define     PORC_ALETA                          100
 #define     MAX_ITER_ENERGIA                    10
 
 #define     PORCENTUAL_ENERGIA_VECINO           40
@@ -122,7 +125,7 @@ namespace ap {
             struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
 
             // Plot de MCA actual
-            void plot_MCA(QVector<double> hits, QVector<double> channels_ui, QCustomPlot *graph, QString graph_legend, QVector<int> param, bool clear);
+            void plot_MCA(QVector<double> hits, QVector<double> channels_ui, QCustomPlot *graph, QString graph_legend, int* param, bool clear);
 
             // Set de lista de PMTs a calibrar
             void setPMT_List(QList<int> checked_PMTs) {this->PMTs_List = checked_PMTs;}
@@ -134,6 +137,8 @@ namespace ap {
             void setTiempo_adq(int tiempo_adq_par) {this->tiempo_adq = tiempo_adq_par;}
             // Set de puerto serie
             void setPort_Name(QString port_name_par) {this->port_name = port_name_par;}
+            // Set de Count skimming
+            void setCount_skimming() {this->Count_skim_calib = 1;}
 
             // Set de archivos de configuración
             void setAdq_Cab_1(string par_string) {this->adq_cab[0] = par_string;}
@@ -164,8 +169,12 @@ namespace ap {
             // Puerto serie
             QString port_name;
 
+            // Parametros del ploteo de espectros
+            int param_cab[CANTIDADdEcABEZALES][6];
+
             // Ventanas emergentes
-            QCustomPlot Espectro_emergente[CANTIDADdEcABEZALES];
+            QCustomPlot Espectro_emergente;
+            QCustomPlot Espectro_emergente_crudo;
             QCustomPlot Espectro_PMT_emergente[CANTIDADdEcABEZALES];
             QLabel Almohadon_emergente[CANTIDADdEcABEZALES];
 
@@ -191,10 +200,15 @@ namespace ap {
             mat Tiempos_full_calib[CANTIDADdEcABEZALES];
             mat TimeStamp_calib[CANTIDADdEcABEZALES];
 
+            // Flag de count skimming
+            bool Count_skim_calib = 0;
+
             // Matriz de energia promedio en centroides
             mat E_prom_PMT[CANTIDADdEcABEZALES];
+
             // Coeficientes de energía
             double Ce[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
+            double Ce_pre[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
             // Matriz de desvios de tiempos en centroide
             mat desv_temp_media_central[CANTIDADdEcABEZALES];
             // Coeficientes de Tiempo
@@ -207,6 +221,8 @@ namespace ap {
 
             // Preprocesamiento de datos planar
             bool preprocesar_info_planar(int cab_num_act);
+            // Pre calibrar usando la aleta
+            bool Pre_calibrar_aleta(int cab_num_act);
             // Calibración fina de eneregía
             bool calibrar_fina_energia(int cab_num_act);
             // Calibración fina de tiempos
@@ -222,6 +238,14 @@ namespace ap {
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
             bool mostrar_almohadon(int cab_num_act);
+
+
+            // Guardar vector de armadillo en archivo
+            QString guardar_vector_stream(vec guardar);
+            // Guardar matriz de armadillo en archivo
+            QString guardar_matriz_stream(mat guardar);
+            // Puntero al archivo de log
+            QTextStream stream;
 
 
             // Levantar archivo de calibración

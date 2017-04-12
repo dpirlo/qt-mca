@@ -3144,6 +3144,7 @@ void MainWindow::on_pushButton_2_clicked()
     }
     calibrador->setCab_List(checked_Cab);
 
+    if (ui->checkBox_count_skimm->checkState() == Qt::Checked) calibrador->setCount_skimming();
 
     // Invoco al calibracor
     calibrador->calibrar_fina();
@@ -3154,7 +3155,8 @@ void MainWindow::on_pushButton_2_clicked()
 void MainWindow::on_pushButton_triple_ventana_2_clicked()
 {
 
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3166,7 +3168,8 @@ void MainWindow::on_pushButton_triple_ventana_2_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_3_clicked()
 {
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3178,7 +3181,8 @@ void MainWindow::on_pushButton_triple_ventana_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_4_clicked()
 {
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3190,7 +3194,8 @@ void MainWindow::on_pushButton_triple_ventana_4_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_6_clicked()
 {
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/06-03-2017/";
+    //QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3202,7 +3207,8 @@ void MainWindow::on_pushButton_triple_ventana_6_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_7_clicked()
 {
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3214,7 +3220,8 @@ void MainWindow::on_pushButton_triple_ventana_7_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_5_clicked()
 {
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));
@@ -3226,7 +3233,8 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_8_clicked()
 {
-    QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
                                                     tr("Adquisición (*.raw)"));

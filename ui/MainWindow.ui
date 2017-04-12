@@ -3571,8 +3571,8 @@ Tensión: </string>
        <rect>
         <x>703</x>
         <y>63</y>
-        <width>281</width>
-        <height>181</height>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">
@@ -5242,9 +5242,9 @@ Tensión: </string>
      <widget class="QFrame" name="frame_multihead_graph_3">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>170</x>
         <y>320</y>
-        <width>441</width>
+        <width>451</width>
         <height>41</height>
        </rect>
       </property>
@@ -5356,9 +5356,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>300</x>
+         <x>330</x>
          <y>10</y>
-         <width>181</width>
+         <width>121</width>
          <height>26</height>
         </rect>
        </property>
@@ -5366,6 +5366,22 @@ Tensión: </string>
         <string>Coincidencia</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_count_skimm">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>680</x>
+        <y>330</y>
+        <width>151</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Count Skimming</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="terminal">
