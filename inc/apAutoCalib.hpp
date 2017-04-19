@@ -79,6 +79,22 @@
 
 #define     Lado_PMT                            53.5
 
+#define     PMT_Recortado                       1
+
+// Archivo de coincidencias parseado, posiciones en la matriz
+#define     Coin_Calib_Iden_cabezal_1           2
+#define     Coin_Calib_tiempos_1                3
+#define     Coin_Calib_X_1                      4
+#define     Coin_Calib_Y_1                      5
+#define     Coin_Calib_Z_1                      6
+#define     Coin_Calib_Energia_1                7
+#define     Coin_Calib_Iden_cabezal_2           8
+#define     Coin_Calib_tiempos_2                9
+#define     Coin_Calib_X_2                      10
+#define     Coin_Calib_Y_2                      11
+#define     Coin_Calib_Z_2                      12
+#define     Coin_Calib_Energia_2                13
+
 using namespace arma;
 
 namespace ap {
@@ -139,6 +155,10 @@ namespace ap {
             void setPort_Name(QString port_name_par) {this->port_name = port_name_par;}
             // Set de Count skimming
             void setCount_skimming() {this->Count_skim_calib = 1;}
+            // Set de Count skimming inter-cabezal
+            void setCount_skimming_total() {this->Count_skim_total_calib = 1;}
+            // Set de lista de visuzalizaciones
+            void setVis_List(QList<int> checked_Cab) {this->Vis_List = checked_Cab;}
 
             // Set de archivos de configuración
             void setAdq_Cab_1(string par_string) {this->adq_cab[0] = par_string;}
@@ -148,9 +168,16 @@ namespace ap {
             void setAdq_Cab_5(string par_string) {this->adq_cab[4] = par_string;}
             void setAdq_Cab_6(string par_string) {this->adq_cab[5] = par_string;}
             void setAdq_Coin(string par_string) {this->adq_coin = par_string;}
+            void setPathSalida(QString par_string) {this->path_salida = par_string;}
+            void setPathEntrada(QString par_string) {this->path_entrada = par_string;}
+
 
             // Calibración fina
             bool calibrar_fina(void);
+
+            // Visualizacion planar
+            bool visualizar_planar(void);
+
 
 
         private:
@@ -164,6 +191,7 @@ namespace ap {
             // Datos calibracion
             QList<int> PMTs_List;
             QList<int> Cab_List;
+            QList<int> Vis_List;
             int  Canal_Obj, tiempo_adq;
 
             // Puerto serie
@@ -177,6 +205,7 @@ namespace ap {
             QCustomPlot Espectro_emergente_crudo;
             QCustomPlot Espectro_PMT_emergente[CANTIDADdEcABEZALES];
             QLabel Almohadon_emergente[CANTIDADdEcABEZALES];
+            QLabel Almohadon_emergente_skimmed[CANTIDADdEcABEZALES];
 
 
             // Memoria de los PMT
@@ -193,15 +222,21 @@ namespace ap {
             // Archivos de adquisición
             string adq_cab[CANTIDADdEcABEZALES];
             string adq_coin;
+            QString path_salida;
+            QString path_entrada;
 
             // Archivos parseados
             mat Energia_calib[CANTIDADdEcABEZALES];
             mat Tiempos_calib[CANTIDADdEcABEZALES];
             mat Tiempos_full_calib[CANTIDADdEcABEZALES];
             mat TimeStamp_calib[CANTIDADdEcABEZALES];
+            mat Tiempos_inter_cab;
 
             // Flag de count skimming
             bool Count_skim_calib = 0;
+
+            // Flag de count skimming inter cabezal
+            bool Count_skim_total_calib = 0;
 
             // Matriz de energia promedio en centroides
             mat E_prom_PMT[CANTIDADdEcABEZALES];
@@ -218,9 +253,15 @@ namespace ap {
             double Cy[CANTIDADdEcABEZALES][CANTIDADdEbYTESpMTS];
             // Almohadones
             mat almohadon[CANTIDADdEcABEZALES];
+            // Count skimmings
+            mat count_skimm[CANTIDADdEcABEZALES];
+            // Count skimmings inter cabezales
+            mat count_skimm_inter_cab[CANTIDADdEcABEZALES];
+            // Coeficientes inter cabezal
+            double Ci[CANTIDADdEcABEZALES];
 
             // Preprocesamiento de datos planar
-            bool preprocesar_info_planar(int cab_num_act);
+            bool preprocesar_info_planar(int cab_num_act, bool plotear);
             // Pre calibrar usando la aleta
             bool Pre_calibrar_aleta(int cab_num_act);
             // Calibración fina de eneregía
@@ -231,14 +272,26 @@ namespace ap {
             bool calibrar_fina_posiciones(int cab_num_act);
             // Recursiva tiempo
             struct tiempos_recursiva tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist );
+            // Calibración tiempos inter-cabezal
+            bool calibrar_tiempo_intercabezal();
             // Guardar tablas
             void guardar_tablas(int cab_num_act, bool* tipo);
+            // Cargar tablas
+            void cargar_tablas(int cab_num_act, bool* tipo);
+
 
             // Calcular alohadon
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
-            bool mostrar_almohadon(int cab_num_act);
+            bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm);
 
+            // Calcular Count skimming
+            bool calibrar_count_skimming(int cab_num_act);
+            // Calcular Inter Count skimming
+            bool calibrar_inter_count_skimming();
+
+            // Mostrar espectro
+            bool plotear_espectro(int cab_num_act,  bool calibrado);
 
             // Guardar vector de armadillo en archivo
             QString guardar_vector_stream(vec guardar);

@@ -47,6 +47,11 @@ AutoCalib::AutoCalib()
         desv_temp_media_central[i].zeros(CANTIDADdEpMTS,CANTIDADdEpMTS);
         almohadon[i].set_size(BinsAlmohadon,BinsAlmohadon);
         almohadon[i].zeros(BinsAlmohadon,BinsAlmohadon);
+        count_skimm[i].set_size(BinsAlmohadon,BinsAlmohadon);
+        count_skimm[i].zeros(BinsAlmohadon,BinsAlmohadon);
+        count_skimm_inter_cab[i].set_size(BinsAlmohadon,BinsAlmohadon);
+        count_skimm_inter_cab[i].zeros(BinsAlmohadon,BinsAlmohadon);
+
 
         param_cab[i][0]=rand()%245+10;//R
         param_cab[i][1]=rand()%245+10;//G
@@ -57,6 +62,17 @@ AutoCalib::AutoCalib()
     }
 
 
+    // Seteo el default de salida
+    path_salida = "Salidas/";
+
+    // Seteo el default de entrada
+    path_entrada = "Salidas/";
+
+
+    // Mando esto a la nada para evitar errores
+    //QString nombre_Log = "/dev/null";
+    //QFile file(nombre_Log);
+    //stream.setDevice(&file);
 
 
 }
@@ -464,7 +480,6 @@ bool AutoCalib::calibrar_fina(void)
 
             // Abro un archivo de log
             QString nombre_cab = QString::number(cab_num_act+1);
-            QString path_salida = "Salidas/";
             time_t rawtime;
             struct tm * timeinfo;
             char buffer[80];
@@ -503,7 +518,7 @@ bool AutoCalib::calibrar_fina(void)
             LevantarArchivo_Planar(cab_num_act);
 
             // Busco eventos promedio y calculo la posición del pico
-            preprocesar_info_planar(cab_num_act);
+            preprocesar_info_planar(cab_num_act, 1);
 
             // Calculo un paso previo de calibración donde ajusto el espectro individual del PMT centroide
             Pre_calibrar_aleta(cab_num_act);
@@ -517,11 +532,6 @@ bool AutoCalib::calibrar_fina(void)
             // Calibro en posicion
             calibrar_fina_posiciones(cab_num_act);
 
-            // Guardo
-            bool tipo[3] = {1,1,1};
-            guardar_tablas(cab_num_act, tipo);
-
-
             // Libero la memoria del cabezal actual
             if (IsLowRAM)
             {
@@ -532,39 +542,102 @@ bool AutoCalib::calibrar_fina(void)
                 TimeStamp_calib[cab_num_act].set_size(1, 1);
             }
 
-            for (int skim_i = 0 ; skim_i < cant_archivos ;  skim_i++)
+            if(Count_skim_calib)
             {
-                if(Count_skim_calib)
+                for (int skim_i = 0 ; skim_i < cant_archivos ;  skim_i++)
                 {
-                    adq_cab[cab_num_act] = path_archivo;
-                    adq_cab[cab_num_act].append("/");
-                    adq_cab[cab_num_act].append(todos_archivos.at(skim_i).toStdString());
+                    stream<<"----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
+                    cout<<"----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
+
+                    if(Count_skim_calib)
+                    {
+                        adq_cab[cab_num_act] = path_archivo;
+                        adq_cab[cab_num_act].append("/");
+                        adq_cab[cab_num_act].append(todos_archivos.at(skim_i).toStdString());
+                    }
+
+                    // Cargo el cabezal actual en memoria
+                    LevantarArchivo_Planar(cab_num_act);
+
+                    // Busco eventos promedio y calculo la posición del pico
+                    preprocesar_info_planar(cab_num_act, 0);
+
+
+                    calcular_almohadon(cab_num_act);
+
+                    // No se como borrar asi que los transformo en una matriz de un elemento
+                    Energia_calib[cab_num_act].set_size(1, 1);
+                    Tiempos_calib[cab_num_act].set_size(1, 1);
+                    Tiempos_full_calib[cab_num_act].set_size(1, 1);
+                    TimeStamp_calib[cab_num_act].set_size(1, 1);
                 }
 
-                // Cargo el cabezal actual en memoria
-                LevantarArchivo_Planar(cab_num_act);
+                // Calibro el count skimming
+                calibrar_count_skimming(cab_num_act);
 
-                // Busco eventos promedio y calculo la posición del pico
-                preprocesar_info_planar(cab_num_act);
+                // Muestro el nuevo almohadon
+                mostrar_almohadon(cab_num_act,1,1);
 
 
-                calcular_almohadon(cab_num_act);
+
             }
-            mostrar_almohadon(cab_num_act);
+
+            // Guardo
+            bool tipo[5] = {1,1,1,0,0};
+            if(Count_skim_calib) tipo[3] = 1;
+            guardar_tablas(cab_num_act, tipo);
+
+            stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
 
         }
         // Sino calibro tiempos
         else
         {
-            // TO DO
+            // Abro un archivo de log
+            time_t rawtime;
+            struct tm * timeinfo;
+            char buffer[80];
+            time (&rawtime);
+            timeinfo = localtime(&rawtime);
+            strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
+            std::string str(buffer);
+            QString nombre_Log = path_salida+"Log_Coincidencia.txt";
+            QFile file(nombre_Log);
+            if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+            {
+                cout<<"Error al abrir log"<<endl;
+                return -1;
+            }
+
+            stream.setDevice(&file);
+
+            stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+
+            // Calibro
+            calibrar_tiempo_intercabezal();
+
+            stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
         }
 
     }
 
+    if (Count_skim_total_calib && Count_skim_calib)
+    {
+        // Aplico el inter skimming
+        calibrar_inter_count_skimming();
+
+        bool tipo[5] = {0,0,0,0,1};
+        for (int cab_num_act = 0 ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
+            guardar_tablas(cab_num_act, tipo);
+    }
+
+
+
+
 }
 
 
-bool AutoCalib::preprocesar_info_planar(int cab_num_act)
+bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 {
     stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<"----------------------------------INICIO DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
@@ -616,15 +689,12 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
     nombre_plot = "Espectro crudo cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_sin_calib.FWHM*100) + "%";
     // Parametros del ploteo
     int param[6];
-    param[0]=0;//R
-    param[1]=61;//G
-    param[2]=245;//B
-    param[3]=5+1; //LineStyle
-    param[4]=14+1;//ScatterShape
-    param[5]=1/(double)RAND_MAX*2+1;//setWidthF
-    plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente_crudo, nombre_plot, param_cab[cab_num_act], 0);
-    Espectro_emergente_crudo.show();
-    Espectro_emergente_crudo.resize(1000,500);
+    if (plotear)
+    {
+        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente_crudo, nombre_plot, param_cab[cab_num_act], 0);
+        Espectro_emergente_crudo.show();
+        Espectro_emergente_crudo.resize(1000,500);
+    }
     qApp->processEvents();
 
 
@@ -678,7 +748,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
 
 
-        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<endl;
+        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100 <<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
@@ -737,9 +807,12 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act)
         for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
         for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
         nombre_plot = "PMT Nº "+ QString::number(index_PMT_cent+1);
-        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
-        Espectro_PMT_emergente[cab_num_act].show();
-        Espectro_PMT_emergente[cab_num_act].resize(1000,500);
+        if (plotear)
+        {
+            plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
+            Espectro_PMT_emergente[cab_num_act].show();
+            Espectro_PMT_emergente[cab_num_act].resize(1000,500);
+        }
         qApp->processEvents();
 
 
@@ -929,19 +1002,20 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     stream<<"   Espect_Pre_Cal_Vec ="<<guardar_vector_stream(vec_log)<<endl;
 
 
+    QVector<double> aux_qvec_cent(BinsHist);
+    QVector<double> aux_qvec(BinsHist);
+    QString nombre_plot;
+    /*
     // ----------------------- Ploteo
     // Paso los vectores a Qvector para plotear
-    QVector<double> aux_qvec_cent(BinsHist);
     for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
-    QVector<double> aux_qvec(BinsHist);
     for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-    QString nombre_plot;
     nombre_plot = "Espectro Pre calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_sin_calib.FWHM*100) + "%";
-    //plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
+    plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
     Espectro_emergente.show();
     Espectro_emergente.resize(1000,500);
     qApp->processEvents();
-
+    */
 
 
 
@@ -991,7 +1065,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux);
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
 
-        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<endl;
+        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
@@ -1311,14 +1385,6 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma(i);}
 
     QString nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(FWHM_mejor*100) + "%";
-    // Parametros del ploteo
-    QVector<int> param(6);
-    param[0]=0;//R
-    param[1]=61;//G
-    param[2]=245;//B
-    param[3]=5+1; //LineStyle
-    param[4]=14+1;//ScatterShape
-    param[5]=1/(double)RAND_MAX*2+1;//setWidthF
     plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
     Espectro_emergente.show();
     Espectro_emergente.resize(1000,500);
@@ -1762,7 +1828,7 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     calcular_almohadon(cab_num_act);
 
     // Dibujo el almohadon en pantalla
-    mostrar_almohadon(cab_num_act);
+    mostrar_almohadon(cab_num_act,1,0);
 
 
     vec vec_log = arma::conv_to<vec>::from(Cx_arma);
@@ -1909,79 +1975,479 @@ bool AutoCalib::calcular_almohadon(int cab_num_act)
 }
 
 
-bool AutoCalib::mostrar_almohadon(int cab_num_act)
+
+
+
+
+
+
+bool AutoCalib::calibrar_count_skimming(int cab_num_act)
 {
-    // Recta de escala de colores
-    double val_max = almohadon[cab_num_act].max();
-    double val_mid = val_max/2;
-    double val_min = 0;
-    double Y1, X1, Y2, X2;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------INICIO DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    // Copio el almohadon a la matriz de count skimming
+    count_skimm[cab_num_act] = almohadon[cab_num_act];
 
 
-    X1 = val_min;
-    Y1 = 255;
-    X2 = val_mid;
-    Y2 = 0;
-    double a_b = ((Y2-Y1)/(X2-X1)) , b_b = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+    // Armo la grilla objetivo
+    double Largo_Cab = Lado_PMT*PMTs_X;
+    double Alto_Cab = Lado_PMT*PMTs_Y;
 
-    X1 = val_min;
-    Y1 = 0;
-    X2 = val_mid;
-    Y2 = 255;
-    double a_g_1 = ((Y2-Y1)/(X2-X1)) , b_g_1 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+    // Paso entre bines
+    double paso_x = Largo_Cab/ BinsAlmohadon;
+    double paso_y = Alto_Cab/BinsAlmohadon;
 
-    X1 = val_mid;
-    Y1 = 255;
-    X2 = val_max;
-    Y2 = 0;
-    double a_g_2 = ((Y2-Y1)/(X2-X1)) , b_g_2 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+    // Reservo memoria para los vectores de X e Y
+    double *vec_x, *vec_y;
+    vec_x = new double[BinsAlmohadon];
+    vec_y = new double[BinsAlmohadon];
 
-    X1 = val_mid;
-    Y1 = 0;
-    X2 = val_max;
-    Y2 = 255;
-    double a_r = ((Y2-Y1)/(X2-X1)) , b_r = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+    vec_x[0] = -Largo_Cab/2;
+    vec_y[0] = -Alto_Cab/2;
 
-
-    cube aux_save;
-    aux_save.set_size(BinsAlmohadon,BinsAlmohadon,3);
-
-    for(int i = 0 ; i<BinsAlmohadon ; i++)
+    // Los lleno
+    for(int i = 1 ; i < BinsAlmohadon ; i++ )
     {
-        for(int j = 0 ; j<BinsAlmohadon ; j++)
+        vec_x[i] = vec_x[i-1] + paso_x;
+        vec_y[i] = vec_y[i-1] + paso_y;
+    }
+
+    // Calculo los limites con el recorte de PMT
+    double lim_inf_x = vec_x[0] + PMT_Recortado*Lado_PMT;
+    double lim_sup_x = vec_x[BinsAlmohadon-1] - PMT_Recortado*Lado_PMT;
+    double lim_inf_y = vec_y[0] + PMT_Recortado*Lado_PMT;
+    double lim_sup_y = vec_y[BinsAlmohadon-1] - PMT_Recortado*Lado_PMT;
+
+
+    // Recorto los eventos de los bordes (aquellos que no puedo posicionar)
+    for (int ind_x = 0 ; ind_x < BinsAlmohadon ; ind_x++)
+    {
+        for (int ind_y = 0 ; ind_y < BinsAlmohadon ; ind_y++)
         {
-            aux_save(i,j,0) = almohadon[cab_num_act](i,j)*a_r + b_r;
-
-            double green_aux = almohadon[cab_num_act](i,j)*a_g_1 + b_g_1 ;
-            if (green_aux > 255 || green_aux < 0)
-            {
-                aux_save(i,j,1) = almohadon[cab_num_act](i,j)*a_g_2 + b_g_2 ;
-            }
-            else
-            {
-                aux_save(i,j,1) = green_aux;
-            }
-
-            aux_save(i,j,2) = almohadon[cab_num_act](i,j)*a_b + b_b;
+            if ( vec_x[ind_x] < lim_inf_x || vec_x[ind_x] > lim_sup_x || vec_y[ind_y] < lim_inf_y || vec_y[ind_y] > lim_sup_y)
+                count_skimm[cab_num_act](ind_x, ind_y) = 0;
         }
     }
 
 
-    // Guardo las imagenes
-    QString nombre_cab = QString::number(cab_num_act+1);
-    QString path_salida = "Salidas/";
-    QString nombre_almohadon = path_salida+"Almohadon_Cabezal_"+nombre_cab+".pgm";
-    almohadon[cab_num_act].save(nombre_almohadon.toStdString(), pgm_binary);
-     nombre_almohadon = path_salida+"Almohadon_Cabezal_"+nombre_cab+".ppm";
-    aux_save.save(nombre_almohadon.toStdString(), ppm_binary);
+    // Saco los eventos que no son 0
+    uvec px_activos_ind = find(count_skimm[cab_num_act] > 0);
+    vec px_activos = count_skimm[cab_num_act].elem(px_activos_ind);
 
-    // Las muestro
-    QPixmap file(nombre_almohadon);
-    Almohadon_emergente[cab_num_act].setPixmap(file);
-    Almohadon_emergente[cab_num_act].show();
-    Almohadon_emergente[cab_num_act].setScaledContents(true);
+    // Me quedo con el minimo valor de eventos
+    double px_base =  min(px_activos);
+    double px_pico =  max(px_activos);
+    double px_total =  sum(px_activos);
+
+    stream<<"Cuentas en pixel base: "<<px_base<<endl;
+    stream<<"Cuentas en pixel pico: "<<px_pico<<endl;
+    stream<<"Cuentas totales en area util: "<<px_total<<endl;
+
+
+    // Le resto a todos los elementos el valor de este pixel y dejo los bordes en 0
+    for (int ind_x = 0 ; ind_x < BinsAlmohadon ; ind_x++)
+    {
+        for (int ind_y = 0 ; ind_y < BinsAlmohadon ; ind_y++)
+        {
+            count_skimm[cab_num_act](ind_x, ind_y) = px_base/count_skimm[cab_num_act](ind_x, ind_y);
+
+            if ( vec_x[ind_x] < lim_inf_x || vec_x[ind_x] > lim_sup_x || vec_y[ind_y] < lim_inf_y || vec_y[ind_y] > lim_sup_y)
+                count_skimm[cab_num_act](ind_x, ind_y) = 0;
+        }
+    }
+
+
+
+
+    delete(vec_y);
+    delete(vec_x);
+
+
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------SALIDA DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+
+
+    return 1;
+}
+
+
+bool AutoCalib::calibrar_inter_count_skimming()
+{
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------INICIO DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    vec px_base(CANTIDADdEcABEZALES);
+    vec px_pico(CANTIDADdEcABEZALES);
+
+    for(int cab_num_act ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
+    {
+        // Copio el almohadon a la matriz auxiliar
+         mat almohadon_aux = almohadon[cab_num_act];
+
+         // Aplico el count skimm
+         almohadon_aux %= count_skimm[cab_num_act];
+
+         // Saco los eventos que no son 0
+         uvec px_activos_ind = find(almohadon_aux > 0);
+         vec px_activos = almohadon_aux.elem(px_activos_ind);
+
+        // Me quedo con el minimo valor de eventos
+        px_base(cab_num_act) =  min(px_activos);
+        px_pico(cab_num_act) =  max(px_activos);
+    }
+
+    // Saco el minimo de los 6
+    double px_min_total = min(px_base);
+    stream<<"Minimo global de eventos: "<<px_min_total<<endl;
+    double px_max_total = max(px_pico);
+    stream<<"Maximo global de eventos: "<<px_max_total<<endl;
+
+    for(int cab_num_act ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
+    {
+        // Calculo el proporcional del count skimming individual
+        double px_min_prop = px_min_total/px_base(cab_num_act);
+
+        // Calculo el count skimming inter cabezal
+        count_skimm_inter_cab[cab_num_act] = count_skimm[cab_num_act] * px_min_prop;
+    }
+
+
+
+
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------SALIDA DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+
+
+    return 1;
+}
+
+
+bool AutoCalib::calibrar_tiempo_intercabezal()
+{
+
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------INICIO DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    // Recupero el nombre del archivo
+    stream<<"Leyendo: "<<QString::fromStdString(adq_coin)<< endl;
+
+    // Levanto el archivo
+    Tiempos_inter_cab.load(adq_coin, raw_ascii);
+    stream<<"Archivo leido, matriz de "<<Tiempos_inter_cab.n_rows<<" por "<<Tiempos_inter_cab.n_cols<<endl;
+
+    // Calculo el FWHM de las energías de los eventos, tanto en el evento 1 como el evento 2
+    colvec Energias_1 = Tiempos_inter_cab.col(Coin_Calib_Energia_1);
+    colvec Energias_2 = Tiempos_inter_cab.col(Coin_Calib_Energia_2);
+
+    // Creo el vector de centros para el histograma
+    vec centros_hist = linspace<vec>(0,1024,BinsHist);
+
+    // Calculo el histograma
+    ucolvec espectro_1 = hist(Energias_1, centros_hist);
+    ucolvec espectro_2 = hist(Energias_2, centros_hist);
+
+    vec vec_log;
+    vec_log.set_size(0,0);
+    vec_log = arma::conv_to<vec>::from(espectro_1);
+    stream<<"               Pico_1"<<guardar_vector_stream(vec_log)<<endl;
+    vec_log.set_size(0,0);
+    vec_log = arma::conv_to<vec>::from(espectro_2);
+    stream<<"               Pico_2"<<guardar_vector_stream(vec_log)<<endl;
+
+    // Calculo el FWHM
+    struct Pico_espectro pico_1, pico_2;
+    double aux_espectro_1[BinsHist];
+    double aux_espectro_2[BinsHist];
+    for (int i=0 ; i < BinsHist ; i++)
+    {
+        aux_espectro_1[i] = espectro_1(i);
+        aux_espectro_2[i] = espectro_2(i);
+    }
+    pico_1 = Buscar_Pico(aux_espectro_1, BinsHist);
+    pico_2 = Buscar_Pico(aux_espectro_2, BinsHist);
+
+    cout<<"FWHM eventos 1: "<<pico_1.FWHM*100<<"%"<<endl;
+    stream<<"FWHM eventos 1: "<<pico_1.FWHM*100<<"%"<<endl;
+    cout<<"FWHM eventos 2: "<<pico_2.FWHM*100<<"%"<<endl;
+    stream<<"FWHM eventos 2: "<<pico_2.FWHM*100<<"%"<<endl;
+
+    // Me quedo con los extremos del FWHM
+    double FWHM_lim[2];
+
+    if (pico_1.limites_FWHM[0] < pico_2.limites_FWHM[0]) FWHM_lim[0] = pico_1.limites_FWHM[0];
+    else FWHM_lim[0] = pico_2.limites_FWHM[0];
+
+    if (pico_1.limites_FWHM[1] > pico_2.limites_FWHM[1]) FWHM_lim[1] = pico_1.limites_FWHM[1];
+    else FWHM_lim[1] = pico_2.limites_FWHM[1];
+
+    stream<<"Limites FWHM: "<<centros_hist(FWHM_lim[0])<<" - "<<centros_hist(FWHM_lim[1])<<endl;
+
+    // Filtro por la ventana de energía
+    mat Tiempos_inter_cab_FWHM;
+    uvec indices_aux = find(Energias_1 > centros_hist(FWHM_lim[0]));
+    rowvec suma_aux = Energias_1.elem(indices_aux).t();
+    Tiempos_inter_cab_FWHM = Tiempos_inter_cab.rows(indices_aux);
+    indices_aux = find(suma_aux < centros_hist(FWHM_lim[1]));
+    suma_aux = Energias_1.elem(indices_aux).t();
+    Tiempos_inter_cab_FWHM = Tiempos_inter_cab_FWHM.rows(indices_aux);
+    // lo mismo pero para la energía 2
+    Energias_2 = Tiempos_inter_cab_FWHM.col(Coin_Calib_Energia_2);
+    indices_aux = find(Energias_2 > centros_hist(FWHM_lim[0]));
+    suma_aux = Energias_2.elem(indices_aux).t();
+    Tiempos_inter_cab_FWHM = Tiempos_inter_cab_FWHM.rows(indices_aux);
+    indices_aux = find(suma_aux < centros_hist(FWHM_lim[1]));
+    suma_aux = Energias_2.elem(indices_aux).t();
+    Tiempos_inter_cab_FWHM = Tiempos_inter_cab_FWHM.rows(indices_aux);
+
+
+
+    stream<<"Eventos en FWHM: "<<Tiempos_inter_cab_FWHM.n_elem<<endl;
+
+    // Para identificar cabezales
+    //colvec cabezal_1 = Tiempos_inter_cab_FWHM.col(Coin_Calib_Iden_cabezal_1);
+    //colvec cabezal_2 = Tiempos_inter_cab_FWHM.col(Coin_Calib_Iden_cabezal_2);
+
+    // Ahora me fijo las relaciones de tiempo entre cabezales
+    mat desvios_medios, desvios_desvio;
+    desvios_medios.set_size(CANTIDADdEcABEZALES,CANTIDADdEcABEZALES);
+    desvios_medios.zeros(CANTIDADdEcABEZALES,CANTIDADdEcABEZALES);
+    desvios_desvio.set_size(CANTIDADdEcABEZALES,CANTIDADdEcABEZALES);
+    desvios_desvio.zeros(CANTIDADdEcABEZALES,CANTIDADdEcABEZALES);
+
+
+
+    // Loopeo por par de cabezales
+    for (int iter_i = 0 ; iter_i < CANTIDADdEcABEZALES ; iter_i++)
+    {
+        for (int iter_j = 0 ; iter_j < CANTIDADdEcABEZALES ; iter_j++)
+        {
+            bool invert_coef = 0;
+
+            // Extraigo eventos compartidos
+            mat eventos_compartidos;
+            uvec ind_cab_1, ind_cab_2;
+            ind_cab_1 = find(Tiempos_inter_cab_FWHM.col(Coin_Calib_Iden_cabezal_1) == iter_i+1);
+            eventos_compartidos = Tiempos_inter_cab_FWHM.rows(ind_cab_1);
+            ind_cab_2 = find(eventos_compartidos.col(Coin_Calib_Iden_cabezal_2) == iter_j+1);
+            eventos_compartidos = eventos_compartidos.rows(ind_cab_2);
+
+            if (eventos_compartidos.n_elem <= 0)  // Checkeo para los dos lados
+            {
+                ind_cab_1 = find(Tiempos_inter_cab_FWHM.col(Coin_Calib_Iden_cabezal_1) == iter_j+1);
+                eventos_compartidos = Tiempos_inter_cab_FWHM.rows(ind_cab_1);
+                ind_cab_2 = find(eventos_compartidos.col(Coin_Calib_Iden_cabezal_2) == iter_i+1);
+                eventos_compartidos = eventos_compartidos.rows(ind_cab_2);
+
+                invert_coef = 1;
+            }
+
+            if (eventos_compartidos.n_elem > 0)
+            {
+                // Calculo la diferencia de tiempos
+                colvec DeltaT;
+                colvec aux_DeltaT;
+                if (invert_coef)
+                    DeltaT = eventos_compartidos.col(Coin_Calib_tiempos_2)-eventos_compartidos.col(Coin_Calib_tiempos_1);
+                else
+                    DeltaT = eventos_compartidos.col(Coin_Calib_tiempos_1)-eventos_compartidos.col(Coin_Calib_tiempos_2);
+
+                // Eliminno aquellos con un tiempo extraño
+                uvec a = find(abs(DeltaT) > 1000);
+                if (a.n_elem > 0 )
+                {
+
+                    aux_DeltaT.set_size(DeltaT.n_elem-a.n_elem);
+                    aux_DeltaT.zeros(DeltaT.n_elem-a.n_elem);
+                    int j = 0;
+                    for (int i = 0 ; i < DeltaT.n_elem ; i++)
+                    {
+                        if (abs(DeltaT(i)) < 1000)
+                        {
+                            aux_DeltaT(j) = DeltaT(i);
+                            j++;
+                        }
+                    }
+
+                    DeltaT = aux_DeltaT;
+                }
+
+                // Cantidad de bines
+                centros_hist = linspace<vec>(-125,125,BinsHist);
+
+                // Calculo el histograma
+                ucolvec bin_val = hist(DeltaT, centros_hist);
+
+                vec_log.set_size(0,0);
+                vec_log = arma::conv_to<vec>::from(bin_val);
+                stream<<"               Hist_"<<iter_i+1<<"_"<<iter_j+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
+
+                // Calculo la media y el desvio
+                double media = centros_hist(bin_val.index_max());
+                double desvio = stddev(DeltaT);
+
+                // Guardo
+                desvios_medios(iter_i,iter_j) = media;
+                desvios_desvio(iter_i,iter_j) = desvio;
+            }
+
+        }
+        cout<<"Finalizado pivote "<<iter_i+1<<" de 6"<<endl;
+    }
+
+    stream<<"desvios_medios = "<< guardar_matriz_stream(desvios_medios)<<endl;
+    stream<<"desvios_desvio = "<< guardar_matriz_stream(desvios_desvio)<<endl;
+
+
+    // Parto tomando al primer cabezal como correcto
+    vec correciones;
+    correciones.set_size(CANTIDADdEcABEZALES);
+    correciones.zeros(CANTIDADdEcABEZALES);
+
+    // Corrijo el que esta en frente
+    correciones(3) = desvios_medios(0,3) + correciones(0);
+    // Del que esta en frente corrijo los dos costados
+    correciones(5) = desvios_medios(3,5) + correciones(3);
+    correciones(1) = desvios_medios(3,1) + correciones(3);
+    // Finalmente de los costados voy a los que ellos tienen en frente
+    correciones(4) = desvios_medios(1,4) + correciones(1);
+    correciones(2) = desvios_medios(5,2) + correciones(5);
+
+    stream<<"Ci_crudo = "<< guardar_vector_stream(correciones)<<endl;
+    vec coeficientes = correciones + abs(min(correciones));
+    stream<<"Ci = "<< guardar_vector_stream(coeficientes)<<endl;
+
+    for (int i = 0 ; i < CANTIDADdEcABEZALES ; i++)
+    {
+        Ci[i] = coeficientes(i);
+    }
+
+    // Guardo
+
+    QString nombre_inter_cab = path_salida+"Coef_tiempo_inter_Cabezal"+".txt";
+
+    QFile file(nombre_inter_cab);
+
+    if (file.open(QIODevice::ReadWrite))
+    {
+        QTextStream filestream(&file);
+        for (int i = 0 ; i < CANTIDADdEcABEZALES ; i++)
+        {
+            filestream << Ci[i]  << endl;
+        }
+    }
+
+
+
+
+
+
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<"----------------------------------SALIDA DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
+    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    return 1;
+}
+
+
+
+
+
+
+/* -------------------------------------------------------------------
+ * --------------------Visualizar Planar------------------------------
+ * -------------------------------------------------------------------
+ */
+
+
+bool AutoCalib::visualizar_planar(void)
+{
+    // Para todos los cabezales que se seleccionaron
+    for(int i = 0 ; i < Cab_List.length() ; i++)
+    {
+        // Convierto de numero de cabezal a indce (-1)
+        int cab_num_act = Cab_List[i]-1;
+
+        // Vector de tablas a cargar
+        bool carga[5] = {0 , 0 , 0 , 0, 0};
+
+        // Recupero las calibraciones necesarias
+        for(int i = 0 ; i < Vis_List.length() ; i++)
+        {
+            // Energia
+            if (Vis_List[i] == 1) carga[0] = 1;
+            // Posicion
+            if (Vis_List[i] == 2)
+            {
+                carga[0] = 1;
+                carga[2] = 1;
+            }
+            // skimm
+            if (Vis_List[i] == 3)
+            {
+                carga[0] = 1;
+                carga[2] = 1;
+                carga[3] = 1;
+            }
+        }
+
+        // Cargo las tablas de este cabezal
+        cargar_tablas(cab_num_act, carga);
+
+        // Primero levanto el archivo
+        LevantarArchivo_Planar(cab_num_act);
+
+        // Calculo las posiciones de los eventos si asi fuera necesario
+        if (carga[2])
+            calcular_almohadon(cab_num_act);
+
+        // Para todos las visualizaciones seleccionadas
+        for(int i = 0 ; i < Vis_List.length() ; i++)
+        {
+            switch (Vis_List[i])
+            {
+                case 0:    // Mostrar espectro crudo
+                    plotear_espectro(cab_num_act, 0);
+                    qApp->processEvents();
+                    break;
+                case 1:    // Mostrar espectro calibrado
+                    plotear_espectro(cab_num_act, 1);
+                    qApp->processEvents();
+                    break;
+                case 2:    // Mostrar planar
+                    mostrar_almohadon(cab_num_act,0,0);
+                    qApp->processEvents();
+                    break;
+                case 3:    // Mostrar planar con count skimming
+                    mostrar_almohadon(cab_num_act,0,1);
+                    qApp->processEvents();
+                    break;
+                default:
+                    cout<<"no se como llegue a querer visualizar el metodo inexistente nro: "<<Vis_List[i]<<endl;
+                    return -1;
+                    break;
+            }
+        }
+
+        // Borro los archivos de ram
+        Energia_calib[cab_num_act].set_size(1, 1);
+        Tiempos_calib[cab_num_act].set_size(1, 1);
+        Tiempos_full_calib[cab_num_act].set_size(1, 1);
+        TimeStamp_calib[cab_num_act].set_size(1, 1);
+
+    }
+
 
 }
+
+
 
 
 
@@ -2570,10 +3036,185 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
  * -------------------------------------------------------------------
  */
 
+bool AutoCalib::plotear_espectro(int cab_num_act,  bool calibrado)
+{
+    // Recupero la constante
+    colvec Ce_arma(Ce[cab_num_act], CANTIDADdEpMTS);
+
+    // Matriz auxiliar para plotear
+    mat Energia_calib_aux = Energia_calib[cab_num_act];
+
+    colvec centros_hist;
+    if(calibrado)
+    {
+        // Paso todos los eventos a eventos en energía calibrada
+        Energia_calib_aux.each_col() %= Ce_arma;
+
+        // Creo el vector de centros para el histograma
+        centros_hist = linspace<vec>(0,1024,BinsHist);
+    }
+    else
+    {
+        // Creo el vector de centros para el histograma
+        centros_hist = linspace<vec>(0,8000,BinsHist);
+    }
+
+
+
+    // Busco el pico
+    struct Pico_espectro pico_calib;
+    double aux_espectro[BinsHist];
+
+    // Calculo la suma
+    rowvec Energia_calib_suma = sum(Energia_calib_aux,0);
+    // Calculo el espectro
+    urowvec espectro_suma = hist(Energia_calib_suma, centros_hist);
+    // Calculo el FWHM
+    for (int i=0 ; i < BinsHist ; i++)
+    {
+        aux_espectro[i] = espectro_suma(i);
+    }
+    pico_calib = Buscar_Pico(aux_espectro, BinsHist);
+
+
+    // ----------------------- Ploteo
+    // Paso los vectores a Qvector para plotear
+    QVector<double> aux_qvec_cent(BinsHist);
+    for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+    QVector<double> aux_qvec(BinsHist);
+    for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma(i);}
+
+    if(calibrado)
+    {
+        QString nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_calib.FWHM*100) + "%";
+        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
+        Espectro_emergente.show();
+        Espectro_emergente.resize(1000,500);
+        qApp->processEvents();
+    }
+    else
+    {
+        QString nombre_plot = "Espectro crudo cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_calib.FWHM*100) + "%";
+        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente_crudo, nombre_plot, param_cab[cab_num_act], 0);
+        Espectro_emergente_crudo.show();
+        Espectro_emergente_crudo.resize(1000,500);
+        qApp->processEvents();
+    }
+
+
+    return 1;
+}
+
+
+
+bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
+{
+    // Almohadon auxiliar para presentar
+    mat almohadon_aux = almohadon[cab_num_act];
+
+    // Aplico el skimming de ser solicitado
+    if (skimm) almohadon_aux %= count_skimm[cab_num_act];
+
+    // Recta de escala de colores
+    double val_max = almohadon_aux.max();
+    double val_mid = val_max/2;
+    double val_min = 0;
+    double Y1, X1, Y2, X2;
+
+
+
+
+
+    X1 = val_min;
+    Y1 = 255;
+    X2 = val_mid;
+    Y2 = 0;
+    double a_b = ((Y2-Y1)/(X2-X1)) , b_b = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_min;
+    Y1 = 0;
+    X2 = val_mid;
+    Y2 = 255;
+    double a_g_1 = ((Y2-Y1)/(X2-X1)) , b_g_1 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_mid;
+    Y1 = 255;
+    X2 = val_max;
+    Y2 = 0;
+    double a_g_2 = ((Y2-Y1)/(X2-X1)) , b_g_2 = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+    X1 = val_mid;
+    Y1 = 0;
+    X2 = val_max;
+    Y2 = 255;
+    double a_r = ((Y2-Y1)/(X2-X1)) , b_r = Y1 - X1 * ((Y2-Y1)/(X2-X1));
+
+
+    cube aux_save;
+    aux_save.set_size(BinsAlmohadon,BinsAlmohadon,3);
+
+    for(int i = 0 ; i<BinsAlmohadon ; i++)
+    {
+        for(int j = 0 ; j<BinsAlmohadon ; j++)
+        {
+            aux_save(i,j,0) = almohadon_aux(i,j)*a_r + b_r;
+
+            double green_aux = almohadon_aux(i,j)*a_g_1 + b_g_1 ;
+            if (green_aux > 255 || green_aux < 0)
+            {
+                aux_save(i,j,1) = almohadon_aux(i,j)*a_g_2 + b_g_2 ;
+            }
+            else
+            {
+                aux_save(i,j,1) = green_aux;
+            }
+
+            aux_save(i,j,2) = almohadon_aux(i,j)*a_b + b_b;
+        }
+    }
+
+
+    // Guardo las imagenes
+    QString nombre_cab = QString::number(cab_num_act+1);
+    QString nombre_almohadon;
+    QString path_salida_aux;
+    if (!calib)
+        path_salida_aux = path_salida+".temp_";
+
+    if (skimm) nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+"_skimmed.pgm";
+    else nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+".pgm";
+    almohadon_aux.save(nombre_almohadon.toStdString(), pgm_binary);
+    if (skimm) nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+"_skimmed.ppm";
+    else nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+".ppm";
+    aux_save.save(nombre_almohadon.toStdString(), ppm_binary);
+
+    // Las muestro
+    QPixmap file(nombre_almohadon);
+    if (skimm)
+    {
+        Almohadon_emergente_skimmed[cab_num_act].setPixmap(file);
+        Almohadon_emergente_skimmed[cab_num_act].show();
+        Almohadon_emergente_skimmed[cab_num_act].setScaledContents(true);
+    }
+    else
+    {
+        Almohadon_emergente[cab_num_act].setPixmap(file);
+        Almohadon_emergente[cab_num_act].show();
+        Almohadon_emergente[cab_num_act].setScaledContents(true);
+    }
+
+
+
+
+}
+
+
+
+
+
 void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 {
     QString nombre_cab = QString::number(cab_num_act+1);
-    QString path_salida = "Salidas/";
 
     // Energías
     if (tipo[0] == 1)
@@ -2584,10 +3225,10 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         if (file.open(QIODevice::ReadWrite))
         {
-            QTextStream stream(&file);
+            QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
-                stream << Ce[cab_num_act][i]  << endl;
+                filestream << Ce[cab_num_act][i]  << endl;
             }
         }
 
@@ -2602,10 +3243,10 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         if (file.open(QIODevice::ReadWrite))
         {
-            QTextStream stream(&file);
+            QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
-                stream << Ct[cab_num_act][i]  << endl;
+                filestream << Ct[cab_num_act][i]  << endl;
             }
         }
 
@@ -2620,14 +3261,14 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         if (file_x.open(QIODevice::ReadWrite))
         {
-            QTextStream stream(&file_x);
+            QTextStream filestream(&file_x);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
                 // Antes de grabar lo saturo en 10 bit
                 int aux_c;
                 aux_c = round(Cx[cab_num_act][i]*1000);
                 int c_sat = std::min(std::max(aux_c, -511), 511);
-                stream <<c_sat<< endl;
+                filestream <<c_sat<< endl;
             }
         }
 
@@ -2637,22 +3278,141 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         if (file_y.open(QIODevice::ReadWrite))
         {
-            QTextStream stream(&file_y);
+            QTextStream filestream(&file_y);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
                 // Antes de grabar lo saturo en 10 bit
                 int aux_c;
                 aux_c = round(Cy[cab_num_act][i]*1000);
                 int c_sat = std::min(std::max(aux_c, -511), 511);
-                stream <<c_sat<< endl;
+                filestream <<c_sat<< endl;
             }
         }
 
     }
 
+    // Count skimming
+    if (tipo[3] == 1)
+    {
+        QString nombre_skimm = path_salida+"CountSkimm_Cab_"+nombre_cab+".txt";
+
+        count_skimm[cab_num_act].save(nombre_skimm.toStdString(), raw_ascii);
+    }
+
+    // Count skimming inter cabezal
+    if (tipo[4] == 1)
+    {
+        QString nombre_skimm_inter = path_salida+"CountSkimm_Inter_Cab_"+nombre_cab+".txt";
+        count_skimm_inter_cab[cab_num_act].save(nombre_skimm_inter.toStdString(), raw_ascii);
+    }
 
 }
 
+void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
+{
+    QString nombre_cab = QString::number(cab_num_act+1);
+
+
+    // Energías
+    if (tipo[0] == 1)
+    {
+        QString nombre_ener = path_entrada+"Coef_Energia_Cabezal_"+nombre_cab+".txt";
+
+        QFile file(nombre_ener);
+
+        if (file.open(QIODevice::ReadOnly))
+        {
+            QTextStream filestream(&file);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                Ce[cab_num_act][i] = filestream.readLine().toDouble();
+            }
+        }
+        else
+        {
+            cout<<"No puedo leer archivo de calibracion de energia"<<endl;
+        }
+
+    }
+
+    // Tiempos
+    if (tipo[1] == 1)
+    {
+        QString nombre_tiempo = path_entrada+"Tiempos_Cabezal_"+nombre_cab+".txt";
+
+        QFile file(nombre_tiempo);
+
+        if (file.open(QIODevice::ReadOnly))
+        {
+            QTextStream filestream(&file);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                Ct[cab_num_act][i] = filestream.readLine().toDouble();
+            }
+        }
+        else
+        {
+            cout<<"No puedo leer archivo de calibracion de tiempos"<<endl;
+        }
+
+
+    }
+
+    // Posicion
+    if (tipo[2] == 1)
+    {
+        QString nombre_pos_x = path_entrada+"Cx_Cabezal_"+nombre_cab+".txt";
+
+        QFile file_x(nombre_pos_x);
+
+        if (file_x.open(QIODevice::ReadOnly))
+        {
+            QTextStream filestream(&file_x);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                Cx[cab_num_act][i] = filestream.readLine().toDouble()/1000;
+            }
+        }
+        else
+        {
+            cout<<"No puedo leer archivo de calibracion en posicion X"<<endl;
+        }
+
+
+        QString nombre_pos_y = path_entrada+"Cy_Cabezal_"+nombre_cab+".txt";
+
+        QFile file_y(nombre_pos_y);
+
+        if (file_y.open(QIODevice::ReadOnly))
+        {
+            QTextStream filestream(&file_y);
+            for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
+            {
+                Cy[cab_num_act][i] = filestream.readLine().toDouble()/1000;
+            }
+        }
+        else
+        {
+            cout<<"No puedo leer archivo de calibracion en posicion Y"<<endl;
+        }
+
+    }
+
+    // Count skimming
+    if (tipo[3] == 1)
+    {
+        QString nombre_skimm = path_entrada+"CountSkimm_Cab_"+nombre_cab+".txt";
+        count_skimm[cab_num_act].load(nombre_skimm.toStdString(), raw_ascii);
+    }
+
+    // Count skimming inter cabezal
+    if (tipo[4] == 1)
+    {
+        QString nombre_skimm_inter = path_entrada+"CountSkimm_Inter_Cab_"+nombre_cab+".txt";
+        count_skimm_inter_cab[cab_num_act].load(nombre_skimm_inter.toStdString(), raw_ascii);
+    }
+
+}
 
 QString AutoCalib::guardar_vector_stream(vec guardar)
 {
@@ -2667,16 +3427,18 @@ QString AutoCalib::guardar_vector_stream(vec guardar)
     return out_salida;
 }
 
+
 QString AutoCalib::guardar_matriz_stream(mat guardar)
 {
     stringstream salida;
-    salida<<"["<<guardar(0);
-    for (int log_ind_2 = 1 ; log_ind_2 < guardar.n_rows ; log_ind_2++)
+    salida<<"[";
+    for (int log_ind_2 = 0 ; log_ind_2 < guardar.n_rows ; log_ind_2++)
     {
-        for (int log_ind = 1 ; log_ind < guardar.n_cols ; log_ind++)
+        for (int log_ind = 0 ; log_ind < guardar.n_cols ; log_ind++)
         {
-            salida<<" , "<< guardar(log_ind_2, log_ind);
+            salida<< guardar(log_ind_2, log_ind)<<" ,";
         }
+        salida.seekp(-1, std::ios_base::end);
         salida<<";";
     }
     salida.seekp(-1, std::ios_base::end);
@@ -2879,6 +3641,10 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         // 3) Concateno los overflows al final de los bits de la spartan.
         TimeStamp_calib[cab_num_act](trama_actual) = cantidadDeOverFlows * pow(2,CANTIDADdEbITSeNTEROSsPARTAN) + tiempo_max;
     }
+
+    free(vectorSalida);
+    free(entrada);
+    stream<<"Memoria de buffer de entrada liberada"<<endl;
 
 
     stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;

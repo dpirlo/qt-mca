@@ -185,6 +185,24 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void on_pushButton_triple_ventana_9_clicked();
+
+    void on_pushButton_triple_ventana_13_clicked();
+
+    void on_pushButton_triple_ventana_10_clicked();
+
+    void on_pushButton_triple_ventana_11_clicked();
+
+    void on_pushButton_triple_ventana_16_clicked();
+
+    void on_pushButton_triple_ventana_15_clicked();
+
+    void on_pushButton_triple_ventana_12_clicked();
+
+    void on_pushButton_triple_ventana_14_clicked();
+
+    void on_pushButton_3_clicked();
+
 private:
     QString openConfigurationFile();
     void getPaths();

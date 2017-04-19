@@ -3145,6 +3145,7 @@ void MainWindow::on_pushButton_2_clicked()
     calibrador->setCab_List(checked_Cab);
 
     if (ui->checkBox_count_skimm->checkState() == Qt::Checked) calibrador->setCount_skimming();
+    if (ui->checkBox_count_skimm_2->checkState() == Qt::Checked) calibrador->setCount_skimming_total();
 
     // Invoco al calibracor
     calibrador->calibrar_fina();
@@ -3234,13 +3235,176 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
 void MainWindow::on_pushButton_triple_ventana_8_clicked()
 {
     //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString root="/media/rgrodriguez/Payload/Documents/AR-PET/Codigo/Calibraciones/Coincidencias/20170310_153812.dat";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root,
-                                                    tr("Adquisición (*.raw)"));
+                                                    tr("Adquisición parseada (*.dat)"));
     calibrador->setAdq_Coin(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
     ui->textBrowser_adq_coin->setText(filename);
+}
+
+
+void MainWindow::on_pushButton_triple_ventana_9_clicked()
+{
+    QString root="Salidas/";
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de salida"),
+                           root);
+
+    calibrador->setPathSalida(filename);
+    cout<<"Salida: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_salida->setText(filename);
+}
+
+
+
+/* Analizar Planar */
+
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    QList<int> checked_Cab, checked_met;
+    QMessageBox messageBox;
+
+
+
+
+    // Recupero los cabezales
+    for(int i = 0; i < ui->frame_multihead_graph_4->children().size(); i++)
+    {
+        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_4->children().at(i));
+
+        if(q->checkState() == Qt::Checked)
+        {
+            checked_Cab.append(i+1);
+        }
+    }
+    if(checked_Cab.length() == 0)
+    {
+        messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    calibrador->setCab_List(checked_Cab);
+
+    // Recupero los metodos
+    for(int i = 0; i < ui->frame_multihead_graph_5->children().size(); i++)
+    {
+        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_5->children().at(i));
+
+        if(q->checkState() == Qt::Checked)
+        {
+            checked_met.append(i);
+        }
+    }
+    if(checked_met.length() == 0)
+    {
+        messageBox.critical(0,"Error","No se ha seleccionado ninguna visualizacion.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    calibrador->setVis_List(checked_met);
+
+    // Invoco al visualizador
+    calibrador->visualizar_planar();
+}
+
+
+void MainWindow::on_pushButton_triple_ventana_13_clicked()
+{
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_1(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_8->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_10_clicked()
+{
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_2(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_10->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_11_clicked()
+{
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_3(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_7->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_16_clicked()
+{
+    //QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_4(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_9->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_15_clicked()
+{
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_5(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_12->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_12_clicked()
+{
+    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
+    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root,
+                                                    tr("Adquisición (*.raw)"));
+    calibrador->setAdq_Cab_6(filename.toStdString());
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_adq_11->setText(filename);
+}
+
+void MainWindow::on_pushButton_triple_ventana_14_clicked()
+{
+    QString root="Salidas/";
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de entrada"),
+                           root);
+
+    calibrador->setPathEntrada(filename);
+    cout<<"Salida: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_entrada->setText(filename);
 }
 
