@@ -231,6 +231,7 @@ namespace ap {
             mat Tiempos_full_calib[CANTIDADdEcABEZALES];
             mat TimeStamp_calib[CANTIDADdEcABEZALES];
             mat Tiempos_inter_cab;
+            double Tiempo_medicion[CANTIDADdEcABEZALES];
 
             // Flag de count skimming
             bool Count_skim_calib = 0;

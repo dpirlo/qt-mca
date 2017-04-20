@@ -489,6 +489,7 @@ bool AutoCalib::calibrar_fina(void)
             std::string str(buffer);
             //QString nombre_Log = path_salida+"Log_Cabezal_"+nombre_cab+"_"+QString::fromStdString( str )+".txt";
             QString nombre_Log = path_salida+"Log_Cabezal_"+nombre_cab+".txt";
+            cout<<"Creando log: "<<nombre_Log.toStdString()<<endl;
             QFile file(nombre_Log);
             if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
             {
@@ -623,12 +624,33 @@ bool AutoCalib::calibrar_fina(void)
 
     if (Count_skim_total_calib && Count_skim_calib)
     {
+        // Abro un archivo de log
+        time_t rawtime;
+        struct tm * timeinfo;
+        char buffer[80];
+        time (&rawtime);
+        timeinfo = localtime(&rawtime);
+        strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
+        std::string str(buffer);
+        QString nombre_Log = path_salida+"Log_Inter_count_skimming.txt";
+        QFile file(nombre_Log);
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+        {
+            cout<<"Error al abrir log"<<endl;
+            return -1;
+        }
+
+        stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+
         // Aplico el inter skimming
         calibrar_inter_count_skimming();
 
         bool tipo[5] = {0,0,0,0,1};
         for (int cab_num_act = 0 ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
             guardar_tablas(cab_num_act, tipo);
+
+        stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
+
     }
 
 
@@ -732,6 +754,8 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     double maximo_abs_PMT;
     double limite_actual;
     int eventos_centroide;
+    vec Tasa_PMT(CANTIDADdEpMTS);
+    vec Porcentaje_PMT(CANTIDADdEpMTS);
     // Busco los elementos centroides de cada PMT
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
@@ -748,7 +772,10 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
 
 
-        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100 <<" % del total en FWHM"<<endl;
+        Porcentaje_PMT(index_PMT_cent) = ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100;
+        Tasa_PMT(index_PMT_cent) = Fila_max_PMT.n_elem / Tiempo_medicion[cab_num_act];
+
+        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< Porcentaje_PMT(index_PMT_cent) <<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
@@ -885,6 +912,11 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         canal_norm[index_PMT_cent] = espectro_suma_crudo.index_min();
 
     }
+
+    // Guardo las tasas
+    stream<<"               Porcentaje_PMT = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
+    stream<<"               Tasa_PMT = "<<guardar_vector_stream(Tasa_PMT)<<endl;
+
 
 
     stream<<"               Mat_prom_inicial = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
@@ -1049,6 +1081,8 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     double maximo_abs_PMT;
     double limite_actual;
     int eventos_centroide;
+    vec Tasa_PMT(CANTIDADdEpMTS);
+    vec Porcentaje_PMT(CANTIDADdEpMTS);
     // Busco los elementos centroides de cada PMT
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
@@ -1064,6 +1098,9 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         //cout<<indices_aux.n_elem<<endl;
         Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux);
         Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
+
+        Porcentaje_PMT(index_PMT_cent) = ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100;
+        Tasa_PMT(index_PMT_cent) = Fila_max_PMT.n_elem / Tiempo_medicion[cab_num_act];
 
         stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
@@ -1186,6 +1223,12 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
 
     }
+
+
+    // Guardo las tasas
+    stream<<"               Porcentaje_PMT = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
+    stream<<"               Tasa_PMT = "<<guardar_vector_stream(Tasa_PMT)<<endl;
+
 
 
     stream<<"               Mat_prom_inicial = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
@@ -2086,19 +2129,22 @@ bool AutoCalib::calibrar_inter_count_skimming()
 
     for(int cab_num_act ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
     {
-        // Copio el almohadon a la matriz auxiliar
-         mat almohadon_aux = almohadon[cab_num_act];
-
-         // Aplico el count skimm
-         almohadon_aux %= count_skimm[cab_num_act];
-
-         // Saco los eventos que no son 0
-         uvec px_activos_ind = find(almohadon_aux > 0);
-         vec px_activos = almohadon_aux.elem(px_activos_ind);
+        // Saco los eventos que no son 0 en el count skimming
+        uvec px_activos_ind = find(count_skimm[cab_num_act] > 0);
+        vec px_activos = almohadon[cab_num_act].elem(px_activos_ind);
 
         // Me quedo con el minimo valor de eventos
-        px_base(cab_num_act) =  min(px_activos);
-        px_pico(cab_num_act) =  max(px_activos);
+        if (px_activos_ind.n_elem > 0)
+        {
+            px_base(cab_num_act) =  min(px_activos);
+            px_pico(cab_num_act) =  max(px_activos);
+        }
+        else
+        {
+            px_base(cab_num_act) =  9e99;
+            px_pico(cab_num_act) =  0;
+        }
+
     }
 
     // Saco el minimo de los 6
@@ -2117,7 +2163,7 @@ bool AutoCalib::calibrar_inter_count_skimming()
     }
 
 
-
+    cout<<"Finalizado Inter-Count Skimming"<<endl;
 
     stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<"----------------------------------SALIDA DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
@@ -2375,6 +2421,31 @@ bool AutoCalib::visualizar_planar(void)
         // Convierto de numero de cabezal a indce (-1)
         int cab_num_act = Cab_List[i]-1;
 
+
+        // Abro un archivo de log
+        QString nombre_cab = QString::number(cab_num_act+1);
+        time_t rawtime;
+        struct tm * timeinfo;
+        char buffer[80];
+        time (&rawtime);
+        timeinfo = localtime(&rawtime);
+        strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
+        std::string str(buffer);
+        //QString nombre_Log = path_salida+"Log_Visualizacion_Cabezal_"+nombre_cab+"_"+QString::fromStdString( str )+".txt";
+        QString nombre_Log = path_salida+"Log_Visualizacion_Cabezal_"+nombre_cab+".txt";
+        cout<<"Creando log: "<<nombre_Log.toStdString()<<endl;
+        QFile file(nombre_Log);
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+        {
+            cout<<"Error al abrir log"<<endl;
+            return -1;
+        }
+
+        //QTextStream stream_open(&file);
+        stream.setDevice(&file);
+
+        stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+
         // Vector de tablas a cargar
         bool carga[5] = {0 , 0 , 0 , 0, 0};
 
@@ -2441,6 +2512,9 @@ bool AutoCalib::visualizar_planar(void)
         Tiempos_calib[cab_num_act].set_size(1, 1);
         Tiempos_full_calib[cab_num_act].set_size(1, 1);
         TimeStamp_calib[cab_num_act].set_size(1, 1);
+
+
+        stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
 
     }
 
@@ -3179,7 +3253,13 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
     QString nombre_almohadon;
     QString path_salida_aux;
     if (!calib)
+    {
         path_salida_aux = path_salida+".temp_";
+    }
+    else
+    {
+        path_salida_aux = path_salida;
+    }
 
     if (skimm) nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+"_skimmed.pgm";
     else nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+".pgm";
@@ -3509,6 +3589,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     string nombre_adq = adq_cab[cab_num_act];
     stream << "Levantando archivo: "<<QString::fromStdString(nombre_adq)<< endl;
 
+
     // abro archivo
     FILE * archivo = fopen(nombre_adq.c_str(), "r");
 
@@ -3519,6 +3600,30 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         return -1;
     }
 
+    // Checkeo el tiempo de modificacion
+    struct stat attr;
+    stat(nombre_adq.c_str(), &attr);
+    uint64_t access       = attr.st_atime;
+    uint64_t status       = attr.st_ctime;
+    uint64_t modification = attr.st_mtime;
+
+    // Recupero el tiempo de creación
+    size_t fin_adq_nom = adq_cab[cab_num_act].find_last_of(".raw");
+    double anio = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 18, 4)).toDouble();
+    double mes = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 14, 2)).toDouble();
+    double dia = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 12, 2)).toDouble();
+    double hora = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 9, 2)).toDouble();
+    double min = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 7, 2)).toDouble();
+    double seg = QString::fromStdString(adq_cab[cab_num_act].substr(fin_adq_nom - 5, 2)).toDouble();
+
+    struct tm t = {0};  // Initalize to all 0's
+    t.tm_year = anio-1900;  // This is year-1900, so 112 = 2012
+    t.tm_mon = mes-1;
+    t.tm_mday = dia;
+    t.tm_hour = hora;
+    t.tm_min = min;
+    t.tm_sec = seg;
+    time_t timeSinceEpoch = mktime(&t);
 
 
     // Calculo el tamaño del archivo
@@ -3641,6 +3746,14 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         // 3) Concateno los overflows al final de los bits de la spartan.
         TimeStamp_calib[cab_num_act](trama_actual) = cantidadDeOverFlows * pow(2,CANTIDADdEbITSeNTEROSsPARTAN) + tiempo_max;
     }
+
+
+
+    Tiempo_medicion[cab_num_act] = modification - timeSinceEpoch;
+
+    // Informo el tiempo de adquisicion
+    stream<<"Tiempo de adquisicion: "
+            ""<<Tiempo_medicion[cab_num_act]<<endl;
 
     free(vectorSalida);
     free(entrada);
