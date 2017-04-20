@@ -3258,7 +3258,7 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
     calibrador->setPathSalida(filename);
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_salida->setText(filename);
+    ui->textBrowser_salida->setText(filename+"/");
 }
 
 
@@ -3402,7 +3402,7 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
     QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de entrada"),
                            root);
 
-    calibrador->setPathEntrada(filename);
+    calibrador->setPathEntrada(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
     ui->textBrowser_entrada->setText(filename);

@@ -3410,7 +3410,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
         }
         else
         {
-            cout<<"No puedo leer archivo de calibracion de energia"<<endl;
+            cout<<"No puedo leer archivo de calibracion de energia ("<<nombre_ener.toStdString()<<")"<<endl;
         }
 
     }
@@ -3432,7 +3432,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
         }
         else
         {
-            cout<<"No puedo leer archivo de calibracion de tiempos"<<endl;
+            cout<<"No puedo leer archivo de calibracion de tiempos ("<<nombre_tiempo.toStdString()<<")"<<endl;
         }
 
 
@@ -3455,7 +3455,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
         }
         else
         {
-            cout<<"No puedo leer archivo de calibracion en posicion X"<<endl;
+            cout<<"No puedo leer archivo de calibracion en posicion X ("<<nombre_pos_x.toStdString()<<")"<<endl;
         }
 
 
@@ -3473,7 +3473,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
         }
         else
         {
-            cout<<"No puedo leer archivo de calibracion en posicion Y"<<endl;
+            cout<<"No puedo leer archivo de calibracion en posicion Y ("<<nombre_pos_y.toStdString()<<")"<<endl;
         }
 
     }
