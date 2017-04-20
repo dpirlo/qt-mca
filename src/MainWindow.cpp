@@ -3255,10 +3255,10 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
     QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de salida"),
                            root);
 
-    calibrador->setPathSalida(filename);
+    calibrador->setPathSalida(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_salida->setText(filename+"/");
+    ui->textBrowser_salida->setText(filename);
 }
 
 

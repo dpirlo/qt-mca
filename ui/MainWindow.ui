@@ -3570,9 +3570,9 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>683</x>
-        <y>40</y>
+        <y>50</y>
         <width>311</width>
-        <height>201</height>
+        <height>191</height>
        </rect>
       </property>
       <property name="font">
@@ -5983,7 +5983,7 @@ Tensión: </string>
        </rect>
       </property>
       <property name="text">
-       <string>Vusializar</string>
+       <string>Visualizar</string>
       </property>
      </widget>
     </widget>
