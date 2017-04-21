@@ -2149,9 +2149,9 @@ bool AutoCalib::calibrar_inter_count_skimming()
 
     // Saco el minimo de los 6
     double px_min_total = min(px_base);
-    stream<<"Minimo global de eventos: "<<px_min_total<<endl;
+    stream<<"Minimo global de eventos: "<<px_min_total<<" (Cabezal :"<<px_base.index_min()+1<<")"<<endl;
     double px_max_total = max(px_pico);
-    stream<<"Maximo global de eventos: "<<px_max_total<<endl;
+    stream<<"Maximo global de eventos: "<<px_max_total<<" (Cabezal :"<<px_base.index_max()+1<<")"<<endl;
 
     for(int cab_num_act ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
     {
@@ -2477,7 +2477,14 @@ bool AutoCalib::visualizar_planar(void)
 
         // Calculo las posiciones de los eventos si asi fuera necesario
         if (carga[2])
+        {
+            // Borro el almohadon anterior si lo hubiera
+            almohadon[cab_num_act].set_size(BinsAlmohadon,BinsAlmohadon);
+            almohadon[cab_num_act].zeros(BinsAlmohadon,BinsAlmohadon);
+
             calcular_almohadon(cab_num_act);
+        }
+
 
         // Para todos las visualizaciones seleccionadas
         for(int i = 0 ; i < Vis_List.length() ; i++)
@@ -2485,10 +2492,12 @@ bool AutoCalib::visualizar_planar(void)
             switch (Vis_List[i])
             {
                 case 0:    // Mostrar espectro crudo
+                    Espectro_emergente_crudo.clearGraphs();
                     plotear_espectro(cab_num_act, 0);
                     qApp->processEvents();
                     break;
                 case 1:    // Mostrar espectro calibrado
+                    Espectro_emergente.clearGraphs();
                     plotear_espectro(cab_num_act, 1);
                     qApp->processEvents();
                     break;
