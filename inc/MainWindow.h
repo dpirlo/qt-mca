@@ -204,58 +204,59 @@ private slots:
     void on_pushButton_3_clicked();
 
 private:
-    QString openConfigurationFile();
-    void getPaths();
-    int parseConfigurationFile(QString filename);
-    QStringList availablePortsName();
-    QString port_name;
-    string getLocalDateAndTime();
-    QString getHead(string tab);
-    string initHead(int head);
-    string initSP3(int head);
-    void setCalibrationTables(int head);
-    void setInitialConfigurations();
-    void setLabelState(bool state, QLabel *label);
-    void setTextBrowserState(bool state, QTextBrowser *tbro);
-    void SetButtonState(bool state, QPushButton * button, bool disable=false);
-    string readString(char delimeter='\r');
-    string readBufferString(int buffer_size);
-    size_t sendString(string msg, string end);
-    void manageHeadCheckBox(string tab, bool show);
-    void manageHeadComboBox(string tab, bool show);
-    QString getMCA(string tab, string function, bool multimode, int channels, string pmt="0");
-    QString getMultiMCA(string tab);
-    QString getHeadMCA(string tab);
-    void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
-    void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
-    void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
-    void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
-    int setPSOCDataStream(string tab, string function, QString psoc_value="");
-    void setPMTCustomPlotEnvironment(QList<QString> qlist);
-    void setHeadCustomPlotEnvironment();        
-    QVector<int> getCustomPlotParameters();
-    void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
-    void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
-    QString setHV(string tab, string hv_value, string pmt);
-    QString setCalibTable(string function, QVector<double> table, string msg_compare);
-    QString setTime(string tab, double time_value, string pmt);
-    int getPMT(QLineEdit *line_edit);
-    QString getPSOCAlta(QLineEdit *line_edit);
-    void setPMT(int value);
-    string getHVValue(QLineEdit *line_edit, int value=0);
-    void resetHitsValues();
-    void setQListElements();
-    void drawTemperatureBoard();
-    void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
-    void clearTemperatureBoard();
-    temp_code getTemperatureCode(double temperature);
-    QVector<double> getValuesFromFiles(QString filename, bool hv=false);
-    void setCoincidenceModeDataStream(string stream);
-    string getCoincidenceAdvanceModeDataStream();
-    void initCoincidenceMode();
-    void setCoincidenceModeWindowTime();
-    void getARPETStatus();
-    void showMCAEStreamDebugMode(string msg);
+  QString openConfigurationFile();
+  void getPaths();
+  int parseConfigurationFile(QString filename);
+  QStringList availablePortsName();  
+  QString port_name;
+  string getLocalDateAndTime();
+  QString getHead(string tab);
+  string initHead(int head);
+  string initSP3(int head);
+  void setCalibrationTables(int head);
+  void setInitialConfigurations();
+  void setLabelState(bool state, QLabel *label);
+  void setTextBrowserState(bool state, QTextBrowser *tbro);
+  void setButtonState(bool state, QPushButton * button, bool disable=false);
+  void setButtonAdquireState(bool state, bool disable=false);
+  string readString(char delimeter='\r');
+  string readBufferString(int buffer_size);
+  size_t sendString(string msg, string end);
+  void manageHeadCheckBox(string tab, bool show);
+  void manageHeadComboBox(string tab, bool show);
+  QString getMCA(string tab, string function, bool multimode, int channels, string pmt="0");
+  QString getMultiMCA(string tab);
+  QString getHeadMCA(string tab);
+  void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
+  void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
+  void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
+  void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
+  int setPSOCDataStream(string tab, string function, QString psoc_value="");
+  void setPMTCustomPlotEnvironment(QList<QString> qlist);
+  void setHeadCustomPlotEnvironment();
+  QVector<int> getCustomPlotParameters();
+  void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
+  void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
+  QString setHV(string tab, string hv_value, string pmt);
+  QString setCalibTable(string function, QVector<double> table, string msg_compare);
+  QString setTime(string tab, double time_value, string pmt);
+  int getPMT(QLineEdit *line_edit);
+  QString getPSOCAlta(QLineEdit *line_edit);
+  void setPMT(int value);
+  string getHVValue(QLineEdit *line_edit, int value=0);
+  void resetHitsValues();
+  void setQListElements();
+  void drawTemperatureBoard();
+  void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
+  void clearTemperatureBoard();
+  temp_code getTemperatureCode(double temperature);
+  QVector<double> getValuesFromFiles(QString filename, bool hv=false);
+  void setCoincidenceModeDataStream(string stream);
+  string getCoincidenceAdvanceModeDataStream();
+  void initCoincidenceMode();
+  void setCoincidenceModeWindowTime();
+  void getARPETStatus();
+  void showMCAEStreamDebugMode(string msg);
 
     /* Area de prueba/testing */
 
@@ -265,7 +266,6 @@ private:
     SetPreferences *pref;
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
-    shared_ptr<AutoCalib> calibrador;
     string initfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
@@ -321,7 +321,28 @@ public:
      *
      * @param status
      */
-    void setHitsInit(bool status) { init = status;}
+  void setHitsInit(bool status) { init = status;}
+  /**
+     * @brief getAT
+     *
+     * Obtiene el valor de alta tensión del cabezal seleccionado
+     *
+     */
+  int getAT() const {return AT;}
+  /**
+     * @brief getLowLimit
+     *
+     * Obtiene el límite de ventana inferior para el cabezal seleccionado
+     *
+     */
+  int getLowLimit() const {return LowLimit;}
+  /**
+     * @brief getTarget
+     *
+     * Obtiene el canal de _target_ donde se realizó la calibración. Se utiliza en autocalibración.
+     *
+     */
+  int getTarget() const {return Target;}
 };
 
 #endif // MAINWINDOW_H

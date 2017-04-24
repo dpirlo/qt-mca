@@ -23,12 +23,12 @@
 
 namespace ap {
 
-    class Exceptions: public QException
-    {
-    public:
-        Exceptions(const char *desc);
-        const char *excdesc;
-    };
+  class Exceptions: public QException
+  {
+  public:
+    Exceptions(const char *desc);
+    const char *excdesc;
+  };
 }
 
 #endif // APEXCEPTIONS_H

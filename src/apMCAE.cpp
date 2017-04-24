@@ -143,18 +143,16 @@ error_code MCAE::portDisconnect()
  * Escritura sobre el objeto puerto serie _port_
  *
  * @param msg
+ * @param tty_port_name
  * @return Tamaño de la trama en bytes
  */
 size_t MCAE::portWrite(string *msg, const char *tty_port_name)
 {
-    //portConnect(tty_port_name);
+  char c_msg[msg->size()+1];
+  strcpy(c_msg, msg->c_str());
+  size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
 
-    char c_msg[msg->size()+1];
-    strcpy(c_msg, msg->c_str());
-    size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
-    //portDisconnect();
-
-    return bytes_transferred;
+  return bytes_transferred;
 }
 /**
  * @brief MCAE::portRead
@@ -196,7 +194,8 @@ size_t MCAE::portRead(char *c_msg)
  *
  * @return La línea leída en _string_
  */
-string MCAE::portReadMCAELine() {
+string MCAE::portReadMCAELine()
+{
   char c;
   string msg;
   while(true) {
@@ -219,7 +218,8 @@ string MCAE::portReadMCAELine() {
  *
  * @return La línea leída en _string_
  */
-string MCAE::portReadPSOCLine() {
+string MCAE::portReadPSOCLine()
+{
   char c;
   string msg;
   while(true) {
@@ -300,20 +300,21 @@ bool MCAE::portReadOneChar(char& val)
  *
  * @param msg
  * @param delimeter
+ * @param tty_port_name
  */
 void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name)
 {
-    //portConnect(tty_port_name);
-    char c;
-    while (portReadOneChar(c) && c != delimeter) {
-        msg->push_back(c);
-        }
+  char c;
+  while (portReadOneChar(c) && c != delimeter)
+    {
+      msg->push_back(c);
+    }
 
     if (c != delimeter) {
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
-    //portDisconnect();
+
 }
 /**
  * @brief MCAE::portReadBufferString
@@ -322,22 +323,23 @@ void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name
  *
  * @param msg
  * @param buffer_size
+ * @param tty_port_name
  */
 void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_port_name)
 {
-    //portConnect(tty_port_name);
-    char c;
-    int buffer=1;
-    while (portReadOneChar(c) && buffer <= buffer_size) {
-        msg->push_back(c);
-        buffer++;
-        }
-
-    if (buffer <= buffer_size) {
-        Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
-        throw exception_timeout;
+  char c;
+  int buffer=1;
+  while (portReadOneChar(c) && buffer <= buffer_size)
+    {
+      msg->push_back(c);
+      buffer++;
     }
-    //portDisconnect();
+
+  if (buffer <= buffer_size)
+    {
+      Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
+      throw exception_timeout;
+    }  
 }
 /**
  * @brief MCAE::portReadCharArray
@@ -376,7 +378,75 @@ error_code MCAE::portFlush()
     if (!isFlushed)
         ec = error_code(errno,error::get_system_category());
 
-    return ec;
+  return ec;
+}
+/**
+ * @brief MCAE::sendString
+ *
+ * Envío de la trama 'msg' al puerto serie
+ *
+ * @param msg
+ * @param end
+ * @param port_name
+ * @return
+ */
+size_t MCAE::sendString(string msg, string end, string port_name)
+{
+  portFlush();
+  size_t bytes_transfered = 0;
+
+  try{
+    string sended= msg + end;
+    bytes_transfered = portWrite(&sended, port_name.c_str());
+  }
+  catch(boost::system::system_error e){
+    Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+    throw exception_serial_port;
+  }
+
+  return bytes_transfered;
+}
+/**
+ * @brief MCAE::readString
+ *
+ * Lectura del 'buffer' serie hasta recibir el _delimeter_
+ *
+ * @param delimeter
+ * @param port_name
+ * @return
+ */
+string MCAE::readString(char delimeter, string port_name)
+{
+  string msg;
+  try{
+    portReadString(&msg,delimeter, port_name.c_str());
+  }
+  catch( Exceptions & ex ){
+    Exceptions exception_stop(ex.excdesc);
+    throw exception_stop;
+  }
+  return msg;
+}
+/**
+ * @brief MCAE::readBufferString
+ *
+ * Lectura de un buffer de tamaño 'buffer_size'
+ *
+ * @param buffer_size
+ * @param port_name
+ * @return
+ */
+string MCAE::readBufferString(int buffer_size, string port_name)
+{
+  string msg;
+  try{
+    portReadBufferString(&msg,buffer_size, port_name.c_str());
+  }
+  catch( Exceptions & ex ){
+    Exceptions exception_stop(ex.excdesc);
+    throw exception_stop;
+  }
+  return msg;
 }
 /**
  * @brief MCAE::convertHexToDec
@@ -711,8 +781,7 @@ void MCAE::setPSOCStream(string function, string psoc_value)
 /**
  * @brief MCAE::convertDoubleToInt
  *
- * Conversión de un valor en _double_ multiplicado por 1000 a _int_
- * double=double*1000;
+ * Conversión de un valor en _double_ a _int_
  * int=(int)round(double)
  *
  * @param value
@@ -720,8 +789,8 @@ void MCAE::setPSOCStream(string function, string psoc_value)
  */
 int MCAE::convertDoubleToInt(double value)
 {
-    int value_int;
-    value=value*1000;
+  int value_int;
+  /** @note: Se elimina esta línea: value=value*1000; Modificado en el firmware de FPGA*/
 
     return value_int=(int)round(value);
 }
@@ -1101,10 +1170,124 @@ QVector<QString> MCAE::parserPSOCStream(string stream)
     token = line.at(2).toStdString().substr(0,pos_line);
     line.replace(2,QString::fromStdString(token));
 
-    return line;
+  return line;
 }
+/**
+ * @brief MCAE::getMCA
+ *
+ * Adquisición de MCA
+ *
+ * @param pmt
+ * @param function
+ * @param head
+ * @param channels
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::getMCA(string pmt, string function, string head, int channels, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + function);
+  setMCAEStream(pmt, channels*6+16, getData_MCA());
+  char delimeter='\r';
+  string msg, msg_data;
 
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+  msg_data = readBufferString(channels*6+16, port_name);
 
-// TESTING
+  getMCASplitData(msg_data, channels);
 
+  return msg;
+}
+/**
+ * @brief MCAE::setHV
+ *
+ * Configuración de la tensión de dinodo del PMT
+ *
+ * @param head
+ * @param pmt
+ * @param channel_dec
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setHV(string head, string pmt, string channel_dec, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+  setMCAEStream(pmt, 0, getSetHV_MCA(), channel_dec);
+  char delimeter='\r';
+  string msg;
 
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return msg;
+}
+/**
+ * @brief MCAE::setCalibTable
+ *
+ * Configuración de las tablas de calibración
+ *
+ * @param head
+ * @param calib_function
+ * @param table
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setCalibTable(string head, string calib_function, QVector<double> table, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+  setMCAEStream(calib_function, table);
+  char delimeter='\r';
+  string msg;
+
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return msg;
+}
+/**
+ * @brief MCAE::setTime
+ *
+ * Configura el tiempo relativo para cada PMT (obtenido en la calibración)
+ *
+ * @param head
+ * @param time_value
+ * @param pmt
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::setTime(string head, double time_value, string pmt, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+  setMCAEStream(pmt, getSet_Time_MCA(), time_value);
+  char delimeter='\r';
+  string msg;
+
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return msg;
+}
+/**
+ * @brief MCAE::getTemp
+ *
+ * Método que obtiene la temperatura del PMT
+ *
+ * @param head
+ * @param pmt
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::getTemp(string head, string pmt, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+  setMCAEStream(pmt, 0, getTemp_MCA());
+
+  char delimeter='\r';
+  string msg;
+
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return msg;
+}

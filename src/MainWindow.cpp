@@ -344,31 +344,31 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
-  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
-  string msg;
-  try
-  {
-      sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
-      msg = readString();
-      if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
-      {
-        SetButtonState(true,ui->pushButton_arpet_on);
-        SetButtonState(true,ui->pushButton_arpet_off, true);
-      } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
-      {
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-      }
-  }
-  catch(Exceptions & ex)
-  {
-    if(debug)
+    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    string msg;
+    try
     {
-      cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+        sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
+        msg = readString();
+        if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
+            {
+                setButtonState(true,ui->pushButton_arpet_on);
+                setButtonState(true,ui->pushButton_arpet_off, true);
+            } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
+            {
+                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+            }
     }
-    QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-  }
+    catch(Exceptions & ex)
+    {
+        if(debug)
+            {
+                cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+                cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            }
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+    }
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -398,29 +398,29 @@ void MainWindow::getHeadStatus()
   initHead(head_index);
   initSP3(head_index);
 
-  string msg;
-  QVector<QString> ans_psoc;
-  setPSOCDataStream("config",arpet->getPSOC_STA());
-  try
-  {
-      sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-      msg = readString();
-      ans_psoc = arpet->parserPSOCStream(msg);
-      hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
-      if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
-        setLabelState(true, hv_status_table[head_index-1]);
-      else
-        setLabelState(false, hv_status_table[head_index-1]);
-  }
-  catch(Exceptions & ex)
-  {
-    if(debug)
+    string msg;
+    QVector<QString> ans_psoc;
+    setPSOCDataStream("config",arpet->getPSOC_STA());
+    try
     {
-      cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        ans_psoc = arpet->parserPSOCStream(msg);
+        hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
+        if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
+            setLabelState(true, hv_status_table[head_index-1]);
+        else
+            setLabelState(false, hv_status_table[head_index-1]);
     }
-    QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-  }
+    catch(Exceptions & ex)
+    {
+        if(debug)
+            {
+                cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
+                cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            }
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+    }
 
 }
 /**
@@ -442,16 +442,16 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         sleep(1);
         sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
         msg = readString();
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
-        SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
         if(debug) cout<<"AR-PET ENCENDIDO"<<endl;
 
     }
     catch(Exceptions & ex)
     {
-      if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-      SetButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
+        if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -469,15 +469,15 @@ void MainWindow::on_pushButton_arpet_off_clicked()
     {
         sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
         msg = readString();
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-        SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
         if(debug) cout<<"AR-PET APAGADO"<<endl;
     }
     catch(Exceptions & ex)
     {
-      if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-      SetButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
+        if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
@@ -645,12 +645,26 @@ void MainWindow::on_pushButton_initialize_clicked()
      return;
    }
 
-   int head_index=getHead("config").toInt();
-   if(debug) cout<<"Cabezal: "<<head_index<<endl;
+    string msg;
+    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
+    if(debug) cout<<"Cabezal: "<<head_index<<endl;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+        msg = readString();
+        hv_status_table[head_index-1]->setText(psoc_alta);
+        if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
+    }
+    catch(Exceptions & ex)
+    {
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
 
-   /* Configuración de las tablas de calibración */
-   setCalibrationTables(head_index);
-   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    /* Configuración de las tablas de calibración */
+    setCalibrationTables(head_index);
+    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
@@ -667,7 +681,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
-        if(debug) cout<< "HV configurado"<<endl;
+        if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
     catch(Exceptions & ex)
     {
@@ -1159,30 +1173,33 @@ void MainWindow::drawTemperatureBoard()
 
     try
     {
+        setButtonAdquireState(true);
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            setMCAEDataStream("mca", arpet->getFunCSP3(), QString::number(pmt+1).toStdString(), arpet->getTemp_MCA());
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-            string msg = readString();
-            temp=arpet->getPMTTemperature(msg);
-            if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
-            if(debug)
             {
-                cout<<"================================"<<endl;
-                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                showMCAEStreamDebugMode(msg);
-                cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
-                cout<<"================================"<<endl;
+                string msg = arpet->getTemp(getHead("mca").toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+                temp = arpet->getPMTTemperature(msg);
+                if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
+                if(debug)
+                    {
+                        cout<<"================================"<<endl;
+                        cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                        showMCAEStreamDebugMode(msg);
+                        cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
+                        cout<<"================================"<<endl;
+                    }
+                setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
             }
-            setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
         }
     }
     catch( Exceptions & ex )
     {
-      if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        setButtonAdquireState(false);
+        if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
+    setButtonAdquireState(true, true);
     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
     double t_max = *max_element(temp_vec.begin(),temp_vec.end());
     double t_min = *min_element(temp_vec.begin(),temp_vec.end());
@@ -1300,23 +1317,25 @@ void MainWindow::setTabMode(int index)
  */
 QString MainWindow::getHeadMCA(string tab)
 {
-   QString msg;
-   QString head=getHead(tab);
-   ui->specHead->clearGraphs();
-   try
-   {
-     msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
-     if(debug) showMCAEStreamDebugMode(msg.toStdString());
-     addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
-   }
-   catch(Exceptions & ex)
-   {
-     if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
-     QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-   }
-   ui->specHead->rescaleAxes();
-   
-   return msg;
+    QString msg;
+    QString head=getHead(tab);
+    ui->specHead->clearGraphs();
+    try
+    {
+        setButtonAdquireState(true);
+        msg = getMCA(tab, arpet->getFunCHead(), true, CHANNELS);
+        if(debug) showMCAEStreamDebugMode(msg.toStdString());
+        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);        
+    }
+    catch(Exceptions & ex)
+    {
+        setButtonAdquireState(false);
+        if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    setButtonAdquireState(true, true);
+
+    return msg;
 }
 /**
  * @brief MainWindow::getMultiMCA
@@ -1328,38 +1347,41 @@ QString MainWindow::getHeadMCA(string tab)
  */
 QString MainWindow::getMultiMCA(string tab)
 {
-   int size_pmt_selected = pmt_selected_list.length();   
-   QString msg;
+    int size_pmt_selected = pmt_selected_list.length();
+    QString msg;
 
-   if (pmt_selected_list.isEmpty())
-   {
-     if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
-     QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-     return msg;
-   }
-   ui->specPMTs->clearGraphs();
-   try
-   {
-     for (int index=0;index<size_pmt_selected;index++)
-     {
-        string pmt = pmt_selected_list.at(index).toStdString();
-        msg = getMCA(tab, arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
-        if(debug)
+    if (pmt_selected_list.isEmpty())
         {
-          cout<<"PMT: "<<pmt<<" "<<endl;
-          showMCAEStreamDebugMode(msg.toStdString());
+            if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+            return msg;
         }
-        addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
-     }
-     if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
-   }
-   catch(Exceptions & ex)
-   {
-     if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
-     QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-   }
-   ui->specPMTs->rescaleAxes();
-   return msg;
+    ui->specPMTs->clearGraphs();
+    try
+    {
+        setButtonAdquireState(true);
+        for (int index=0;index<size_pmt_selected;index++)
+            {
+                string pmt = pmt_selected_list.at(index).toStdString();
+                msg = getMCA(tab, arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
+                if(debug)
+                    {
+                        cout<<"PMT: "<<pmt<<" "<<endl;
+                        showMCAEStreamDebugMode(msg.toStdString());
+                    }
+                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);                
+            }
+        if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
+    }
+    catch(Exceptions & ex)
+    {
+        setButtonAdquireState(false);
+        if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    setButtonAdquireState(true, true);
+
+    return msg;
 }
 /**
  * @brief MainWindow::getMCA
@@ -1375,14 +1397,16 @@ QString MainWindow::getMultiMCA(string tab)
  */
 QString MainWindow::getMCA(string tab, string function, bool multimode, int channels, string pmt)
 {
-    setMCAEDataStream(tab, function, pmt, arpet->getData_MCA(), channels*6+16);
-    string msg, msg_data;
-
-    sendString(arpet->getTrama_MCAE(), arpet->getEnd_MCA());
-    msg = readString();
-    msg_data = readBufferString(channels*6+16);
-
-    arpet->getMCASplitData(msg_data, channels);
+    string msg;
+    try
+    {
+        msg= arpet->getMCA(pmt, function, getHead(tab).toStdString(), channels, port_name.toStdString());
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_mca(ex.excdesc);
+        throw exception_mca;
+    }
 
     long long time_mca;
     int frame, HV_pmt, offset, var;
@@ -1431,17 +1455,15 @@ QString MainWindow::getMCA(string tab, string function, bool multimode, int chan
  */
 QString MainWindow::setCalibTable(string function, QVector<double> table, string msg_compare)
 {
-    setMCAEDataStream("config", function, table);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setCalibTable( getHead("config").toStdString(), function, table, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
-        Exceptions exception_time_out(ex.excdesc);
-        throw exception_time_out;
+        Exceptions exception_calib(ex.excdesc);
+        throw exception_calib;
     }
 
     if(!arpet->verifyMCAEStream(msg, msg_compare))
@@ -1464,17 +1486,15 @@ QString MainWindow::setCalibTable(string function, QVector<double> table, string
  */
 QString MainWindow::setTime(string tab, double time_value, string pmt)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSet_Time_MCA(), time_value);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setTime(getHead(tab).toStdString(), time_value, pmt, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
-        Exceptions exception_hv(ex.excdesc);
-        throw exception_hv;
+        Exceptions exception_time(ex.excdesc);
+        throw exception_time;
     }
 
     return QString::fromStdString(msg);
@@ -1491,12 +1511,10 @@ QString MainWindow::setTime(string tab, double time_value, string pmt)
  */
 QString MainWindow::setHV(string tab, string hv_value, string pmt)
 {
-    setMCAEDataStream(tab, arpet->getFunCSP3(), pmt, arpet->getSetHV_MCA(),0, hv_value);
     string msg;
     try
     {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg = readString();
+        msg = arpet->setHV(getHead(tab).toStdString(), pmt, hv_value, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
@@ -1720,26 +1738,25 @@ void MainWindow::on_pushButton_reset_clicked()
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
     /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA */
     switch (adquire_mode) {
-    case PMT:
-        if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
-        resetHitsValues();
-
-        (pmt_selected_list);
-        removeAllGraphsPMT();
-        break;
-    case CABEZAL:
-        if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
-        resetHitsValues();
-        setHeadCustomPlotEnvironment();
-        removeAllGraphsHead();
-        break;
-    case TEMPERATURE:
-        if(debug) cout<<"Se reiniciaron los valores de temperatura"<<endl;
-        clearTemperatureBoard();
-        break;
-    default:
-        break;
-    }
+        case PMT:
+            if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
+            resetHitsValues();
+            setPMTCustomPlotEnvironment(pmt_selected_list);
+            removeAllGraphsPMT();
+            break;
+        case CABEZAL:
+            if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
+            resetHitsValues();
+            setHeadCustomPlotEnvironment();
+            removeAllGraphsHead();
+            break;
+        case TEMPERATURE:
+            if(debug) cout<<"Se reiniciaron los valores de temperatura"<<endl;
+            clearTemperatureBoard();
+            break;
+        default:
+            break;
+        }
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
 /**
@@ -1787,13 +1804,14 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     {
         q_msg =setHV("mca",getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value)<<endl;
+        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+"\nCanal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+"\nConfiguración OK.");
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-
+    ui->label_title_output->setText("Tensión de Dinodo");
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
@@ -1886,8 +1904,8 @@ void MainWindow::on_pushButton_p_5_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
@@ -2012,15 +2030,16 @@ int MainWindow::parseConfigurationFile(QString filename)
 
     QSettings settings(filename, QSettings::IniFormat);
 
-    /* Parameters */
-    AT = settings.value("SetUp/AT", "US").toInt();
-    LowLimit = settings.value("SetUp/LowLimit", "US").toInt();
 
     /* Paths to the configuration files */
 
     QString head= getHead("config");
     QString root=settings.value("Paths/root", "US").toString();
 
+    /* Parameters */
+    AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
+    LowLimit = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
+    Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
     coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
     hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
     coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
@@ -2067,7 +2086,7 @@ void MainWindow::getPaths()
 }
 
 /**
- * @brief MainWindow::SetLabelState
+ * @brief MainWindow::setLabelState
  * @param state
  * @param label
  */
@@ -2103,12 +2122,12 @@ void MainWindow::setTextBrowserState(bool state, QTextBrowser *tbro)
     }
 }
 /**
- * @brief MainWindow::SetButtonState
+ * @brief MainWindow::setButtonState
  * @param state
  * @param button
  * @param disable
  */
-void MainWindow::SetButtonState(bool state, QPushButton * button, bool disable)
+void MainWindow::setButtonState(bool state, QPushButton * button, bool disable)
 {
     QString color;
 
@@ -2127,6 +2146,33 @@ void MainWindow::SetButtonState(bool state, QPushButton * button, bool disable)
     button->setStyleSheet(color);
     button->update();
     button->setChecked(!disable);
+}
+/**
+ * @brief MainWindow::setButtonAdquireState
+ * @param state
+ * @param disable
+ */
+void MainWindow::setButtonAdquireState(bool state, bool disable)
+{
+    QString qt_text;
+
+    if (state && !disable)
+        {
+           qt_text="Adquiriendo";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    else if (!state && !disable)
+        {
+           qt_text="Error";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    else
+        {
+           qt_text="Adquirir";
+           setButtonState(state,ui->pushButton_adquirir,disable);
+        }
+    ui->pushButton_adquirir->setText(qt_text);
+    ui->pushButton_adquirir->update();
 }
 
 /**
@@ -2198,11 +2244,11 @@ string MainWindow::readString(char delimeter)
 {
     string msg;
     try{
-         arpet->portReadString(&msg,delimeter,port_name.toStdString().c_str());
+        msg = arpet->readString(delimeter, port_name.toStdString());
     }
     catch( Exceptions & ex ){
-         Exceptions exception_stop(ex.excdesc);
-         throw exception_stop;
+        Exceptions exception_stop(ex.excdesc);
+        throw exception_stop;
     }
     return msg;
 }
@@ -2218,11 +2264,11 @@ string MainWindow::readBufferString(int buffer_size)
 {
     string msg;
     try{
-         arpet->portReadBufferString(&msg,buffer_size, port_name.toStdString().c_str());
+        msg = arpet->readBufferString(buffer_size,port_name.toStdString());
     }
     catch( Exceptions & ex ){
-         Exceptions exception_stop(ex.excdesc);
-         throw exception_stop;
+        Exceptions exception_stop(ex.excdesc);
+        throw exception_stop;
     }
     return msg;
 }
@@ -2241,8 +2287,7 @@ size_t MainWindow::sendString(string msg, string end)
     size_t bytes_transfered = 0;
 
     try{
-        string sended=msg + end;
-        bytes_transfered = arpet->portWrite(&sended,port_name.toStdString().c_str());
+        bytes_transfered = arpet->sendString(msg, end, port_name.toStdString());
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
@@ -2583,25 +2628,20 @@ QVector<int> MainWindow::getCustomPlotParameters()
  */
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
-
-  for (unsigned int index=0; index < qlist.length(); index++)
-  {
-
-    qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
-  }
-
+    for (unsigned int index=0; index < qlist.length(); index++)
+        {
+            qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
+        }
 }
 /**
  * @brief MainWindow::setHeadCustomPlotEnvironment
  */
 void MainWindow::setHeadCustomPlotEnvironment()
 {
-
-  for (unsigned int index=0; index < HEADS; index++)
-  {
-
-    qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
-  }
+    for (unsigned int index=0; index < HEADS; index++)
+        {
+            qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
+        }
 }
 /**
  * @brief MainWindow::addGraph
@@ -2616,19 +2656,20 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
   channels_ui.resize(channels);
   channels_ui = arpet->getChannels();
 
-  graph->addGraph();
-  graph->graph()->setName(graph_legend);
-  graph->graph()->setData(channels_ui,hits);
-  graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
-  QPen graphPen;
-  graphPen.setColor(QColor(param[0], param[1], param[2]));
-  graphPen.setWidthF(param[5]);
-  graph->graph()->setPen(graphPen);
-  graph->legend->setVisible(true);
-  graph->legend->setWrap(4);
-  graph->legend->setRowSpacing(1);
-  graph->legend->setColumnSpacing(2);
-  graph->replot();
+    graph->addGraph();
+    graph->graph()->setName(graph_legend);
+    graph->graph()->setData(channels_ui,hits);
+    graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
+    QPen graphPen;
+    graphPen.setColor(QColor(param[0], param[1], param[2]));
+    graphPen.setWidthF(param[5]);
+    graph->graph()->setPen(graphPen);
+    graph->legend->setVisible(true);
+    graph->legend->setWrap(4);
+    graph->legend->setRowSpacing(1);
+    graph->legend->setColumnSpacing(2);
+    graph->replot();
+    graph->rescaleAxes();
 }
 /**
  * @brief MainWindow::axisLabelDoubleClickPMT
