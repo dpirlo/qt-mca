@@ -266,6 +266,7 @@ private:
     SetPreferences *pref;
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
+    shared_ptr<AutoCalib> calibrador;
     string initfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
@@ -280,7 +281,7 @@ private:
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;    
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
-    int  AT, LowLimit;
+    int  AT, LowLimit, Target;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
 
