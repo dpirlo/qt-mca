@@ -14,12 +14,17 @@ MainWindow::MainWindow(QWidget *parent) :
     debug(false),
     init(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
+    root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
+    root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
+    preferencesdir(".qt-mca"),
+    conf_set_file("/initfile_path.txt"),
+    calib_set_file("/calibracion_path.txt"),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
-    getPaths();
+    getPaths();    
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -67,8 +72,13 @@ void MainWindow::setInitialConfigurations()
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
-    SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal" );
+    SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal");
     resetHitsValues();
+
+    /*Configuración inicial de preferencias*/
+    writePreferencesFile(initfile, conf_set_file);
+    writePreferencesFile(root_calib_path, calib_set_file);
+    root_calib_path = readPreferencesFile(calib_set_file);
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -90,7 +100,6 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
   graph->legend->setFont(legendFont);
   graph->legend->setSelectedFont(legendFont);
   graph->legend->setSelectableParts(QCPLegend::spItems);
-
   graph->plotLayout()->insertRow(0);
 }
 /**
@@ -318,13 +327,58 @@ string MainWindow::getLocalDateAndTime()
  */
 void MainWindow::on_actionPreferencias_triggered()
 {
+    pref->setPreferencesDir(preferencesdir);
+    pref->setCalibSetFile(calib_set_file);
+    pref->setConfSetFile(conf_set_file);
     int ret = pref->exec();
-    bool debug_console=pref->GetDegugConsoleValue();
+    bool debug_console = pref->getDegugConsoleValue();
+    QString file = pref->getInitFileConfigPath();
+    QString calib_path = pref->getCalibDirectoryPath();    
+
 
     if(ret == QDialog::Accepted)
     {
         setDebugMode(debug_console);
+        setInitFileConfigPath(file);
+        writePreferencesFile(file, conf_set_file, true);
+        writePreferencesFile(calib_path, calib_set_file, true);
+
     }
+}
+
+int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
+{
+    QString path = QDir::homePath() + "/" + preferencesdir;
+    QDir dir(path);
+    if (!dir.exists())
+    {
+      dir.mkdir(path);
+    }
+
+    QFile file( path + "/" + filename );
+    bool exist = file.exists();
+
+    if (!force)
+    {
+         if (!exist)
+         {
+             file.open(QIODevice::WriteOnly | QIODevice::Text);
+             if(debug) qDebug() << "No se encuentra el archivo de preferencias. Se crea el archivo por defecto.";
+             QTextStream out(&file);
+             out << pref;
+             file.close();
+             return MCAE::FILE_NOT_FOUND;
+         }
+    }
+    else
+    {
+        file.open(QIODevice::WriteOnly | QIODevice::Text);
+        QTextStream out(&file);
+        out << pref;
+        file.close();
+    }
+
+    return MCAE::OK;
 }
 /**
  * @brief MainWindow::showMCAEStreamDebugMode
@@ -332,7 +386,7 @@ void MainWindow::on_actionPreferencias_triggered()
  */
 void MainWindow::showMCAEStreamDebugMode(string msg)
 {
-    cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE()<<endl;
+    cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
 }
 
 /* Pestaña: "Configuración" */
@@ -536,9 +590,10 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     openConfigurationFile();
+    writePreferencesFile(initfile, conf_set_file, true);
     if(debug)
     {
-      cout<<"El nuevo archivo de configuración: "<<initfile<<endl;
+      cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
       cout<<"[END-LOG-DBG] ====================================================="<<endl;
     }
 
@@ -548,6 +603,7 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
  */
 void MainWindow::on_pushButton_init_configure_clicked()
 {
+    /** @todo: Ver de agregar un boton indicando el estado de conexión del puerto */
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(arpet->isPortOpen())
     {
@@ -1709,6 +1765,7 @@ void MainWindow::resetHitsValues()
  */
 void MainWindow::on_pushButton_adquirir_clicked()
 {
+    /** @todo: Agregar el modo continuo y el multicabezal */
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
@@ -1734,9 +1791,10 @@ void MainWindow::on_pushButton_adquirir_clicked()
  */
 void MainWindow::on_pushButton_reset_clicked()
 {
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
-    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA */
+
     switch (adquire_mode) {
         case PMT:
             if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
@@ -2015,26 +2073,15 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
  * @param filename
  * @return
  */
-int MainWindow::parseConfigurationFile(QString filename)
-{
-    QFile configfile(filename);
-    if (!configfile.open(QIODevice::ReadOnly)) {
-        filename=openConfigurationFile();
-        configfile.setFileName(filename);
-        if (!configfile.open(QIODevice::ReadOnly)){
-            if(debug) qDebug() << "No se puede abrir el archivo de configuración. Error: " << configfile.errorString();
-            QMessageBox::critical(this,tr("Atención"),tr("No se puede abrir el archivo de configuración."));
-            return MCAE::FILE_NOT_FOUND;
-        }
-    }
-
+int MainWindow::parseConfigurationFile()
+{        
+    QString filename = readPreferencesFile(conf_set_file);
     QSettings settings(filename, QSettings::IniFormat);
-
 
     /* Paths to the configuration files */
 
-    QString head= getHead("config");
-    QString root=settings.value("Paths/root", "US").toString();
+    QString head = getHead("config");
+    QString root = settings.value("Paths/root", "US").toString();
 
     /* Parameters */
     AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
@@ -2045,9 +2092,7 @@ int MainWindow::parseConfigurationFile(QString filename)
     coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
     coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
     coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
-    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
-
-    configfile.close();
+    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();    
 
     return MCAE::OK;
 }
@@ -2058,21 +2103,38 @@ int MainWindow::parseConfigurationFile(QString filename)
  */
 QString MainWindow::openConfigurationFile()
 {
-    QString root="/media/arpet/pet/calibraciones/03-info/cabezales";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de configuración"),
-                                                    root,
+                                                    root_config_path,
                                                     tr("Configuración (*.ini);;Texto (*.txt)"));
-    initfile = filename.toStdString();
+    initfile = filename;
     return filename;
 }
-
+/**
+ * @brief MainWindow::readPreferencesFile
+ * @param file
+ * @return filename
+ */
+QString MainWindow::readPreferencesFile(QString file)
+{
+    QString filename;
+    QString pref_path = QDir::homePath() + "/" + preferencesdir + "/" + file;
+    QFile prefconfigfile(pref_path);
+    if (!prefconfigfile.open(QIODevice::ReadOnly))
+      {
+        if(debug) qDebug() << "No se puede abrir el archivo de preferencias. Por favor configure la ruta al archivo de configuración desde el menú preferencias. Error: " << prefconfigfile.errorString();
+        QMessageBox::critical(this,tr("Atención"),tr("No se encuentra el archivo de preferencias. Esto se debe configurar desde el menú preferencias."));
+        return filename;
+      }
+    filename = prefconfigfile.readLine();
+    prefconfigfile.close();
+    return filename;
+}
 /**
  * @brief MainWindow::getPaths
  */
 void MainWindow::getPaths()
 {
-    QString filename=QString::fromStdString(initfile);
-    parseConfigurationFile(filename);
+    parseConfigurationFile();
 
     ui->textBrowser_triple_ventana->setText(coefest);
     ui->textBrowser_hv->setText(hvtable);
@@ -2080,7 +2142,6 @@ void MainWindow::getPaths()
     ui->textBrowser_posicion_X->setText(coefx);
     ui->textBrowser_posicion_Y->setText(coefy);
     ui->textBrowser_tiempos_cabezal->setText(coefT);
-
     ui->lineEdit_alta->setText(QString::number(AT));
     ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
 }
@@ -3053,8 +3114,6 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
   ui->statusBar->showMessage(message, 2500);
 }
 
-/////// TESTING //////////////
-
 /* Autocalib */
 
 void MainWindow::on_pushButton_clicked()
@@ -3197,10 +3256,8 @@ void MainWindow::on_pushButton_2_clicked()
 void MainWindow::on_pushButton_triple_ventana_2_clicked()
 {
 
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_1(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3210,10 +3267,8 @@ void MainWindow::on_pushButton_triple_ventana_2_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_3_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_2(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3223,10 +3278,8 @@ void MainWindow::on_pushButton_triple_ventana_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_4_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_3(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3236,10 +3289,8 @@ void MainWindow::on_pushButton_triple_ventana_4_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_6_clicked()
 {
-    //QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_4(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3249,10 +3300,8 @@ void MainWindow::on_pushButton_triple_ventana_6_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_7_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_5(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3262,10 +3311,8 @@ void MainWindow::on_pushButton_triple_ventana_7_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_5_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_6(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3275,10 +3322,8 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_8_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Payload/Documents/AR-PET/Codigo/Calibraciones/Coincidencias/20170310_153812.dat";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición parseada (*.dat)"));
     calibrador->setAdq_Coin(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3358,10 +3403,8 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_13_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_1(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3371,10 +3414,8 @@ void MainWindow::on_pushButton_triple_ventana_13_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_10_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_2(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3384,10 +3425,8 @@ void MainWindow::on_pushButton_triple_ventana_10_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_11_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_3(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3397,10 +3436,8 @@ void MainWindow::on_pushButton_triple_ventana_11_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_16_clicked()
 {
-    //QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_4(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3410,10 +3447,8 @@ void MainWindow::on_pushButton_triple_ventana_16_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_15_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_5(filename.toStdString());
     cout<<filename.toStdString()<<endl;
@@ -3423,10 +3458,8 @@ void MainWindow::on_pushButton_triple_ventana_15_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_12_clicked()
 {
-    //QString root="/media/arpet/pet/calibraciones/campo_inundado/03-info";
-    QString root="/media/rgrodriguez/Redmine/pet/calibraciones/campo_inundado/03-info/10-04-2017/";
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
-                                                    root,
+                                                    root_calib_path,
                                                     tr("Adquisición (*.raw)"));
     calibrador->setAdq_Cab_6(filename.toStdString());
     cout<<filename.toStdString()<<endl;

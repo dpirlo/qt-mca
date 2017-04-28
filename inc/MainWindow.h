@@ -162,51 +162,34 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
 
-    /* Buttons de prueba/testing */
+    /* AutoCalib */
 
     void on_pushButton_clicked();
-
-
-
-
     void on_pushButton_triple_ventana_2_clicked();
-
     void on_pushButton_triple_ventana_3_clicked();
-
     void on_pushButton_triple_ventana_4_clicked();
-
     void on_pushButton_triple_ventana_6_clicked();
-
     void on_pushButton_triple_ventana_7_clicked();
-
     void on_pushButton_triple_ventana_5_clicked();
-
     void on_pushButton_triple_ventana_8_clicked();
-
     void on_pushButton_2_clicked();
-
     void on_pushButton_triple_ventana_9_clicked();
-
     void on_pushButton_triple_ventana_13_clicked();
-
     void on_pushButton_triple_ventana_10_clicked();
-
     void on_pushButton_triple_ventana_11_clicked();
-
     void on_pushButton_triple_ventana_16_clicked();
-
     void on_pushButton_triple_ventana_15_clicked();
-
     void on_pushButton_triple_ventana_12_clicked();
-
     void on_pushButton_triple_ventana_14_clicked();
-
     void on_pushButton_3_clicked();
 
+    /* Buttons de prueba/testing */
+
 private:
-  QString openConfigurationFile();
+  QString openConfigurationFile();  
+  QString readPreferencesFile(QString file);
   void getPaths();
-  int parseConfigurationFile(QString filename);
+  int parseConfigurationFile();
   QStringList availablePortsName();  
   QString port_name;
   string getLocalDateAndTime();
@@ -259,7 +242,7 @@ private:
   void showMCAEStreamDebugMode(string msg);
 
     /* Area de prueba/testing */
-
+  int writePreferencesFile(QString pref, QString filename, bool force=false);
 
 private:
     Ui::MainWindow *ui;
@@ -267,7 +250,8 @@ private:
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
-    string initfile;
+    QString initfile, root_config_path, root_calib_path, preferencesdir;
+    QString conf_set_file, calib_set_file;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;
@@ -290,6 +274,16 @@ private:
 
 
 public:
+    /**
+     * @brief setInitFileConfigPath
+     * @param file
+     */
+    void setInitFileConfigPath(QString file) { initfile = file; }
+    /**
+     * @brief setCalibDirectoryPath
+     * @param path
+     */
+    void setCalibDirectoryPath(QString path) {root_calib_path = path; }
     /**
      * @brief setDebugMode
      *

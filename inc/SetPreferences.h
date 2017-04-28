@@ -20,6 +20,8 @@
 #define SETPREFERENCES_H
 
 #include <QDialog>
+#include <QFileDialog>
+#include "QMessageBox"
 #include <iostream>
 
 using namespace std;
@@ -36,7 +38,12 @@ public:
   explicit SetPreferences(QWidget *parent = 0);
   void accept();
   void reject();
+  virtual int exec();
   ~SetPreferences();
+
+private:
+  QString openConfigurationFile();
+  QString readPreferencesFile(QString conf_set_file);
 
 private:    
   Ui::SetPreferences *ui;
@@ -46,6 +53,8 @@ private:
      * Variable _booleana_ que indica si la aplicación tiene activado el modo _debug_.
      */
   bool debconsole;
+  QString initfile, root_calib_path;
+  QString preferencesdir, conf_set_file, calib_set_file;
 
 public:
   /**
@@ -55,8 +64,17 @@ public:
      * @return debconsole
      * @see debconsole
      */
-  bool GetDegugConsoleValue() const { return debconsole; }
+  bool getDegugConsoleValue() const { return debconsole; }
+  QString getInitFileConfigPath() const { return initfile; }
+  QString getCalibDirectoryPath() const { return root_calib_path; }
+  void setPreferencesDir(QString pref_path) { preferencesdir=pref_path; }
+  void setCalibSetFile(QString pref_path) { calib_set_file=pref_path; }
+  void setConfSetFile(QString pref_path) { conf_set_file=pref_path; }
 
+
+private slots:
+  void on_pushButton_open_config_file_clicked();
+  void on_pushButton_open_config_calib_clicked();
 };
 
 #endif // SETPREFERENCES_H
