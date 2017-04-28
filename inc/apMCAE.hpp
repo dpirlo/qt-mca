@@ -36,7 +36,7 @@ using namespace boost::asio;
 using namespace boost::system;
 
 #define DS1820_FACTOR 0.0625
-#define CHANNELS 1024
+#define CHANNELS 256
 #define CHANNELS_PMT 256
 #define SERIAL_PORT_READ_BUF_SIZE 1
 #define PMTs 48
@@ -78,7 +78,7 @@ namespace ap {
     enum string_code {a,b,c,d,e,f,no_value};
 
   public:
-    MCAE(size_t timeout=1000);
+    MCAE(size_t timeout=150);
     void portReadString(string *msg, char delimeter, const char *tty_port_name);
     void portReadBufferString(string *msg, int buffer_size, const char *tty_port_name);
     size_t portWrite(string *msg, const char *tty_port_name);
