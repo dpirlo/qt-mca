@@ -17,13 +17,13 @@ MainWindow::MainWindow(QWidget *parent) :
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
     preferencesdir(".qt-mca"),
-    conf_set_file("/initfile_path.txt"),
-    calib_set_file("/calibracion_path.txt"),
+    preferencesfile("qt-mca.conf"),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
+    setPreferencesConfiguration();
     getPaths();    
 }
 /**
@@ -73,12 +73,17 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal");
-    resetHitsValues();
-
+    resetHitsValues();    
+}
+/**
+ * @brief MainWindow::setPreferencesConfiguration
+ */
+void MainWindow::setPreferencesConfiguration()
+{
     /*Configuración inicial de preferencias*/
-    writePreferencesFile(initfile, conf_set_file);
-    writePreferencesFile(root_calib_path, calib_set_file);
-    root_calib_path = readPreferencesFile(calib_set_file);
+    QString default_pref_file = "[Debug]\ndebug=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
+    writePreferencesFile(default_pref_file, preferencesfile);
+    getPreferencesSettingsFile();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -327,9 +332,11 @@ string MainWindow::getLocalDateAndTime()
  */
 void MainWindow::on_actionPreferencias_triggered()
 {
+    getPreferencesSettingsFile();
     pref->setPreferencesDir(preferencesdir);
-    pref->setCalibSetFile(calib_set_file);
-    pref->setConfSetFile(conf_set_file);
+    pref->setCalibDir(root_calib_path);
+    pref->setConfFile(initfile);
+
     int ret = pref->exec();
     bool debug_console = pref->getDegugConsoleValue();
     QString file = pref->getInitFileConfigPath();
@@ -339,13 +346,20 @@ void MainWindow::on_actionPreferencias_triggered()
     if(ret == QDialog::Accepted)
     {
         setDebugMode(debug_console);
-        setInitFileConfigPath(file);
-        writePreferencesFile(file, conf_set_file, true);
-        writePreferencesFile(calib_path, calib_set_file, true);
-
+        QString boolText = debug_console ? "true" : "false";
+        setPreferencesSettingsFile("Debug", "debug", boolText );
+        setPreferencesSettingsFile("Paths", "conf_set_file", file);
+        setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
+        getPreferencesSettingsFile();
     }
 }
-
+/**
+ * @brief MainWindow::writePreferencesFile
+ * @param pref
+ * @param filename
+ * @param force
+ * @return MCAE::FILE_NOT_FOUND o MCAE::OK
+ */
 int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
 {
     QString path = QDir::homePath() + "/" + preferencesdir;
@@ -380,6 +394,27 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
 
     return MCAE::OK;
 }
+/**
+ * @brief MainWindow::getPreferencesSettingsFile
+ */
+void MainWindow::getPreferencesSettingsFile()
+{
+    QString qtmca_conf=QDir::homePath() +"/"+ preferencesdir +"/"+ preferencesfile;
+    QSettings qtmcasettins(qtmca_conf, QSettings::IniFormat);
+
+    debug = qtmcasettins.value("Debug/debug", "US").toBool();
+    initfile = qtmcasettins.value("Paths/conf_set_file", "US").toString();
+    root_calib_path = qtmcasettins.value("Paths/calib_set_file", "US").toString();
+}
+
+void MainWindow::setPreferencesSettingsFile(QString folder, QString variable, QString value)
+{
+    QString qtmca_conf=QDir::homePath() +"/"+ preferencesdir +"/"+ preferencesfile;
+    QSettings qtmcasettins(qtmca_conf, QSettings::IniFormat);
+
+    qtmcasettins.setValue(folder+"/"+variable, value);
+}
+
 /**
  * @brief MainWindow::showMCAEStreamDebugMode
  * @param msg
@@ -590,7 +625,7 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 {
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     openConfigurationFile();
-    writePreferencesFile(initfile, conf_set_file, true);
+    setPreferencesSettingsFile("Paths","conf_set_file",initfile);
     if(debug)
     {
       cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
@@ -2064,7 +2099,6 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
 
     return values;
 }
-
 /**
  * @brief MainWindow::parseConfigurationFile
  *
@@ -2075,8 +2109,8 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
  */
 int MainWindow::parseConfigurationFile()
 {        
-    QString filename = readPreferencesFile(conf_set_file);
-    QSettings settings(filename, QSettings::IniFormat);
+    getPreferencesSettingsFile();
+    QSettings settings(initfile, QSettings::IniFormat);
 
     /* Paths to the configuration files */
 
@@ -2107,26 +2141,6 @@ QString MainWindow::openConfigurationFile()
                                                     root_config_path,
                                                     tr("Configuración (*.ini);;Texto (*.txt)"));
     initfile = filename;
-    return filename;
-}
-/**
- * @brief MainWindow::readPreferencesFile
- * @param file
- * @return filename
- */
-QString MainWindow::readPreferencesFile(QString file)
-{
-    QString filename;
-    QString pref_path = QDir::homePath() + "/" + preferencesdir + "/" + file;
-    QFile prefconfigfile(pref_path);
-    if (!prefconfigfile.open(QIODevice::ReadOnly))
-      {
-        if(debug) qDebug() << "No se puede abrir el archivo de preferencias. Por favor configure la ruta al archivo de configuración desde el menú preferencias. Error: " << prefconfigfile.errorString();
-        QMessageBox::critical(this,tr("Atención"),tr("No se encuentra el archivo de preferencias. Esto se debe configurar desde el menú preferencias."));
-        return filename;
-      }
-    filename = prefconfigfile.readLine();
-    prefconfigfile.close();
     return filename;
 }
 /**
@@ -3255,7 +3269,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_2_clicked()
 {
-
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3267,6 +3281,7 @@ void MainWindow::on_pushButton_triple_ventana_2_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_3_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3278,6 +3293,7 @@ void MainWindow::on_pushButton_triple_ventana_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_4_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3289,6 +3305,7 @@ void MainWindow::on_pushButton_triple_ventana_4_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_6_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3300,6 +3317,7 @@ void MainWindow::on_pushButton_triple_ventana_6_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_7_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3311,6 +3329,7 @@ void MainWindow::on_pushButton_triple_ventana_7_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_5_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3322,6 +3341,7 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_8_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición parseada (*.dat)"));
@@ -3403,6 +3423,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_13_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3414,6 +3435,7 @@ void MainWindow::on_pushButton_triple_ventana_13_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_10_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3425,6 +3447,7 @@ void MainWindow::on_pushButton_triple_ventana_10_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_11_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3436,6 +3459,7 @@ void MainWindow::on_pushButton_triple_ventana_11_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_16_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3447,6 +3471,7 @@ void MainWindow::on_pushButton_triple_ventana_16_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_15_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3458,6 +3483,7 @@ void MainWindow::on_pushButton_triple_ventana_15_clicked()
 
 void MainWindow::on_pushButton_triple_ventana_12_clicked()
 {
+    getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
                                                     tr("Adquisición (*.raw)"));
@@ -3481,4 +3507,3 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
 
     ui->textBrowser_entrada->setText(filename);
 }
-

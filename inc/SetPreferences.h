@@ -42,7 +42,7 @@ public:
   ~SetPreferences();
 
 private:
-  QString openConfigurationFile();
+  QString openConfigurationFile(bool dir=false);
   QString readPreferencesFile(QString conf_set_file);
 
 private:    
@@ -54,7 +54,7 @@ private:
      */
   bool debconsole;
   QString initfile, root_calib_path;
-  QString preferencesdir, conf_set_file, calib_set_file;
+  QString preferencesdir, preferencesfile;
 
 public:
   /**
@@ -65,12 +65,36 @@ public:
      * @see debconsole
      */
   bool getDegugConsoleValue() const { return debconsole; }
+  /**
+   * @brief getInitFileConfigPath
+   * @return La ruta del archivo de configuración de cabezales
+   */
   QString getInitFileConfigPath() const { return initfile; }
-  QString getCalibDirectoryPath() const { return root_calib_path; }
-  void setPreferencesDir(QString pref_path) { preferencesdir=pref_path; }
-  void setCalibSetFile(QString pref_path) { calib_set_file=pref_path; }
-  void setConfSetFile(QString pref_path) { conf_set_file=pref_path; }
-
+  /**
+   * @brief getCalibDirectoryPath
+   * @return La ruta del directorio de calibración
+   */
+  QString getCalibDirectoryPath() const { return root_calib_path; }  
+  /**
+   * @brief setPreferencesDir
+   * @param pref_path
+   */
+  void setPreferencesDir(QString pref_path) { preferencesdir = pref_path;}
+  /**
+   * @brief setPreferencesFile
+   * @param pref_path
+   */
+  void setPreferencesFile(QString pref_path) { preferencesfile = pref_path;}
+  /**
+   * @brief setCalibDir
+   * @param dir_path
+   */
+  void setCalibDir(QString dir_path){root_calib_path = dir_path;}
+  /**
+   * @brief setConfFile
+   * @param file_path
+   */
+  void setConfFile(QString file_path){initfile = file_path;}
 
 private slots:
   void on_pushButton_open_config_file_clicked();

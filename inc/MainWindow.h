@@ -186,8 +186,7 @@ private slots:
     /* Buttons de prueba/testing */
 
 private:
-  QString openConfigurationFile();  
-  QString readPreferencesFile(QString file);
+  QString openConfigurationFile();    
   void getPaths();
   int parseConfigurationFile();
   QStringList availablePortsName();  
@@ -198,6 +197,9 @@ private:
   string initSP3(int head);
   void setCalibrationTables(int head);
   void setInitialConfigurations();
+  void setPreferencesConfiguration();
+  void getPreferencesSettingsFile();
+  void setPreferencesSettingsFile(QString folder, QString variable, QString value);
   void setLabelState(bool state, QLabel *label);
   void setTextBrowserState(bool state, QTextBrowser *tbro);
   void setButtonState(bool state, QPushButton * button, bool disable=false);
@@ -250,8 +252,7 @@ private:
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
-    QString initfile, root_config_path, root_calib_path, preferencesdir;
-    QString conf_set_file, calib_set_file;
+    QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;
