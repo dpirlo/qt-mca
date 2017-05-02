@@ -110,6 +110,7 @@ private slots:
     void setHeadModeGraph(int index);
     void setAdquireMode(int index);
     void setTabMode(int index);
+    void setTabHead(int index);
     void syncHeadComboBoxToMCA(int index);
     void syncHeadModeComboBoxToMCA(int index);
     void syncCheckBoxHead1ToMCA(bool check);
@@ -188,7 +189,7 @@ private slots:
 private:
   QString openConfigurationFile();    
   void getPaths();
-  int parseConfigurationFile();
+  int parseConfigurationFile(bool mode, QString head="");
   QStringList availablePortsName();  
   QString port_name;
   string getLocalDateAndTime();
@@ -209,9 +210,9 @@ private:
   size_t sendString(string msg, string end);
   void manageHeadCheckBox(string tab, bool show);
   void manageHeadComboBox(string tab, bool show);
-  QString getMCA(string tab, string function, bool multimode, int channels, string pmt="0");
-  QString getMultiMCA(string tab);
-  QString getHeadMCA(string tab);
+  QString getMCA(string head, string function, bool multimode, int channels, string pmt="0");
+  QString getMultiMCA(QString head);
+  QString getHeadMCA(QString head);
   void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
   void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
   void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
@@ -222,9 +223,9 @@ private:
   QVector<int> getCustomPlotParameters();
   void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
   void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
-  QString setHV(string tab, string hv_value, string pmt);
-  QString setCalibTable(string function, QVector<double> table, string msg_compare);
-  QString setTime(string tab, double time_value, string pmt);
+  QString setHV(string head, string hv_value, string pmt);
+  QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
+  QString setTime(string head, double time_value, string pmt);
   int getPMT(QLineEdit *line_edit);
   QString getPSOCAlta(QLineEdit *line_edit);
   void setPMT(int value);
