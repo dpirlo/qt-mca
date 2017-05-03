@@ -47,6 +47,7 @@ using namespace boost::system;
 #define PMT_BUFFER_SIZE 2
 #define TIME_BUFFER_SIZE 2
 #define RECEIVED_BUFFER_SIZE 4
+#define RECEIVED_RATE_BUFFER_SIZE 6
 #define SENDED_BUFFER_SIZE 2
 #define CS_BUFFER_SIZE 2
 #define CS_CALIB_BUFFER_SIZE 3
@@ -78,6 +79,7 @@ namespace ap {
     enum string_code {a,b,c,d,e,f,no_value};
 
   public:
+    /** @note: Se encuentra configurado con un _timeout_ de 150ms por defecto*/
     MCAE(size_t timeout=150);
     void portReadString(string *msg, char delimeter, const char *tty_port_name);
     void portReadBufferString(string *msg, int buffer_size, const char *tty_port_name);
@@ -92,7 +94,7 @@ namespace ap {
     void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
     void setMCAEStream(string pmt_dec, string function, double time);
     void setMCAEStream(string function, QVector<double> table);
-    void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
+    void setMCAEStream(string function, string data_one, string data_two="", bool time=false);    
     void setPSOCEStream(string function, string psoc_value_dec="");
     bool verifyMCAEStream(string data_received, string data_to_compare);
     string getMCA(string pmt, string function, string head, int channels, string port_name);
@@ -100,6 +102,7 @@ namespace ap {
     string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
     string setTime(string head, double time_value, string pmt, string port_name);
     string getTemp(string head, string pmt, string port_name);
+    double getRate(string head, string port_name);
     QVector<QString> parserPSOCStream(string stream);
     double getPMTTemperature(string temp_stream);
     bool isPortOpen();
@@ -140,6 +143,7 @@ namespace ap {
     string convertDecToHexUpper(int dec_number);
     string getCalibTableFormat(string function, QVector<double> table);
     int convertDoubleToInt(double value);
+    double parserRateStream(string stream);
     string convertToTwoComplement(double value, int two_complement_bits=10);
     string convertToTwoComplement(int value, int two_complement_bits=8);
     QByteArray getReverse(QByteArray seq);
@@ -178,7 +182,7 @@ namespace ap {
 
   private:
     string FunCHead, FunCSP3, FunCPSOC, BrCst;
-    string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA;
+    string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
     string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
@@ -377,6 +381,11 @@ namespace ap {
          * @return Init_MCA
          */
     string getInit_MCA() const { return Init_MCA; }
+    /**
+         * @brief getRate_MCA
+         * @return
+         */
+    string getRate_MCA() const { return Rate_MCA; }
     /**
          * @brief getData_MCA
          * @return Data_MCA

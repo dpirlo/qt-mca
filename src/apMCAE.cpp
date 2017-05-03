@@ -84,10 +84,10 @@ MCAE::MCAE(size_t timeout)
     Data_MCA("65"),
     SetHV_MCA("68"),
     Temp_MCA("74000"),
-    Set_Time_MCA("80")
+    Set_Time_MCA("80"),
+    Rate_MCA("0060")
 {
-  /* Testing */
-    /** @todo: Setear timeout=150ms y verificar el comportamiento*/
+  /* Testing */    
 }
 /**
  * @brief MCAE::~MCAE
@@ -1291,4 +1291,47 @@ string MCAE::getTemp(string head, string pmt, string port_name)
   msg = readString(delimeter, port_name);
 
   return msg;
+}
+/**
+ * @brief MCAE::parserRateStream
+ *
+ * Método que parsea la trama de recepción de la tasa de adquisición del cabezal
+ *
+ * @param stream
+ * @return _rate_ de adquisición en _double_
+ */
+double MCAE::parserRateStream(string stream)
+{
+    QByteArray q_stream(stream.c_str(), stream.length());
+    double rate=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 6).toStdString()));
+
+    return rate;
+}
+/**
+ * @brief MCAE::getRate
+ *
+ * Método que obtiene la tasa de adquisición del cabezal
+ *
+ * @param head
+ * @param port_name
+ * @return _rate_ de adquisición en _double_
+ */
+double MCAE::getRate(string head, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+  int size_rate=(int)(getRate_MCA().size());
+  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
+  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
+  string stream = getHeader_MCAE()+size_sended+size_received+getRate_MCA();
+  setTrama_MCAE(stream);
+
+  cout<<"stream: "<<stream<<endl;
+
+  char delimeter='\r';
+  string msg;
+
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return parserRateStream(msg);
 }
