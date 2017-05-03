@@ -66,6 +66,13 @@ public:
      */
   bool getDegugConsoleValue() const { return debconsole; }
   /**
+   * @brief setDegugConsoleValue
+   *
+   * Configura el estado de la variable _booleana_ debconsole.
+   * @param debug
+   */
+  void setDegugConsoleValue(bool debug) { debconsole = debug; }
+  /**
    * @brief getInitFileConfigPath
    * @return La ruta del archivo de configuración de cabezales
    */
@@ -80,6 +87,11 @@ public:
    * @param pref_path
    */
   void setPreferencesDir(QString pref_path) { preferencesdir = pref_path;}
+  /**
+   * @brief getPreferencesDir
+   * @return preferencesdir
+   */
+  QString getPreferencesDir() const { return preferencesdir;}
   /**
    * @brief setPreferencesFile
    * @param pref_path
@@ -98,7 +110,7 @@ public:
 
 private slots:
   void on_pushButton_open_config_file_clicked();
-  void on_pushButton_open_config_calib_clicked();
+  void on_pushButton_open_config_calib_clicked();  
 };
 
 #endif // SETPREFERENCES_H

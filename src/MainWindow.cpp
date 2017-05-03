@@ -16,15 +16,16 @@ MainWindow::MainWindow(QWidget *parent) :
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
-    preferencesdir(".qt-mca"),
+    preferencesdir(QDir::homePath() + "/.qt-mca"),
     preferencesfile("qt-mca.conf"),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    /** @todo: Ver la posibilidad de maximizar la ventana */
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
     setPreferencesConfiguration();
-    getPaths();    
+    getPaths();
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -35,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     arpet->portDisconnect();
+    if (debug) fclose (stdout);
     delete ui;
     delete pref;
     delete pmt_select;
@@ -81,9 +83,10 @@ void MainWindow::setInitialConfigurations()
 void MainWindow::setPreferencesConfiguration()
 {
     /*Configuración inicial de preferencias*/
-    QString default_pref_file = "[Debug]\ndebug=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
+    QString default_pref_file = "\n[Debug]\ndebug=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
     getPreferencesSettingsFile();
+    writeLogFile();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -327,6 +330,57 @@ string MainWindow::getLocalDateAndTime()
 {
   return (QDateTime::currentDateTime().toString().toStdString());
 }
+/**
+ * @brief MainWindow::getLogFileName
+ * @param main
+ * @return filename
+ */
+QString MainWindow::getLogFileName(QString main)
+{
+    QString suffix = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
+    QString prefix = "LOG";
+    QString extension = ".log";
+
+    return prefix + main + suffix + extension;
+}
+/**
+ * @brief MainWindow::writeLogFile
+ */
+void MainWindow::writeLogFile(QString main)
+{
+    QString logFile = getPreferencesDir() + "/logs/" + getLogFileName(main);
+    freopen(logFile.toLocal8Bit().data(), "a+", stdout);
+}
+/**
+ * @brief MainWindow::copyRecursively
+ * @param srcFilePath
+ * @param tgtFilePath
+ * @return
+ */
+bool MainWindow::copyRecursively(const QString &srcFilePath, const QString &tgtFilePath)
+{
+    QFileInfo srcFileInfo(srcFilePath);
+    if (srcFileInfo.isDir()) {
+        QDir targetDir(tgtFilePath);
+        targetDir.cdUp();
+        if (!targetDir.mkdir(QFileInfo(tgtFilePath).fileName()))
+            return false;
+        QDir sourceDir(srcFilePath);
+        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        foreach (const QString &fileName, fileNames) {
+            const QString newSrcFilePath
+                    = srcFilePath + QLatin1Char('/') + fileName;
+            const QString newTgtFilePath
+                    = tgtFilePath + QLatin1Char('/') + fileName;
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
+                return false;
+        }
+    } else {
+        if (!QFile::copy(srcFilePath, tgtFilePath))
+            return false;
+    }
+    return true;
+}
 
 /* Menu: Preferencias */
 /**
@@ -335,24 +389,23 @@ string MainWindow::getLocalDateAndTime()
 void MainWindow::on_actionPreferencias_triggered()
 {
     getPreferencesSettingsFile();
-    pref->setPreferencesDir(preferencesdir);
     pref->setCalibDir(root_calib_path);
     pref->setConfFile(initfile);
+    pref->setDegugConsoleValue(debug);
 
     int ret = pref->exec();
     bool debug_console = pref->getDegugConsoleValue();
     QString file = pref->getInitFileConfigPath();
-    QString calib_path = pref->getCalibDirectoryPath();    
-
+    QString calib_path = pref->getCalibDirectoryPath();
 
     if(ret == QDialog::Accepted)
     {
         setDebugMode(debug_console);
-        QString boolText = debug_console ? "true" : "false";
-        setPreferencesSettingsFile("Debug", "debug", boolText );
+        QString boolText = debug_console ? "true" : "false";        
+        setPreferencesSettingsFile("Debug", "debug", boolText );        
         setPreferencesSettingsFile("Paths", "conf_set_file", file);
         setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
-        getPreferencesSettingsFile();
+        getPreferencesSettingsFile();        
     }
 }
 /**
@@ -364,11 +417,17 @@ void MainWindow::on_actionPreferencias_triggered()
  */
 int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
 {
-    QString path = QDir::homePath() + "/" + preferencesdir;
+    QString path = getPreferencesDir();
+    QString logs = getPreferencesDir() + "/logs";
     QDir dir(path);
+    QDir log(logs);
     if (!dir.exists())
     {
-      dir.mkdir(path);
+      dir.mkdir(path);      
+    }
+    if (!log.exists())
+    {
+        log.mkdir(logs);
     }
 
     QFile file( path + "/" + filename );
@@ -379,7 +438,7 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
          if (!exist)
          {
              file.open(QIODevice::WriteOnly | QIODevice::Text);
-             if(debug) qDebug() << "No se encuentra el archivo de preferencias. Se crea el archivo por defecto.";
+             if(debug) cout<<"No se encuentra el archivo de preferencias. Se crea el archivo por defecto."<<endl;
              QTextStream out(&file);
              out << pref;
              file.close();
@@ -401,22 +460,27 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
  */
 void MainWindow::getPreferencesSettingsFile()
 {
-    QString qtmca_conf=QDir::homePath() +"/"+ preferencesdir +"/"+ preferencesfile;
+    QString qtmca_conf = getPreferencesDir() +"/"+ preferencesfile;
     QSettings qtmcasettins(qtmca_conf, QSettings::IniFormat);
 
     debug = qtmcasettins.value("Debug/debug", "US").toBool();
     initfile = qtmcasettins.value("Paths/conf_set_file", "US").toString();
     root_calib_path = qtmcasettins.value("Paths/calib_set_file", "US").toString();
-}
 
+}
+/**
+ * @brief MainWindow::setPreferencesSettingsFile
+ * @param folder
+ * @param variable
+ * @param value
+ */
 void MainWindow::setPreferencesSettingsFile(QString folder, QString variable, QString value)
 {
-    QString qtmca_conf=QDir::homePath() +"/"+ preferencesdir +"/"+ preferencesfile;
+    QString qtmca_conf = getPreferencesDir() +"/"+ preferencesfile;
     QSettings qtmcasettins(qtmca_conf, QSettings::IniFormat);
 
     qtmcasettins.setValue(folder+"/"+variable, value);
 }
-
 /**
  * @brief MainWindow::showMCAEStreamDebugMode
  * @param msg
@@ -1520,6 +1584,11 @@ QString MainWindow::getMultiMCA(QString head)
     }
     setButtonAdquireState(true, true);
 
+    if (debug)
+    {
+        cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head.toStdString()<<": "<<QString::number(arpet->getRate(head.toStdString(), port_name.toStdString())).toStdString()<<endl;
+    }
+
     return msg;
 }
 /**
@@ -1559,7 +1628,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
     if (multimode)
     {
         ui->label_title_output->setText("MCA Extended");
-        ui->label_data_output->setText("Frame: "+QString::number(frame)+"\nVarianza: "+QString::number(var)+"\nOffset ADC: "+QString::number(offset)+"\nTiempo (mseg):\n"+QString::number(time_mca/1000));
+        ui->label_data_output->setText("Tasa: "+QString::number(arpet->getRate(head, port_name.toStdString()))+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
     }
     else
     {
@@ -1578,6 +1647,11 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
         cout<<"Valor de HV: "<<HV_pmt<<endl;
         showMCAEStreamDebugMode(msg);
         cout<<"================================"<<endl;
+    }
+
+    if (debug && multimode)
+    {
+        cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head<<": "<<QString::number(arpet->getRate(head, port_name.toStdString())).toStdString()<<endl;
     }
 
     return QString::fromStdString(msg);
@@ -1900,7 +1974,6 @@ void MainWindow::on_pushButton_adquirir_clicked()
                 setButtonAdquireState(true, true);
                 return;
             }
-
         }
         break;
     case TEMPERATURE:
@@ -1968,10 +2041,10 @@ void MainWindow::on_pushButton_select_pmt_clicked()
 
     if(debug)
     {
-        qDebug() << "La lista seleccionada tiene "<< qlist.size() << " elementos";
+        cout<<"La lista seleccionada tiene "<< qlist.size()<<" elementos"<<endl;
         QList<QString>::const_iterator stlIter;
         for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
-            qDebug() << (*stlIter);
+            cout<<(*stlIter).toStdString()<<endl;
     }
 
     setPMTCustomPlotEnvironment(qlist);

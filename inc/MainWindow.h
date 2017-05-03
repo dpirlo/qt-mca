@@ -33,6 +33,7 @@
 #include "SetPMTs.h"
 #include "apMCAE.hpp"
 #include "apAutoCalib.hpp"
+#include <cstdio>
 #include <QString>
 
 #define MONOHEAD 0
@@ -187,12 +188,16 @@ private slots:
     /* Buttons de prueba/testing */
 
 private:
-  QString openConfigurationFile();    
+  QString openConfigurationFile();
+  bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
   void getPaths();
   int parseConfigurationFile(bool mode, QString head="");
   QStringList availablePortsName();  
   QString port_name;
   string getLocalDateAndTime();
+  QString getLogFileName(QString main="");
+  void writeLogFile(QString main="");
+  int writePreferencesFile(QString pref, QString filename, bool force=false);
   QString getHead(string tab);
   string initHead(int head);
   string initSP3(int head);
@@ -245,7 +250,7 @@ private:
   void showMCAEStreamDebugMode(string msg);
 
     /* Area de prueba/testing */
-  int writePreferencesFile(QString pref, QString filename, bool force=false);
+
 
 private:
     Ui::MainWindow *ui;
@@ -276,6 +281,10 @@ private:
 
 
 public:
+    /**
+     * @brief getPreferencesDir
+     */
+    QString getPreferencesDir() const {return preferencesdir;}
     /**
      * @brief setInitFileConfigPath
      * @param file

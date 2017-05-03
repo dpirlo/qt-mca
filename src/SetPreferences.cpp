@@ -37,8 +37,9 @@ void SetPreferences::reject()
  */
 int SetPreferences::exec()
 {
+  ui->checkBox_Debug->setChecked(debconsole);
   ui->lineEdit_config_file->setText(initfile);
-  ui->lineEdit_config_calib->setText(root_calib_path);
+  ui->lineEdit_config_calib->setText(root_calib_path);  
   QDialog::exec();
 }
 
@@ -68,7 +69,7 @@ QString SetPreferences::openConfigurationFile(bool dir)
     }
     else
     {
-        filename = QFileDialog::getExistingDirectory(this, tr("Abrir archivo de configuración"),
+        filename = QFileDialog::getExistingDirectory(this, tr("Seleccionar el directorio de configuración"),
                                           QDir::homePath());
     }
 
