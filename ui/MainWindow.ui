@@ -3134,32 +3134,6 @@ Tensión: </string>
         <string>Continuo</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_adquirir">
-       <property name="geometry">
-        <rect>
-         <x>6</x>
-         <y>73</y>
-         <width>171</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Adquirir</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_reset">
-       <property name="geometry">
-        <rect>
-         <x>100</x>
-         <y>33</y>
-         <width>81</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Reiniciar</string>
-       </property>
-      </widget>
      </widget>
      <widget class="QFrame" name="frame_HV">
       <property name="geometry">
@@ -3549,9 +3523,9 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_4">
        <property name="geometry">
         <rect>
-         <x>6</x>
-         <y>92</y>
-         <width>171</width>
+         <x>10</x>
+         <y>90</y>
+         <width>161</width>
          <height>31</height>
         </rect>
        </property>
@@ -3559,6 +3533,32 @@ Tensión: </string>
         <string>Iniciar</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_adquirir">
+      <property name="geometry">
+       <rect>
+        <x>832</x>
+        <y>518</y>
+        <width>161</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Adquirir</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_reset">
+      <property name="geometry">
+       <rect>
+        <x>911</x>
+        <y>457</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Reiniciar</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="graph">
@@ -3826,8 +3826,8 @@ Tensión: </string>
        <rect>
         <x>683</x>
         <y>48</y>
-        <width>311</width>
-        <height>191</height>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">
@@ -7352,9 +7352,9 @@ Tensión: </string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>630</y>
+      <y>620</y>
       <width>841</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -7368,9 +7368,9 @@ Tensión: </string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>630</y>
+      <y>620</y>
       <width>121</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -7405,7 +7405,7 @@ Tensión: </string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
