@@ -855,6 +855,11 @@ void MainWindow::on_pushButton_initialize_clicked()
     {
         int head_index=checkedHeads.at(i);
         parseConfigurationFile(true, QString::number(head_index));
+
+        /* Configuración de las tablas de calibración */
+        setCalibrationTables(head_index);
+
+        /* Configuración del HV*/
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
@@ -872,9 +877,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         {
             if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
             QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        }
-        /* Configuración de las tablas de calibración */
-        setCalibrationTables(head_index);
+        }        
     }
 
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
