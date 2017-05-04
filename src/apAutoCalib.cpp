@@ -140,19 +140,20 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         }
 
         // Reseteo la memoria de SP6
-        reset_Mem_Cab(Cab_actual);
+        if (!reset_Mem_Cab(Cab_actual)) return -1;
+
 
         // Espero el tiempo indicado
         sleep(tiempo_adq);
 
         // LLeno los buffers de memoria de la clase
-        //for (int i=0 ; i<PMTs ; i++)
-        for (int i=0 ; i<4 ; i++)
+        for (int i=0 ; i<PMTs ; i++)
+        //for (int i=0 ; i<4 ; i++)
         //int i = PMT_actual-1;
         {
 
             // Pido MCA de calibracion del PMT actual
-            pedir_MCA_PMT(Cab_actual , i+1, CHANNELS, 1);
+            if (!pedir_MCA_PMT(Cab_actual , i+1, CHANNELS, 1)) return -1;
 
             // Leo los hits y los paso a double
             QVector<double> aux_hits;
@@ -186,7 +187,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
             // Leo el HV actual y lo guardo en memoria
-            pedir_MCA_PMT(Cab_actual , i+1, 256, 0);
+            if (!pedir_MCA_PMT(Cab_actual , i+1, 256, 0)) return -1;
             Dinodos_PMT[i] = getHVMCA();
 
             cout<<"PMT: "<< i+1 << "--" <<Picos_PMT[i]<<"---"<<Dinodos_PMT[i]<<endl;
@@ -381,18 +382,18 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
                 if (Canal_Obj_dif_arma(PMT_mover) > 0)
                 {
                     cout<< "Subiendo PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
-                    modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]));
+                    if (!modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]))) return -1;
                 }
                 else
                 {
                     cout<< "Bajando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover])<<endl;
-                    modificar_HV_PMT(Cab_actual , PMT_mover+1, Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover]);
+                    if (!modificar_HV_PMT(Cab_actual , PMT_mover+1, Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover])) return -1;
                 }
             }
             else
             {
                 cout<< "Modificando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
-                modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]));
+                if (!modificar_HV_PMT(Cab_actual , PMT_mover+1, (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]))) return -1;
             }
 
         }
@@ -417,7 +418,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
 
-        pedir_MCA_PMT(Cab_actual , 1, CHANNELS, 1);
+        if (!pedir_MCA_PMT(Cab_actual , 1, CHANNELS, 1)) return -1;
         plot_MCA(getHitsMCA(), getChannels(), plot_hand , nombre_plot, param, 1);
 
 
@@ -1246,7 +1247,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
 
 bool AutoCalib::calibrar_fina_energia(int cab_num_act)
-{   
+{
 
     stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<"----------------------------------INICIO DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
@@ -2895,7 +2896,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
  * -------------------------------------------------------------------
  */
 
-void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
+bool AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
 {
 
 
@@ -2936,6 +2937,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     {
       cout << "No se puede acceder al puerto serie. (pedir MCA)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        return -1;
     }
 
     //cout << "Leyendo"<<endl;
@@ -2947,6 +2949,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     {
       cout << "No se puede leer. (pedir MCA)"<<endl;
          Exceptions exception_stop(ex.excdesc);
+         return -1;
 
     }
 
@@ -2959,6 +2962,7 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
         catch( Exceptions & ex ){
           cout << "No se leer... aparentemente... (pedir MCA)"<<endl;
              Exceptions exception_stop(ex.excdesc);
+             return -1;
         }
 
     //cout << "Leyendo los datos"<<endl;
@@ -2976,11 +2980,13 @@ void AutoCalib::pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib)
     for(int i=0; i<hits_pmt.length();i++) { cout<<hits_pmt[i]<<","; }
     cout<<endl;
 */
+
+    return 1;
 }
 
 
 
-void AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
+bool AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
 {
     string msg;
     size_t bytes_transfered = 0;
@@ -3013,6 +3019,7 @@ void AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
     {
       cout << "No se puede acceder al puerto serie. (modif HV)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        return -1;
     }
 
     //cout << "Leyendo"<<endl;
@@ -3024,13 +3031,16 @@ void AutoCalib::modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo)
     {
       cout << "No se puede leer. (modif HV)"<<endl;
          Exceptions exception_stop(ex.excdesc);
+         return -1;
 
     }
+
+    return 1;
 }
 
 
 
-void AutoCalib::reset_Mem_Cab(int Cabezal)
+bool AutoCalib::reset_Mem_Cab(int Cabezal)
 {
     string msg;
     size_t bytes_transfered = 0;
@@ -3063,6 +3073,7 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     {
       cout << "No se puede acceder al puerto serie. (Reset Cab)"<<endl;
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        return -1;
     }
 
     //cout << "Leyendo"<<endl;
@@ -3074,9 +3085,12 @@ void AutoCalib::reset_Mem_Cab(int Cabezal)
     {
       cout << "No se puede leer. (Reset Cab)"<<endl;
          Exceptions exception_stop(ex.excdesc);
+         return -1;
 
     }
     cout << msg<<endl;
+
+    return 1;
 }
 
 

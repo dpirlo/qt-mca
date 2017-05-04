@@ -33,6 +33,7 @@
 #include "SetPMTs.h"
 #include "apMCAE.hpp"
 #include "apAutoCalib.hpp"
+#include "apRecon.hpp"
 #include <cstdio>
 #include <QString>
 
@@ -187,6 +188,21 @@ private slots:
 
     /* Buttons de prueba/testing */
 
+    void on_pushButton_5_clicked();
+
+
+    void on_pushButton_APIRL_PATH_clicked();
+
+    void on_pushButton_INTERFILES_clicked();
+
+    void on_pushButton_arch_recon_clicked();
+
+    void on_pushButton_Est_ini_clicked();
+
+    void on_pushButton_Arch_sens_clicked();
+
+    void on_pushButton_Arch_count_skimming_clicked();
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
@@ -258,6 +274,7 @@ private:
     SetPMTs *pmt_select;
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
+    shared_ptr<Reconstructor> recon_externa;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;

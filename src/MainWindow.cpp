@@ -55,6 +55,32 @@ void MainWindow::setInitialConfigurations()
 
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
+    // Reconstructor
+    recon_externa = shared_ptr<Reconstructor>(new Reconstructor());
+    // Lleno defaults del contructor
+    ui->Box_Cant_anillos->setText(QString::number(recon_externa->getCant_anillos()));
+    ui->Box_Dif_anillos->setText(QString::number(recon_externa->getDif_anillos()));
+    ui->Box_Emax->setText(QString::number(recon_externa->getEmax()));
+    ui->Box_Emin->setText(QString::number(recon_externa->getEmin()));
+    ui->Box_Span->setText(QString::number(recon_externa->getSpan()));
+    ui->Box_cant_ang->setText(QString::number(recon_externa->getcant_ang()));
+    ui->Box_cant_rhos->setText(QString::number(recon_externa->getcant_rhos()));
+    ui->Box_max_Rho->setText(QString::number(recon_externa->getmax_Rho()));
+    ui->Box_max_Z->setText(QString::number(recon_externa->getmax_Z()));
+    ui->Box_FOV_Axial->setText(QString::number(recon_externa->getFOV_Axial()));
+    ui->Box_Min_dif_cab->setText(QString::number(recon_externa->getMin_dif_cab()));
+    ui->Box_Radio_FOV->setText(QString::number(recon_externa->getRadio_FOV()));
+    ui->Box_Radio_PET->setText(QString::number(recon_externa->getRadio_PET()));
+    ui->Box_zona_muerta->setText(QString::number(recon_externa->getzona_muerta()));
+    ui->textBrowser_entrada_2->setText(recon_externa->getPathAPIRL());
+    ui->textBrowser_entrada_3->setText(recon_externa->getPathINTERFILES());
+
+
+
+
+
+
+
 
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
@@ -3696,4 +3722,113 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
 /* FPGA */
 
 
+/* RECONSTRUCCION */
+
+void MainWindow::on_pushButton_5_clicked()
+{
+
+    // Seteo el texto a modo solo lectura
+    ui->plainTextEdit_Recon_console->setReadOnly(true);
+
+    ui->plainTextEdit_Recon_console->appendPlainText("T"); // Adds the message to the widget
+
+    //m_logFile.write(text); // Logs to file
+
+
+
+}
+
+
+void MainWindow::on_pushButton_APIRL_PATH_clicked()
+{
+    QString root=recon_externa->getPathAPIRL();
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del build de APIRL"),
+                           root);
+
+    recon_externa->setPathAPIRL(filename+"/");
+
+
+    cout<<"Directorio APIRL: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_entrada_2->setText(filename);
+}
+
+void MainWindow::on_pushButton_INTERFILES_clicked()
+{
+    QString root=recon_externa->getPathINTERFILES();
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta de scripts de interfiles"),
+                           root);
+
+    recon_externa->setPathINTERFILES(filename+"/");
+
+
+    cout<<"Directorio INTERFILES: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_entrada_3->setText(filename);
+}
+
+
+void MainWindow::on_pushButton_arch_recon_clicked()
+{
+
+    getPreferencesSettingsFile();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
+                                                    root_calib_path,
+                                                    tr("Adquisición (*.raw);; Interfiles (*.h33)"));
+    recon_externa->setArchRecon(filename);
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_archivo_recon->setText(filename);
+
+}
+
+void MainWindow::on_pushButton_Est_ini_clicked()
+{
+
+    getPreferencesSettingsFile();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de estimacion inicial"),
+                                                    root_calib_path,
+                                                    tr("Interfiles (*.h33)"));
+    recon_externa->setArchInicial(filename);
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_estimacion_ini->setText(filename);
+
+}
+
+void MainWindow::on_pushButton_Arch_sens_clicked()
+{
+
+    getPreferencesSettingsFile();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de sensibilidad"),
+                                                    root_calib_path,
+                                                    tr("Interfiles (*.h33)"));
+    recon_externa->setArchSensib(filename);
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_Imagensensib->setText(filename);
+
+
+}
+
+void MainWindow::on_pushButton_Arch_count_skimming_clicked()
+{
+
+    getPreferencesSettingsFile();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de Count Skimming"),
+                                                    root_calib_path,
+                                                    tr("Conut Skimming (*.csv)"));
+    recon_externa->setArchCountSkimm(filename);
+    cout<<filename.toStdString()<<endl;
+
+    ui->textBrowser_Conunt_skimming->setText(filename);
+
+
+}
 

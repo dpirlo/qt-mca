@@ -20,7 +20,8 @@ SOURCES += src/main.cpp\
         src/SetPreferences.cpp \
         src/MainWindow.cpp \
         src/SetPMTs.cpp \
-    src/apAutoCalib.cpp
+    src/apAutoCalib.cpp \
+    src/apRecon.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
@@ -29,7 +30,8 @@ HEADERS  += \
         inc/SetPreferences.h \
         inc/MainWindow.h \
         inc/SetPMTs.h \
-    inc/apAutoCalib.hpp
+    inc/apAutoCalib.hpp \
+    inc/apRecon.hpp
 
 LIBS += -lboost_system
 
