@@ -5,6 +5,7 @@
 
 
 #include "apMCAE.hpp"
+#include "qprocess.h"
 
 
 
@@ -35,18 +36,31 @@ namespace ap {
             // Constructor
             Reconstructor();
 
+            // Metodos
+            bool Parsear();
+            bool Reconstruir();
+
             // Set de paths
             void setPathAPIRL(QString par_string) {this->path_APIRL = par_string;}
             void setPathINTERFILES(QString par_string) {this->path_INTERFILES = par_string;}
+            void setPathPARSER(QString par_string) {this->path_PARSER = par_string;}
+            void setPathSalida(QString par_string) {this->path_INTERFILES = par_string;}
             // Get de paths
             QString getPathAPIRL() {return this->path_APIRL;}
             QString getPathINTERFILES() {return this->path_INTERFILES;}
+            QString getPathPARSER() {return this->path_PARSER;}
+            QString getPathSalida() {return this->path_Salida;}
 
             // Set de archivos
             void setArchRecon(QString par_string) {this->arch_recon = par_string;}
             void setArchInicial(QString par_string) {this->arch_ini = par_string;}
             void setArchSensib(QString par_string) {this->arch_sens = par_string;}
             void setArchCountSkimm(QString par_string) {this->arch_countskimm = par_string;}
+            // Get de archivos
+            QString getArchRecon() {return this->arch_recon;}
+            QString getArchInicial() {return this->arch_ini;}
+            QString getArchSensib() {return this->arch_sens;}
+            QString getArchCountSkimm() {return this->arch_countskimm;}
 
             // Set de valores
             void setCant_anillos(double par_double){this->Cant_anillos = par_double ;}
@@ -79,11 +93,22 @@ namespace ap {
             double getRadio_PET(){return this->Radio_PET ;}
             double getzona_muerta(){return this->zona_muerta ;}
 
+            // Set procedimientos
+            void setParsear(){this->parsear = 1;}
+            void setReconstruir(){this->reconstruir = 1;}
+            void resetParsear(){this->parsear = 0;}
+            void resetReconstruir(){this->reconstruir = 0;}
+            // Get Procedimientos
+            bool getParsear(){return this->parsear;}
+            bool getReconstruir(){return this->reconstruir;}
+
         private:
 
             // Paths a dependencias
             QString path_APIRL;
             QString path_INTERFILES;
+            QString path_PARSER;
+            QString path_Salida;
 
             // Archivos
             QString arch_recon;
@@ -108,6 +133,10 @@ namespace ap {
             double Radio_FOV;
             double Radio_PET;
             double zona_muerta;
+
+            // Procedimientos
+            bool parsear;
+            bool reconstruir;
 
 
     };

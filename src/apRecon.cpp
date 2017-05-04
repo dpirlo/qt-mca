@@ -8,6 +8,15 @@ Reconstructor::Reconstructor()
     // Paths a dependencias
     path_APIRL = "../../../apirl-code-pet/build/cmd/";
     path_INTERFILES = "../../../interfiles/";
+    path_PARSER = "../../../Parser/";
+    path_Salida = ".Salidas/";
+
+    // Archivos
+    arch_recon = "-";
+    arch_ini = "-";
+    arch_sens = "-";
+    arch_countskimm = "-";
+
 
 
     // Sinograma
@@ -28,4 +37,25 @@ Reconstructor::Reconstructor()
     Radio_PET = RADIO_PET_BASE;
     zona_muerta = ZONA_MUERTA_BASE;
 
+}
+
+
+
+bool Reconstructor::Parsear()
+{
+    // Paso 1, parseo
+
+
+
+    // Armo la linea al programa
+    QString programa = path_INTERFILES+"AnalizoCoincidenciasPET.pl";
+
+    // Armo los argumentos
+    QString parametros = "--Emin "+QString::number(Emin)+" --Emax "+QString::number(Emax)+" --in "+path_Salida+"out_parser.lor --out "+path_Salida+"coincidencias.dat";
+
+    return 1;
+}
+bool Reconstructor::Reconstruir()
+{
+    return 1;
 }

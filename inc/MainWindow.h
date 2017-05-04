@@ -203,6 +203,10 @@ private slots:
 
     void on_pushButton_Arch_count_skimming_clicked();
 
+    void on_pushButton_INTERFILES_2_clicked();
+
+    void on_pushButton_INTERFILES_3_clicked();
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);

@@ -57,7 +57,7 @@ void MainWindow::setInitialConfigurations()
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
     // Reconstructor
     recon_externa = shared_ptr<Reconstructor>(new Reconstructor());
-    // Lleno defaults del contructor
+    // Lleno defaults de la solapa del constructor
     ui->Box_Cant_anillos->setText(QString::number(recon_externa->getCant_anillos()));
     ui->Box_Dif_anillos->setText(QString::number(recon_externa->getDif_anillos()));
     ui->Box_Emax->setText(QString::number(recon_externa->getEmax()));
@@ -74,7 +74,7 @@ void MainWindow::setInitialConfigurations()
     ui->Box_zona_muerta->setText(QString::number(recon_externa->getzona_muerta()));
     ui->textBrowser_entrada_2->setText(recon_externa->getPathAPIRL());
     ui->textBrowser_entrada_3->setText(recon_externa->getPathINTERFILES());
-
+    ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
 
 
 
@@ -3726,11 +3726,220 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
 
 void MainWindow::on_pushButton_5_clicked()
 {
+    QMessageBox messageBox;
 
-    // Seteo el texto a modo solo lectura
-    ui->plainTextEdit_Recon_console->setReadOnly(true);
 
-    ui->plainTextEdit_Recon_console->appendPlainText("T"); // Adds the message to the widget
+
+    // Checkeo que es lo que voy a hacer
+    if (ui->checkBox_parsear->checkState() == Qt::Checked)
+    {
+        recon_externa->setParsear();
+    }
+    else
+    {
+        recon_externa->resetParsear();
+    }
+    if (ui->checkBox_reconstruir->checkState() == Qt::Checked)
+    {
+        recon_externa->setReconstruir();
+    }
+    else
+    {
+        recon_externa->resetReconstruir();
+    }
+    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0)
+    {
+        messageBox.critical(0,"Error","Seleccionar metodo.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+
+    // Checkeo que los path existan
+    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir())
+    {
+        messageBox.critical(0,"Error","Paths de APIRL invalido.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getReconstruir())
+    {
+        messageBox.critical(0,"Error","Paths de interfiles invalido.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    if (!QDir(recon_externa->getPathPARSER()).exists() & recon_externa->getParsear())
+    {
+        messageBox.critical(0,"Error","Paths de parser invalido.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    // Checkeo que los path existan
+    if (!QDir(recon_externa->getPathSalida()).exists())
+    {
+        messageBox.critical(0,"Error","Paths de salida invalido.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+
+    // Checkeo que se hallan seleccionado archivos
+    if (recon_externa->getArchRecon() == "-")
+    {
+        messageBox.critical(0,"Error","Archivo a reconstruir o parsear no seleccionado.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    if (recon_externa->getArchInicial() == "-" & recon_externa->getReconstruir())
+    {
+        messageBox.critical(0,"Error","Archivo de imagen inicial no seleccionado.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    if (recon_externa->getArchSensib() == "-"  & recon_externa->getReconstruir())
+    {
+        messageBox.warning(0,"Warning","Se recalculara la sensibilidad.");
+        messageBox.setFixedSize(500,200);
+    }
+    if (recon_externa->getArchCountSkimm() == "-"  & recon_externa->getReconstruir())
+    {
+        messageBox.warning(0,"Warning","No se aplicara count skimming.");
+        messageBox.setFixedSize(500,200);
+    }
+
+    // Cargo los valores de los campos
+    QString aux_str;
+    aux_str = ui->Box_Emin->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","La enería minima debe ser superior a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setEmin(aux_str.toDouble());
+    aux_str = ui->Box_Emax->text();
+    if(aux_str.toInt() < recon_externa->getEmin())
+    {
+        messageBox.critical(0,"Error","La enería máxima debe ser mayor a la mínima.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setEmax(aux_str.toDouble());
+    aux_str = ui->Box_Cant_anillos->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","La cantidad de anillos debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setCant_anillos(aux_str.toDouble());
+    aux_str = ui->Box_Dif_anillos->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","La diferencia entre anillos debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setDif_anillos(aux_str.toDouble());
+    aux_str = ui->Box_Span->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","El span debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setSpan(aux_str.toDouble());
+    aux_str = ui->Box_cant_ang->text();
+    if(aux_str.toInt() <= 0)
+    {
+        messageBox.critical(0,"Error","La cantidad de angulos debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setcant_ang(aux_str.toDouble());
+    aux_str = ui->Box_cant_rhos->text();
+    if(aux_str.toInt() <= 0)
+    {
+        messageBox.critical(0,"Error","La cantidad de rhos debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setcant_rhos(aux_str.toDouble());
+    aux_str = ui->Box_max_Rho->text();
+    if(aux_str.toInt() <= 0)
+    {
+        messageBox.critical(0,"Error","El Rho máximo debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setmax_Rho(aux_str.toDouble());
+    aux_str = ui->Box_max_Z->text();
+    if(aux_str.toInt() <= 0)
+    {
+        messageBox.critical(0,"Error","El Z máximo debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setmax_Z(aux_str.toDouble());
+    aux_str = ui->Box_FOV_Axial->text();
+    if(aux_str.toDouble() <= 0)
+    {
+        messageBox.critical(0,"Error","El FOV axial debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setFOV_Axial(aux_str.toDouble());
+    aux_str = ui->Box_Min_dif_cab->text();
+    if((aux_str.toInt() < 0) | (aux_str.toInt() > 2))
+    {
+        messageBox.critical(0,"Error","La minima diferencia entre detectores debe estar entre 0 y 2.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setMin_dif_cab(aux_str.toDouble());
+    aux_str = ui->Box_Radio_PET->text();
+    if(aux_str.toInt() <= 0)
+    {
+        messageBox.critical(0,"Error","El Radio del PET debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setRadio_PET(aux_str.toDouble());
+    aux_str = ui->Box_Radio_FOV->text();
+    if((aux_str.toDouble() <= 0) | (aux_str.toDouble() > recon_externa->getRadio_PET()))
+    {
+        messageBox.critical(0,"Error","El Radio del FOV debe ser mayor a 0 y menor al FOV del PET.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setRadio_FOV(aux_str.toDouble());
+    aux_str = ui->Box_zona_muerta->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","La zona muerta debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setzona_muerta(aux_str.toDouble());
+
+
+
+    if (recon_externa->getParsear() == 1)
+    {
+        ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+
+        recon_externa->Parsear();
+    }
+
+    if (recon_externa->getReconstruir() == 1)
+    {
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendoo archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+
+        recon_externa->Reconstruir();
+    }
+
+
+
 
     //m_logFile.write(text); // Logs to file
 
@@ -3832,3 +4041,37 @@ void MainWindow::on_pushButton_Arch_count_skimming_clicked()
 
 }
 
+
+void MainWindow::on_pushButton_INTERFILES_2_clicked()
+{
+    QString root=recon_externa->getPathSalida();
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta de salida"),
+                           root);
+
+    recon_externa->setPathSalida(filename+"/");
+
+
+    cout<<"Directorio Salida: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_entrada_4->setText(filename);
+}
+
+void MainWindow::on_pushButton_INTERFILES_3_clicked()
+{
+    QString root=recon_externa->getPathPARSER();
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del parser"),
+                           root);
+
+    recon_externa->setPathPARSER(filename+"/");
+
+
+    cout<<"Directorio parser: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_entrada_5->setText(filename);
+}
