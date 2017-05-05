@@ -6,6 +6,7 @@
 
 #include "apMCAE.hpp"
 #include "qprocess.h"
+#include "qcustomplot.h"
 
 
 
@@ -30,8 +31,10 @@
 namespace ap {
 
 
-    class Reconstructor: public MCAE
+    class Reconstructor: public QObject
     {
+        Q_OBJECT
+
         public:
             // Constructor
             Reconstructor();
@@ -40,16 +43,24 @@ namespace ap {
             bool Parsear();
             bool Reconstruir();
 
+            // Setear la lista de procesos
+            bool SetearListasProcesos();
+
+            // Set de salida
+            void setConsola(QPlainTextEdit *consola_par) {this->consola = consola_par;}
+
             // Set de paths
             void setPathAPIRL(QString par_string) {this->path_APIRL = par_string;}
             void setPathINTERFILES(QString par_string) {this->path_INTERFILES = par_string;}
             void setPathPARSER(QString par_string) {this->path_PARSER = par_string;}
             void setPathSalida(QString par_string) {this->path_INTERFILES = par_string;}
+            void setNombre_archivo(QString par_string) {this->Nombre_archivo = par_string;}
             // Get de paths
             QString getPathAPIRL() {return this->path_APIRL;}
             QString getPathINTERFILES() {return this->path_INTERFILES;}
             QString getPathPARSER() {return this->path_PARSER;}
             QString getPathSalida() {return this->path_Salida;}
+            QString getNombre_archivo() {return this->Nombre_archivo;}
 
             // Set de archivos
             void setArchRecon(QString par_string) {this->arch_recon = par_string;}
@@ -95,12 +106,15 @@ namespace ap {
 
             // Set procedimientos
             void setParsear(){this->parsear = 1;}
-            void setReconstruir(){this->reconstruir = 1;}
+            void setMLEM(){this->reconMLEM = 1;}
+            void setBackprojection(){this->reconBackprojection = 1;}
             void resetParsear(){this->parsear = 0;}
-            void resetReconstruir(){this->reconstruir = 0;}
+            void resetMLEM(){this->reconMLEM = 0;}
+            void resetBackprojection(){this->reconBackprojection = 0;}
             // Get Procedimientos
             bool getParsear(){return this->parsear;}
-            bool getReconstruir(){return this->reconstruir;}
+            bool getMLEM(){return this->reconMLEM;}
+            bool getBackprojection(){return this->reconBackprojection;}
 
         private:
 
@@ -109,6 +123,7 @@ namespace ap {
             QString path_INTERFILES;
             QString path_PARSER;
             QString path_Salida;
+            QString Nombre_archivo;
 
             // Archivos
             QString arch_recon;
@@ -136,7 +151,22 @@ namespace ap {
 
             // Procedimientos
             bool parsear;
-            bool reconstruir;
+            bool reconMLEM;
+            bool reconBackprojection;
+
+            // Procesos
+            QProcess *proceso;
+            QPlainTextEdit *consola;
+            QString *programas;
+            QStringList *listasparametros;
+            int indice_ejecucion = 0;
+            int limite_ejecucion = 0;
+
+
+    private slots:
+            void on_readyRead();
+            void updateError();
+            void on_procesoExit(int flag_exit, QProcess::ExitStatus qt_exit);
 
 
     };

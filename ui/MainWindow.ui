@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>6</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1724,7 +1724,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -6860,7 +6860,7 @@ Tensión: </string>
        <rect>
         <x>180</x>
         <y>280</y>
-        <width>281</width>
+        <width>361</width>
         <height>31</height>
        </rect>
       </property>
@@ -6886,7 +6886,7 @@ Tensión: </string>
         <string>Parsear RAW</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_reconstruir">
+      <widget class="QCheckBox" name="checkBox_MLEM">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -6894,12 +6894,28 @@ Tensión: </string>
         <rect>
          <x>150</x>
          <y>0</y>
-         <width>121</width>
+         <width>71</width>
          <height>26</height>
         </rect>
        </property>
        <property name="text">
-        <string>Reconstruir</string>
+        <string>MLEM</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_Backprojection">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>0</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Backprojection</string>
        </property>
       </widget>
      </widget>
@@ -7522,7 +7538,7 @@ Tensión: </string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

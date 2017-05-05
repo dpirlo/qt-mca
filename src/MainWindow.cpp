@@ -74,7 +74,10 @@ void MainWindow::setInitialConfigurations()
     ui->Box_zona_muerta->setText(QString::number(recon_externa->getzona_muerta()));
     ui->textBrowser_entrada_2->setText(recon_externa->getPathAPIRL());
     ui->textBrowser_entrada_3->setText(recon_externa->getPathINTERFILES());
+    ui->textBrowser_entrada_5->setText(recon_externa->getPathPARSER());
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
+    recon_externa->setConsola(ui->plainTextEdit_Recon_console); // Conecto la consola de salida
+
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
@@ -3758,15 +3761,24 @@ void MainWindow::on_pushButton_5_clicked()
     {
         recon_externa->resetParsear();
     }
-    if (ui->checkBox_reconstruir->checkState() == Qt::Checked)
+    if (ui->checkBox_MLEM->checkState() == Qt::Checked)
     {
-        recon_externa->setReconstruir();
+        recon_externa->setMLEM();
     }
     else
     {
-        recon_externa->resetReconstruir();
+        recon_externa->resetBackprojection();
     }
-    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0)
+    if (ui->checkBox_Backprojection->checkState() == Qt::Checked)
+    {
+        recon_externa->setBackprojection();
+    }
+    else
+    {
+        recon_externa->resetBackprojection();
+    }
+
+    if (recon_externa->getMLEM() == 0 & recon_externa->getBackprojection() == 0 & recon_externa->getParsear() == 0)
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -3774,13 +3786,13 @@ void MainWindow::on_pushButton_5_clicked()
     }
 
     // Checkeo que los path existan
-    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir())
+    if (!QDir(recon_externa->getPathAPIRL()).exists() & (recon_externa->getMLEM()  | recon_externa->getBackprojection()  ))
     {
         messageBox.critical(0,"Error","Paths de APIRL invalido.");
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getReconstruir())
+    if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getParsear() )
     {
         messageBox.critical(0,"Error","Paths de interfiles invalido.");
         messageBox.setFixedSize(500,200);
@@ -3807,18 +3819,23 @@ void MainWindow::on_pushButton_5_clicked()
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (recon_externa->getArchInicial() == "-" & recon_externa->getReconstruir())
+    else
+    {
+        recon_externa->setNombre_archivo( recon_externa->getArchRecon().split('.').first().split('/').last() );
+    }
+
+    if (recon_externa->getArchInicial() == "-" &  (recon_externa->getMLEM() | recon_externa->getBackprojection() ) )
     {
         messageBox.critical(0,"Error","Archivo de imagen inicial no seleccionado.");
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (recon_externa->getArchSensib() == "-"  & recon_externa->getReconstruir())
+    if (recon_externa->getArchSensib() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
     {
         messageBox.warning(0,"Warning","Se recalculara la sensibilidad.");
         messageBox.setFixedSize(500,200);
     }
-    if (recon_externa->getArchCountSkimm() == "-"  & recon_externa->getReconstruir())
+    if (recon_externa->getArchCountSkimm() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
     {
         messageBox.warning(0,"Warning","No se aplicara count skimming.");
         messageBox.setFixedSize(500,200);
@@ -3940,6 +3957,8 @@ void MainWindow::on_pushButton_5_clicked()
     recon_externa->setzona_muerta(aux_str.toDouble());
 
 
+    // Reservo memoria para los procesos
+    recon_externa->SetearListasProcesos();
 
     if (recon_externa->getParsear() == 1)
     {
@@ -3949,9 +3968,9 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->Parsear();
     }
 
-    if (recon_externa->getReconstruir() == 1)
+    if (recon_externa->getMLEM() == 1 | recon_externa->getBackprojection() == 1)
     {
-        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendoo archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
         ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Reconstruir();
