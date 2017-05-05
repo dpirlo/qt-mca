@@ -87,7 +87,7 @@ MCAE::MCAE(size_t timeout)
     Set_Time_MCA("80"),
     Rate_MCA("0060")
 {
-  /* Testing */    
+  /* Testing */
 }
 /**
  * @brief MCAE::~MCAE
@@ -340,7 +340,7 @@ void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_po
     {
       Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
       throw exception_timeout;
-    }  
+    }
 }
 /**
  * @brief MCAE::portReadCharArray
@@ -1324,8 +1324,8 @@ vector<int> MCAE::getRate(string head, string port_name)
   int size_rate=(int)(getRate_MCA().size());
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
   string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
-  string stream = getHeader_MCAE()+size_sended+size_received+getRate_MCA();
-  setTrama_MCAE(stream);  
+  string stream = getHeader_MCAE() + size_sended + size_received + getHead_MCA() + getRate_MCA();
+  setTrama_MCAE(stream);
 
   char delimeter='\r';
   string msg;
