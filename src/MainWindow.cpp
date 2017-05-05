@@ -555,6 +555,7 @@ void MainWindow::getARPETStatus()
             }
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
+    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -607,6 +608,7 @@ void MainWindow::getHeadStatus()
             }
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
+    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 
 }
 /**
@@ -749,6 +751,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
             getARPETStatus();
             getHeadStatus();
         }
