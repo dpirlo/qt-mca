@@ -1298,14 +1298,16 @@ string MCAE::getTemp(string head, string pmt, string port_name)
  * Método que parsea la trama de recepción de la tasa de adquisición del cabezal
  *
  * @param stream
- * @return _rate_ de adquisición en _double_
+ * @return _rate_ de adquisición en _vector<int>_
  */
-double MCAE::parserRateStream(string stream)
+vector<int> MCAE::parserRateStream(string stream)
 {
     QByteArray q_stream(stream.c_str(), stream.length());
-    double rate=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 6).toStdString()));
-
-    return rate;
+    vector<int> rates;
+    rates.at(0)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 6).toStdString())); // Ventana baja
+    rates.at(1)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(11, 6).toStdString())); // Ventana media
+    rates.at(2)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(17, 6).toStdString())); // Ventana alta
+    return rates;
 }
 /**
  * @brief MCAE::getRate
@@ -1314,18 +1316,16 @@ double MCAE::parserRateStream(string stream)
  *
  * @param head
  * @param port_name
- * @return _rate_ de adquisición en _double_
+ * @return _rate_ de adquisición en _vector<int>_
  */
-double MCAE::getRate(string head, string port_name)
+vector<int> MCAE::getRate(string head, string port_name)
 {
   setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
   int size_rate=(int)(getRate_MCA().size());
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
   string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
   string stream = getHeader_MCAE()+size_sended+size_received+getRate_MCA();
-  setTrama_MCAE(stream);
-
-  cout<<"stream: "<<stream<<endl;
+  setTrama_MCAE(stream);  
 
   char delimeter='\r';
   string msg;
