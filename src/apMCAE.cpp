@@ -1320,7 +1320,7 @@ vector<int> MCAE::parserRateStream(string stream)
  */
 vector<int> MCAE::getRate(string head, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+  setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
   int size_rate=(int)(getRate_MCA().size());
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
   string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
