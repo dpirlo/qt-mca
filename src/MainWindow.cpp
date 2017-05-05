@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     debug(false),
     init(false),
+    log(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
@@ -35,8 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
  */
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();
-    if (debug) fclose (stdout);
+    arpet->portDisconnect();    
     delete ui;
     delete pref;
     delete pmt_select;
@@ -75,13 +75,6 @@ void MainWindow::setInitialConfigurations()
     ui->textBrowser_entrada_2->setText(recon_externa->getPathAPIRL());
     ui->textBrowser_entrada_3->setText(recon_externa->getPathINTERFILES());
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
-
-
-
-
-
-
-
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
@@ -109,10 +102,9 @@ void MainWindow::setInitialConfigurations()
 void MainWindow::setPreferencesConfiguration()
 {
     /*Configuración inicial de preferencias*/
-    QString default_pref_file = "\n[Debug]\ndebug=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
+    QString default_pref_file = "[Modo]\ndebug=false\nlog=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
-    getPreferencesSettingsFile();
-    writeLogFile();
+    getPreferencesSettingsFile();    
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -363,7 +355,7 @@ string MainWindow::getLocalDateAndTime()
  */
 QString MainWindow::getLogFileName(QString main)
 {
-    QString suffix = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
+    QString suffix = QDateTime::currentDateTime().toString("yyyyMMddhh");
     QString prefix = "LOG";
     QString extension = ".log";
 
@@ -372,10 +364,17 @@ QString MainWindow::getLogFileName(QString main)
 /**
  * @brief MainWindow::writeLogFile
  */
-void MainWindow::writeLogFile(QString main)
+void MainWindow::writeLogFile(QString log_text, QString main)
 {
-    QString logFile = getPreferencesDir() + "/logs/" + getLogFileName(main);
-    freopen(logFile.toLocal8Bit().data(), "a+", stdout);
+    if (log)
+    {
+        QString logFile = getPreferencesDir() + "/logs/" + getLogFileName(main);
+        QFile logger( logFile );
+        logger.open(QIODevice::WriteOnly | QIODevice::Append);
+        QTextStream out(&logger);
+        out << log_text;
+        logger.close();
+    }
 }
 /**
  * @brief MainWindow::copyRecursively
@@ -418,17 +417,22 @@ void MainWindow::on_actionPreferencias_triggered()
     pref->setCalibDir(root_calib_path);
     pref->setConfFile(initfile);
     pref->setDegugConsoleValue(debug);
+    pref->setLogFileValue(log);
 
     int ret = pref->exec();
     bool debug_console = pref->getDegugConsoleValue();
+    bool log_file = pref->getLogFileValue();
     QString file = pref->getInitFileConfigPath();
     QString calib_path = pref->getCalibDirectoryPath();
 
     if(ret == QDialog::Accepted)
     {
         setDebugMode(debug_console);
-        QString boolText = debug_console ? "true" : "false";        
-        setPreferencesSettingsFile("Debug", "debug", boolText );        
+        setLogMode(log_file);
+        QString boolDebugText = debug_console ? "true" : "false";
+        QString boolLogText = log_file ? "true" : "false";
+        setPreferencesSettingsFile("Modo", "debug", boolDebugText );
+        setPreferencesSettingsFile("Modo", "log", boolLogText );
         setPreferencesSettingsFile("Paths", "conf_set_file", file);
         setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
         getPreferencesSettingsFile();        
@@ -489,7 +493,8 @@ void MainWindow::getPreferencesSettingsFile()
     QString qtmca_conf = getPreferencesDir() +"/"+ preferencesfile;
     QSettings qtmcasettins(qtmca_conf, QSettings::IniFormat);
 
-    debug = qtmcasettins.value("Debug/debug", "US").toBool();
+    debug = qtmcasettins.value("Modo/debug", "US").toBool();
+    log = qtmcasettins.value("Modo/log", "US").toBool();
     initfile = qtmcasettins.value("Paths/conf_set_file", "US").toString();
     root_calib_path = qtmcasettins.value("Paths/calib_set_file", "US").toString();
 
@@ -828,59 +833,39 @@ void MainWindow::on_pushButton_initialize_clicked()
      return;
    }
 
-   QList<int> checkedHeads;
-   if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD)
+   QList<int> checkedHeads=getCheckedHeads();
+
+
+   for (int i=0;i<checkedHeads.length();i++)
    {
-       for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
+       int head_index=checkedHeads.at(i);
+       parseConfigurationFile(true, QString::number(head_index));
+
+       /* Configuración de las tablas de calibración */
+       setCalibrationTables(head_index);
+
+       /* Configuración del HV*/
+       ui->lineEdit_alta->setText(QString::number(AT));
+       ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+       string msg;
+       QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+       setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
+       if(debug) cout<<"Cabezal: "<<head_index<<endl;
+       try
        {
-           QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
-           if(q->checkState() == Qt::Checked)
-           {
-               checkedHeads.append(i+1);
-           }
+           sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+           msg = readString();
+           hv_status_table[head_index-1]->setText(psoc_alta);
+           if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
+       }
+       catch(Exceptions & ex)
+       {
+           if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+           QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
        }
    }
-   else
-   {
-      checkedHeads.append(getHead("config").toInt());
-   }
 
-   if(checkedHeads.length() == 0)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr("No se ha seleccionado ningún cabezal"));
-       return;
-   }
-
-    for (int i=0;i<checkedHeads.length();i++)
-    {
-        int head_index=checkedHeads.at(i);
-        parseConfigurationFile(true, QString::number(head_index));
-
-        /* Configuración de las tablas de calibración */
-        setCalibrationTables(head_index);
-
-        /* Configuración del HV*/
-        ui->lineEdit_alta->setText(QString::number(AT));
-        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-        string msg;
-        QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-        setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
-        if(debug) cout<<"Cabezal: "<<head_index<<endl;
-        try
-        {
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-            msg = readString();
-            hv_status_table[head_index-1]->setText(psoc_alta);
-            if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
-        }
-        catch(Exceptions & ex)
-        {
-            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-            QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-        }        
-    }
-
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
@@ -1615,7 +1600,7 @@ QString MainWindow::getMultiMCA(QString head)
 
     if (debug)
     {
-        cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head.toStdString()<<": "<<QString::number(arpet->getRate(head.toStdString(), port_name.toStdString())).toStdString()<<endl;
+        //cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head.toStdString()<<": "<<QString::number(arpet->getRate(head.toStdString(), port_name.toStdString())).toStdString()<<endl;
     }
 
     return msg;
@@ -1657,7 +1642,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
     if (multimode)
     {
         ui->label_title_output->setText("MCA Extended");
-        ui->label_data_output->setText("Tasa: "+QString::number(arpet->getRate(head, port_name.toStdString()))+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
+        //ui->label_data_output->setText("Tasa: "+QString::number(arpet->getRate(head, port_name.toStdString()))+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
     }
     else
     {
@@ -1680,7 +1665,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
 
     if (debug && multimode)
     {
-        cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head<<": "<<QString::number(arpet->getRate(head, port_name.toStdString())).toStdString()<<endl;
+        //cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head<<": "<<QString::number(arpet->getRate(head, port_name.toStdString())).toStdString()<<endl;
     }
 
     return QString::fromStdString(msg);
@@ -1956,28 +1941,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
-    QList<int> checkedHeads;
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD)
-    {
-        for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
-        {
-            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
-            if(q->checkState() == Qt::Checked)
-            {
-                checkedHeads.append(i+1);
-            }
-        }
-    }
-    else
-    {
-       checkedHeads.append(getHead("config").toInt());
-    }
-
-    if(checkedHeads.length() == 0)
-    {
-        QMessageBox::critical(this,tr("Atención"),tr("No se ha seleccionado ningún cabezal"));
-        return;
-    }
+    QList<int> checkedHeads = getCheckedHeads();
 
     QString q_msg;
 
@@ -2252,9 +2216,58 @@ void MainWindow::on_pushButton_p_50_clicked()
       cout<<"[END-LOG-DBG] ====================================================="<<endl;
     }
 }
+/**
+ * @brief MainWindow::on_pushButton_logguer_clicked
+ */
+void MainWindow::on_pushButton_logguer_clicked()
+{
+    //if (ui->checkBox_temp->isChecked()); //Logueo temperatura
+    //if (ui->checkBox_tasa->isChecked()); //Logueo tasa
 
+    QList<int> checkedHeads=getCheckedHeads();
+    vector<int> rates;
+
+    for (int i=0;i<checkedHeads.length();i++)
+    {
+        int head_index=checkedHeads.at(i);
+        rates=arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
+        for (int i=0; i<rates.size();i++){cout << rates[i] << endl;}
+    }
+}
 
 /* Métodos generales del entorno gráfico */
+/**
+ * @brief MainWindow::getCheckedHeads
+ * @return
+ */
+QList<int> MainWindow::getCheckedHeads()
+{
+    QList<int> checkedHeads;
+    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD)
+    {
+        for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
+        {
+            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
+            if(q->checkState() == Qt::Checked)
+            {
+                checkedHeads.append(i+1);
+            }
+        }
+    }
+    else
+    {
+       checkedHeads.append(getHead("config").toInt());
+    }
+
+    if(checkedHeads.length() == 0)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr("No se ha seleccionado ningún cabezal"));
+        return checkedHeads;
+    }
+
+    return checkedHeads;
+}
+
 /**
  * @brief MainWindow::getValuesFromFiles
  *
@@ -4078,3 +4091,5 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
     ui->textBrowser_entrada_5->setText(filename);
 }
+
+

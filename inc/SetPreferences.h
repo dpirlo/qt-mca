@@ -53,12 +53,18 @@ private:
      * Variable _booleana_ que indica si la aplicación tiene activado el modo _debug_.
      */
   bool debconsole;
+  /**
+   * @brief logfile
+   *
+   * Variable _booleana_ que indica si la aplicación tiene activado el modo _log_.
+   */
+  bool logfile;
   QString initfile, root_calib_path;
   QString preferencesdir, preferencesfile;
 
 public:
   /**
-     * @brief GetDegugConsoleValue
+     * @brief getDegugConsoleValue
      *
      * Obtiene el estado de la variable _booleana_ debconsole.
      * @return debconsole
@@ -66,12 +72,27 @@ public:
      */
   bool getDegugConsoleValue() const { return debconsole; }
   /**
+   * @brief getLogFileValue
+   *
+   * Obtiene el estado de la variable _booleana_ logfile.
+   * @return
+   * @see logfile
+   */
+  bool getLogFileValue() const { return logfile; }
+  /**
    * @brief setDegugConsoleValue
    *
    * Configura el estado de la variable _booleana_ debconsole.
    * @param debug
    */
   void setDegugConsoleValue(bool debug) { debconsole = debug; }
+  /**
+   * @brief setLogFileValue
+   *
+   * Configura el estado de la variable _booleana_ logfile.
+   * @param log
+   */
+  void setLogFileValue(bool log) { logfile = log; }
   /**
    * @brief getInitFileConfigPath
    * @return La ruta del archivo de configuración de cabezales

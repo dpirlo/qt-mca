@@ -207,16 +207,19 @@ private slots:
 
     void on_pushButton_INTERFILES_3_clicked();
 
+    void on_pushButton_logguer_clicked();
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
   void getPaths();
   int parseConfigurationFile(bool mode, QString head="");
   QStringList availablePortsName();  
+  QList<int> getCheckedHeads();
   QString port_name;
   string getLocalDateAndTime();
   QString getLogFileName(QString main="");
-  void writeLogFile(QString main="");
+  void writeLogFile(QString log_text, QString main="");
   int writePreferencesFile(QString pref, QString filename, bool force=false);
   QString getHead(string tab);
   string initHead(int head);
@@ -289,7 +292,7 @@ private:
     QList<QString> pmt_selected_list;
     QList<QPushButton*> pmt_button_table;
     int adquire_mode;
-    bool debug, init;
+    bool debug, init, log;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;    
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
@@ -324,6 +327,14 @@ public:
      * @param mode
      */
     void setDebugMode(bool mode) { debug = mode; }
+    /**
+     * @brief setLogMode
+     *
+     * Configura el valor de _log_ a partir del menú preferencias.
+     *
+     * @param mode
+     */
+    void setLogMode(bool mode) { log = mode; }
     /**
      * @brief setPMTSelectedList
      *
