@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -7538,7 +7538,7 @@ Tensión: </string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

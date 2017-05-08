@@ -2227,18 +2227,52 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_clicked()
 {
-    //if (ui->checkBox_temp->isChecked()); //Logueo temperatura
-    //if (ui->checkBox_tasa->isChecked()); //Logueo tasa
+    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+
+    bool rate = false, temp = false;
+    QVector<double> temp_vec;
+    temp_vec.fill(0);
+
+    if (ui->checkBox_temp->isChecked()) temp=true; //Logueo temperatura
+    if (ui->checkBox_tasa->isChecked()) rate=true; //Logueo tasa
+
 
     QList<int> checkedHeads=getCheckedHeads();
-    vector<int> rates;
-
-    for (int i=0;i<checkedHeads.length();i++)
+    vector<int> rates(3);
+    try
     {
-        int head_index=checkedHeads.at(i);
-        rates=arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
-        for (int i=0; i<rates.size();i++){cout << rates[i] << endl;}
+        for (int i=0;i<checkedHeads.length();i++)
+        {
+            int head_index=checkedHeads.at(i);
+            if (rate)
+            {
+               rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
+               writeLogFile("[LOG-RATE] Cabezal,"+QString::number(head_index)+","+QString::number(rates[0])+","+QString::number(rates[1])+","+QString::number(rates[2]));
+            }
+            if (temp)
+            {
+               for(int pmt = 0; pmt < PMTs; pmt++)
+               {
+                     {
+                         string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+                         temp = arpet->getPMTTemperature(msg);
+                         if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
+                     }
+                }
+                double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
+                double t_max = *max_element(temp_vec.begin(),temp_vec.end());
+                double t_min = *min_element(temp_vec.begin(),temp_vec.end());
+                writeLogFile("[LOG-TEMP] Cabezal,"+QString::number(head_index)+","+QString::number(t_min)+","+QString::number(mean)+","+QString::number(t_max));
+            }
+        }
+
     }
+    catch( Exceptions & ex )
+    {
+        if(debug) cout<<"Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    if (debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
 }
 
 /* Métodos generales del entorno gráfico */
