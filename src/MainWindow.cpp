@@ -3814,6 +3814,14 @@ void MainWindow::on_pushButton_5_clicked()
     {
         recon_externa->resetParsear();
     }
+    if (ui->checkBox_Server->checkState() == Qt::Checked)
+    {
+        recon_externa->setReconServer();
+    }
+    else
+    {
+        recon_externa->resetReconServer();
+    }
     if (ui->checkBox_MLEM->checkState() == Qt::Checked)
     {
         recon_externa->setMLEM();
@@ -3831,7 +3839,20 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->resetBackprojection();
     }
 
-    if (recon_externa->getMLEM() == 0 & recon_externa->getBackprojection() == 0 & recon_externa->getParsear() == 0)
+    // Armo flago de reconstruccion
+    if (recon_externa->getMLEM()  | recon_externa->getBackprojection()  )
+    {
+        recon_externa->setReconstruir();
+    }
+    else
+    {
+        recon_externa->resetReconstruir();
+    }
+
+
+
+
+    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0 | (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -3839,11 +3860,30 @@ void MainWindow::on_pushButton_5_clicked()
     }
 
     // Checkeo que los path existan
-    if (!QDir(recon_externa->getPathAPIRL()).exists() & (recon_externa->getMLEM()  | recon_externa->getBackprojection()  ))
+    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir() & recon_externa->getReconServer() == 0)
     {
         messageBox.critical(0,"Error","Paths de APIRL invalido.");
         messageBox.setFixedSize(500,200);
         return;
+    }
+    // Si elegí reconstruir el server checkeo que el path sea un IP
+    if (recon_externa->getReconServer())
+    {
+        QString dir_IP = ui->textBrowser_entrada_2->toPlainText();
+        cout<<dir_IP.toStdString()<<endl;
+        boost::system::error_code ec;
+        boost::asio::ip::address::from_string( dir_IP.toStdString(), ec );
+        if ( ec )
+        {
+            std::cerr << ec.message( ) << std::endl;
+            messageBox.critical(0,"Error","Direccion de IP del server no valida.");
+            messageBox.setFixedSize(500,200);
+            return;
+        }
+
+        recon_externa->setServerIP(dir_IP);
+
+
     }
     if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getParsear() )
     {
@@ -3877,22 +3917,35 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->setNombre_archivo( recon_externa->getArchRecon().split('.').first().split('/').last() );
     }
 
-    if (recon_externa->getArchInicial() == "-" &  (recon_externa->getMLEM() | recon_externa->getBackprojection() ) )
+    if (recon_externa->getArchInicial() == "-" &  recon_externa->getReconstruir() )
     {
         messageBox.critical(0,"Error","Archivo de imagen inicial no seleccionado.");
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (recon_externa->getArchSensib() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
+    if (recon_externa->getArchSensib() == "-"  & recon_externa->getReconstruir() )
     {
+        recon_externa->resetPreSensibilidad();
         messageBox.warning(0,"Warning","Se recalculara la sensibilidad.");
         messageBox.setFixedSize(500,200);
     }
-    if (recon_externa->getArchCountSkimm() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
+    else
     {
+        recon_externa->setPreSensibilidad();
+    }
+    if (recon_externa->getArchCountSkimm() == "-"  & recon_externa->getReconstruir() )
+    {
+        recon_externa->resetAplicarCountSkimming();
         messageBox.warning(0,"Warning","No se aplicara count skimming.");
         messageBox.setFixedSize(500,200);
     }
+    else
+    {
+        recon_externa->setAplicarCountSkimming();
+    }
+
+
+
 
     // Cargo los valores de los campos
     QString aux_str;
@@ -4008,6 +4061,14 @@ void MainWindow::on_pushButton_5_clicked()
         return;
     }
     recon_externa->setzona_muerta(aux_str.toDouble());
+    aux_str = ui->Box_Iteraciones->text();
+    if(aux_str.toInt() < 0)
+    {
+        messageBox.critical(0,"Error","La cantidad de iteraciones debe ser mayor a 0.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+    recon_externa->setIteraciones(aux_str.toDouble());
 
 
     // Reservo memoria para los procesos
@@ -4015,20 +4076,19 @@ void MainWindow::on_pushButton_5_clicked()
 
     if (recon_externa->getParsear() == 1)
     {
-        ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
-        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        //ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
+        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Parsear();
     }
 
     if (recon_externa->getMLEM() == 1 | recon_externa->getBackprojection() == 1)
     {
-        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
-        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        //ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
+        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Reconstruir();
     }
-
 
 
 
@@ -4171,10 +4231,10 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
 void MainWindow::on_checkBox_MLEM_clicked(bool checked)
 {
-    ui->checkBox_Backprojection->setCheckState(Qt::Unchecked);
+    ui->checkBox_Backprojection->setCheckState( Qt::Unchecked);
 }
 
 void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 {
-    ui->checkBox_MLEM->setCheckState(Qt::Unchecked);
+    ui->checkBox_MLEM->setCheckState( Qt::Unchecked);
 }

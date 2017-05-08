@@ -45,14 +45,31 @@ Reconstructor::Reconstructor()
     zona_muerta = ZONA_MUERTA_BASE;
     iteraciones = ITERACIONES_BASE;
 
+    // Server Paths
+    SERVER_BASE     =   "/mounting/running/recon/apirl-mediciones/";
+    SERVER_ENCABEZADOS     =   "/mounting/running/recon/apirl-mediciones/encabezados/";
+    SERVER_ENTRADAS =   "/mounting/running/recon/apirl-mediciones/datos_Entrada/";
+    SERVER_SALIDAS  =   "/mounting/running/recon/apirl-mediciones/output_APIRL/";
+    SERVER_APIRL    =   "/mounting/running/recon/apirl-code-pet/build/cmd/";
+
+
+}
+Reconstructor::~Reconstructor()
+{
+    if (indice_ejecucion == limite_ejecucion)
+        proceso->kill();
 }
 
 bool Reconstructor::SetearListasProcesos()
 {
 
+    if (parsear & reconstruir & reconServer & SensibilidadPrecalculada)
+    {
+        limite_ejecucion = 12;
+    }
     if (parsear & reconstruir & reconServer)
     {
-        limite_ejecucion = 6;
+        limite_ejecucion = 10;
     }
     else if (parsear & reconstruir)
     {
@@ -61,6 +78,14 @@ bool Reconstructor::SetearListasProcesos()
     else if(parsear)
     {
         limite_ejecucion = 4;
+    }
+    else if(reconstruir & reconServer)
+    {
+        limite_ejecucion = 6;
+    }
+    else if(reconstruir & reconServer & SensibilidadPrecalculada)
+    {
+        limite_ejecucion = 8;
     }
     else if(reconstruir)
     {
@@ -173,6 +198,8 @@ bool Reconstructor::Parsear()
 }
 bool Reconstructor::Reconstruir()
 {
+    QString nombre_img_ini, nombre_sens_ini;
+    QString aux_string;
 
     // ---- Primero armo el archivo de parametros
 
@@ -210,27 +237,47 @@ bool Reconstructor::Reconstruir()
     stream_par<<"input file := ";
 
     // Completo con el nombre de la entrada
-    if (parsear)
+    if (reconServer)
     {
-        // Si vengo de parsear el nombre lo puse yo
-        stream_par<<path_Salida+Nombre_archivo+".h33"<<endl;
-
+        // Si es en el server allá, lo defino yo
+        stream_par<<SERVER_ENTRADAS<<Nombre_archivo<<".h33"<<endl;
     }
     else
     {
-        // Sino no parseo, entra lo que pasaron de entrada
-        stream_par<<arch_recon<<endl;
+        // Es local
+        if (parsear)
+        {
+            // Si vengo de parsear el nombre lo puse yo
+            stream_par<<path_Salida+Nombre_archivo+".h33"<<endl;
+
+        }
+        else
+        {
+            // Sino no parseo, entra lo que pasaron de entrada
+            stream_par<<arch_recon<<endl;
+        }
     }
+
 
     // Escribo el initial estimate o el archivo de salida, que son lo mismo pero cada metodo lo llama como se le canta el culo
     if (reconBackprojection) stream_par<<"output image := ";
     else if (reconMLEM) stream_par<<"initial estimate := ";
-    stream_par<<arch_ini<<endl;
+    if (reconServer)
+    {
+        // Si lo mando al server la imagen inicial tambien la transfiero por su nombre
+        nombre_img_ini =  arch_ini.split('.').first().split('/').last();
+        stream_par<<SERVER_ENTRADAS<<nombre_img_ini<<".h33"<<endl;
+    }
+    else
+        stream_par<<arch_ini<<endl;
 
     // Escribo el nombre de la salida, que tambien nes distinto... most intriging...
     if (reconBackprojection) stream_par<<"output filename := ";
     else if (reconMLEM) stream_par<<"output filename prefix := ";
-    stream_par<<path_Salida+Nombre_archivo+"_out"<<endl;
+    if (reconServer)
+        stream_par<<SERVER_SALIDAS<<Nombre_archivo+"_out"<<endl;
+    else
+        stream_par<<path_Salida+Nombre_archivo+"_out"<<endl;
 
     // Para el caso de MLEM pongo la cantidad de iteracioens
     if (reconMLEM) stream_par<<"number of iterations := "<<iteraciones<<endl;
@@ -254,23 +301,217 @@ bool Reconstructor::Reconstruir()
     stream_par<<"save estimated projections and backprojected image := 0"<<endl;
 
     // Si agregue imagen de sensibilidad la pongo
-    if (SensibilidadPrecalculada) stream_par<<"sensitivity filename := "<<arch_sens<<endl;
+    if (SensibilidadPrecalculada)
+    {
+        if (reconServer)
+        {
+            // Si lo mando al server la imagen inicial tambien la transfiero por su nombre
+            nombre_sens_ini =  arch_sens.split('.').first().split('/').last();
+            stream_par<<"sensitivity filename := "<<SERVER_ENTRADAS<<nombre_sens_ini<<endl;
+        }
+        else
+            stream_par<<"sensitivity filename := "<<arch_sens<<endl;
+    }
 
     // Finalizo el archivo
     stream_par<<"END :="<<endl;
 
 
 
+    if (reconServer)
+    {
+        // Como el server tiene otros path debo cambiar todas las lineas
+        // de path del archivo de parametros e interfiles a el path relativo
+        // del server
 
-    //  ----- Mando la reconstruccion
+        // Archivo a reconstruir
+        // Copio al archivo
+        QFile::copy(arch_recon, path_Salida+Nombre_archivo+".h33");
+        aux_string = arch_recon.section(".",0,0);
+        QFile::copy(aux_string+".i33", path_Salida+Nombre_archivo+".i33");
+        QFile archivo_aux(path_Salida+Nombre_archivo+".h33");
+        if (!archivo_aux.open(QIODevice::ReadWrite))
+        {
+            consola->appendPlainText("Error al abrir copia de archivo .h33 a reconstruir");
+            return -1;
+        }
 
-    // Armo la linea al programa
-    if (reconBackprojection) programas[indice_armado_cola] = path_APIRL+"backproject";
-    else if (reconMLEM) programas[indice_armado_cola] = path_APIRL+"MLEM";
+        // Busco la linea que contiene el archivo .i33 y la remplazo por el nombre directo
+        QString s;
+        QTextStream t(&archivo_aux);
+        while(!t.atEnd())
+        {
+            QString line = t.readLine();
+            if(!line.contains("!name of data file := "))
+                s.append(line + "\n");
+            else
+                s.append("!name of data file := " + Nombre_archivo + ".i33" + "\n");
+        }
+        archivo_aux.resize(0);
+        t << s;
+        archivo_aux.close();
 
-    // Armo los argumentos
-    listasparametros[indice_armado_cola].append(nombre_archivo_parametros);
-    indice_armado_cola++;
+        // Archivo inicial
+        // Copio al archivo
+        QFile::copy(arch_ini, path_Salida+nombre_img_ini+".h33");
+        aux_string = arch_ini.section(".",0,0);
+        QFile::copy(aux_string+".i33", path_Salida+nombre_img_ini+".i33");
+        QFile archivo_aux_2(path_Salida+nombre_img_ini+".h33");
+        if (!archivo_aux_2.open(QIODevice::ReadWrite))
+        {
+            consola->appendPlainText("Error al abrir copia de archivo .h33 de imagen inicial");
+            return -1;
+        }
+
+        // Busco la linea que contiene el archivo .i33 y la remplazo por el nombre directo
+        QString s_2;
+        QTextStream t_2(&archivo_aux_2);
+        while(!t_2.atEnd())
+        {
+            QString line = t_2.readLine();
+            if(!line.contains("!name of data file := "))
+                s_2.append(line + "\n");
+            else
+                s_2.append("!name of data file := " + nombre_img_ini + ".i33" + "\n");
+        }
+        archivo_aux_2.resize(0);
+        t_2 << s_2;
+        archivo_aux_2.close();
+
+        if (SensibilidadPrecalculada)
+        {
+            // Archivo inicial
+            // Copio al archivo
+            QFile::copy(arch_sens, path_Salida+nombre_sens_ini+".h33");
+            aux_string = arch_sens.section(".",0,0);
+            QFile::copy(aux_string+".i33", path_Salida+nombre_sens_ini+".i33");
+            QFile archivo_aux_3(path_Salida+nombre_sens_ini+".h33");
+            if (!archivo_aux_3.open(QIODevice::ReadWrite))
+            {
+                consola->appendPlainText("Error al abrir copia de archivo .h33 de imagen de sensibilidad");
+                return -1;
+            }
+
+            // Busco la linea que contiene el archivo .i33 y la remplazo por el nombre directo
+            QString s_3;
+            QTextStream t_3(&archivo_aux_3);
+            while(!t_3.atEnd())
+            {
+                QString line = t_3.readLine();
+                if(!line.contains("!name of data file := "))
+                    s_3.append(line + "\n");
+                else
+                    s_3.append("!name of data file := " + nombre_sens_ini + ".i33" + "\n");
+            }
+            archivo_aux_3.resize(0);
+            t_3 << s_3;
+            archivo_aux_3.close();
+        }
+
+
+
+
+
+        //  ----- Si voy a reconstruir en el server copio los archivos ahi
+
+        // Paso el archivo de parametros
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(nombre_archivo_parametros);
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENCABEZADOS);
+        indice_armado_cola++;
+
+        // Paso el h33 de la imagen a reconstruir
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(arch_recon);
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+        indice_armado_cola++;
+
+        // Paso el i33 de la imagen a reconstruir
+        aux_string = arch_recon.section(".",0,0);
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(aux_string+".i33");
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+        indice_armado_cola++;
+
+
+        // Paso el h33 de la imagen de sensibilidad
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(arch_ini);
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+        indice_armado_cola++;
+
+        // Paso el i33 de la imagen de sensibilidad
+        aux_string = arch_ini.section(".",0,0);
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(aux_string+".i33");
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+        indice_armado_cola++;
+
+        if (SensibilidadPrecalculada)
+        {
+            // Paso el h33 de la imagen de sensibilidad
+            // Armo la linea al programa
+            programas[indice_armado_cola] = "scp";
+            // Armo los argumentos
+            listasparametros[indice_armado_cola].append(arch_sens);
+            listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+            indice_armado_cola++;
+
+            // Paso el i33 de la imagen de sensibilidad
+            aux_string = arch_sens.section(".",0,0);
+            // Armo la linea al programa
+            programas[indice_armado_cola] = "scp";
+            // Armo los argumentos
+            listasparametros[indice_armado_cola].append(aux_string+".i33");
+            listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
+            indice_armado_cola++;
+        }
+
+        //  ----- Mando la reconstruccion
+
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "ssh";
+
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(ip_SERVER);
+
+        /*
+        aux_string = "\"cd "+SERVER_BASE+" ; "+SERVER_APIRL;
+        if (reconBackprojection) listasparametros[indice_armado_cola].append(aux_string+"backproject "+SERVER_ENCABEZADOS+Nombre_archivo+".par \"");
+        else if (reconMLEM) listasparametros[indice_armado_cola].append(aux_string+"MLEM  "+SERVER_ENCABEZADOS+Nombre_archivo+".par \"");
+        */
+
+        if (reconBackprojection) listasparametros[indice_armado_cola].append(SERVER_APIRL+"backproject "+SERVER_ENCABEZADOS+Nombre_archivo+".par");
+        else if (reconMLEM) listasparametros[indice_armado_cola].append(SERVER_APIRL+"MLEM  "+SERVER_ENCABEZADOS+Nombre_archivo+".par");
+
+        indice_armado_cola++;
+
+    }
+    else
+    {
+        //  ----- Mando la reconstruccion
+
+        // Armo la linea al programa
+        if (reconBackprojection) programas[indice_armado_cola] = path_APIRL+"backproject";
+        else if (reconMLEM) programas[indice_armado_cola] = path_APIRL+"MLEM";
+
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(nombre_archivo_parametros);
+        indice_armado_cola++;
+    }
+
+
+
 
 
     if (!parsear)

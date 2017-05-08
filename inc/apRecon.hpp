@@ -39,6 +39,8 @@ namespace ap {
         public:
             // Constructor
             Reconstructor();
+            // Destructor
+            ~Reconstructor();
 
             // Metodos
             bool Parsear();
@@ -190,6 +192,14 @@ namespace ap {
             int indice_ejecucion = 0;
             int limite_ejecucion = 0;
             int indice_armado_cola = 0;
+
+            // Server
+            QString SERVER_BASE;
+            QString SERVER_ENCABEZADOS;
+            QString SERVER_ENTRADAS;
+            QString SERVER_SALIDAS;
+            QString SERVER_APIRL;
+
 
 
     private slots:
