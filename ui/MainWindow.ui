@@ -6109,7 +6109,7 @@ Tensión: </string>
        </rect>
       </property>
       <property name="text">
-       <string>Carpeta APIRL</string>
+       <string>Carpeta APIRL / IP</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_APIRL_PATH">
@@ -6724,6 +6724,41 @@ Tensión: </string>
         </font>
        </property>
       </widget>
+      <widget class="QLabel" name="label_104">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>40</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Iteraciones</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Box_Iteraciones">
+       <property name="geometry">
+        <rect>
+         <x>290</x>
+         <y>50</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+      </widget>
      </widget>
      <widget class="QTextBrowser" name="textBrowser_estimacion_ini">
       <property name="geometry">
@@ -6860,7 +6895,7 @@ Tensión: </string>
        <rect>
         <x>180</x>
         <y>280</y>
-        <width>361</width>
+        <width>231</width>
         <height>31</height>
        </rect>
       </property>
@@ -6876,7 +6911,7 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>20</x>
+         <x>0</x>
          <y>0</y>
          <width>121</width>
          <height>26</height>
@@ -6886,36 +6921,20 @@ Tensión: </string>
         <string>Parsear RAW</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_MLEM">
+      <widget class="QCheckBox" name="checkBox_Reconstruir">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>150</x>
+         <x>120</x>
          <y>0</y>
-         <width>71</width>
+         <width>111</width>
          <height>26</height>
         </rect>
        </property>
        <property name="text">
-        <string>MLEM</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="checkBox_Backprojection">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>230</x>
-         <y>0</y>
-         <width>131</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Backprojection</string>
+        <string>Reconstruir</string>
        </property>
       </widget>
      </widget>
@@ -7019,6 +7038,70 @@ Tensión: </string>
       <property name="text">
        <string>Carpeta Parser</string>
       </property>
+     </widget>
+     <widget class="QFrame" name="frame_multihead_graph_9">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>280</y>
+        <width>271</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QCheckBox" name="checkBox_Server">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>71</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Server</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_MLEM">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>0</y>
+         <width>71</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>MLEM</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_Backprojection">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>0</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Backprojection</string>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="fpga">

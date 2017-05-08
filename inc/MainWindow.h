@@ -209,6 +209,10 @@ private slots:
 
     void on_pushButton_logguer_clicked();
 
+    void on_checkBox_MLEM_clicked(bool checked);
+
+    void on_checkBox_Backprojection_clicked(bool checked);
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);

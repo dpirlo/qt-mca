@@ -26,6 +26,7 @@
 #define     RADIO_FOV_BASE          300
 #define     RADIO_PET_BASE          360
 #define     ZONA_MUERTA_BASE        00
+#define     ITERACIONES_BASE        30
 
 
 namespace ap {
@@ -43,8 +44,9 @@ namespace ap {
             bool Parsear();
             bool Reconstruir();
 
-            // Setear la lista de procesos
+            // Lista de procesos
             bool SetearListasProcesos();
+            bool ResetearListasProcesos();
 
             // Set de salida
             void setConsola(QPlainTextEdit *consola_par) {this->consola = consola_par;}
@@ -73,6 +75,11 @@ namespace ap {
             QString getArchSensib() {return this->arch_sens;}
             QString getArchCountSkimm() {return this->arch_countskimm;}
 
+            // set IP
+            void setServerIP(QString par_string) {this->ip_SERVER = par_string;}
+            // get IP
+            QString getServerIP() {return this->ip_SERVER;}
+
             // Set de valores
             void setCant_anillos(double par_double){this->Cant_anillos = par_double ;}
             void setDif_anillos(double par_double){this->Dif_anillos = par_double ;}
@@ -88,6 +95,7 @@ namespace ap {
             void setRadio_FOV(double par_double){this->Radio_FOV = par_double ;}
             void setRadio_PET(double par_double){this->Radio_PET = par_double ;}
             void setzona_muerta(double par_double){this->zona_muerta = par_double ;}
+            void setIteraciones(double par_double){this->iteraciones = par_double ;}
             // Get de valores
             double getCant_anillos(){return this->Cant_anillos ;}
             double getDif_anillos(){return this->Dif_anillos ;}
@@ -103,18 +111,32 @@ namespace ap {
             double getRadio_FOV(){return this->Radio_FOV ;}
             double getRadio_PET(){return this->Radio_PET ;}
             double getzona_muerta(){return this->zona_muerta ;}
+            double getIteraciones(){return this->iteraciones;}
 
             // Set procedimientos
             void setParsear(){this->parsear = 1;}
+            void setReconstruir(){this->reconstruir = 1;}
             void setMLEM(){this->reconMLEM = 1;}
             void setBackprojection(){this->reconBackprojection = 1;}
+            void setReconServer(){this->reconServer = 1;}
+            void setPreSensibilidad(){this->SensibilidadPrecalculada = 1;}
+            void setAplicarCountSkimming(){this->AplicarCountSkimming = 1;}
             void resetParsear(){this->parsear = 0;}
+            void resetReconstruir(){this->reconstruir = 0;}
             void resetMLEM(){this->reconMLEM = 0;}
             void resetBackprojection(){this->reconBackprojection = 0;}
+            void resetReconServer(){this->reconServer = 0;}
+            void resetPreSensibilidad(){this->SensibilidadPrecalculada = 0;}
+            void resetAplicarCountSkimming(){this->AplicarCountSkimming = 0;}
             // Get Procedimientos
             bool getParsear(){return this->parsear;}
+            bool getReconstruir(){return this->reconstruir;}
             bool getMLEM(){return this->reconMLEM;}
             bool getBackprojection(){return this->reconBackprojection;}
+            bool getReconServer(){return this->reconServer;}
+            bool getPreSensibilidad(){return this->SensibilidadPrecalculada ;}
+            bool getAplicarCountSkimming(){return this->AplicarCountSkimming ;}
+
 
         private:
 
@@ -124,6 +146,7 @@ namespace ap {
             QString path_PARSER;
             QString path_Salida;
             QString Nombre_archivo;
+            QString ip_SERVER;
 
             // Archivos
             QString arch_recon;
@@ -148,11 +171,16 @@ namespace ap {
             double Radio_FOV;
             double Radio_PET;
             double zona_muerta;
+            double iteraciones;
 
             // Procedimientos
             bool parsear;
+            bool reconstruir;
+            bool reconServer;
             bool reconMLEM;
             bool reconBackprojection;
+            bool SensibilidadPrecalculada;
+            bool AplicarCountSkimming;
 
             // Procesos
             QProcess *proceso;
@@ -161,6 +189,7 @@ namespace ap {
             QStringList *listasparametros;
             int indice_ejecucion = 0;
             int limite_ejecucion = 0;
+            int indice_armado_cola = 0;
 
 
     private slots:
