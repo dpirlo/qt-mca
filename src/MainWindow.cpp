@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
  */
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();    
+    arpet->portDisconnect();
     delete ui;
     delete pref;
     delete pmt_select;
@@ -99,7 +99,7 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal");
-    resetHitsValues();    
+    resetHitsValues();
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -109,7 +109,7 @@ void MainWindow::setPreferencesConfiguration()
     /*Configuración inicial de preferencias*/
     QString default_pref_file = "[Modo]\ndebug=false\nlog=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
-    getPreferencesSettingsFile();    
+    getPreferencesSettingsFile();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -411,6 +411,21 @@ bool MainWindow::copyRecursively(const QString &srcFilePath, const QString &tgtF
     }
     return true;
 }
+/**
+ * @brief MainWindow::writeFooterAndHeaderDebug
+ * @param header
+ */
+void MainWindow::writeFooterAndHeaderDebug(bool header)
+{
+  if (header)
+  {
+    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
+  }
+  else
+  {
+    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+  }      
+}
 
 /* Menu: Preferencias */
 /**
@@ -440,7 +455,7 @@ void MainWindow::on_actionPreferencias_triggered()
         setPreferencesSettingsFile("Modo", "log", boolLogText );
         setPreferencesSettingsFile("Paths", "conf_set_file", file);
         setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
-        getPreferencesSettingsFile();        
+        getPreferencesSettingsFile();
     }
 }
 /**
@@ -458,7 +473,7 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
     QDir log(logs);
     if (!dir.exists())
     {
-      dir.mkdir(path);      
+      dir.mkdir(path);
     }
     if (!log.exists())
     {
@@ -535,7 +550,7 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     try
     {
@@ -556,11 +571,11 @@ void MainWindow::getARPETStatus()
         if(debug)
             {
                 cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-                cout<<"[END-LOG-DBG] ====================================================="<<endl;
+                writeFooterAndHeaderDebug(false);
             }
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -570,7 +585,7 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus()
 {
-  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+  writeFooterAndHeaderDebug(true);
 
   if(!arpet->isPortOpen())
   {
@@ -578,7 +593,7 @@ void MainWindow::getHeadStatus()
     if(debug)
     {
       cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
     return;
   }
@@ -606,14 +621,10 @@ void MainWindow::getHeadStatus()
     }
     catch(Exceptions & ex)
     {
-        if(debug)
-            {
-                cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
-                cout<<"[END-LOG-DBG] ====================================================="<<endl;
-            }
+        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 
 }
 /**
@@ -624,7 +635,7 @@ void MainWindow::getHeadStatus()
  */
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
 
     string msg;
     try
@@ -646,7 +657,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
         setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_arpet_off_clicked
@@ -656,7 +667,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
  */
 void MainWindow::on_pushButton_arpet_off_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     try
     {
@@ -672,7 +683,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
         setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_clicked
@@ -727,13 +738,13 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
  */
 void MainWindow::on_pushButton_obtener_ini_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     openConfigurationFile();
     setPreferencesSettingsFile("Paths","conf_set_file",initfile);
     if(debug)
     {
       cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 
 }
@@ -743,7 +754,7 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 void MainWindow::on_pushButton_init_configure_clicked()
 {
     /** @todo: Ver de agregar un boton indicando el estado de conexión del puerto */
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     if(arpet->isPortOpen())
     {
         arpet->portDisconnect();
@@ -754,9 +765,9 @@ void MainWindow::on_pushButton_init_configure_clicked()
             port_name=ui->comboBox_port->currentText();
             calibrador->setPort_Name(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
-            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
+            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            writeFooterAndHeaderDebug(false);
             getARPETStatus();
             getHeadStatus();
         }
@@ -766,7 +777,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
           QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
         }
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_configure_clicked
@@ -776,7 +787,7 @@ void MainWindow::on_pushButton_configure_clicked()
 {
    /* Inicialización del modo Coincidencia */
 
-   if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+   writeFooterAndHeaderDebug(true);
    int index=ui->comboBox_adquire_mode_coin->currentIndex();
    try{
        switch (index) {
@@ -822,21 +833,21 @@ void MainWindow::on_pushButton_configure_clicked()
        QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
        setLabelState(false,ui->label_coincidencia_estado);
    }
-   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+   writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_initialize_clicked
  */
 void MainWindow::on_pushButton_initialize_clicked()
 {
-   if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+   writeFooterAndHeaderDebug(true);
    if(!arpet->isPortOpen())
    {
      QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
      if(debug)
      {
        cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-       cout<<"[END-LOG-DBG] ====================================================="<<endl;
+       writeFooterAndHeaderDebug(false);
      }
      return;
    }
@@ -873,14 +884,14 @@ void MainWindow::on_pushButton_initialize_clicked()
        }
    }
 
-   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+   writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
  */
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
     int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
@@ -902,7 +913,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -910,7 +921,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
  */
 void MainWindow::on_pushButton_hv_on_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -931,7 +942,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -939,7 +950,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
  */
 void MainWindow::on_pushButton_hv_off_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -960,7 +971,8 @@ void MainWindow::on_pushButton_hv_off_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
+
     }
 }
 /**
@@ -968,7 +980,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
  */
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     setPSOCDataStream("config",arpet->getPSOC_STA());
     if(debug) cout<<"Cabezal: "<<getHead("config").toStdString()<<endl;
@@ -989,7 +1001,8 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
+
     }
 }
 /**
@@ -1424,7 +1437,7 @@ void MainWindow::drawTemperatureBoard()
     }
 
     ui->label_title_output->setText("Temperatura");
-    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+"\nMáxima: "+QString::number(t_max)+"°C"+"\nMínima: "+QString::number(t_min)+"°C");
+    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+" Máxima: "+QString::number(t_max)+"°C"+" Mínima: "+QString::number(t_min)+"°C");
 }
 /**
  * @brief MainWindow::clearTemperatureBoard
@@ -1541,14 +1554,13 @@ void MainWindow::setTabMode(int index)
  */
 QString MainWindow::getHeadMCA(QString head)
 {
-    QString msg;    
-    ui->specHead->clearGraphs();
+    QString msg;
     try
     {
         setButtonAdquireState(true);
         msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         if(debug) showMCAEStreamDebugMode(msg.toStdString());
-        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);        
+        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
     }
     catch(Exceptions & ex)
     {
@@ -1594,7 +1606,7 @@ QString MainWindow::getMultiMCA(QString head)
                         cout<<"PMT: "<<pmt<<" "<<endl;
                         showMCAEStreamDebugMode(msg.toStdString());
                     }
-                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);                
+                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
             }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
     }
@@ -1946,8 +1958,7 @@ void MainWindow::resetHitsValues()
 void MainWindow::on_pushButton_adquirir_clicked()
 {
     /** @todo: Agregar el modo continuo*/
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
-    if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
+    writeFooterAndHeaderDebug(true);
 
     QList<int> checkedHeads = getCheckedHeads();
 
@@ -1959,19 +1970,23 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+            writeFooterAndHeaderDebug(false);
             return;
         }
         break;
     case CABEZAL:
         for (int i=0;i<checkedHeads.length();i++)
         {
+            ui->specHead->clearGraphs();
             try
             {
+                if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
                 q_msg = getHeadMCA(QString::number(checkedHeads.at(i)));
             }
             catch(Exceptions & ex)
             {
                 if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
+                writeFooterAndHeaderDebug(false);
                 setButtonAdquireState(true, true);
                 return;
             }
@@ -1982,13 +1997,14 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+            writeFooterAndHeaderDebug(false);
             return;
         }
         break;
     default:
         break;
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
@@ -1996,7 +2012,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
 void MainWindow::on_pushButton_reset_clicked()
 {
     /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
     switch (adquire_mode) {
@@ -2019,7 +2035,7 @@ void MainWindow::on_pushButton_reset_clicked()
         default:
             break;
         }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_select_pmt_clicked
@@ -2027,7 +2043,7 @@ void MainWindow::on_pushButton_reset_clicked()
 void MainWindow::on_pushButton_select_pmt_clicked()
 {
 
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     resetHitsValues();
     removeAllGraphsPMT();
 
@@ -2053,14 +2069,14 @@ void MainWindow::on_pushButton_select_pmt_clicked()
     qSort(qlist);
     ui->listWidget->clear();
     ui->listWidget->addItems(qlist);
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_configure_clicked
  */
 void MainWindow::on_pushButton_hv_configure_clicked()
-{    
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+{
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2077,7 +2093,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2085,7 +2101,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
  */
 void MainWindow::on_pushButton_l_5_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2101,7 +2117,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2109,7 +2125,7 @@ void MainWindow::on_pushButton_l_5_clicked()
  */
 void MainWindow::on_pushButton_l_10_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2125,7 +2141,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2133,7 +2149,7 @@ void MainWindow::on_pushButton_l_10_clicked()
  */
 void MainWindow::on_pushButton_l_50_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2149,7 +2165,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2157,7 +2173,7 @@ void MainWindow::on_pushButton_l_50_clicked()
  */
 void MainWindow::on_pushButton_p_5_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2173,7 +2189,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2181,7 +2197,7 @@ void MainWindow::on_pushButton_p_5_clicked()
  */
 void MainWindow::on_pushButton_p_10_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2197,7 +2213,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2205,7 +2221,7 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2221,7 +2237,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2229,18 +2245,53 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_clicked()
 {
-    //if (ui->checkBox_temp->isChecked()); //Logueo temperatura
-    //if (ui->checkBox_tasa->isChecked()); //Logueo tasa
+    writeFooterAndHeaderDebug(true);
+
+    bool rate = false, temp = false;
+    double tempe;
+
+    if (ui->checkBox_temp->isChecked()) temp=true; //Logueo temperatura
+    if (ui->checkBox_tasa->isChecked()) rate=true; //Logueo tasa
+
 
     QList<int> checkedHeads=getCheckedHeads();
-    vector<int> rates;
-
-    for (int i=0;i<checkedHeads.length();i++)
+    vector<int> rates(3);
+    try
     {
-        int head_index=checkedHeads.at(i);
-        rates=arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
-        for (int i=0; i<rates.size();i++){cout << rates[i] << endl;}
+        for (int i=0;i<checkedHeads.length();i++)
+        {
+            int head_index=checkedHeads.at(i);
+            if (rate)
+            {
+               rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
+               writeLogFile("[LOG-RATE] Cabezal,"+QString::number(head_index)+","+QString::number(rates[0])+","+QString::number(rates[1])+","+QString::number(rates[2]));
+            }
+            if (temp)
+            {
+               QVector<double> temp_vec;
+               temp_vec.fill(0);
+               for(int pmt = 0; pmt < PMTs; pmt++)
+               {
+                     {
+                         string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+                         tempe = arpet->getPMTTemperature(msg);
+                         if (tempe > MIN_TEMPERATURE)temp_vec.push_back(tempe);
+                     }
+                }
+                double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
+                double t_max = *max_element(temp_vec.begin(),temp_vec.end());
+                double t_min = *min_element(temp_vec.begin(),temp_vec.end());
+                writeLogFile("[LOG-TEMP] Cabezal,"+QString::number(head_index)+","+QString::number(t_min)+","+QString::number(mean)+","+QString::number(t_max));
+            }
+        }
+
     }
+    catch( Exceptions & ex )
+    {
+        if(debug) cout<<"Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    writeFooterAndHeaderDebug(false);
 }
 
 /* Métodos generales del entorno gráfico */
@@ -2326,7 +2377,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
  * @return
  */
 int MainWindow::parseConfigurationFile(bool mode, QString head)
-{        
+{
     getPreferencesSettingsFile();
     QSettings settings(initfile, QSettings::IniFormat);
 
@@ -3763,14 +3814,6 @@ void MainWindow::on_pushButton_5_clicked()
     {
         recon_externa->resetParsear();
     }
-    if (ui->checkBox_Server->checkState() == Qt::Checked)
-    {
-        recon_externa->setReconServer();
-    }
-    else
-    {
-        recon_externa->resetReconServer();
-    }
     if (ui->checkBox_MLEM->checkState() == Qt::Checked)
     {
         recon_externa->setMLEM();
@@ -3788,20 +3831,7 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->resetBackprojection();
     }
 
-    // Armo flago de reconstruccion
-    if (recon_externa->getMLEM()  | recon_externa->getBackprojection()  )
-    {
-        recon_externa->setReconstruir();
-    }
-    else
-    {
-        recon_externa->resetReconstruir();
-    }
-
-
-
-
-    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0 | (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
+    if (recon_externa->getMLEM() == 0 & recon_externa->getBackprojection() == 0 & recon_externa->getParsear() == 0)
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -3809,30 +3839,11 @@ void MainWindow::on_pushButton_5_clicked()
     }
 
     // Checkeo que los path existan
-    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir() & recon_externa->getReconServer() == 0)
+    if (!QDir(recon_externa->getPathAPIRL()).exists() & (recon_externa->getMLEM()  | recon_externa->getBackprojection()  ))
     {
         messageBox.critical(0,"Error","Paths de APIRL invalido.");
         messageBox.setFixedSize(500,200);
         return;
-    }
-    // Si elegí reconstruir el server checkeo que el path sea un IP
-    if (recon_externa->getReconServer())
-    {
-        QString dir_IP = ui->textBrowser_entrada_2->toPlainText();
-        cout<<dir_IP.toStdString()<<endl;
-        boost::system::error_code ec;
-        boost::asio::ip::address::from_string( dir_IP.toStdString(), ec );
-        if ( ec )
-        {
-            std::cerr << ec.message( ) << std::endl;
-            messageBox.critical(0,"Error","Direccion de IP del server no valida.");
-            messageBox.setFixedSize(500,200);
-            return;
-        }
-
-        recon_externa->setServerIP(dir_IP);
-
-
     }
     if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getParsear() )
     {
@@ -3866,35 +3877,22 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->setNombre_archivo( recon_externa->getArchRecon().split('.').first().split('/').last() );
     }
 
-    if (recon_externa->getArchInicial() == "-" &  recon_externa->getReconstruir() )
+    if (recon_externa->getArchInicial() == "-" &  (recon_externa->getMLEM() | recon_externa->getBackprojection() ) )
     {
         messageBox.critical(0,"Error","Archivo de imagen inicial no seleccionado.");
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (recon_externa->getArchSensib() == "-"  & recon_externa->getReconstruir() )
+    if (recon_externa->getArchSensib() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
     {
-        recon_externa->resetPreSensibilidad();
         messageBox.warning(0,"Warning","Se recalculara la sensibilidad.");
         messageBox.setFixedSize(500,200);
     }
-    else
+    if (recon_externa->getArchCountSkimm() == "-"  & (recon_externa->getMLEM() | recon_externa->getBackprojection()) )
     {
-        recon_externa->setPreSensibilidad();
-    }
-    if (recon_externa->getArchCountSkimm() == "-"  & recon_externa->getReconstruir() )
-    {
-        recon_externa->resetAplicarCountSkimming();
         messageBox.warning(0,"Warning","No se aplicara count skimming.");
         messageBox.setFixedSize(500,200);
     }
-    else
-    {
-        recon_externa->setAplicarCountSkimming();
-    }
-
-
-
 
     // Cargo los valores de los campos
     QString aux_str;
@@ -4010,14 +4008,6 @@ void MainWindow::on_pushButton_5_clicked()
         return;
     }
     recon_externa->setzona_muerta(aux_str.toDouble());
-    aux_str = ui->Box_Iteraciones->text();
-    if(aux_str.toInt() < 0)
-    {
-        messageBox.critical(0,"Error","La cantidad de iteraciones debe ser mayor a 0.");
-        messageBox.setFixedSize(500,200);
-        return;
-    }
-    recon_externa->setIteraciones(aux_str.toDouble());
 
 
     // Reservo memoria para los procesos
@@ -4025,19 +4015,20 @@ void MainWindow::on_pushButton_5_clicked()
 
     if (recon_externa->getParsear() == 1)
     {
-        //ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
-        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Parsear();
     }
 
     if (recon_externa->getMLEM() == 1 | recon_externa->getBackprojection() == 1)
     {
-        //ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
-        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Reconstruir();
     }
+
 
 
 
@@ -4180,10 +4171,10 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
 void MainWindow::on_checkBox_MLEM_clicked(bool checked)
 {
-    ui->checkBox_Backprojection->setCheckState( Qt::Unchecked);
+    ui->checkBox_Backprojection->setCheckState(Qt::Unchecked);
 }
 
 void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 {
-    ui->checkBox_MLEM->setCheckState( Qt::Unchecked);
+    ui->checkBox_MLEM->setCheckState(Qt::Unchecked);
 }

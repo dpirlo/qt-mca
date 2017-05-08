@@ -222,6 +222,7 @@ private:
   QList<int> getCheckedHeads();
   QString port_name;
   string getLocalDateAndTime();
+  void writeFooterAndHeaderDebug(bool header);
   QString getLogFileName(QString main="");
   void writeLogFile(QString log_text, QString main="");
   int writePreferencesFile(QString pref, QString filename, bool force=false);
