@@ -129,7 +129,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
-    void getHeadStatus(int head_index);
+    void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
 
     /* Buttons */
     void on_pushButton_init_configure_clicked();
@@ -218,7 +218,7 @@ private:
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
   void getPaths();
   int parseConfigurationFile(bool mode, QString head="");
-  QStringList availablePortsName();  
+  QStringList availablePortsName();
   QList<int> getCheckedHeads();
   QString port_name;
   string getLocalDateAndTime();
@@ -226,6 +226,7 @@ private:
   QString getLogFileName(QString main="");
   void writeLogFile(QString log_text, QString main="");
   int writePreferencesFile(QString pref, QString filename, bool force=false);
+  void getHeadStatus(int head_index);
   QString getHead(string tab);
   string initHead(int head);
   string initSP3(int head);
@@ -299,7 +300,7 @@ private:
     int adquire_mode;
     bool debug, init, log;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;    
+    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
     int  AT, LowLimit, Target;
     QVector<double> channels_ui;
@@ -355,7 +356,7 @@ public:
      *
      * @return pmt_selected_list
      */
-    QList<QString> getPMTSelectedList() { return pmt_selected_list; }        
+    QList<QString> getPMTSelectedList() { return pmt_selected_list; }
     /**
      * @brief setHitsInit
      *

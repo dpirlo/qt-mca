@@ -186,7 +186,6 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHeadStatus(int)));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -202,6 +201,14 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
      QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
      QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+}
+/**
+ * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
+ * @param arg1
+ */
+void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
+{
+    getHeadStatus(arg1.toInt());
 }
 /**
  * @brief MainWindow::setQListElements
@@ -424,7 +431,7 @@ void MainWindow::writeFooterAndHeaderDebug(bool header)
   else
   {
     if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
-  }      
+  }
 }
 
 /* Menu: Preferencias */
@@ -580,7 +587,7 @@ void MainWindow::getARPETStatus()
 /**
  * @brief MainWindow::getHeadStatus
  *
- * Slot que incicializa el cabezal seleccionado y determina el estado de su fuente de HV (PSOC).
+ * Método que incicializa el cabezal seleccionado y determina el estado de su fuente de HV (PSOC).
  *
  */
 void MainWindow::getHeadStatus(int head_index)
