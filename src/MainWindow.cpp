@@ -409,6 +409,15 @@ bool MainWindow::copyRecursively(const QString &srcFilePath, const QString &tgtF
     }
     return true;
 }
+/**
+ * @brief MainWindow::writeFooterAndHeaderDebug
+ * @param header
+ */
+void MainWindow::writeFooterAndHeaderDebug(bool header)
+{
+    if (header) if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
+    else if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+}
 
 /* Menu: Preferencias */
 /**
@@ -533,7 +542,7 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     try
     {
@@ -554,11 +563,11 @@ void MainWindow::getARPETStatus()
         if(debug)
             {
                 cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-                cout<<"[END-LOG-DBG] ====================================================="<<endl;
+                writeFooterAndHeaderDebug(false);
             }
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -568,7 +577,7 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus()
 {
-  if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+  writeFooterAndHeaderDebug(true);
 
   if(!arpet->isPortOpen())
   {
@@ -576,7 +585,7 @@ void MainWindow::getHeadStatus()
     if(debug)
     {
       cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
     return;
   }
@@ -604,14 +613,10 @@ void MainWindow::getHeadStatus()
     }
     catch(Exceptions & ex)
     {
-        if(debug)
-            {
-                cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
-                cout<<"[END-LOG-DBG] ====================================================="<<endl;
-            }
+        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 
 }
 /**
@@ -622,7 +627,7 @@ void MainWindow::getHeadStatus()
  */
 void MainWindow::on_pushButton_arpet_on_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
 
     string msg;
     try
@@ -644,7 +649,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
         setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_arpet_off_clicked
@@ -654,7 +659,7 @@ void MainWindow::on_pushButton_arpet_on_clicked()
  */
 void MainWindow::on_pushButton_arpet_off_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     try
     {
@@ -670,7 +675,7 @@ void MainWindow::on_pushButton_arpet_off_clicked()
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
         setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_clicked
@@ -725,13 +730,13 @@ void MainWindow::on_pushButton_tiempos_cabezal_clicked()
  */
 void MainWindow::on_pushButton_obtener_ini_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     openConfigurationFile();
     setPreferencesSettingsFile("Paths","conf_set_file",initfile);
     if(debug)
     {
       cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 
 }
@@ -741,7 +746,7 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 void MainWindow::on_pushButton_init_configure_clicked()
 {
     /** @todo: Ver de agregar un boton indicando el estado de conexión del puerto */
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     if(arpet->isPortOpen())
     {
         arpet->portDisconnect();
@@ -754,7 +759,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            writeFooterAndHeaderDebug(false);
             getARPETStatus();
             getHeadStatus();
         }
@@ -764,7 +769,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
           QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
         }
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_configure_clicked
@@ -774,7 +779,7 @@ void MainWindow::on_pushButton_configure_clicked()
 {
    /* Inicialización del modo Coincidencia */
 
-   if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+   writeFooterAndHeaderDebug(true);
    int index=ui->comboBox_adquire_mode_coin->currentIndex();
    try{
        switch (index) {
@@ -820,21 +825,21 @@ void MainWindow::on_pushButton_configure_clicked()
        QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
        setLabelState(false,ui->label_coincidencia_estado);
    }
-   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+   writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_initialize_clicked
  */
 void MainWindow::on_pushButton_initialize_clicked()
 {
-   if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+   writeFooterAndHeaderDebug(true);
    if(!arpet->isPortOpen())
    {
      QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
      if(debug)
      {
        cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-       cout<<"[END-LOG-DBG] ====================================================="<<endl;
+       writeFooterAndHeaderDebug(false);
      }
      return;
    }
@@ -871,14 +876,14 @@ void MainWindow::on_pushButton_initialize_clicked()
        }
    }
 
-   if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+   writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
  */
 void MainWindow::on_pushButton_hv_set_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
     int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
@@ -900,7 +905,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -908,7 +913,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
  */
 void MainWindow::on_pushButton_hv_on_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -929,7 +934,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -937,7 +942,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
  */
 void MainWindow::on_pushButton_hv_off_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -958,7 +963,8 @@ void MainWindow::on_pushButton_hv_off_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
+
     }
 }
 /**
@@ -966,7 +972,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
  */
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     string msg;
     setPSOCDataStream("config",arpet->getPSOC_STA());
     if(debug) cout<<"Cabezal: "<<getHead("config").toStdString()<<endl;
@@ -987,7 +993,8 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(msg);
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
+
     }
 }
 /**
@@ -1943,7 +1950,7 @@ void MainWindow::resetHitsValues()
 void MainWindow::on_pushButton_adquirir_clicked()
 {
     /** @todo: Agregar el modo continuo*/
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
 
     QList<int> checkedHeads = getCheckedHeads();
 
@@ -1955,7 +1962,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            writeFooterAndHeaderDebug(false);
             return;
         }
         break;
@@ -1971,7 +1978,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
             catch(Exceptions & ex)
             {
                 if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
-                if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+                writeFooterAndHeaderDebug(false);
                 setButtonAdquireState(true, true);
                 return;
             }
@@ -1982,14 +1989,14 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+            writeFooterAndHeaderDebug(false);
             return;
         }
         break;
     default:
         break;
     }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
@@ -1997,7 +2004,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
 void MainWindow::on_pushButton_reset_clicked()
 {
     /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
     switch (adquire_mode) {
@@ -2020,7 +2027,7 @@ void MainWindow::on_pushButton_reset_clicked()
         default:
             break;
         }
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_select_pmt_clicked
@@ -2028,7 +2035,7 @@ void MainWindow::on_pushButton_reset_clicked()
 void MainWindow::on_pushButton_select_pmt_clicked()
 {
 
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     resetHitsValues();
     removeAllGraphsPMT();
 
@@ -2054,14 +2061,14 @@ void MainWindow::on_pushButton_select_pmt_clicked()
     qSort(qlist);
     ui->listWidget->clear();
     ui->listWidget->addItems(qlist);
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_configure_clicked
  */
 void MainWindow::on_pushButton_hv_configure_clicked()
 {    
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2078,7 +2085,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2086,7 +2093,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
  */
 void MainWindow::on_pushButton_l_5_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2102,7 +2109,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2110,7 +2117,7 @@ void MainWindow::on_pushButton_l_5_clicked()
  */
 void MainWindow::on_pushButton_l_10_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2126,7 +2133,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2134,7 +2141,7 @@ void MainWindow::on_pushButton_l_10_clicked()
  */
 void MainWindow::on_pushButton_l_50_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2150,7 +2157,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2158,7 +2165,7 @@ void MainWindow::on_pushButton_l_50_clicked()
  */
 void MainWindow::on_pushButton_p_5_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2174,7 +2181,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2182,7 +2189,7 @@ void MainWindow::on_pushButton_p_5_clicked()
  */
 void MainWindow::on_pushButton_p_10_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2198,7 +2205,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2206,7 +2213,7 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
     {
@@ -2222,7 +2229,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
-      cout<<"[END-LOG-DBG] ====================================================="<<endl;
+      writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2230,7 +2237,7 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_clicked()
 {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
+    writeFooterAndHeaderDebug(true);
 
     bool rate = false, temp = false;
     double tempe;
@@ -2276,7 +2283,7 @@ void MainWindow::on_pushButton_logguer_clicked()
         if(debug) cout<<"Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
-    if (debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    writeFooterAndHeaderDebug(false);
 }
 
 /* Métodos generales del entorno gráfico */
