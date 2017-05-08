@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3393,7 +3393,7 @@ Tensión: </string>
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>41</width>
+         <width>81</width>
          <height>21</height>
         </rect>
        </property>
@@ -3536,8 +3536,8 @@ Tensión: </string>
       <widget class="QCheckBox" name="checkBox_temp">
        <property name="geometry">
         <rect>
-         <x>20</x>
-         <y>23</y>
+         <x>19</x>
+         <y>29</y>
          <width>71</width>
          <height>26</height>
         </rect>
@@ -3549,8 +3549,8 @@ Tensión: </string>
       <widget class="QCheckBox" name="checkBox_tasa">
        <property name="geometry">
         <rect>
-         <x>95</x>
-         <y>23</y>
+         <x>94</x>
+         <y>29</y>
          <width>71</width>
          <height>26</height>
         </rect>
@@ -7583,7 +7583,7 @@ Tensión: </string>
    <widget class="QLabel" name="label_title_output">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>40</x>
       <y>620</y>
       <width>121</width>
       <height>31</height>
@@ -7597,6 +7597,9 @@ Tensión: </string>
     </property>
     <property name="text">
      <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -7621,7 +7624,7 @@ Tensión: </string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

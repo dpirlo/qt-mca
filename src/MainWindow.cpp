@@ -186,7 +186,7 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
      QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
      QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHeadStatus()));
+     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(getHeadStatus(int)));
      QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
      QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -583,7 +583,7 @@ void MainWindow::getARPETStatus()
  * Slot que incicializa el cabezal seleccionado y determina el estado de su fuente de HV (PSOC).
  *
  */
-void MainWindow::getHeadStatus()
+void MainWindow::getHeadStatus(int head_index)
 {
   writeFooterAndHeaderDebug(true);
 
@@ -598,7 +598,6 @@ void MainWindow::getHeadStatus()
     return;
   }
 
-  int head_index = getHead("config").toInt();
   if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
   /* Inicialización del Cabezal */
@@ -769,7 +768,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
-            getHeadStatus();
+            getHeadStatus(getHead("config").toInt());
         }
         catch(boost::system::system_error e)
         {
@@ -858,6 +857,8 @@ void MainWindow::on_pushButton_initialize_clicked()
    for (int i=0;i<checkedHeads.length();i++)
    {
        int head_index=checkedHeads.at(i);
+       /* Inicialización del Cabezal */
+       getHeadStatus(head_index);
        parseConfigurationFile(true, QString::number(head_index));
 
        /* Configuración de las tablas de calibración */

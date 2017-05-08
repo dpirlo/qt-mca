@@ -129,7 +129,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
-    void getHeadStatus();
+    void getHeadStatus(int head_index);
 
     /* Buttons */
     void on_pushButton_init_configure_clicked();
