@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
  */
 MainWindow::~MainWindow()
 {
-    arpet->portDisconnect();    
+    arpet->portDisconnect();
     delete ui;
     delete pref;
     delete pmt_select;
@@ -97,7 +97,7 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal");
-    resetHitsValues();    
+    resetHitsValues();
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -107,7 +107,7 @@ void MainWindow::setPreferencesConfiguration()
     /*Configuración inicial de preferencias*/
     QString default_pref_file = "[Modo]\ndebug=false\nlog=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
-    getPreferencesSettingsFile();    
+    getPreferencesSettingsFile();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -415,8 +415,14 @@ bool MainWindow::copyRecursively(const QString &srcFilePath, const QString &tgtF
  */
 void MainWindow::writeFooterAndHeaderDebug(bool header)
 {
-    if (header) if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
-    else if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+  if (header)
+  {
+    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
+  }
+  else
+  {
+    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+  }      
 }
 
 /* Menu: Preferencias */
@@ -447,7 +453,7 @@ void MainWindow::on_actionPreferencias_triggered()
         setPreferencesSettingsFile("Modo", "log", boolLogText );
         setPreferencesSettingsFile("Paths", "conf_set_file", file);
         setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
-        getPreferencesSettingsFile();        
+        getPreferencesSettingsFile();
     }
 }
 /**
@@ -465,7 +471,7 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
     QDir log(logs);
     if (!dir.exists())
     {
-      dir.mkdir(path);      
+      dir.mkdir(path);
     }
     if (!log.exists())
     {
@@ -757,7 +763,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             port_name=ui->comboBox_port->currentText();
             calibrador->setPort_Name(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
-            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);            
+            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
@@ -1546,13 +1552,13 @@ void MainWindow::setTabMode(int index)
  */
 QString MainWindow::getHeadMCA(QString head)
 {
-    QString msg;    
+    QString msg;
     try
     {
         setButtonAdquireState(true);
         msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         if(debug) showMCAEStreamDebugMode(msg.toStdString());
-        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);        
+        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
     }
     catch(Exceptions & ex)
     {
@@ -1598,7 +1604,7 @@ QString MainWindow::getMultiMCA(QString head)
                         cout<<"PMT: "<<pmt<<" "<<endl;
                         showMCAEStreamDebugMode(msg.toStdString());
                     }
-                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);                
+                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
             }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
     }
@@ -2067,7 +2073,7 @@ void MainWindow::on_pushButton_select_pmt_clicked()
  * @brief MainWindow::on_pushButton_hv_configure_clicked
  */
 void MainWindow::on_pushButton_hv_configure_clicked()
-{    
+{
     writeFooterAndHeaderDebug(true);
     QString q_msg;
     try
@@ -2369,7 +2375,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
  * @return
  */
 int MainWindow::parseConfigurationFile(bool mode, QString head)
-{        
+{
     getPreferencesSettingsFile();
     QSettings settings(initfile, QSettings::IniFormat);
 
@@ -4158,5 +4164,3 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
     ui->textBrowser_entrada_5->setText(filename);
 }
-
-
