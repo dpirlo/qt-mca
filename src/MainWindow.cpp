@@ -1422,7 +1422,7 @@ void MainWindow::drawTemperatureBoard()
     }
 
     ui->label_title_output->setText("Temperatura");
-    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+"\nMáxima: "+QString::number(t_max)+"°C"+"\nMínima: "+QString::number(t_min)+"°C");
+    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+" Máxima: "+QString::number(t_max)+"°C"+" Mínima: "+QString::number(t_min)+"°C");
 }
 /**
  * @brief MainWindow::clearTemperatureBoard
@@ -1540,7 +1540,6 @@ void MainWindow::setTabMode(int index)
 QString MainWindow::getHeadMCA(QString head)
 {
     QString msg;    
-    ui->specHead->clearGraphs();
     try
     {
         setButtonAdquireState(true);
@@ -1945,7 +1944,6 @@ void MainWindow::on_pushButton_adquirir_clicked()
 {
     /** @todo: Agregar el modo continuo*/
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
-    if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
     QList<int> checkedHeads = getCheckedHeads();
 
@@ -1957,19 +1955,23 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
             return;
         }
         break;
     case CABEZAL:
         for (int i=0;i<checkedHeads.length();i++)
         {
+            ui->specHead->clearGraphs();
             try
             {
+                if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
                 q_msg = getHeadMCA(QString::number(checkedHeads.at(i)));
             }
             catch(Exceptions & ex)
             {
                 if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
+                if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
                 setButtonAdquireState(true, true);
                 return;
             }
@@ -1980,6 +1982,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
         else
         {
             QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+            if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
             return;
         }
         break;
@@ -2230,8 +2233,7 @@ void MainWindow::on_pushButton_logguer_clicked()
     if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================"<<endl;
 
     bool rate = false, temp = false;
-    QVector<double> temp_vec;
-    temp_vec.fill(0);
+    double tempe;
 
     if (ui->checkBox_temp->isChecked()) temp=true; //Logueo temperatura
     if (ui->checkBox_tasa->isChecked()) rate=true; //Logueo tasa
@@ -2251,12 +2253,14 @@ void MainWindow::on_pushButton_logguer_clicked()
             }
             if (temp)
             {
+               QVector<double> temp_vec;
+               temp_vec.fill(0);
                for(int pmt = 0; pmt < PMTs; pmt++)
                {
                      {
                          string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
-                         temp = arpet->getPMTTemperature(msg);
-                         if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
+                         tempe = arpet->getPMTTemperature(msg);
+                         if (tempe > MIN_TEMPERATURE)temp_vec.push_back(tempe);
                      }
                 }
                 double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
