@@ -12,6 +12,11 @@ Reconstructor::Reconstructor()
     this->connect(proceso, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readyRead()));
     this->connect(proceso, SIGNAL(finished(int , QProcess::ExitStatus )), this, SLOT(on_procesoExit(int , QProcess::ExitStatus )));
 
+    // conecto la signal de parser
+    this->connect(this, SIGNAL(signal_finParser()), &loop_parser, SLOT(quit()));
+    // conecto la signal de reconstruccion
+    this->connect(this, SIGNAL(signal_finReconstruccion()), &loop_reconstruccion, SLOT(quit()));
+
     // Paths a dependencias
     path_APIRL = "../../../apirl-code-pet/build/cmd/";
     path_INTERFILES = "../../../interfiles/";
@@ -56,41 +61,33 @@ Reconstructor::Reconstructor()
 }
 Reconstructor::~Reconstructor()
 {
-    if (indice_ejecucion == limite_ejecucion)
-        proceso->kill();
+    matar_procesos();
 }
 
 bool Reconstructor::SetearListasProcesos()
 {
 
-    if (parsear & reconstruir & reconServer & SensibilidadPrecalculada)
+    if(parsear)
     {
-        limite_ejecucion = 12;
-    }
-    if (parsear & reconstruir & reconServer)
-    {
-        limite_ejecucion = 10;
-    }
-    else if (parsear & reconstruir)
-    {
-        limite_ejecucion = 5;
-    }
-    else if(parsear)
-    {
-        limite_ejecucion = 4;
-    }
-    else if(reconstruir & reconServer)
-    {
-        limite_ejecucion = 6;
+        limite_ejecucion = INST_PARSEO;
     }
     else if(reconstruir & reconServer & SensibilidadPrecalculada)
     {
-        limite_ejecucion = 8;
+        limite_ejecucion = INST_RECON_SERVER+INST_SENS_SERVER;
+    }
+    else if(reconstruir & reconServer)
+    {
+        limite_ejecucion = INST_RECON_SERVER;
     }
     else if(reconstruir)
     {
-        limite_ejecucion = 1;
+        limite_ejecucion = INST_RECON_LOCAL;
     }
+    else if(mostrar)
+    {
+        limite_ejecucion = INST_MOSTRAR;
+    }
+
     programas = new QString[limite_ejecucion];
     listasparametros = new QStringList[limite_ejecucion];
 
@@ -189,10 +186,12 @@ bool Reconstructor::Parsear()
     listasparametros[indice_armado_cola].append(QString::number(max_Z));
     indice_armado_cola++;
 
-
     // ejecuto el primer proceso de la lista, los sucesivos procesos se ejecutaran en el callback de finalizacion
     proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
 
+    // Ahora el archivo a recontruir dejo de ser el .raw y va a pasar a ser el .h33 que va ser generado
+    arch_recon_orig = arch_recon;
+    arch_recon = path_Salida+Nombre_archivo+".h33";
 
     return 1;
 }
@@ -244,18 +243,7 @@ bool Reconstructor::Reconstruir()
     }
     else
     {
-        // Es local
-        if (parsear)
-        {
-            // Si vengo de parsear el nombre lo puse yo
-            stream_par<<path_Salida+Nombre_archivo+".h33"<<endl;
-
-        }
-        else
-        {
-            // Sino no parseo, entra lo que pasaron de entrada
             stream_par<<arch_recon<<endl;
-        }
     }
 
 
@@ -317,12 +305,15 @@ bool Reconstructor::Reconstruir()
     stream_par<<"END :="<<endl;
 
 
-
     if (reconServer)
     {
         // Como el server tiene otros path debo cambiar todas las lineas
         // de path del archivo de parametros e interfiles a el path relativo
         // del server
+
+        // Si esta operacion esta encadenada con el parseo estamos en un problema,
+        // para este punto es muy probable que el archivo que quiero modificar
+        // no exista aún
 
         // Archivo a reconstruir
         // Copio al archivo
@@ -411,7 +402,6 @@ bool Reconstructor::Reconstruir()
 
 
 
-
         //  ----- Si voy a reconstruir en el server copio los archivos ahi
 
         // Paso el archivo de parametros
@@ -496,6 +486,27 @@ bool Reconstructor::Reconstruir()
 
         indice_armado_cola++;
 
+        //  ----- Recupero la reconstruccion
+        // Ahora la reconstruccion esta en el server y la tengo que traer.
+        QString nombre_out_server;
+        if (reconBackprojection) nombre_out_server = Nombre_archivo+"_out";
+        else if (reconMLEM) nombre_out_server = Nombre_archivo+"_out_final";
+
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_SALIDAS+nombre_out_server+".h33");
+        listasparametros[indice_armado_cola].append(path_Salida);
+        indice_armado_cola++;
+
+        // Armo la linea al programa
+        programas[indice_armado_cola] = "scp";
+        // Armo los argumentos
+        listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_SALIDAS+nombre_out_server+".i33");
+        listasparametros[indice_armado_cola].append(path_Salida);
+        indice_armado_cola++;
+
+
     }
     else
     {
@@ -514,10 +525,50 @@ bool Reconstructor::Reconstruir()
 
 
 
-    if (!parsear)
+
+
+    // Mando el proceso
+    proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
+
+
+    QString nombre_out_server;
+    if (reconBackprojection) nombre_out_server = Nombre_archivo+"_out";
+    else if (reconMLEM) nombre_out_server = Nombre_archivo+"_out_final";
+
+
+    // Termine de reconstruir, ahora el archivo de entrada es:
+    arch_recon = path_Salida+nombre_out_server+".h33";
+
+    //
+    if (reconServer)
     {
-        // Si no parsie, arranco la ejecucion, sino viene funcionando.
-        proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
+        //  ----- Acomodo el h33 para que sea legible
+        // El h33 que llega del server tiene un path al i33 que es erroneo.
+        // Peeeeero, ¡todabia no llego! (porque no lo reconstrui...), asi que me pongo a esperar...
+        loop_reconstruccion.exec();
+
+        // Copio al archivo
+        QFile archivo_recuperado(path_Salida+nombre_out_server+".h33");
+        if (!archivo_recuperado.open(QIODevice::ReadWrite))
+        {
+            consola->appendPlainText("Error al abrir el archivo .h33 reconstruido en el server");
+            return -1;
+        }
+
+        // Busco la linea que contiene el archivo .i33 y la remplazo por el nombre directo
+        QString s_out;
+        QTextStream t_out(&archivo_recuperado);
+        while(!t_out.atEnd())
+        {
+            QString line = t_out.readLine();
+            if(!line.contains("!name of data file := "))
+                s_out.append(line + "\n");
+            else
+                s_out.append("!name of data file := " + nombre_out_server + ".i33" + "\n");
+        }
+        archivo_recuperado.resize(0);
+        t_out << s_out;
+        archivo_recuperado.close();
     }
 
 
@@ -526,10 +577,33 @@ bool Reconstructor::Reconstruir()
 
 
 
-
-
-
     return 1;
+}
+
+bool Reconstructor::Mostrar()
+{
+    //  ----- Mando al amide a hacer lo suyo
+    programas[indice_armado_cola] = "amide";
+
+    // Armo los argumentos
+    listasparametros[indice_armado_cola].append(arch_recon);
+    indice_armado_cola++;
+
+    // Mando el proceso
+    proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
+}
+
+
+bool Reconstructor::matar_procesos()
+{
+    // Seteo el flag de muerto
+    muerto = 1;
+
+    // Reseteo la lista de ejecucion
+    ResetearListasProcesos();
+
+    // Mato el proceso
+    proceso->kill();
 }
 
 //---CALLBACKS
@@ -542,7 +616,18 @@ void Reconstructor::on_procesoExit(int flag_exit, QProcess::ExitStatus qt_exit)
     if (indice_ejecucion < limite_ejecucion)
         proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
     else
+    {
+        // Si estoy parseando y termine todo, emito la señal para desbloquear otros procesos
+        if(parsear)
+            emit signal_finParser();
+        // Si estoy reconstruyendo, emito el final de la reconstruccion
+        else if(reconstruir)
+            emit signal_finReconstruccion();
+
+        // Reseteo la lista de procesos
         ResetearListasProcesos();
+    }
+
 }
 
 void Reconstructor::on_readyRead()

@@ -213,6 +213,8 @@ private slots:
 
     void on_checkBox_Backprojection_clicked(bool checked);
 
+    void on_pushButton_6_clicked();
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);

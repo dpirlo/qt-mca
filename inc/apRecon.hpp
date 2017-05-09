@@ -28,6 +28,11 @@
 #define     ZONA_MUERTA_BASE        00
 #define     ITERACIONES_BASE        30
 
+#define     INST_PARSEO             4
+#define     INST_RECON_LOCAL        1
+#define     INST_RECON_SERVER       8
+#define     INST_SENS_SERVER        2
+#define     INST_MOSTRAR            1
 
 namespace ap {
 
@@ -45,6 +50,8 @@ namespace ap {
             // Metodos
             bool Parsear();
             bool Reconstruir();
+            bool Mostrar();
+
 
             // Lista de procesos
             bool SetearListasProcesos();
@@ -116,6 +123,7 @@ namespace ap {
             double getIteraciones(){return this->iteraciones;}
 
             // Set procedimientos
+            void setMostrar(){this->mostrar = 1;}
             void setParsear(){this->parsear = 1;}
             void setReconstruir(){this->reconstruir = 1;}
             void setMLEM(){this->reconMLEM = 1;}
@@ -123,6 +131,9 @@ namespace ap {
             void setReconServer(){this->reconServer = 1;}
             void setPreSensibilidad(){this->SensibilidadPrecalculada = 1;}
             void setAplicarCountSkimming(){this->AplicarCountSkimming = 1;}
+            void setMuerto(){this->muerto = 1;}
+            // Reset procedimientos
+            void resetMostrar(){this->mostrar = 0;}
             void resetParsear(){this->parsear = 0;}
             void resetReconstruir(){this->reconstruir = 0;}
             void resetMLEM(){this->reconMLEM = 0;}
@@ -130,7 +141,9 @@ namespace ap {
             void resetReconServer(){this->reconServer = 0;}
             void resetPreSensibilidad(){this->SensibilidadPrecalculada = 0;}
             void resetAplicarCountSkimming(){this->AplicarCountSkimming = 0;}
+            void resetMuerto(){this->muerto = 0;}
             // Get Procedimientos
+            bool getMostrar(){return this->mostrar;}
             bool getParsear(){return this->parsear;}
             bool getReconstruir(){return this->reconstruir;}
             bool getMLEM(){return this->reconMLEM;}
@@ -138,7 +151,14 @@ namespace ap {
             bool getReconServer(){return this->reconServer;}
             bool getPreSensibilidad(){return this->SensibilidadPrecalculada ;}
             bool getAplicarCountSkimming(){return this->AplicarCountSkimming ;}
+            bool getMuerto(){return this->muerto = 0;}
 
+            // Procesos
+            bool matar_procesos();
+
+            // Signales
+            QEventLoop loop_parser;
+            QEventLoop loop_reconstruccion;
 
         private:
 
@@ -155,6 +175,7 @@ namespace ap {
             QString arch_ini;
             QString arch_sens;
             QString arch_countskimm;
+            QString arch_recon_orig;
 
             // Sinograma
             double Cant_anillos;
@@ -176,6 +197,7 @@ namespace ap {
             double iteraciones;
 
             // Procedimientos
+            bool mostrar;
             bool parsear;
             bool reconstruir;
             bool reconServer;
@@ -192,6 +214,7 @@ namespace ap {
             int indice_ejecucion = 0;
             int limite_ejecucion = 0;
             int indice_armado_cola = 0;
+            bool muerto = 0;
 
             // Server
             QString SERVER_BASE;
@@ -206,6 +229,10 @@ namespace ap {
             void on_readyRead();
             void updateError();
             void on_procesoExit(int flag_exit, QProcess::ExitStatus qt_exit);
+
+    signals:
+            void signal_finParser();            // Señal de fin de parsear, necesaria para reconstruir en server
+            void signal_finReconstruccion();    // Señal de fin de reconstruccion, necesaria para reconstruir en server
 
 
     };

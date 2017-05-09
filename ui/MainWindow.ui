@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>6</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -6882,7 +6882,7 @@ Tensión: </string>
        <rect>
         <x>670</x>
         <y>420</y>
-        <width>331</width>
+        <width>271</width>
         <height>151</height>
        </rect>
       </property>
@@ -6893,9 +6893,9 @@ Tensión: </string>
      <widget class="QFrame" name="frame_multihead_graph_8">
       <property name="geometry">
        <rect>
-        <x>180</x>
+        <x>90</x>
         <y>280</y>
-        <width>231</width>
+        <width>321</width>
         <height>31</height>
        </rect>
       </property>
@@ -6937,11 +6937,27 @@ Tensión: </string>
         <string>Reconstruir</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="checkBox_Mostrar">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>0</y>
+         <width>81</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Mostrar</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QLabel" name="label_101">
       <property name="geometry">
        <rect>
-        <x>80</x>
+        <x>20</x>
         <y>270</y>
         <width>81</width>
         <height>41</height>
@@ -7102,6 +7118,19 @@ Tensión: </string>
         <string>Backprojection</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_6">
+      <property name="geometry">
+       <rect>
+        <x>950</x>
+        <y>420</y>
+        <width>51</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Kill</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="fpga">
@@ -7624,7 +7653,7 @@ Tensión: </string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

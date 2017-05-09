@@ -76,6 +76,7 @@ void MainWindow::setInitialConfigurations()
     ui->textBrowser_entrada_2->setText(recon_externa->getPathAPIRL());
     ui->textBrowser_entrada_3->setText(recon_externa->getPathINTERFILES());
     ui->textBrowser_entrada_5->setText(recon_externa->getPathPARSER());
+    ui->textBrowser_entrada_4->setText(recon_externa->getPathSalida());
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
     recon_externa->setConsola(ui->plainTextEdit_Recon_console); // Conecto la consola de salida
     ui->textBrowser_entrada_2->setReadOnly(false);
@@ -3811,9 +3812,20 @@ void MainWindow::on_pushButton_5_clicked()
 {
     QMessageBox messageBox;
 
+    // Apretaron el boton, si estaba muerto lo vuelvo a la vida
+    recon_externa->resetMuerto();
+
 
 
     // Checkeo que es lo que voy a hacer
+    if (ui->checkBox_Mostrar->checkState() == Qt::Checked)
+    {
+        recon_externa->setMostrar();
+    }
+    else
+    {
+        recon_externa->resetMostrar();
+    }
     if (ui->checkBox_parsear->checkState() == Qt::Checked)
     {
         recon_externa->setParsear();
@@ -3847,8 +3859,18 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->resetBackprojection();
     }
 
+
     // Armo flago de reconstruccion
     if (recon_externa->getMLEM()  | recon_externa->getBackprojection()  )
+    {
+        recon_externa->setReconstruir();
+    }
+    else
+    {
+        recon_externa->resetReconstruir();
+    }
+
+    if (ui->checkBox_Reconstruir->checkState() == Qt::Checked)
     {
         recon_externa->setReconstruir();
     }
@@ -3860,7 +3882,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 
 
-    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0 | (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
+    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0 & recon_externa->getMostrar() == 0 | (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -3916,7 +3938,7 @@ void MainWindow::on_pushButton_5_clicked()
     // Checkeo que se hallan seleccionado archivos
     if (recon_externa->getArchRecon() == "-")
     {
-        messageBox.critical(0,"Error","Archivo a reconstruir o parsear no seleccionado.");
+        messageBox.critical(0,"Error","Archivo a reconstruir, parsear o mostrar no seleccionado.");
         messageBox.setFixedSize(500,200);
         return;
     }
@@ -4080,22 +4102,67 @@ void MainWindow::on_pushButton_5_clicked()
 
 
     // Reservo memoria para los procesos
-    recon_externa->SetearListasProcesos();
+
 
     if (recon_externa->getParsear() == 1)
     {
-        //ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
-        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        recon_externa->SetearListasProcesos();
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Parseando archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
 
         recon_externa->Parsear();
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Parseado finalizado.");
     }
 
-    if (recon_externa->getMLEM() == 1 | recon_externa->getBackprojection() == 1)
+    if (recon_externa->getReconstruir())
     {
-        //ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
-        //ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+        // Si voy a parsear, bloqueo el proceso y lo ejecuto cuando termine el parser
+        if (recon_externa->getParsear())
+        {
+            // Y me pongo a esperar...
+            recon_externa->loop_parser.exec();
+            recon_externa->resetParsear();
+            // Si me mataron el proceso durante la espera...
+            if (recon_externa->getMuerto())
+                return;
+        }
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+
+        recon_externa->SetearListasProcesos();
 
         recon_externa->Reconstruir();
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada.");
+
+    }
+
+
+    if (recon_externa->getMostrar())
+    {
+        // Si voy a mostrar algo que reconstrui, ¡espero!
+        if (recon_externa->getReconstruir())
+        {
+            // Y me pongo a esperar...
+            recon_externa->loop_reconstruccion.exec();
+            recon_externa->resetReconstruir();
+            // Si me mataron el proceso durante la espera...
+            if (recon_externa->getMuerto())
+                return;
+        }
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Mostrando archivo:");
+        ui->plainTextEdit_Recon_console->appendPlainText(recon_externa->getArchRecon());
+
+        recon_externa->SetearListasProcesos();
+
+        recon_externa->Mostrar();
+
+        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada.");
+
     }
 
 
@@ -4245,4 +4312,9 @@ void MainWindow::on_checkBox_MLEM_clicked(bool checked)
 void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 {
     ui->checkBox_MLEM->setCheckState( Qt::Unchecked);
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    recon_externa->matar_procesos();
 }
