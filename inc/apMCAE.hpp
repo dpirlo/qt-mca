@@ -95,7 +95,7 @@ namespace ap {
     void setMCAEStream(string pmt_dec, string function, double time);
     void setMCAEStream(string function, QVector<double> table);
     void setMCAEStream(string function, string data_one, string data_two="", bool time=false);    
-    void setPSOCEStream(string function, string psoc_value_dec="");
+    void setPSOCEStream(string function, string size_received, string psoc_value_dec="");
     bool verifyMCAEStream(string data_received, string data_to_compare);
     string getMCA(string pmt, string function, string head, int channels, string port_name);
     string setHV(string head, string pmt, string channel_dec, string port_name);
@@ -185,7 +185,7 @@ namespace ap {
     string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
-    string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
+    string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED, PSOC_SIZE_RECEIVED_ALL;
     string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
     string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin, Calib_Mode;
     string Auto_Coin_Mode, Normal_Coin_Mode;
@@ -376,6 +376,11 @@ namespace ap {
          * @return PSOC_SIZE_RECEIVED
          */
     string getPSOC_SIZE_RECEIVED() const { return PSOC_SIZE_RECEIVED; }
+    /**
+         * @brief getPSOC_SIZE_RECEIVED_ALL
+         * @return
+         */
+    string getPSOC_SIZE_RECEIVED_ALL() const { return PSOC_SIZE_RECEIVED_ALL; }
     /**
          * @brief getPSOC_ADC
          * @return PSOC_ADC

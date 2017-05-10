@@ -652,7 +652,7 @@ void MainWindow::getHeadStatus(int head_index)
 
     string msg;
     QVector<QString> ans_psoc;
-    setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_STA());
+    setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
     try
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -918,7 +918,7 @@ void MainWindow::on_pushButton_initialize_clicked()
        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
        string msg;
        QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-       setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_SET(),psoc_alta);
+       setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
        if(debug) cout<<"Cabezal: "<<head_index<<endl;
        try
        {
@@ -934,7 +934,7 @@ void MainWindow::on_pushButton_initialize_clicked()
        }
 
        /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
-       setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_ON());
+       setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
        if(debug) cout<<"Cabezal: "<<head_index<<endl;
        try
        {
@@ -949,7 +949,6 @@ void MainWindow::on_pushButton_initialize_clicked()
          QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
        }
    }
-
    writeFooterAndHeaderDebug(false);
 }
 /**
@@ -961,7 +960,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
     QList<int> checkedHeads = getCheckedHeads();
     string msg;
     QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_SET(),psoc_alta);
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -991,7 +990,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
     writeFooterAndHeaderDebug(true);
     QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_ON());
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1021,7 +1020,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
     writeFooterAndHeaderDebug(true);
     QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_OFF());
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1051,7 +1050,7 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     writeFooterAndHeaderDebug(true);
     QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_STA());
+    setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
     if(debug) cout<<"Cabezal: "<<getHead("config").toStdString()<<endl;
     try
     {
@@ -1686,7 +1685,7 @@ QString MainWindow::getHeadMCA(QString head)
         setButtonAdquireState(true);
         msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         if(debug) showMCAEStreamDebugMode(msg.toStdString());
-        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[0]);
+        addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[head.toInt()-1]);
     }
     catch(Exceptions & ex)
     {
@@ -2085,10 +2084,10 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
  * @param psoc_value
  * @return
  */
-int MainWindow::setPSOCDataStream(string head, string function, QString psoc_value)
+int MainWindow::setPSOCDataStream(string head, string size_received, string function, QString psoc_value)
 {
     arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + arpet->getFunCPSOC());
-    arpet->setPSOCEStream(function, psoc_value.toStdString());
+    arpet->setPSOCEStream(function, size_received, psoc_value.toStdString());
 
     return QString::fromStdString(head).toInt();
 }
@@ -3095,17 +3094,17 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
    switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
         case 0:
-            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_ON());
+            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
             break;
         case 1:
-            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_OFF());
+            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
             break;
         case 2:
             psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
-            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_SET(),psoc_alta);
+            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
             break;
         case 3:
-            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_STA());
+            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
             break;
         default:
             break;

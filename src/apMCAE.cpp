@@ -76,6 +76,7 @@ MCAE::MCAE(size_t timeout)
     PSOC_ADC(5.8823),
     PSOC_SIZE_SENDED("14"),
     PSOC_SIZE_RECEIVED("0051"),
+    PSOC_SIZE_RECEIVED_ALL("0004"),
 
     /*Funciones trama MCA*/
     AnsMultiInit("@0064310>"),
@@ -1011,14 +1012,14 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
  * @param function
  * @param psoc_value_dec
  */
-void MCAE::setPSOCEStream(string function, string psoc_value_dec)
+void MCAE::setPSOCEStream(string function, string size_received, string psoc_value_dec)
 {
   string psoc_value;
   if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
   setPSOCStream(function, psoc_value);
   int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
-  string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
+  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
   setTrama_MCAE(stream);
 }
 /**

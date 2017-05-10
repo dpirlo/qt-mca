@@ -259,7 +259,7 @@ private:
   void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
   void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
   void setMCAEDataStream(string head, bool coin=false);
-  int setPSOCDataStream(string head, string function, QString psoc_value="");
+  int setPSOCDataStream(string head, string size_received, string function, QString psoc_value="");
   void setPMTCustomPlotEnvironment(QList<QString> qlist);
   void setHeadCustomPlotEnvironment();
   QVector<int> getCustomPlotParameters();
