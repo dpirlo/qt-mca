@@ -844,10 +844,10 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 
   switch (file) {
     case 1:
-      for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
+      for (int index=0; index < PMTs; index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
       break;
     case 2 ... 3:
-      for (int index=0; index < table.length(); index++)
+      for (int index=0; index < PMTs; index++)
         {
           if(table[index]>=0)
             temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));

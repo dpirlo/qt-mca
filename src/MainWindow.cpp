@@ -2107,9 +2107,9 @@ void MainWindow::on_pushButton_adquirir_clicked()
         }
         break;
     case CABEZAL:
+        ui->specHead->clearGraphs();
         for (int i=0;i<checkedHeads.length();i++)
-        {
-            ui->specHead->clearGraphs();
+        {            
             try
             {
                 if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
