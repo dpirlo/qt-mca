@@ -631,28 +631,28 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus(int head_index)
 {
-  writeFooterAndHeaderDebug(true);
+    writeFooterAndHeaderDebug(true);
 
-  if(!arpet->isPortOpen())
-  {
-    QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-    if(debug)
+    if(!arpet->isPortOpen())
     {
-      cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-      writeFooterAndHeaderDebug(false);
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+        if(debug)
+        {
+            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
     }
-    return;
-  }
 
-  if(debug) cout<<"Cabezal: "<<head_index<<endl;
+    if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
-  /* Inicialización del Cabezal */
-  initHead(head_index);
-  initSP3(head_index);
+    /* Inicialización del Cabezal */
+    initHead(head_index);
+    initSP3(head_index);
 
     string msg;
     QVector<QString> ans_psoc;
-    setPSOCDataStream("config",arpet->getPSOC_STA());
+    setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_STA());
     try
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
@@ -918,7 +918,7 @@ void MainWindow::on_pushButton_initialize_clicked()
        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
        string msg;
        QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-       setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
+       setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_SET(),psoc_alta);
        if(debug) cout<<"Cabezal: "<<head_index<<endl;
        try
        {
@@ -932,6 +932,22 @@ void MainWindow::on_pushButton_initialize_clicked()
            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
            QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
        }
+
+       /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
+       setPSOCDataStream(QString::number(head_index).toStdString(),arpet->getPSOC_ON());
+       if(debug) cout<<"Cabezal: "<<head_index<<endl;
+       try
+       {
+           sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+           msg = readString();
+           setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+           if(debug) cout<< "HV encendido"<<endl;
+       }
+       catch(Exceptions & ex)
+       {
+         if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+       }
    }
 
    writeFooterAndHeaderDebug(false);
@@ -942,9 +958,10 @@ void MainWindow::on_pushButton_initialize_clicked()
 void MainWindow::on_pushButton_hv_set_clicked()
 {
     writeFooterAndHeaderDebug(true);
+    QList<int> checkedHeads = getCheckedHeads();
     string msg;
     QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_SET(),psoc_alta);
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_SET(),psoc_alta);
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -972,8 +989,9 @@ void MainWindow::on_pushButton_hv_set_clicked()
 void MainWindow::on_pushButton_hv_on_clicked()
 {
     writeFooterAndHeaderDebug(true);
+    QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_ON());
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_ON());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1001,8 +1019,9 @@ void MainWindow::on_pushButton_hv_on_clicked()
 void MainWindow::on_pushButton_hv_off_clicked()
 {
     writeFooterAndHeaderDebug(true);
+    QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    int head_index=setPSOCDataStream("config",arpet->getPSOC_OFF());
+    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_OFF());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1022,7 +1041,6 @@ void MainWindow::on_pushButton_hv_off_clicked()
     {
       showMCAEStreamDebugMode(msg);
       writeFooterAndHeaderDebug(false);
-
     }
 }
 /**
@@ -1031,8 +1049,9 @@ void MainWindow::on_pushButton_hv_off_clicked()
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
     writeFooterAndHeaderDebug(true);
+    QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    setPSOCDataStream("config",arpet->getPSOC_STA());
+    setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(),arpet->getPSOC_STA());
     if(debug) cout<<"Cabezal: "<<getHead("config").toStdString()<<endl;
     try
     {
@@ -1119,7 +1138,6 @@ void MainWindow::initCoincidenceMode()
     {
        initHead(i+1);
     }
-
 
     /* Inicialización de modo coincidencia */
     setMCAEDataStream(arpet->getInit_Coin(),"","",false);
@@ -2062,19 +2080,17 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
  *
  * Configuración de la trama MCAE para la placa PSOC
  *
- * @param tab
+ * @param head
  * @param function
  * @param psoc_value
  * @return
  */
-int MainWindow::setPSOCDataStream(string tab, string function, QString psoc_value)
+int MainWindow::setPSOCDataStream(string head, string function, QString psoc_value)
 {
-    QString head=getHead(tab);
-    int head_index=head.toInt();
-    arpet->setHeader_MCAE(arpet->getHead_MCAE() + head.toStdString() + arpet->getFunCPSOC());
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + arpet->getFunCPSOC());
     arpet->setPSOCEStream(function, psoc_value.toStdString());
 
-    return head_index;
+    return QString::fromStdString(head).toInt();
 }
 /**
  * @brief MainWindow::resetHitsValues
@@ -3065,9 +3081,8 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
             break;
     }
 
-    int pmt=getPMT(ui->lineEdit_pmt_terminal);
-    string head = ui->comboBox_head_select_terminal->currentText().toStdString();
-    setMCAEDataStream(head, function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
+    int pmt=getPMT(ui->lineEdit_pmt_terminal);    
+    setMCAEDataStream(getHead("terminal").toStdString(), function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 
 }
@@ -3080,17 +3095,17 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
    switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
         case 0:
-            setPSOCDataStream("terminal",arpet->getPSOC_ON());
+            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_ON());
             break;
         case 1:
-            setPSOCDataStream("terminal",arpet->getPSOC_OFF());
+            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_OFF());
             break;
         case 2:
             psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
-            setPSOCDataStream("terminal",arpet->getPSOC_SET(),psoc_alta);
+            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_SET(),psoc_alta);
             break;
         case 3:
-            setPSOCDataStream("terminal",arpet->getPSOC_STA());
+            setPSOCDataStream(getHead("terminal").toStdString(),arpet->getPSOC_STA());
             break;
         default:
             break;
