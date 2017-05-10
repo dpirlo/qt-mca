@@ -21,7 +21,8 @@ SOURCES += src/main.cpp\
         src/MainWindow.cpp \
         src/SetPMTs.cpp \
     src/apAutoCalib.cpp \
-    src/apRecon.cpp
+    src/apRecon.cpp \
+    #src/apThread.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
@@ -31,7 +32,8 @@ HEADERS  += \
         inc/MainWindow.h \
         inc/SetPMTs.h \
     inc/apAutoCalib.hpp \
-    inc/apRecon.hpp
+    inc/apRecon.hpp \
+    #inc/apThread.hpp
 
 LIBS += -lboost_system
 

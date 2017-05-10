@@ -65,6 +65,7 @@ MCAE::MCAE(size_t timeout)
     Normal_Coin_Mode("333333333"),
     Auto_Coin_Mode("020102121"),
     Head_Coin("7"),
+    Calib_Mode("6411"),
 
     /*Funciones trama PSOC*/
     PSOC_OFF("$SET,STA,OFF"),
@@ -80,6 +81,7 @@ MCAE::MCAE(size_t timeout)
     AnsMultiInit("@0064310>"),
     AnsHeadInit("@0064020<"),
     BrCst("00"),
+    Init_Calib_MCAE("64"),
     Init_MCA("6401"),
     Data_MCA("65"),
     SetHV_MCA("68"),

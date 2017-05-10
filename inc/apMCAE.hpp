@@ -182,12 +182,12 @@ namespace ap {
 
   private:
     string FunCHead, FunCSP3, FunCPSOC, BrCst;
-    string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
+    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
     string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
     string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
-    string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin;
+    string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin, Calib_Mode;
     string Auto_Coin_Mode, Normal_Coin_Mode;
     string Generic_Received_Size, Generic_Sended_Size;
     double PSOC_ADC;
@@ -337,6 +337,11 @@ namespace ap {
          */
     string getHead_Coin() const { return Head_Coin; }
     /**
+         * @brief getCalib_Mode
+         * @return Calib_Mode
+         */
+    string getCalib_Mode() const { return Calib_Mode; }
+    /**
          * @brief getPSOC_OFF
          * @return PSOC_OFF
          */
@@ -376,6 +381,11 @@ namespace ap {
          * @return PSOC_ADC
          */
     double getPSOC_ADC() const { return PSOC_ADC; }
+    /**
+         * @brief getInit_Calib_MCAE
+         * @return Init_Calib_MCAE
+         */
+    string getInit_Calib_MCAE() const { return Init_Calib_MCAE; }
     /**
          * @brief getInit_MCA
          * @return Init_MCA

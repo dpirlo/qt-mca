@@ -27,6 +27,25 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     setPreferencesConfiguration();
     getPaths();
+
+
+    ///////////////////////////////////////////////////////////////////////
+//    // The thread and the worker are created in the constructor so it is always safe to delete them.
+//        thread = new QThread();
+//        worker = new Thread();
+
+//        worker->moveToThread(thread);
+//        connect(worker, SIGNAL(valueChanged(QString)), ui->label_elapsed_time, SLOT(setText(QString)));
+//        connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
+//        connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
+//        connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+
+//        // To avoid having two threads running simultaneously, the previous thread is aborted.
+//        worker->abort();
+//        thread->wait(); // If the thread is not running, this will immediately return.
+
+//        worker->requestWork();
+    /////////////////////////////////////////////////////////////////////////
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -85,6 +104,8 @@ void MainWindow::setInitialConfigurations()
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->frame_adquire_advance_mode->hide();
+    ui->comboBox_head_select_calib->hide();
+    ui->label_calib->hide();
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
@@ -793,46 +814,49 @@ void MainWindow::on_pushButton_init_configure_clicked()
 void MainWindow::on_pushButton_configure_clicked()
 {
    /* Inicialización del modo Coincidencia */
-
+   QString head;
    writeFooterAndHeaderDebug(true);
    int index=ui->comboBox_adquire_mode_coin->currentIndex();
-   try{
-       switch (index) {
-   case COIN_NORMAL:
-       if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
-       initCoincidenceMode();
-       usleep(5000);
-       setCoincidenceModeWindowTime();
-       usleep(5000);
-       setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-       break;
-   case COIN_AUTOCOINCIDENCE:
-       if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
-       initCoincidenceMode();
-       usleep(5000);
-       setCoincidenceModeWindowTime();
-       usleep(5000);
-       setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
-       break;
-   case COIN_AVANCED:
-       if(debug)
+   try
+   {
+       switch (index)
        {
-           cout<<"Modo Coincidencia: Avanzado"<<endl;
-           cout<<"Trama utilizada para la configuración avanzada: "<<getCoincidenceAdvanceModeDataStream()<<endl;
+       case COIN_NORMAL:
+           if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+           initCoincidenceMode();
+           usleep(5000);
+           setCoincidenceModeWindowTime();
+           usleep(5000);
+           setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+           break;
+       case COIN_AUTOCOINCIDENCE:
+           if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
+           initCoincidenceMode();
+           usleep(5000);
+           setCoincidenceModeWindowTime();
+           usleep(5000);
+           setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
+           break;
+       case COIN_AVANCED:
+           if(debug)
+           {
+               cout<<"Modo Coincidencia: Avanzado"<<endl;
+               cout<<"Trama utilizada para la configuración avanzada: "<<getCoincidenceAdvanceModeDataStream()<<endl;
+           }
+           initCoincidenceMode();
+           usleep(5000);
+           setCoincidenceModeWindowTime();
+           usleep(5000);
+           setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
+           break;
+       case COIN_CALIB:
+           head = ui->comboBox_head_select_calib->currentText();
+           if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
+           setCalibrationMode(head);
+           break;
+       default:
+           break;
        }
-       initCoincidenceMode();
-       usleep(5000);
-       setCoincidenceModeWindowTime();
-       usleep(5000);
-       setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
-       break;
-   case COIN_CALIB:
-       cout<<"No implementado aún"<<endl;
-       break;
-       return;
-   default:
-       break;
-   }
        setLabelState(true,ui->label_coincidencia_estado);
    }
    catch(Exceptions & ex)
@@ -1097,6 +1121,56 @@ void MainWindow::initCoincidenceMode()
         showMCAEStreamDebugMode(msg_ans);
     }
 }
+void MainWindow::setCalibrationMode(QString head)
+{
+    setMCAEDataStream(head.toStdString());
+    string msg_ans;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_calibration_failure((string("No se puede poner en modo calibración en el cabezal seleccionado. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+          cout<<"No se puede poner en modo calibración en el cabezal seleccionado. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+          showMCAEStreamDebugMode(msg_ans);
+        }
+        throw exception_calibration_failure;
+    }    
+    if(debug)
+    {
+        cout<<"Seteo modo calibración en el cabezal: "<<head.toStdString()<<" fue satisfactoria."<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
+
+    /* Ahora le avisamos al kit de coincidencia qué cabezal está en modo coincidencia*/
+
+    setMCAEDataStream(head.toStdString(), true);
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_coincidence_kit_failure((string("Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+          cout<<"Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+          showMCAEStreamDebugMode(msg_ans);
+        }
+        throw exception_coincidence_kit_failure;
+    }
+    if(debug)
+    {
+        cout<<"El kit coincidencia ha respondido correctamente. A comenzar adquirir ya!!"<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
+}
+
 /**
  * @brief MainWindow::setCoincidenceModeWindowTime
  *
@@ -1935,6 +2009,30 @@ void MainWindow::setMCAEDataStream(string coin_function, string data_one, string
   arpet->setMCAEStream(coin_function, data_one, data_two, time);
 }
 /**
+ * @brief MainWindow::setMCAEDataStream
+ *
+ * Se configura la trama general de MCAE para la configuración del modo de calibración. Solo es necesario
+ * pasarle el cabezal a calibrar en _string_. Además recibe una variable _booleana_ indicando si se le habla
+ * al kit de coincidencias o al cabezal _head_.
+ *
+ * @param head
+ * @param coin
+ */
+void MainWindow::setMCAEDataStream(string head, bool coin)
+{
+    if (!coin)
+    {
+        arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + arpet->getFunCHead());
+        arpet->setMCAEStream("0",0,arpet->getCalib_Mode());
+    }
+    else
+    {
+        arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() + arpet->getFunCHead());
+        arpet->setMCAEStream("0",0,arpet->getInit_Calib_MCAE()+head+"1");
+    }
+
+}
+/**
  * @brief MainWindow::setPSOCDataStream
  *
  * Configuración de la trama MCAE para la placa PSOC
@@ -2293,7 +2391,6 @@ void MainWindow::on_pushButton_logguer_clicked()
                 writeLogFile("[LOG-TEMP] Cabezal,"+QString::number(head_index)+","+QString::number(t_min)+","+QString::number(mean)+","+QString::number(t_max));
             }
         }
-
     }
     catch( Exceptions & ex )
     {
@@ -4302,8 +4399,6 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
     ui->textBrowser_entrada_5->setText(filename);
 }
 
-
-
 void MainWindow::on_checkBox_MLEM_clicked(bool checked)
 {
     ui->checkBox_Backprojection->setCheckState( Qt::Unchecked);
@@ -4317,4 +4412,20 @@ void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
+}
+
+
+
+void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
+{
+    if(index==3)
+    {
+        ui->comboBox_head_select_calib->show();
+        ui->label_calib->show();
+    }
+    else
+    {
+        ui->comboBox_head_select_calib->hide();
+        ui->label_calib->hide();
+    }
 }

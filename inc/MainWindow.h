@@ -34,6 +34,9 @@
 #include "apMCAE.hpp"
 #include "apAutoCalib.hpp"
 #include "apRecon.hpp"
+#include "apThread.hpp"
+#include <QMainWindow>
+#include <QThread>
 #include <cstdio>
 #include <QString>
 
@@ -130,6 +133,7 @@ private slots:
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
     void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
+    void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /* Buttons */
     void on_pushButton_init_configure_clicked();
@@ -215,6 +219,7 @@ private slots:
 
     void on_pushButton_6_clicked();
 
+
 private:
   QString openConfigurationFile();
   bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
@@ -253,6 +258,7 @@ private:
   void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
   void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
   void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
+  void setMCAEDataStream(string head, bool coin=false);
   int setPSOCDataStream(string tab, string function, QString psoc_value="");
   void setPMTCustomPlotEnvironment(QList<QString> qlist);
   void setHeadCustomPlotEnvironment();
@@ -277,10 +283,20 @@ private:
   string getCoincidenceAdvanceModeDataStream();
   void initCoincidenceMode();
   void setCoincidenceModeWindowTime();
+  void setCalibrationMode(QString head);
   void getARPETStatus();
   void showMCAEStreamDebugMode(string msg);
 
     /* Area de prueba/testing */
+
+  /**
+       * @brief Thread object which will let us manipulate the running thread
+       */
+      QThread *thread;
+      /**
+       * @brief Object which contains methods that should be runned in another thread
+       */
+      Thread *worker;
 
 
 private:
