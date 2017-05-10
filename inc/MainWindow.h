@@ -254,7 +254,7 @@ private:
   QString getMCA(string head, string function, bool multimode, int channels, string pmt="0");
   QString getMultiMCA(QString head);
   QString getHeadMCA(QString head);
-  void setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
+  void setMCAEDataStream(string head, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
   void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
   void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
   void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);

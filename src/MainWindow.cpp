@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ///////////////////////////////////////////////////////////////////////
 //    // The thread and the worker are created in the constructor so it is always safe to delete them.
 //        thread = new QThread();
-//        worker = new Thread();
+//        worker = new Thread(arpet);
 
 //        worker->moveToThread(thread);
 //        connect(worker, SIGNAL(valueChanged(QString)), ui->label_elapsed_time, SLOT(setText(QString)));
@@ -231,6 +231,23 @@ void MainWindow::checkCombosStatus()
 void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
 {
     getHeadStatus(arg1.toInt());
+}
+/**
+ * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
+ * @param index
+ */
+void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
+{
+    if(index==3)
+    {
+        ui->comboBox_head_select_calib->show();
+        ui->label_calib->show();
+    }
+    else
+    {
+        ui->comboBox_head_select_calib->hide();
+        ui->label_calib->hide();
+    }
 }
 /**
  * @brief MainWindow::setQListElements
@@ -1097,6 +1114,13 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
  */
 void MainWindow::initCoincidenceMode()
 {
+    /* Inicializo nuevamente todos los cabezales */
+    for ( int i = 0; i < HEADS; i++ )
+    {
+       initHead(i+1);
+    }
+
+
     /* Inicialización de modo coincidencia */
     setMCAEDataStream(arpet->getInit_Coin(),"","",false);
     string msg_ans;
@@ -1142,7 +1166,7 @@ void MainWindow::setCalibrationMode(QString head)
     }    
     if(debug)
     {
-        cout<<"Seteo modo calibración en el cabezal: "<<head.toStdString()<<" fue satisfactoria."<<endl;
+        cout<<"Seteo modo calibración en el cabezal "<<head.toStdString()<<" fue satisfactoria."<<endl;
         showMCAEStreamDebugMode(msg_ans);
     }
 
@@ -1226,7 +1250,8 @@ void MainWindow::setHeadModeConfig(int index)
 string MainWindow::initHead(int head)
 {
     /* Incialización del cabezal */
-    setMCAEDataStream("config", arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
+
+    setMCAEDataStream(QString::number(head).toStdString(), arpet->getFunCHead(), arpet->getBrCst(), arpet->getInit_MCA());
     string msg_head;
 
     try
@@ -1258,7 +1283,7 @@ string MainWindow::initHead(int head)
 string MainWindow::initSP3(int head)
 {
    /* Inicialización de las Spartans 3*/
-   setMCAEDataStream("config", arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
+   setMCAEDataStream(QString::number(head).toStdString(), arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
    string msg_pmts;
    try
    {
@@ -1927,21 +1952,21 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
  *
  * Configuración de la trama MCAE
  *
- * Se configura la trama general de MCAE para el envío de MCA. Este método recibe como parámetros el 'tab'
- * del entorno gráfico, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt', la función MCA ('mca_function'),
+ * Se configura la trama general de MCAE para el envío de MCA. Este método recibe como parámetros el 'head'
+ * siendo el cabezal, la 'function' de MCAE (si es para planar o SP3), el valor de 'pmt', la función MCA ('mca_function'),
  * el tamaño de la trama de recepción 'bytes_mca' (opcional) y en el caso que se realice la confifuración de HV se debe
  * incorporar el valor de HV, caso contrario dejar este campo en blanco.
  *
- * @param tab
+ * @param head
  * @param function
  * @param pmt
  * @param mca_function
  * @param bytes_mca (opcional)
  * @param hv_value (opcional)
  */
-void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
+void MainWindow::setMCAEDataStream(string head, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
+  arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + function);
   arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
 }
 /**
@@ -3041,7 +3066,8 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
     }
 
     int pmt=getPMT(ui->lineEdit_pmt_terminal);
-    setMCAEDataStream("terminal", function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
+    string head = ui->comboBox_head_select_terminal->currentText().toStdString();
+    setMCAEDataStream(head, function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 
 }
@@ -4412,20 +4438,4 @@ void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
-}
-
-
-
-void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
-{
-    if(index==3)
-    {
-        ui->comboBox_head_select_calib->show();
-        ui->label_calib->show();
-    }
-    else
-    {
-        ui->comboBox_head_select_calib->hide();
-        ui->label_calib->hide();
-    }
 }

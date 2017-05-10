@@ -2107,8 +2107,8 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>156</x>
-         <y>99</y>
+         <x>150</x>
+         <y>100</y>
          <width>51</width>
          <height>29</height>
         </rect>
@@ -2153,15 +2153,24 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>67</x>
-         <y>86</y>
+         <x>49</x>
+         <y>87</y>
          <width>101</width>
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>Cabezal a 
 calibrar</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <zorder>frame_adquire_advance_mode</zorder>
