@@ -757,7 +757,7 @@
         <rect>
          <x>250</x>
          <y>8</y>
-         <width>101</width>
+         <width>121</width>
          <height>27</height>
         </rect>
        </property>
@@ -1010,6 +1010,11 @@
        <item>
         <property name="text">
          <string>Multicabezal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Todos</string>
         </property>
        </item>
       </widget>
@@ -3512,6 +3517,11 @@ calibrar</string>
         <string>Multicabezal</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>Todos</string>
+       </property>
+      </item>
      </widget>
      <widget class="QComboBox" name="comboBox_head_select_graph">
       <property name="enabled">
@@ -3950,10 +3960,10 @@ calibrar</string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>683</x>
-        <y>48</y>
-        <width>724</width>
-        <height>194</height>
+        <x>684</x>
+        <y>46</y>
+        <width>311</width>
+        <height>181</height>
        </rect>
       </property>
       <property name="font">

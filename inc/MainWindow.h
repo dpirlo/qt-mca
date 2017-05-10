@@ -42,6 +42,7 @@
 
 #define MONOHEAD 0
 #define MULTIHEAD 1
+#define ALLHEADS 2
 #define PMT 0
 #define CABEZAL 1
 #define TEMPERATURE 2
@@ -168,6 +169,7 @@ private slots:
     void on_pushButton_clear_terminal_clicked();
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
+    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
 
@@ -246,6 +248,7 @@ private:
   void setTextBrowserState(bool state, QTextBrowser *tbro);
   void setButtonState(bool state, QPushButton * button, bool disable=false);
   void setButtonAdquireState(bool state, bool disable=false);
+  void setButtonConnectState(bool state, bool disable=false);
   string readString(char delimeter='\r');
   string readBufferString(int buffer_size);
   size_t sendString(string msg, string end);

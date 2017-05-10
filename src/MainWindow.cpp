@@ -106,6 +106,7 @@ void MainWindow::setInitialConfigurations()
     ui->frame_adquire_advance_mode->hide();
     ui->comboBox_head_select_calib->hide();
     ui->label_calib->hide();
+    setButtonConnectState(true);
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
@@ -247,6 +248,22 @@ void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
     {
         ui->comboBox_head_select_calib->hide();
         ui->label_calib->hide();
+    }
+}
+/**
+ * @brief MainWindow::on_comboBox_head_mode_select_config_currentIndexChanged
+ * @param index
+ */
+void MainWindow::on_comboBox_head_mode_select_config_currentIndexChanged(int index)
+{
+    if (index == ALLHEADS)
+    {
+        ui->checkBox_c_1->setChecked(true);
+        ui->checkBox_c_2->setChecked(true);
+        ui->checkBox_c_3->setChecked(true);
+        ui->checkBox_c_4->setChecked(true);
+        ui->checkBox_c_5->setChecked(true);
+        ui->checkBox_c_6->setChecked(true);
     }
 }
 /**
@@ -802,6 +819,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
     writeFooterAndHeaderDebug(true);
     if(arpet->isPortOpen())
     {
+        setButtonConnectState(true);
         arpet->portDisconnect();
     }
     else
@@ -815,6 +833,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             getHeadStatus(getHead("config").toInt());
+            setButtonConnectState(false);
         }
         catch(boost::system::system_error e)
         {
@@ -1586,7 +1605,7 @@ void MainWindow::clearTemperatureBoard()
  */
 void MainWindow::setTabHead(int index)
 {
-    if(index==MULTIHEAD)
+    if(index==MULTIHEAD || index==ALLHEADS)
     {
        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
     }
@@ -2448,7 +2467,7 @@ void MainWindow::on_pushButton_logguer_clicked()
 QList<int> MainWindow::getCheckedHeads()
 {
     QList<int> checkedHeads;
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD)
+    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD || ui->comboBox_head_mode_select_config->currentIndex()==ALLHEADS)
     {
         for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
         {
@@ -2681,7 +2700,33 @@ void MainWindow::setButtonAdquireState(bool state, bool disable)
     ui->pushButton_adquirir->setText(qt_text);
     ui->pushButton_adquirir->update();
 }
+/**
+ * @brief MainWindow::setButtonConnectState
+ * @param state
+ * @param disable
+ */
+void MainWindow::setButtonConnectState(bool state, bool disable)
+{
+    QString qt_text;
 
+    if (state && !disable)
+        {
+           qt_text="Conectar";
+           setButtonState(state,ui->pushButton_init_configure,disable);
+        }
+    else if (!state && !disable)
+        {
+           qt_text="Desconectar";
+           setButtonState(state,ui->pushButton_init_configure,disable);
+        }
+    else
+        {
+           qt_text="Conectar";
+           setButtonState(state,ui->pushButton_init_configure,disable);
+        }
+    ui->pushButton_init_configure->setText(qt_text);
+    ui->pushButton_init_configure->update();
+}
 /**
  * @brief MainWindow::availablePortsName
  *
@@ -2856,6 +2901,9 @@ void MainWindow::setHeadMode(int index, string tab)
         manageHeadComboBox(tab, false);
         manageHeadCheckBox(tab, true);
         break;
+    case ALLHEADS:
+        manageHeadComboBox(tab, false);
+        manageHeadCheckBox(tab, true);
     default:
         break;
     }
