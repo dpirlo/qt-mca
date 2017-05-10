@@ -34,7 +34,7 @@
 #include "apMCAE.hpp"
 #include "apAutoCalib.hpp"
 #include "apRecon.hpp"
-#include "apThread.hpp"
+//#include "apThread.hpp"
 #include <QMainWindow>
 #include <QThread>
 #include <cstdio>
@@ -296,7 +296,7 @@ private:
       /**
        * @brief Object which contains methods that should be runned in another thread
        */
-      Thread *worker;
+      //Thread *worker;
 
 
 private:
