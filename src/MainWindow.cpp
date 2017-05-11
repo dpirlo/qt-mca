@@ -815,7 +815,6 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
  */
 void MainWindow::on_pushButton_init_configure_clicked()
 {
-    /** @todo: Ver de agregar un boton indicando el estado de conexión del puerto */
     writeFooterAndHeaderDebug(true);
     if(arpet->isPortOpen())
     {
@@ -830,10 +829,10 @@ void MainWindow::on_pushButton_init_configure_clicked()
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
-            getHeadStatus(getHead("config").toInt());
-            setButtonConnectState(false);
+            getHeadStatus(getHead("config").toInt());            
         }
         catch(boost::system::system_error e)
         {
