@@ -486,7 +486,7 @@ void MainWindow::writeFooterAndHeaderDebug(bool header)
   }
   else
   {
-    if(debug) cout<<"[END-LOG-DBG] ====================================================="<<endl;
+    if(debug) cout<<"[END-LOG-DBG] ======================================================"<<endl;
   }
 }
 
@@ -820,6 +820,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
     {
         setButtonConnectState(true);
         arpet->portDisconnect();
+        if(debug) cout<<"Puerto serie desconectado"<<endl;
     }
     else
     {
@@ -1198,7 +1199,7 @@ void MainWindow::setCalibrationMode(QString head)
           showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_calibration_failure;
-    }    
+    }
     if(debug)
     {
         cout<<"Seteo modo calibración en el cabezal "<<head.toStdString()<<" fue satisfactoria."<<endl;
@@ -2142,7 +2143,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
     case CABEZAL:
         ui->specHead->clearGraphs();
         for (int i=0;i<checkedHeads.length();i++)
-        {            
+        {
             try
             {
                 if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
@@ -3127,7 +3128,7 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
             break;
     }
 
-    int pmt=getPMT(ui->lineEdit_pmt_terminal);    
+    int pmt=getPMT(ui->lineEdit_pmt_terminal);
     setMCAEDataStream(getHead("terminal").toStdString(), function, QString::number(pmt).toStdString(), mca_function, bytes_mca, hv_value);
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 
