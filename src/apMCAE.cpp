@@ -972,7 +972,8 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
   setCalibStream(function, table);
-  string size_sended=getGeneric_Sended_Size();
+  int size_calib=(int)(getTrama_Calib().size());
+  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
   string size_received=getGeneric_Received_Size();
   string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
   setTrama_MCAE(stream);
