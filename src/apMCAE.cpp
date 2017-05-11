@@ -973,6 +973,7 @@ void MCAE::setMCAEStream(string function, QVector<double> table)
 {
   setCalibStream(function, table);
   int size_calib=(int)(getTrama_Calib().size());
+  if (size_calib > 99) size_calib = 99;
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
   string size_received=getGeneric_Received_Size();
   string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
