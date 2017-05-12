@@ -95,7 +95,7 @@ namespace ap {
     void setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec="");
     void setMCAEStream(string pmt_dec, string function, double time);
     void setMCAEStream(string function, QVector<double> table);
-    void setMCAEStream(string function, string data_one, string data_two="", bool time=false);    
+    void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
     void setPSOCEStream(string function, string size_received, string psoc_value_dec="");
     bool verifyMCAEStream(string data_received, string data_to_compare);
     string getMCA(string pmt, string function, string head, int channels, string port_name);
