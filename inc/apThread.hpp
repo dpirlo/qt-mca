@@ -27,7 +27,7 @@ namespace ap {
        *
        * It is thread safe as it uses #mutex to protect access to #_abort variable.
        */
-      void abort();      
+      void abort();
 
   private:
       shared_ptr<MCAE> arpet;
@@ -48,6 +48,9 @@ namespace ap {
        * @brief port_name
        */
       QString port_name;
+      bool temp;
+      bool rate;
+      bool debug;
 
 
   signals:
@@ -85,6 +88,9 @@ namespace ap {
   public:
       void setCheckedHeads(QList<int> list) {checkedHeads = list;}
       void setPortName(QString port) {port_name = port;}
+      void setRateBool(bool _rate) {rate = _rate;}
+      void setTempBool(bool _temp) {temp = _temp;}
+      void setDebugMode(bool _debug) {debug = _debug;}
   };
 
 }

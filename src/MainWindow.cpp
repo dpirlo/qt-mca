@@ -234,7 +234,7 @@ void MainWindow::checkCombosStatus()
  */
 void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate_high)
 {
-   writeLogFile("[LOG-RATE] Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
+   writeLogFile("[LOG-RATE],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
 }
 /**
  * @brief MainWindow::writeTempToLog
@@ -245,7 +245,7 @@ void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate
  */
 void MainWindow::writeTempToLog(int index, double min, double med, double max)
 {
-   writeLogFile("[LOG-RATE] Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
+  writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
 }
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
@@ -856,7 +856,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
-            getHeadStatus(getHead("config").toInt());            
+            getHeadStatus(getHead("config").toInt());
         }
         catch(boost::system::system_error e)
         {
@@ -2271,14 +2271,15 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     {
         q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value)<<endl;
-        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+"\nCanal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+"\nConfiguración OK.");
+        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+" | Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
     }
     catch (Exceptions ex)
     {
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+" | Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_title_output->setText("Tensión de Dinodo");
+    ui->label_title_output->setText("HV de Dinodo");
     if (debug)
     {
       showMCAEStreamDebugMode(q_msg.toStdString());
@@ -2439,8 +2440,8 @@ void MainWindow::on_pushButton_logguer_clicked()
     //////////////////////////////
     QList<int> checkedHeads=getCheckedHeads();
     worker->setCheckedHeads(checkedHeads);
+    worker->setDebugMode(debug);
 
-    cout<<"Tamaño en MainWindow: "<<checkedHeads.length()<<endl;
     worker->abort();
     thread->wait(); // If the thread is not running, this will immediately return.
 
@@ -2451,11 +2452,9 @@ void MainWindow::on_pushButton_logguer_clicked()
     bool rate = false, temp = false;
     double tempe;
 
-    if (ui->checkBox_temp->isChecked()) temp=true; //Logueo temperatura
-    if (ui->checkBox_tasa->isChecked()) rate=true; //Logueo tasa
+    if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
+    if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
 
-
-    //QList<int> checkedHeads=getCheckedHeads();
     vector<int> rates(3);
     try
     {
