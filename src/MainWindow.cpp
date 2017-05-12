@@ -30,20 +30,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     ///////////////////////////////////////////////////////////////////////
-//    // The thread and the worker are created in the constructor so it is always safe to delete them.
-//        thread = new QThread();
-//        worker = new Thread(arpet);
+    // The thread and the worker are created in the constructor so it is always safe to delete them.
+        thread = new QThread();
+        worker = new Thread(arpet);
 
-//        worker->moveToThread(thread);
-//        connect(worker, SIGNAL(valueChanged(QString)), ui->label_elapsed_time, SLOT(setText(QString)));
-//        connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
-//        connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
-//        connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+        worker->moveToThread(thread);
+        connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
+        connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
+        connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
+        connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
+        connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
 
 //        // To avoid having two threads running simultaneously, the previous thread is aborted.
 //        worker->abort();
 //        thread->wait(); // If the thread is not running, this will immediately return.
-
 //        worker->requestWork();
     /////////////////////////////////////////////////////////////////////////
 }
@@ -224,6 +224,28 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
      QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
      QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+}
+/**
+ * @brief MainWindow::writeRatesToLog
+ * @param index
+ * @param rate_low
+ * @param rate_med
+ * @param rate_high
+ */
+void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate_high)
+{
+   writeLogFile("[LOG-RATE] Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
+}
+/**
+ * @brief MainWindow::writeTempToLog
+ * @param index
+ * @param min
+ * @param med
+ * @param max
+ */
+void MainWindow::writeTempToLog(int index, double min, double med, double max)
+{
+   writeLogFile("[LOG-RATE] Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
 }
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
@@ -827,6 +849,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
         try{
             port_name=ui->comboBox_port->currentText();
             calibrador->setPort_Name(port_name);
+            worker->setPortName(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
             QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
@@ -2413,6 +2436,18 @@ void MainWindow::on_pushButton_logguer_clicked()
 {
     writeFooterAndHeaderDebug(true);
 
+    //////////////////////////////
+    QList<int> checkedHeads=getCheckedHeads();
+    worker->setCheckedHeads(checkedHeads);
+
+    cout<<"Tamaño en MainWindow: "<<checkedHeads.length()<<endl;
+    worker->abort();
+    thread->wait(); // If the thread is not running, this will immediately return.
+
+    worker->requestWork();
+    //////////////////////////////
+
+
     bool rate = false, temp = false;
     double tempe;
 
@@ -2420,7 +2455,7 @@ void MainWindow::on_pushButton_logguer_clicked()
     if (ui->checkBox_tasa->isChecked()) rate=true; //Logueo tasa
 
 
-    QList<int> checkedHeads=getCheckedHeads();
+    //QList<int> checkedHeads=getCheckedHeads();
     vector<int> rates(3);
     try
     {

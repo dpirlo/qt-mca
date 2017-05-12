@@ -54,6 +54,7 @@ using namespace boost::system;
 #define CRLF_SIZE 2
 #define COIN_BUFFER_SIZE 2
 #define COIN_BYTES_ADV 9
+#define MIN_TEMPERATURE 20
 
 /**
  * @brief serial_port_ptr
