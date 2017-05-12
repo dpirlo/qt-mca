@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3616,6 +3616,9 @@ calibrar</string>
        <property name="text">
         <string>Iniciar</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QCheckBox" name="checkBox_temp">
        <property name="geometry">
@@ -3629,6 +3632,9 @@ calibrar</string>
        <property name="text">
         <string>Temp</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QCheckBox" name="checkBox_tasa">
        <property name="geometry">
@@ -3641,6 +3647,9 @@ calibrar</string>
        </property>
        <property name="text">
         <string>Tasa</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QLabel" name="label_103">

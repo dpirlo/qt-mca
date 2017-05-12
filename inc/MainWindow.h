@@ -35,7 +35,6 @@
 #include "apAutoCalib.hpp"
 #include "apRecon.hpp"
 #include "apThread.hpp"
-#include <QMainWindow>
 #include <QThread>
 #include <cstdio>
 #include <QString>
@@ -109,9 +108,9 @@ private slots:
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 
     /* Threads */
-    //void setHeadIndex(int index) {headIndex = index;}
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
     void writeTempToLog(int index, double min, double med, double max);
+    void getErrorThread();
 
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
@@ -173,6 +172,7 @@ private slots:
     void on_pushButton_clear_terminal_clicked();
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
+    void on_pushButton_logguer_toggled(bool checked);
     void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
@@ -217,8 +217,6 @@ private slots:
 
     void on_pushButton_INTERFILES_3_clicked();
 
-    void on_pushButton_logguer_clicked();
-
     void on_checkBox_MLEM_clicked(bool checked);
 
     void on_checkBox_Backprojection_clicked(bool checked);
@@ -253,6 +251,7 @@ private:
     void setButtonState(bool state, QPushButton * button, bool disable=false);
     void setButtonAdquireState(bool state, bool disable=false);
     void setButtonConnectState(bool state, bool disable=false);
+    void setButtonLoggerState(bool state, bool disable=false);
     string readString(char delimeter='\r');
     string readBufferString(int buffer_size);
     size_t sendString(string msg, string end);
@@ -306,6 +305,7 @@ private:
     Thread *worker;
 
 signals:
+    void sendAbortCommand(bool abort);
 
 
 private:

@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setPreferencesConfiguration();
     getPaths();
 
-
     ///////////////////////////////////////////////////////////////////////
     // The thread and the worker are created in the constructor so it is always safe to delete them.
         thread = new QThread();
@@ -40,11 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
         connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
         connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+        connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
+        connect(worker, SIGNAL(sendErrorCommand()),this,SLOT(getErrorThread()));
 
-//        // To avoid having two threads running simultaneously, the previous thread is aborted.
-//        worker->abort();
-//        thread->wait(); // If the thread is not running, this will immediately return.
-//        worker->requestWork();
     /////////////////////////////////////////////////////////////////////////
 }
 /**
@@ -254,6 +251,12 @@ void MainWindow::writeTempToLog(int index, double min, double med, double max)
 void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
 {
     getHeadStatus(arg1.toInt());
+}
+void MainWindow::getErrorThread()
+{
+  setButtonLoggerState(false);
+  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
+  ui->pushButton_logguer->setChecked(false);
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -2431,66 +2434,29 @@ void MainWindow::on_pushButton_p_50_clicked()
     }
 }
 /**
- * @brief MainWindow::on_pushButton_logguer_clicked
+ * @brief MainWindow::on_pushButton_logguer_toggled
+ * @param checked
  */
-void MainWindow::on_pushButton_logguer_clicked()
+void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
-    writeFooterAndHeaderDebug(true);
+  if(checked)
+  {
+      setButtonLoggerState(true);
+      QList<int> checkedHeads=getCheckedHeads();
+      worker->setCheckedHeads(checkedHeads);
+      if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
+      if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
+      worker->setDebugMode(debug);
 
-    //////////////////////////////
-    QList<int> checkedHeads=getCheckedHeads();
-    worker->setCheckedHeads(checkedHeads);
-    worker->setDebugMode(debug);
-
-    worker->abort();
-    thread->wait(); // If the thread is not running, this will immediately return.
-
-    worker->requestWork();
-    //////////////////////////////
-
-
-    bool rate = false, temp = false;
-    double tempe;
-
-    if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
-    if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
-
-    vector<int> rates(3);
-    try
-    {
-        for (int i=0;i<checkedHeads.length();i++)
-        {
-            int head_index=checkedHeads.at(i);
-            if (rate)
-            {
-               rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
-               writeLogFile("[LOG-RATE] Cabezal,"+QString::number(head_index)+","+QString::number(rates[0])+","+QString::number(rates[1])+","+QString::number(rates[2]));
-            }
-            if (temp)
-            {
-               QVector<double> temp_vec;
-               temp_vec.fill(0);
-               for(int pmt = 0; pmt < PMTs; pmt++)
-               {
-                     {
-                         string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
-                         tempe = arpet->getPMTTemperature(msg);
-                         if (tempe > MIN_TEMPERATURE)temp_vec.push_back(tempe);
-                     }
-                }
-                double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
-                double t_max = *max_element(temp_vec.begin(),temp_vec.end());
-                double t_min = *min_element(temp_vec.begin(),temp_vec.end());
-                writeLogFile("[LOG-TEMP] Cabezal,"+QString::number(head_index)+","+QString::number(t_min)+","+QString::number(mean)+","+QString::number(t_max));
-            }
-        }
-    }
-    catch( Exceptions & ex )
-    {
-        if(debug) cout<<"Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar leer la temperatura y/o la tasa de adquisición del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    writeFooterAndHeaderDebug(false);
+      worker->abort();
+      thread->wait();
+      worker->requestWork();
+  }
+  else
+  {
+      setButtonLoggerState(true,true);
+      emit sendAbortCommand(true);
+  }
 }
 
 /* Métodos generales del entorno gráfico */
@@ -2760,6 +2726,28 @@ void MainWindow::setButtonConnectState(bool state, bool disable)
         }
     ui->pushButton_init_configure->setText(qt_text);
     ui->pushButton_init_configure->update();
+}
+void MainWindow::setButtonLoggerState(bool state, bool disable)
+{
+    QString qt_text;
+
+    if (state && !disable)
+        {
+           qt_text="Logueando";
+           setButtonState(state,ui->pushButton_logguer,disable);
+        }
+    else if (!state && !disable)
+        {
+           qt_text="Error";
+           setButtonState(state,ui->pushButton_logguer,disable);
+        }
+    else
+        {
+           qt_text="Iniciar";
+           setButtonState(state,ui->pushButton_logguer,disable);
+        }
+    ui->pushButton_logguer->setText(qt_text);
+    ui->pushButton_logguer->update();
 }
 /**
  * @brief MainWindow::availablePortsName
@@ -4535,3 +4523,5 @@ void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
 }
+
+

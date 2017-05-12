@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QDebug>
 #include <QObject>
+#include "qdatetime.h"
 
 namespace ap {
 
@@ -28,6 +29,7 @@ namespace ap {
        * It is thread safe as it uses #mutex to protect access to #_abort variable.
        */
       void abort();
+      string getLocalDateAndTime();
 
   private:
       shared_ptr<MCAE> arpet;
@@ -75,6 +77,7 @@ namespace ap {
        * @brief This signal is emitted when process is finished (either by counting 60 sec or being aborted)
        */
       void finished();
+      void sendErrorCommand();
 
   public slots:
       /**
@@ -84,6 +87,7 @@ namespace ap {
        * Counting is interrupted if #_aborted is set to true.
        */
       void doWork();
+      void setAbortBool(bool abort) {_abort = abort;}
 
   public:
       void setCheckedHeads(QList<int> list) {checkedHeads = list;}
