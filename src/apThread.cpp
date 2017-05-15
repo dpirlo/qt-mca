@@ -7,9 +7,10 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QObject *parent) :
     arpet(_arpet),
     temp(false),
     rate(false),
-    debug(false)
+    debug(false),
+    time_sec(1)
 {
-    _working =false;
+    _logging =false;
     _abort = false;
 }
 
@@ -18,28 +19,34 @@ string Thread::getLocalDateAndTime()
   return (QDateTime::currentDateTime().toString().toStdString());
 }
 
-void Thread::requestWork()
+void Thread::requestLog()
 {
     mutex.lock();
-    _working = true;
+    _logging = true;
     _abort = false;
     mutex.unlock();
 
-    emit workRequested();
+    emit logRequested();
 }
 
 void Thread::abort()
 {
     mutex.lock();
-    if (_working) {
+    if (_logging) {
         _abort = true;
+        if (debug) cout<<"Se aborta la operación de logueo bajo el thread: "<<thread()->currentThreadId()<<endl;
     }
     mutex.unlock();
 }
 
-void Thread::doWork()
+void Thread::getLogWork()
 {
-    if(debug) cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
+    if(debug)
+    {
+        cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
+        cout<<"Comienza el log cada "<<time_sec<<" segundos"<<endl;
+    }
+
 
     while(!_abort)
     {
@@ -90,16 +97,20 @@ void Thread::doWork()
        }
 
        QEventLoop loop;
-       QTimer::singleShot(1000, &loop, SLOT(quit()));
+       QTimer::singleShot(time_sec*1000, &loop, SLOT(quit()));
        loop.exec();
 
     }
 
     mutex.lock();
-    _working = false;
+    _logging = false;
     mutex.unlock();
 
-    if(debug) cout<<"[END-LOG-DBG-THR] =================================================="<<endl;
+    if(debug)
+    {
+        cout<<"El proceso del log ha sido finalizado."<<endl;
+        cout<<"[END-LOG-DBG-THR] =================================================="<<endl;
+    }
 
     emit finished();
 }

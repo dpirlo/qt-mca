@@ -22,7 +22,7 @@ namespace ap {
        *
        * It is thread safe as it uses #mutex to protect access to #_working variable.
        */
-      void requestWork();
+      void requestLog();
       /**
        * @brief Requests the process to abort
        *
@@ -41,7 +41,7 @@ namespace ap {
       /**
        * @brief @em true when Worker is doing work
        */
-      bool _working;
+      bool _logging;
       /**
        * @brief Protects access to #_abort
        */
@@ -53,6 +53,7 @@ namespace ap {
       bool temp;
       bool rate;
       bool debug;
+      int time_sec;
 
 
   signals:
@@ -60,7 +61,7 @@ namespace ap {
        * @brief This signal is emitted when the Worker request to Work
        * @sa requestWork()
        */
-      void workRequested();
+      void logRequested();
       /**
        * @brief This signal is emitted when counted value is changed (every sec)
        */
@@ -86,7 +87,7 @@ namespace ap {
        * Counts 60 sec in this example.
        * Counting is interrupted if #_aborted is set to true.
        */
-      void doWork();
+      void getLogWork();
       void setAbortBool(bool abort) {_abort = abort;}
 
   public:
@@ -95,6 +96,7 @@ namespace ap {
       void setRateBool(bool _rate) {rate = _rate;}
       void setTempBool(bool _temp) {temp = _temp;}
       void setDebugMode(bool _debug) {debug = _debug;}
+      void setTimeBetweenLogs(int _sec) {time_sec = _sec;}
   };
 
 }

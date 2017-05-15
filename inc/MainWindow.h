@@ -223,8 +223,8 @@ private slots:
 
     void on_pushButton_6_clicked();
 
-
 private:
+    void connectSlots();
     QString openConfigurationFile();
     bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
     void getPaths();
@@ -237,6 +237,7 @@ private:
     QString getLogFileName(QString main="");
     void writeLogFile(QString log_text, QString main="");
     int writePreferencesFile(QString pref, QString filename, bool force=false);
+    void getElapsedTime();
     void getHeadStatus(int head_index);
     QString getHead(string tab);
     string initHead(int head);
@@ -276,7 +277,6 @@ private:
     QString setTime(string head, double time_value, string pmt);
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);
-    void setPMT(int value);
     string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();
     void setQListElements();
@@ -333,6 +333,7 @@ private:
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
     int headIndex;
+    bool log_finished;
 
 
     /* Area de prueba/testing */
@@ -340,9 +341,17 @@ private:
 
 public:
     /**
+     * @brief restoreLoggingVariable
+     */
+    void restoreLoggingVariable() { log_finished = false; }
+    /**
+     * @brief cancelLogging
+     */
+    void cancelLogging() { log_finished = true; }
+    /**
      * @brief getPreferencesDir
      */
-    QString getPreferencesDir() const {return preferencesdir;}
+    QString getPreferencesDir() const { return preferencesdir; }
     /**
      * @brief setInitFileConfigPath
      * @param file
@@ -352,7 +361,7 @@ public:
      * @brief setCalibDirectoryPath
      * @param path
      */
-    void setCalibDirectoryPath(QString path) {root_calib_path = path; }
+    void setCalibDirectoryPath(QString path) { root_calib_path = path; }
     /**
      * @brief setDebugMode
      *

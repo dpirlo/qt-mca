@@ -1,7 +1,6 @@
 #include "inc/MainWindow.h"
 #include "ui_MainWindow.h"
 
-
 /**
  * @brief MainWindow::MainWindow
  *
@@ -14,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     debug(false),
     init(false),
     log(false),
+    log_finished(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
@@ -30,19 +30,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ///////////////////////////////////////////////////////////////////////
     // The thread and the worker are created in the constructor so it is always safe to delete them.
-        thread = new QThread();
-        worker = new Thread(arpet);
 
-        worker->moveToThread(thread);
-        connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
-        connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
-        connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
-        connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
-        connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
-        connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
-        connect(worker, SIGNAL(sendErrorCommand()),this,SLOT(getErrorThread()));
 
     /////////////////////////////////////////////////////////////////////////
+
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -53,9 +44,13 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     arpet->portDisconnect();
-    delete ui;
+    worker->abort();
+    thread->wait();
+    delete thread;
+    delete worker;
     delete pref;
     delete pmt_select;
+    delete ui;    
 }
 /**
  * @brief MainWindow::setInitialConfigurations
@@ -65,9 +60,16 @@ MainWindow::~MainWindow()
  */
 void MainWindow::setInitialConfigurations()
 {
+    //ARPET
     arpet = shared_ptr<MCAE>(new MCAE());
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
+
+    //Threads
+    thread = new QThread();
+    worker = new Thread(arpet);
+    worker->moveToThread(thread);
+    connectSlots();
 
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
@@ -107,7 +109,7 @@ void MainWindow::setInitialConfigurations()
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
-    ui->lineEdit_pmt->setValidator( new QIntValidator(1, PMTs, this) );
+    ui->lineEdit_between_logs->setValidator( new QIntValidator(1, 3600, this) );
     ui->lineEdit_pmt_terminal->setValidator( new QIntValidator(1, PMTs, this) );
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_pmt_hv_terminal->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
@@ -221,6 +223,22 @@ void MainWindow::checkCombosStatus()
      QObject::connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
      QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
      QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+}
+/**
+ * @brief MainWindow::connectSlots
+ */
+void MainWindow::connectSlots()
+{
+    /* Threads signals/slots */
+    connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
+    connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
+    connect(worker, SIGNAL(logRequested()), thread, SLOT(start()));
+    connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
+    connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+    connect(worker, SIGNAL(finished()), this, SLOT(cancelLogging()), Qt::DirectConnection);
+    connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
+    connect(worker, SIGNAL(sendErrorCommand()),this,SLOT(getErrorThread()));
+
 }
 /**
  * @brief MainWindow::writeRatesToLog
@@ -468,6 +486,28 @@ void MainWindow::writeLogFile(QString log_text, QString main)
         out << log_text;
         logger.close();
     }
+}
+void MainWindow::getElapsedTime()
+{
+    QTime t;
+    int elapsed_time=0;
+    while (!log_finished)
+    {
+        t.start();
+        QEventLoop loop;
+        QTimer::singleShot(1000, &loop, SLOT(quit()));
+        loop.exec();
+        elapsed_time=elapsed_time + t.elapsed();
+        int secs = elapsed_time / 1000;
+        int mins = (secs / 60) % 60;
+        int hours = (secs / 3600);
+        secs = secs % 60;
+        ui->label_elapsed_time->setText(QString("%1:%2:%3")
+                                        .arg(hours, 2, 10, QLatin1Char('0'))
+                                        .arg(mins, 2, 10, QLatin1Char('0'))
+                                        .arg(secs, 2, 10, QLatin1Char('0')) );
+    }
+    restoreLoggingVariable();
 }
 /**
  * @brief MainWindow::copyRecursively
@@ -1985,14 +2025,6 @@ QString MainWindow::getPSOCAlta(QLineEdit *line_edit)
     return line_edit->text();
 }
 /**
- * @brief MainWindow::setPMT
- * @param value
- */
-void MainWindow::setPMT(int value)
-{
-     ui->lineEdit_pmt->setText(QString::number(value));
-}
-/**
  * @brief MainWindow::getHVValue
  * @param line_edit
  * @param value
@@ -2269,17 +2301,29 @@ void MainWindow::on_pushButton_select_pmt_clicked()
 void MainWindow::on_pushButton_hv_configure_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value)<<endl;
-        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+" | Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
+        ui->label_data_output->setText("PMT: "+pmt_selected_list.at(0)+" | Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
     }
     catch (Exceptions ex)
     {
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-        ui->label_data_output->setText("PMT: "+QString::number(getPMT(ui->lineEdit_pmt))+" | Error en la configuración de la tensión de dinodo.");
+        ui->label_data_output->setText("PMT: "+pmt_selected_list.at(0)+" | Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
     ui->label_title_output->setText("HV de Dinodo");
@@ -2295,10 +2339,22 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 void MainWindow::on_pushButton_l_5_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-5)<<endl;
     }
     catch (Exceptions ex)
@@ -2319,10 +2375,22 @@ void MainWindow::on_pushButton_l_5_clicked()
 void MainWindow::on_pushButton_l_10_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-10)<<endl;
     }
     catch (Exceptions ex)
@@ -2343,10 +2411,22 @@ void MainWindow::on_pushButton_l_10_clicked()
 void MainWindow::on_pushButton_l_50_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-50)<<endl;
     }
     catch (Exceptions ex)
@@ -2367,10 +2447,22 @@ void MainWindow::on_pushButton_l_50_clicked()
 void MainWindow::on_pushButton_p_5_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,5)<<endl;
     }
     catch (Exceptions ex)
@@ -2391,10 +2483,22 @@ void MainWindow::on_pushButton_p_5_clicked()
 void MainWindow::on_pushButton_p_10_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,10)<<endl;
     }
     catch (Exceptions ex)
@@ -2415,10 +2519,22 @@ void MainWindow::on_pushButton_p_10_clicked()
 void MainWindow::on_pushButton_p_50_clicked()
 {
     writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString q_msg;
     try
     {
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),QString::number(getPMT(ui->lineEdit_pmt)).toStdString());
+        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<getHVValue(ui->lineEdit_hv_value,50)<<endl;
     }
     catch (Exceptions ex)
@@ -2441,19 +2557,20 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
   if(checked)
   {
-      setButtonLoggerState(true);
+      setButtonLoggerState(true);      
       QList<int> checkedHeads=getCheckedHeads();
       worker->setCheckedHeads(checkedHeads);
       if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
       if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
       worker->setDebugMode(debug);
+      worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
 
       worker->abort();
       thread->wait();
-      worker->requestWork();
+      worker->requestLog();      
   }
   else
-  {
+  {      
       setButtonLoggerState(true,true);
       emit sendAbortCommand(true);
   }
@@ -4523,5 +4640,3 @@ void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
 }
-
-
