@@ -8,6 +8,7 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QObject *parent) :
     temp(false),
     rate(false),
     debug(false),
+    log_finished(false),
     time_sec(1)
 {
     _logging =false;
@@ -32,7 +33,8 @@ void Thread::requestLog()
 void Thread::abort()
 {
     mutex.lock();
-    if (_logging) {
+    if (_logging)
+    {
         _abort = true;
         if (debug) cout<<"Se aborta la operación de logueo bajo el thread: "<<thread()->currentThreadId()<<endl;
     }
@@ -47,15 +49,14 @@ void Thread::getLogWork()
         cout<<"Comienza el log cada "<<time_sec<<" segundos"<<endl;
     }
 
-
     while(!_abort)
     {
         vector<int> rates(3);
         double tempe;
         for (int i=0;i<checkedHeads.length();i++)
-        {
+        {            
          try
-         {
+         {                
                 int head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
 
@@ -65,6 +66,7 @@ void Thread::getLogWork()
                     emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
                     if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
                 }
+                emit startElapsedTime();
 
                 QVector<double> temp_vec;
                 temp_vec.fill(0);
@@ -108,9 +110,37 @@ void Thread::getLogWork()
 
     if(debug)
     {
-        cout<<"El proceso del log ha sido finalizado."<<endl;
+        cout<<"El proceso del log ha sido finalizado. Tiempo transcurrido: "<<etime.toStdString()<<endl;
         cout<<"[END-LOG-DBG-THR] =================================================="<<endl;
     }
+
+    emit finishedElapsedTime(true);
+    emit finished();
+}
+void Thread::getElapsedTime()
+{
+    QTime t;
+    int secs, mins, hours;
+    int elapsed_time=0;
+    while (!log_finished)
+    {
+        t.start();
+        QEventLoop loop;
+        QTimer::singleShot(1000, &loop, SLOT(quit()));
+        loop.exec();
+        elapsed_time=elapsed_time + t.elapsed();
+        secs = elapsed_time / 1000;
+        mins = (secs / 60) % 60;
+        hours = (secs / 3600);
+        secs = secs % 60;
+        etime = QString("%1:%2:%3")
+                .arg(hours, 2, 10, QLatin1Char('0'))
+                .arg(mins, 2, 10, QLatin1Char('0'))
+                .arg(secs, 2, 10, QLatin1Char('0'));
+        emit sendElapsedTimeString(etime);
+        emit sendFinalElapsedTimeString(etime);
+    }
+    restoreLoggingVariable();
 
     emit finished();
 }

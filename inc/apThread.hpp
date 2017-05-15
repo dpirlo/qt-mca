@@ -31,6 +31,8 @@ namespace ap {
       void abort();
       string getLocalDateAndTime();
 
+
+
   private:
       shared_ptr<MCAE> arpet;
       QList<int> checkedHeads;
@@ -54,6 +56,8 @@ namespace ap {
       bool rate;
       bool debug;
       int time_sec;
+      bool log_finished;
+      QString etime;
 
 
   signals:
@@ -61,7 +65,7 @@ namespace ap {
        * @brief This signal is emitted when the Worker request to Work
        * @sa requestWork()
        */
-      void logRequested();
+      void logRequested();      
       /**
        * @brief This signal is emitted when counted value is changed (every sec)
        */
@@ -78,7 +82,11 @@ namespace ap {
        * @brief This signal is emitted when process is finished (either by counting 60 sec or being aborted)
        */
       void finished();
+      void finishedElapsedTime(bool var);
       void sendErrorCommand();
+      void startElapsedTime();
+      void sendElapsedTimeString(QString eatime_string);
+      void sendFinalElapsedTimeString(QString eatime_string);
 
   public slots:
       /**
@@ -89,8 +97,18 @@ namespace ap {
        */
       void getLogWork();
       void setAbortBool(bool abort) {_abort = abort;}
+      void cancelLogging(bool var) { log_finished = var; }
+      void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
+      void getElapsedTime();
 
   public:
+      /**
+       * @brief restoreLoggingVariable
+       */
+      void restoreLoggingVariable() { log_finished = false; }
+      /**
+       * @brief cancelLogging
+       */
       void setCheckedHeads(QList<int> list) {checkedHeads = list;}
       void setPortName(QString port) {port_name = port;}
       void setRateBool(bool _rate) {rate = _rate;}

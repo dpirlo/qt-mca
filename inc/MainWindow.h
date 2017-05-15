@@ -111,6 +111,7 @@ private slots:
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
     void writeTempToLog(int index, double min, double med, double max);
     void getErrorThread();
+    void receivedElapsedTimeString(QString etime_string);
 
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
@@ -221,7 +222,7 @@ private slots:
 
     void on_checkBox_Backprojection_clicked(bool checked);
 
-    void on_pushButton_6_clicked();
+    void on_pushButton_6_clicked();    
 
 private:
     void connectSlots();
@@ -279,6 +280,7 @@ private:
     QString getPSOCAlta(QLineEdit *line_edit);
     string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();
+    void resetHeads();
     void setQListElements();
     void drawTemperatureBoard();
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
@@ -295,18 +297,8 @@ private:
 
     /* Area de prueba/testing */
 
-    /**
-       * @brief Thread object which will let us manipulate the running thread
-       */
-    QThread *thread;
-    /**
-       * @brief Object which contains methods that should be runned in another thread
-       */
-    Thread *worker;
-
 signals:
     void sendAbortCommand(bool abort);
-
 
 private:
     Ui::MainWindow *ui;
@@ -315,6 +307,10 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
+    QThread *thread;
+    Thread *worker;
+    QThread *etime_th;
+    Thread *etime_wr;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
@@ -333,21 +329,11 @@ private:
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
     int headIndex;
-    bool log_finished;
-
 
     /* Area de prueba/testing */
 
 
-public:
-    /**
-     * @brief restoreLoggingVariable
-     */
-    void restoreLoggingVariable() { log_finished = false; }
-    /**
-     * @brief cancelLogging
-     */
-    void cancelLogging() { log_finished = true; }
+public:    
     /**
      * @brief getPreferencesDir
      */

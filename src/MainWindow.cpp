@@ -12,8 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     debug(false),
     init(false),
-    log(false),
-    log_finished(false),
+    log(true),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
@@ -27,13 +26,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     setPreferencesConfiguration();
     getPaths();
-
-    ///////////////////////////////////////////////////////////////////////
-    // The thread and the worker are created in the constructor so it is always safe to delete them.
-
-
-    /////////////////////////////////////////////////////////////////////////
-
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -69,6 +61,9 @@ void MainWindow::setInitialConfigurations()
     thread = new QThread();
     worker = new Thread(arpet);
     worker->moveToThread(thread);
+    etime_th = new QThread();
+    etime_wr = new Thread(arpet);
+    etime_wr->moveToThread(etime_th);
     connectSlots();
 
     // Calibrador
@@ -129,7 +124,7 @@ void MainWindow::setInitialConfigurations()
 void MainWindow::setPreferencesConfiguration()
 {
     /*Configuración inicial de preferencias*/
-    QString default_pref_file = "[Modo]\ndebug=false\nlog=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
+    QString default_pref_file = "[Modo]\ndebug=false\nlog=true\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
     getPreferencesSettingsFile();
 }
@@ -235,10 +230,15 @@ void MainWindow::connectSlots()
     connect(worker, SIGNAL(logRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
-    connect(worker, SIGNAL(finished()), this, SLOT(cancelLogging()), Qt::DirectConnection);
     connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
     connect(worker, SIGNAL(sendErrorCommand()),this,SLOT(getErrorThread()));
 
+    connect(worker, SIGNAL(startElapsedTime()), etime_th, SLOT(start()), Qt::DirectConnection);
+    connect(worker, SIGNAL(finishedElapsedTime(bool)), etime_wr, SLOT(cancelLogging(bool)));
+    connect(etime_th, SIGNAL(started()), etime_wr, SLOT(getElapsedTime()));
+    connect(etime_wr, SIGNAL(finished()), etime_th, SLOT(quit()), Qt::DirectConnection);
+    connect(etime_wr, SIGNAL(sendElapsedTimeString(QString)),this,SLOT(receivedElapsedTimeString(QString)));
+    connect(etime_wr, SIGNAL(sendFinalElapsedTimeString(QString)),worker,SLOT(receivedFinalElapsedTimeString(QString)));
 }
 /**
  * @brief MainWindow::writeRatesToLog
@@ -261,6 +261,14 @@ void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate
 void MainWindow::writeTempToLog(int index, double min, double med, double max)
 {
   writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
+}
+/**
+ * @brief MainWindow::receivedElapsedTimeString
+ * @param etime_string
+ */
+void MainWindow::receivedElapsedTimeString(QString etime_string)
+{
+    ui->label_elapsed_time->setText(etime_string);
 }
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
@@ -486,28 +494,6 @@ void MainWindow::writeLogFile(QString log_text, QString main)
         out << log_text;
         logger.close();
     }
-}
-void MainWindow::getElapsedTime()
-{
-    QTime t;
-    int elapsed_time=0;
-    while (!log_finished)
-    {
-        t.start();
-        QEventLoop loop;
-        QTimer::singleShot(1000, &loop, SLOT(quit()));
-        loop.exec();
-        elapsed_time=elapsed_time + t.elapsed();
-        int secs = elapsed_time / 1000;
-        int mins = (secs / 60) % 60;
-        int hours = (secs / 3600);
-        secs = secs % 60;
-        ui->label_elapsed_time->setText(QString("%1:%2:%3")
-                                        .arg(hours, 2, 10, QLatin1Char('0'))
-                                        .arg(mins, 2, 10, QLatin1Char('0'))
-                                        .arg(secs, 2, 10, QLatin1Char('0')) );
-    }
-    restoreLoggingVariable();
 }
 /**
  * @brief MainWindow::copyRecursively
@@ -2177,6 +2163,33 @@ void MainWindow::resetHitsValues()
   setHitsInit(true);
 }
 /**
+ * @brief MainWindow::resetHeads
+ */
+void MainWindow::resetHeads()
+{
+    QList<int> checkedHeads = getCheckedHeads();
+
+    for (int i=0;i < checkedHeads.length();i++)
+    {
+        parseConfigurationFile(true, QString::number(checkedHeads.at(i)));
+
+        try
+        {
+            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit).toStdString(),"00");
+            if(debug)
+            {
+                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<LowLimit<<endl;
+                showMCAEStreamDebugMode(q_msg.toStdString());
+            }
+        }
+        catch (Exceptions ex)
+        {
+            if(debug) cout<<"No se puede reiniciar el cabezal "<<checkedHeads.at(i)<<". Error: "<<ex.excdesc<<endl;
+            QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        }
+    }
+}
+/**
  * @brief MainWindow::on_pushButton_adquirir_clicked
  */
 void MainWindow::on_pushButton_adquirir_clicked()
@@ -2248,6 +2261,7 @@ void MainWindow::on_pushButton_reset_clicked()
             break;
         case CABEZAL:
             if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
+            resetHeads();
             resetHitsValues();
             setHeadCustomPlotEnvironment();
             removeAllGraphsHead();
