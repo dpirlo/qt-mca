@@ -36,7 +36,7 @@ using namespace boost::asio;
 using namespace boost::system;
 
 #define DS1820_FACTOR 0.0625
-#define CHANNELS 1024
+#define CHANNELS 256
 #define CHANNELS_PMT 256
 #define SERIAL_PORT_READ_BUF_SIZE 1
 #define PMTs 48
