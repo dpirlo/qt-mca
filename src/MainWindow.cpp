@@ -1812,12 +1812,7 @@ QString MainWindow::getMultiMCA(QString head)
         if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    setButtonAdquireState(true, true);
-
-    if (debug)
-    {
-        //cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head.toStdString()<<": "<<QString::number(arpet->getRate(head.toStdString(), port_name.toStdString())).toStdString()<<endl;
-    }
+    setButtonAdquireState(true, true);    
 
     return msg;
 }
@@ -1857,8 +1852,9 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
 
     if (multimode)
     {
+        vector<int> rates = arpet->getRate(head, port_name.toStdString());
         ui->label_title_output->setText("MCA Extended");
-        //ui->label_data_output->setText("Tasa: "+QString::number(arpet->getRate(head, port_name.toStdString()))+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
+        ui->label_data_output->setText("Tasas: " + QString::number(rates.at(0)) + "," + QString::number(rates.at(1)) + "," + QString::number(rates.at(2)) +" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
     }
     else
     {

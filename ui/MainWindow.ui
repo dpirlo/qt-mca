@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1729,7 +1729,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>284</height>
+          <height>211</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3658,9 +3658,9 @@ calibrar</string>
       <widget class="QLabel" name="label_38">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>60</y>
-         <width>91</width>
+         <x>1</x>
+         <y>58</y>
+         <width>101</width>
          <height>41</height>
         </rect>
        </property>
@@ -3671,7 +3671,7 @@ calibrar</string>
        </property>
        <property name="text">
         <string>Tiempo entre 
- logs (en seg.))</string>
+ logs (en seg.)</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
