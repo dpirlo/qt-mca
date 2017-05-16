@@ -42,7 +42,7 @@ MainWindow::~MainWindow()
     delete worker;
     delete pref;
     delete pmt_select;
-    delete ui;    
+    delete ui;
 }
 /**
  * @brief MainWindow::setInitialConfigurations
@@ -281,8 +281,8 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
 void MainWindow::getErrorThread()
 {
   setButtonLoggerState(false);
-  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
   ui->pushButton_logguer->setChecked(false);
+  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));  
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -1478,6 +1478,8 @@ void MainWindow::setCalibrationTables(int head)
     }
     setTextBrowserState(windows_limits, ui->textBrowser_triple_ventana);
 
+    mMutex.unlock();
+
     try
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
@@ -1501,6 +1503,8 @@ void MainWindow::setCalibrationTables(int head)
         if (debug) cout<<"No se pueden configurar las tablas de calibración en HV. Error: "<<ex.excdesc<<endl;
     }
     setTextBrowserState(set_hv, ui->textBrowser_hv);
+
+    mMutex.lock();
 
     try
     {
@@ -1823,7 +1827,7 @@ QString MainWindow::getMultiMCA(QString head)
         if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    setButtonAdquireState(true, true);    
+    setButtonAdquireState(true, true);
 
     return msg;
 }
@@ -1973,6 +1977,7 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
     catch(Exceptions & ex)
     {
         Exceptions exception_hv(ex.excdesc);
+        mMutex.unlock();
         throw exception_hv;
     }
     resetHitsValues();
@@ -2583,7 +2588,7 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
   if(checked)
   {
-      setButtonLoggerState(true);      
+      setButtonLoggerState(true);
       QList<int> checkedHeads=getCheckedHeads();
       worker->setCheckedHeads(checkedHeads);
       if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
@@ -2593,10 +2598,10 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 
       worker->abort();
       thread->wait();
-      worker->requestLog();      
+      worker->requestLog();
   }
   else
-  {      
+  {
       setButtonLoggerState(true,true);
       emit sendAbortCommand(true);
   }
@@ -2965,6 +2970,7 @@ string MainWindow::readString(char delimeter)
     }
     catch( Exceptions & ex ){
         Exceptions exception_stop(ex.excdesc);
+        mMutex.unlock();
         throw exception_stop;
     }
 
@@ -2990,6 +2996,7 @@ string MainWindow::readBufferString(int buffer_size)
     }
     catch( Exceptions & ex ){
         Exceptions exception_stop(ex.excdesc);
+        mMutex.unlock();
         throw exception_stop;
     }
 
@@ -3008,7 +3015,7 @@ string MainWindow::readBufferString(int buffer_size)
  */
 size_t MainWindow::sendString(string msg, string end)
 {
-    mMutex.lock();
+     mMutex.lock();
 
     arpet->portFlush();
     size_t bytes_transfered = 0;
@@ -3018,6 +3025,7 @@ size_t MainWindow::sendString(string msg, string end)
     }
     catch(boost::system::system_error e){
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        mMutex.unlock();
         throw exception_serial_port;
     }
 

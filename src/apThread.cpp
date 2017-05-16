@@ -74,9 +74,9 @@ void Thread::getLogWork()
         mutex->lock();
 
         for (int i=0;i<checkedHeads.length();i++)
-        {            
+        {
          try
-         {                
+         {
                 int head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
 
@@ -111,9 +111,9 @@ void Thread::getLogWork()
           catch (Exceptions &ex)
           {
               if (debug) cout<<"Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo. Error: "<<ex.excdesc<<endl;
-              emit sendErrorCommand();              
+              emit sendErrorCommand();
               setAbortBool(true);
-              mutex->unlock();
+              //mutex->unlock();
           }
        }
 
