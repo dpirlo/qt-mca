@@ -2,13 +2,30 @@
 
 using namespace ap;
 
-Thread::Thread(shared_ptr<MCAE> _arpet, QObject *parent) :
+/**
+ * @brief Thread::Thread
+ *
+ * Constructor de la clase
+ *
+ * Se inicializan todos los _flags_ utilizados durante la ejecución del hilo. Esta clase contiene todos los métodos y propiedades para acceder, administrar,
+ * configurar los threads ejecutados en la aplicación *qt-mca*.
+ *
+ * Recibe como parametro un objeto de la clase MCAE para acceder a todos los dispositivos del tómografo ARPET (fotomultiplicadores, cabezales, placas de
+ * alta tensión, etc) y un objeto de la clase QMutex para compartir el recurso del puerto serie.
+ *
+ * @note Se documentan las propiedades más importantes.
+ *
+ * @param _arpet
+ * @param parent
+ */
+Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     QObject(parent),
     arpet(_arpet),
     temp(false),
     rate(false),
     debug(false),
     log_finished(false),
+    mutex(_mutex),
     time_sec(1)
 {
     _logging =false;
@@ -22,23 +39,23 @@ string Thread::getLocalDateAndTime()
 
 void Thread::requestLog()
 {
-    mutex.lock();
+    mutex->lock();
     _logging = true;
     _abort = false;
-    mutex.unlock();
+    mutex->unlock();
 
     emit logRequested();
 }
 
 void Thread::abort()
 {
-    mutex.lock();
+    mutex->lock();
     if (_logging)
     {
         _abort = true;
         if (debug) cout<<"Se aborta la operación de logueo bajo el thread: "<<thread()->currentThreadId()<<endl;
     }
-    mutex.unlock();
+    mutex->unlock();
 }
 
 void Thread::getLogWork()
@@ -53,6 +70,9 @@ void Thread::getLogWork()
     {
         vector<int> rates(3);
         double tempe;
+
+        mutex->lock();
+
         for (int i=0;i<checkedHeads.length();i++)
         {            
          try
@@ -91,12 +111,13 @@ void Thread::getLogWork()
           catch (Exceptions &ex)
           {
               if (debug) cout<<"Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo. Error: "<<ex.excdesc<<endl;
-              emit sendErrorCommand();
-              mutex.lock();
+              emit sendErrorCommand();              
               setAbortBool(true);
-              mutex.unlock();
-         }
+              mutex->unlock();
+          }
        }
+
+       mutex->unlock();
 
        QEventLoop loop;
        QTimer::singleShot(time_sec*1000, &loop, SLOT(quit()));
@@ -104,9 +125,9 @@ void Thread::getLogWork()
 
     }
 
-    mutex.lock();
+    mutex->lock();
     _logging = false;
-    mutex.unlock();
+    mutex->unlock();
 
     if(debug)
     {

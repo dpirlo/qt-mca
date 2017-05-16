@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3968,10 +3968,10 @@ calibrar</string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>684</x>
-        <y>46</y>
-        <width>724</width>
-        <height>194</height>
+        <x>685</x>
+        <y>44</y>
+        <width>311</width>
+        <height>181</height>
        </rect>
       </property>
       <property name="font">

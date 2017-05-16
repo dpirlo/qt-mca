@@ -177,7 +177,6 @@ private slots:
     void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
-
     void on_pushButton_clicked();
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
@@ -197,32 +196,21 @@ private slots:
     void on_pushButton_triple_ventana_14_clicked();
     void on_pushButton_3_clicked();
 
-    /* Buttons de prueba/testing */
-
+    /* Reconstrucción */
     void on_pushButton_5_clicked();
-
-
     void on_pushButton_APIRL_PATH_clicked();
-
     void on_pushButton_INTERFILES_clicked();
-
     void on_pushButton_arch_recon_clicked();
-
     void on_pushButton_Est_ini_clicked();
-
     void on_pushButton_Arch_sens_clicked();
-
     void on_pushButton_Arch_count_skimming_clicked();
-
     void on_pushButton_INTERFILES_2_clicked();
-
     void on_pushButton_INTERFILES_3_clicked();
-
     void on_checkBox_MLEM_clicked(bool checked);
-
     void on_checkBox_Backprojection_clicked(bool checked);
-
     void on_pushButton_6_clicked();    
+
+    /* Buttons de prueba/testing */
 
 private:
     void connectSlots();
@@ -307,6 +295,7 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
+    QMutex mMutex;
     QThread *thread;
     Thread *worker;
     QThread *etime_th;

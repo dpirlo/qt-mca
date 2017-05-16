@@ -59,10 +59,10 @@ void MainWindow::setInitialConfigurations()
 
     //Threads
     thread = new QThread();
-    worker = new Thread(arpet);
+    worker = new Thread(arpet, &mMutex);
     worker->moveToThread(thread);
     etime_th = new QThread();
-    etime_wr = new Thread(arpet);
+    etime_wr = new Thread(arpet, &mMutex);
     etime_wr->moveToThread(etime_th);
     connectSlots();
 
@@ -1233,6 +1233,10 @@ void MainWindow::initCoincidenceMode()
         showMCAEStreamDebugMode(msg_ans);
     }
 }
+/**
+ * @brief MainWindow::setCalibrationMode
+ * @param head
+ */
 void MainWindow::setCalibrationMode(QString head)
 {
     setMCAEDataStream(head.toStdString());
@@ -1282,7 +1286,6 @@ void MainWindow::setCalibrationMode(QString head)
         showMCAEStreamDebugMode(msg_ans);
     }
 }
-
 /**
  * @brief MainWindow::setCoincidenceModeWindowTime
  *
@@ -1409,6 +1412,8 @@ void MainWindow::setCalibrationTables(int head)
     bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true;
     QString q_msg;
 
+    mMutex.lock();
+
     try
     {
         q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getX_Calib_Table(), coefx_values, arpet->getAnsX_Calib_Table());
@@ -1520,6 +1525,8 @@ void MainWindow::setCalibrationTables(int head)
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
     setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);
+
+    mMutex.unlock();
 }
 
 /* Pestaña: "MCA" */
@@ -1589,6 +1596,8 @@ void MainWindow::drawTemperatureBoard()
     QVector<double> temp_vec;
     temp_vec.fill(0);
 
+    mMutex.lock();
+
     try
     {
         setButtonAdquireState(true);
@@ -1631,6 +1640,8 @@ void MainWindow::drawTemperatureBoard()
         cout<<"Mínima: "<<t_min<<"°C"<<endl;
         cout<<"================================"<<endl;
     }
+
+    mMutex.unlock();
 
     ui->label_title_output->setText("Temperatura");
     ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+" Máxima: "+QString::number(t_max)+"°C"+" Mínima: "+QString::number(t_min)+"°C");
@@ -1831,6 +1842,9 @@ QString MainWindow::getMultiMCA(QString head)
 QString MainWindow::getMCA(string head, string function, bool multimode, int channels, string pmt)
 {
     string msg;
+
+    mMutex.lock();
+
     try
     {
         msg= arpet->getMCA(pmt, function, head, channels, port_name.toStdString());
@@ -1875,10 +1889,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
         cout<<"================================"<<endl;
     }
 
-    if (debug && multimode)
-    {
-        //cout<<getLocalDateAndTime()<<" Tasa de conteo en el Cabezal "<<head<<": "<<QString::number(arpet->getRate(head, port_name.toStdString())).toStdString()<<endl;
-    }
+    mMutex.unlock();
 
     return QString::fromStdString(msg);
 }
@@ -1952,6 +1963,9 @@ QString MainWindow::setTime(string head, double time_value, string pmt)
 QString MainWindow::setHV(string head, string hv_value, string pmt)
 {
     string msg;
+
+    mMutex.lock();
+
     try
     {
         msg = arpet->setHV(head, pmt, hv_value, port_name.toStdString());
@@ -1962,6 +1976,8 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
         throw exception_hv;
     }
     resetHitsValues();
+
+    mMutex.unlock();
 
     return QString::fromStdString(msg);
 }
@@ -2735,9 +2751,7 @@ void MainWindow::getPaths()
         ui->lineEdit_alta->setText("");
         ui->lineEdit_limiteinferior->setText("");
     }
-
 }
-
 /**
  * @brief MainWindow::setLabelState
  * @param state
@@ -2943,6 +2957,8 @@ QString MainWindow::getHead(string tab)
  */
 string MainWindow::readString(char delimeter)
 {
+    mMutex.lock();
+
     string msg;
     try{
         msg = arpet->readString(delimeter, port_name.toStdString());
@@ -2951,6 +2967,9 @@ string MainWindow::readString(char delimeter)
         Exceptions exception_stop(ex.excdesc);
         throw exception_stop;
     }
+
+    mMutex.unlock();
+
     return msg;
 }
 /**
@@ -2963,6 +2982,8 @@ string MainWindow::readString(char delimeter)
  */
 string MainWindow::readBufferString(int buffer_size)
 {
+    mMutex.lock();
+
     string msg;
     try{
         msg = arpet->readBufferString(buffer_size,port_name.toStdString());
@@ -2971,6 +2992,9 @@ string MainWindow::readBufferString(int buffer_size)
         Exceptions exception_stop(ex.excdesc);
         throw exception_stop;
     }
+
+    mMutex.unlock();
+
     return msg;
 }
 /**
@@ -2984,6 +3008,8 @@ string MainWindow::readBufferString(int buffer_size)
  */
 size_t MainWindow::sendString(string msg, string end)
 {
+    mMutex.lock();
+
     arpet->portFlush();
     size_t bytes_transfered = 0;
 
@@ -2994,6 +3020,8 @@ size_t MainWindow::sendString(string msg, string end)
         Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
         throw exception_serial_port;
     }
+
+    mMutex.unlock();
 
     return bytes_transfered;
 }
@@ -3758,7 +3786,9 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 }
 
 /* Autocalib */
-
+/**
+ * @brief MainWindow::on_pushButton_clicked
+ */
 void MainWindow::on_pushButton_clicked()
 {
     QList<int> checked_PMTs, checked_Cab;
@@ -3860,7 +3890,9 @@ void MainWindow::on_pushButton_clicked()
 
 
 /* Calibracion Fina */
-
+/**
+ * @brief MainWindow::on_pushButton_2_clicked
+ */
 void MainWindow::on_pushButton_2_clicked()
 {
     QList<int> checked_Cab;
@@ -3893,9 +3925,9 @@ void MainWindow::on_pushButton_2_clicked()
     // Invoco al calibracor
     calibrador->calibrar_fina();
 }
-
-
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_2_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_2_clicked()
 {
     getPreferencesSettingsFile();
@@ -3907,7 +3939,9 @@ void MainWindow::on_pushButton_triple_ventana_2_clicked()
 
     ui->textBrowser_adq_1->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_3_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_3_clicked()
 {
     getPreferencesSettingsFile();
@@ -3919,7 +3953,9 @@ void MainWindow::on_pushButton_triple_ventana_3_clicked()
 
     ui->textBrowser_adq_2->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_4_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_4_clicked()
 {
     getPreferencesSettingsFile();
@@ -3931,7 +3967,9 @@ void MainWindow::on_pushButton_triple_ventana_4_clicked()
 
     ui->textBrowser_adq_3->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_6_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_6_clicked()
 {
     getPreferencesSettingsFile();
@@ -3943,7 +3981,9 @@ void MainWindow::on_pushButton_triple_ventana_6_clicked()
 
     ui->textBrowser_adq_4->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_7_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_7_clicked()
 {
     getPreferencesSettingsFile();
@@ -3955,7 +3995,9 @@ void MainWindow::on_pushButton_triple_ventana_7_clicked()
 
     ui->textBrowser_adq_5->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_5_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_5_clicked()
 {
     getPreferencesSettingsFile();
@@ -3967,7 +4009,9 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
 
     ui->textBrowser_adq_6->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_8_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_8_clicked()
 {
     getPreferencesSettingsFile();
@@ -3979,8 +4023,9 @@ void MainWindow::on_pushButton_triple_ventana_8_clicked()
 
     ui->textBrowser_adq_coin->setText(filename);
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_9_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_9_clicked()
 {
     QString root="Salidas/";
@@ -3997,10 +4042,10 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
 }
 
 
-
 /* Analizar Planar */
-
-
+/**
+ * @brief MainWindow::on_pushButton_3_clicked
+ */
 void MainWindow::on_pushButton_3_clicked()
 {
     QList<int> checked_Cab, checked_met;
@@ -4048,8 +4093,9 @@ void MainWindow::on_pushButton_3_clicked()
     // Invoco al visualizador
     calibrador->visualizar_planar();
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_13_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_13_clicked()
 {
     getPreferencesSettingsFile();
@@ -4061,7 +4107,9 @@ void MainWindow::on_pushButton_triple_ventana_13_clicked()
 
     ui->textBrowser_adq_8->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_10_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_10_clicked()
 {
     getPreferencesSettingsFile();
@@ -4073,7 +4121,9 @@ void MainWindow::on_pushButton_triple_ventana_10_clicked()
 
     ui->textBrowser_adq_10->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_11_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_11_clicked()
 {
     getPreferencesSettingsFile();
@@ -4085,7 +4135,9 @@ void MainWindow::on_pushButton_triple_ventana_11_clicked()
 
     ui->textBrowser_adq_7->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_16_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_16_clicked()
 {
     getPreferencesSettingsFile();
@@ -4097,7 +4149,9 @@ void MainWindow::on_pushButton_triple_ventana_16_clicked()
 
     ui->textBrowser_adq_9->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_15_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_15_clicked()
 {
     getPreferencesSettingsFile();
@@ -4109,7 +4163,9 @@ void MainWindow::on_pushButton_triple_ventana_15_clicked()
 
     ui->textBrowser_adq_12->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_12_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_12_clicked()
 {
     getPreferencesSettingsFile();
@@ -4121,7 +4177,9 @@ void MainWindow::on_pushButton_triple_ventana_12_clicked()
 
     ui->textBrowser_adq_11->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_triple_ventana_14_clicked
+ */
 void MainWindow::on_pushButton_triple_ventana_14_clicked()
 {
     QString root="Salidas/";
@@ -4141,7 +4199,9 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
 
 
 /* RECONSTRUCCION */
-
+/**
+ * @brief MainWindow::on_pushButton_5_clicked
+ */
 void MainWindow::on_pushButton_5_clicked()
 {
     QMessageBox messageBox;
@@ -4506,8 +4566,9 @@ void MainWindow::on_pushButton_5_clicked()
 
 
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_APIRL_PATH_clicked
+ */
 void MainWindow::on_pushButton_APIRL_PATH_clicked()
 {
     QString root=recon_externa->getPathAPIRL();
@@ -4524,7 +4585,9 @@ void MainWindow::on_pushButton_APIRL_PATH_clicked()
 
     ui->textBrowser_entrada_2->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_INTERFILES_clicked
+ */
 void MainWindow::on_pushButton_INTERFILES_clicked()
 {
     QString root=recon_externa->getPathINTERFILES();
@@ -4541,8 +4604,9 @@ void MainWindow::on_pushButton_INTERFILES_clicked()
 
     ui->textBrowser_entrada_3->setText(filename);
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_arch_recon_clicked
+ */
 void MainWindow::on_pushButton_arch_recon_clicked()
 {
 
@@ -4556,7 +4620,9 @@ void MainWindow::on_pushButton_arch_recon_clicked()
     ui->textBrowser_archivo_recon->setText(filename);
 
 }
-
+/**
+ * @brief MainWindow::on_pushButton_Est_ini_clicked
+ */
 void MainWindow::on_pushButton_Est_ini_clicked()
 {
 
@@ -4570,7 +4636,9 @@ void MainWindow::on_pushButton_Est_ini_clicked()
     ui->textBrowser_estimacion_ini->setText(filename);
 
 }
-
+/**
+ * @brief MainWindow::on_pushButton_Arch_sens_clicked
+ */
 void MainWindow::on_pushButton_Arch_sens_clicked()
 {
 
@@ -4585,7 +4653,9 @@ void MainWindow::on_pushButton_Arch_sens_clicked()
 
 
 }
-
+/**
+ * @brief MainWindow::on_pushButton_Arch_count_skimming_clicked
+ */
 void MainWindow::on_pushButton_Arch_count_skimming_clicked()
 {
 
@@ -4600,8 +4670,9 @@ void MainWindow::on_pushButton_Arch_count_skimming_clicked()
 
 
 }
-
-
+/**
+ * @brief MainWindow::on_pushButton_INTERFILES_2_clicked
+ */
 void MainWindow::on_pushButton_INTERFILES_2_clicked()
 {
     QString root=recon_externa->getPathSalida();
@@ -4618,7 +4689,9 @@ void MainWindow::on_pushButton_INTERFILES_2_clicked()
 
     ui->textBrowser_entrada_4->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_INTERFILES_3_clicked
+ */
 void MainWindow::on_pushButton_INTERFILES_3_clicked()
 {
     QString root=recon_externa->getPathPARSER();
@@ -4635,17 +4708,25 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
     ui->textBrowser_entrada_5->setText(filename);
 }
-
+/**
+ * @brief MainWindow::on_checkBox_MLEM_clicked
+ * @param checked
+ */
 void MainWindow::on_checkBox_MLEM_clicked(bool checked)
 {
     ui->checkBox_Backprojection->setCheckState( Qt::Unchecked);
 }
-
+/**
+ * @brief MainWindow::on_checkBox_Backprojection_clicked
+ * @param checked
+ */
 void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 {
     ui->checkBox_MLEM->setCheckState( Qt::Unchecked);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_6_clicked
+ */
 void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
