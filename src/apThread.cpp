@@ -31,12 +31,17 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     _logging =false;
     _abort = false;
 }
-
+/**
+ * @brief Thread::getLocalDateAndTime
+ * @return date en _string_
+ */
 string Thread::getLocalDateAndTime()
 {
   return (QDateTime::currentDateTime().toString().toStdString());
 }
-
+/**
+ * @brief Thread::requestLog
+ */
 void Thread::requestLog()
 {
     mutex->lock();
@@ -46,7 +51,9 @@ void Thread::requestLog()
 
     emit logRequested();
 }
-
+/**
+ * @brief Thread::abort
+ */
 void Thread::abort()
 {
     mutex->lock();
@@ -57,7 +64,14 @@ void Thread::abort()
     }
     mutex->unlock();
 }
-
+/**
+ * @brief Thread::getLogWork
+ *
+ * Método que realiza el logueo de datos en el ARPET.
+ * Obtiene tasa y temperatura de los cabezales seleccionados y los envía a través
+ * de una señal a MainWindow. Se finaliza con la variable _booleana_ _abort_.
+ *
+ */
 void Thread::getLogWork()
 {
     if(debug)
@@ -152,6 +166,13 @@ void Thread::getLogWork()
     emit finishedElapsedTime(true);
     emit finished();
 }
+/**
+ * @brief Thread::getElapsedTime
+ *
+ * Obtiene el tiempo transcurrido de un proceso. Se finaliza con la variable
+ * _booleana_ *log_finished*
+ *
+ */
 void Thread::getElapsedTime()
 {
     QTime t;
