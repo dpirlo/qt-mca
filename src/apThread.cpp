@@ -72,14 +72,15 @@ void Thread::getLogWork()
     {
         vector<int> rates(3);
         double tempe;
+        int head_index;
 
-        mutex->lock();          
+        mutex->lock();
 
         for (int i=0;i<checkedHeads.length();i++)
         {
          try
          {
-                int head_index=checkedHeads.at(i);
+                head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
 
                 if(rate)
@@ -135,7 +136,6 @@ void Thread::getLogWork()
        QEventLoop loop;
        QTimer::singleShot(time_sec*1000, &loop, SLOT(quit()));
        loop.exec();
-
     }
 
     mutex->lock();
