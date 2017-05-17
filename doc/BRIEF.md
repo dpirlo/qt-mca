@@ -12,6 +12,9 @@
 * Administración de la alta tensión de los cabezales (PSOC)
 * Configuración de las tablas de calibración de cada PMT
 * Inicialización de las tablas de calibración en energía, posición y tiempo
+* Autocalibración de los parámetros del equipo
+* Reconstrucción de imágenes
+* Registración (*log*) de datos: tasa y temperatura de los cabezales seleccionados
 * Terminal de prueba (con configuración de la trama enviada)
 * Debug en consola (*runtime*)
 
@@ -43,6 +46,45 @@ Trama MCA a partir del cabezal seleccionado.
 Se obtienen los valores de temperatura de cada PMT. Por otro lado se muestran el valor mayor, menor y promedio de las temperaturas obtenidas. Se descartan valores de temperaturas menores a 20ºC (se lo considera como un valor erróneo).
 
 <p align="center"><img src="../../img/img_temp.png" width="600"></p>
+
+## Calibración
+
+### AutoCalibración (en progreso)
+
+Se realiza la autocalibración de los valores de HV de cada uno de los fotomultiplicadores del equipo y la alta tensión de los cabezales.
+
+<p align="center"><img src="../../img/img_autocalib.png" width="600"></p>
+
+### Calibración fina
+
+A partir de realizar un campo inundado se realiza la calibración en energía y posición del equipo.
+
+<p align="center"><img src="../../img/img_calib_fina.png" width="600"></p>
+
+### Visualización
+
+Herramienta para visualizar todo el análisis de resultados.
+
+<p align="center"><img src="../../img/img_analizar_planar.png" width="600"></p>
+
+## Reconstrucción
+
+Herramienta para reconstruir la imagen a partir de una adquisición con una fuente radioactiva.
+
+<p align="center"><img src="../../img/img_recon.png" width="600"></p>
+
+## Log
+
+Función de registración de los datos de temperatura y tasa de adquisición para los cabezales seleccionados.
+
+<p align="center"><img src="../../img/img_log.png" width="600"></p>
+
+## Preferencias
+
+A partir de este menú se configuran las rutas de los archivos de calibración del equipo. Por otro lado permite
+habilitar o deshabilitar las opciones de _log_ y _debug_.
+
+<p align="center"><img src="../../img/img_preferencias.png" width="600"></p>
 
 ## Terminal de pruebas
 
