@@ -4288,6 +4288,14 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->resetReconstruir();
     }
 
+    // Si parseo sin reconstruir no se como conectar el RAW al amide, asi que te mando a lrpmqtp
+    if (recon_externa->getReconstruir() == 0 && recon_externa->getParsear() && recon_externa->getMostrar())
+    {
+        messageBox.critical(0,"Error","Metodos seleccionados incompatibles.");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
+
 
 
 
@@ -4522,7 +4530,7 @@ void MainWindow::on_pushButton_5_clicked()
 
         recon_externa->Parsear();
 
-        ui->plainTextEdit_Recon_console->appendPlainText("Parseado finalizado.");
+        //ui->plainTextEdit_Recon_console->appendPlainText("Parseado finalizado.");
     }
 
     if (recon_externa->getReconstruir())
@@ -4531,11 +4539,15 @@ void MainWindow::on_pushButton_5_clicked()
         if (recon_externa->getParsear())
         {
             // Y me pongo a esperar...
+            ui->plainTextEdit_Recon_console->appendPlainText("Esperando el fin del Parseado");
             recon_externa->loop_parser.exec();
-            recon_externa->resetParsear();
             // Si me mataron el proceso durante la espera...
             if (recon_externa->getMuerto())
                 return;
+            ui->plainTextEdit_Recon_console->appendPlainText("Parseado finalizado.");
+            recon_externa->resetParsear();
+            // Apago el loop
+            recon_externa->loop_parser.exit();
         }
 
         ui->plainTextEdit_Recon_console->appendPlainText("Reconstruyendo archivo:");
@@ -4545,7 +4557,7 @@ void MainWindow::on_pushButton_5_clicked()
 
         recon_externa->Reconstruir();
 
-        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada.");
+        //ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada.");
 
     }
 
@@ -4556,11 +4568,15 @@ void MainWindow::on_pushButton_5_clicked()
         if (recon_externa->getReconstruir())
         {
             // Y me pongo a esperar...
+            ui->plainTextEdit_Recon_console->appendPlainText("Esperando el fin del la reconstruccion");
             recon_externa->loop_reconstruccion.exec();
-            recon_externa->resetReconstruir();
             // Si me mataron el proceso durante la espera...
             if (recon_externa->getMuerto())
                 return;
+            recon_externa->resetReconstruir();
+            ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada, ¡a mostrar!");
+            // Apago el loop
+            recon_externa->loop_reconstruccion.exit();
         }
 
         ui->plainTextEdit_Recon_console->appendPlainText("Mostrando archivo:");
@@ -4570,7 +4586,7 @@ void MainWindow::on_pushButton_5_clicked()
 
         recon_externa->Mostrar();
 
-        ui->plainTextEdit_Recon_console->appendPlainText("Reconstruccion finalizada.");
+        //ui->plainTextEdit_Recon_console->appendPlainText("Mostrandocion finalizada.");
 
     }
 
