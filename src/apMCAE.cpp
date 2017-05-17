@@ -65,6 +65,7 @@ MCAE::MCAE(size_t timeout)
     Normal_Coin_Mode("333333333"),
     Auto_Coin_Mode("020102121"),
     Head_Coin("7"),
+    Calib_Mode("6411"),
 
     /*Funciones trama PSOC*/
     PSOC_OFF("$SET,STA,OFF"),
@@ -74,17 +75,20 @@ MCAE::MCAE(size_t timeout)
     PSOC_ANS("$OK"),
     PSOC_ADC(5.8823),
     PSOC_SIZE_SENDED("14"),
-    PSOC_SIZE_RECEIVED("0051"),
+    PSOC_SIZE_RECEIVED("0031"),
+    PSOC_SIZE_RECEIVED_ALL("0003"),
 
     /*Funciones trama MCA*/
     AnsMultiInit("@0064310>"),
     AnsHeadInit("@0064020<"),
     BrCst("00"),
+    Init_Calib_MCAE("64"),
     Init_MCA("6401"),
     Data_MCA("65"),
     SetHV_MCA("68"),
     Temp_MCA("74000"),
-    Set_Time_MCA("80")
+    Set_Time_MCA("80"),
+    Rate_MCA("0060")
 {
   /* Testing */
 }
@@ -339,7 +343,7 @@ void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_po
     {
       Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
       throw exception_timeout;
-    }  
+    }
 }
 /**
  * @brief MCAE::portReadCharArray
@@ -781,8 +785,7 @@ void MCAE::setPSOCStream(string function, string psoc_value)
 /**
  * @brief MCAE::convertDoubleToInt
  *
- * Conversión de un valor en _double_ multiplicado por 1000 a _int_
- * double=double*1000;
+ * Conversión de un valor en _double_ a _int_
  * int=(int)round(double)
  *
  * @param value
@@ -791,7 +794,7 @@ void MCAE::setPSOCStream(string function, string psoc_value)
 int MCAE::convertDoubleToInt(double value)
 {
   int value_int;
-  value=value*1000;
+  /** @note: Se elimina esta línea: value=value*1000; Modificado en el firmware de FPGA*/
 
   return value_int=(int)round(value);
 }
@@ -842,10 +845,10 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 
   switch (file) {
     case 1:
-      for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
+      for (int index=0; index < PMTs; index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
       break;
     case 2 ... 3:
-      for (int index=0; index < table.length(); index++)
+      for (int index=0; index < PMTs; index++)
         {
           if(table[index]>=0)
             temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
@@ -969,7 +972,9 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
   setCalibStream(function, table);
-  string size_sended=getGeneric_Sended_Size();
+  int size_calib=(int)(getTrama_Calib().size());
+  if (size_calib > 99) size_calib = 99;
+  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
   string size_received=getGeneric_Received_Size();
   string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
   setTrama_MCAE(stream);
@@ -1009,14 +1014,14 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
  * @param function
  * @param psoc_value_dec
  */
-void MCAE::setPSOCEStream(string function, string psoc_value_dec)
+void MCAE::setPSOCEStream(string function, string size_received, string psoc_value_dec)
 {
   string psoc_value;
   if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
   setPSOCStream(function, psoc_value);
   int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
-  string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
+  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
   setTrama_MCAE(stream);
 }
 /**
@@ -1089,7 +1094,7 @@ string MCAE::getPMTCode(int pmt_dec)
 double MCAE::getPMTTemperature(string temp_stream)
 {
   QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
-  /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @todo : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
+  /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @note : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
   string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
 
   return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
@@ -1291,4 +1296,48 @@ string MCAE::getTemp(string head, string pmt, string port_name)
   msg = readString(delimeter, port_name);
 
   return msg;
+}
+/**
+ * @brief MCAE::parserRateStream
+ *
+ * Método que parsea la trama de recepción de la tasa de adquisición del cabezal
+ *
+ * @param stream
+ * @return _rate_ de adquisición en _vector<int>_
+ */
+vector<int> MCAE::parserRateStream(string stream)
+{
+    QByteArray q_stream(stream.c_str(), stream.length());
+    vector<int> rates(3);
+    rates.at(0)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 6).toStdString())); // Ventana baja
+    rates.at(1)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(11, 6).toStdString())); // Ventana media
+    rates.at(2)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(17, 6).toStdString())); // Ventana alta
+    return rates;
+}
+/**
+ * @brief MCAE::getRate
+ *
+ * Método que obtiene la tasa de adquisición del cabezal
+ *
+ * @param head
+ * @param port_name
+ * @return _rate_ de adquisición en _vector<int>_
+ */
+vector<int> MCAE::getRate(string head, string port_name)
+{
+  setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+  string rate_stream = getMCAFormatStream(getRate_MCA());
+  int size_rate=(int)(rate_stream.size());
+  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
+  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
+  string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
+  setTrama_MCAE(stream);
+
+  char delimeter='\r';
+  string msg;
+
+  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+  msg = readString(delimeter, port_name);
+
+  return parserRateStream(msg);
 }

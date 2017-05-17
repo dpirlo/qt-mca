@@ -36,7 +36,7 @@ using namespace boost::asio;
 using namespace boost::system;
 
 #define DS1820_FACTOR 0.0625
-#define CHANNELS 1024
+#define CHANNELS 256
 #define CHANNELS_PMT 256
 #define SERIAL_PORT_READ_BUF_SIZE 1
 #define PMTs 48
@@ -47,12 +47,14 @@ using namespace boost::system;
 #define PMT_BUFFER_SIZE 2
 #define TIME_BUFFER_SIZE 2
 #define RECEIVED_BUFFER_SIZE 4
+#define RECEIVED_RATE_BUFFER_SIZE 20
 #define SENDED_BUFFER_SIZE 2
 #define CS_BUFFER_SIZE 2
 #define CS_CALIB_BUFFER_SIZE 3
 #define CRLF_SIZE 2
 #define COIN_BUFFER_SIZE 2
 #define COIN_BYTES_ADV 9
+#define MIN_TEMPERATURE 20
 
 /**
  * @brief serial_port_ptr
@@ -78,7 +80,8 @@ namespace ap {
     enum string_code {a,b,c,d,e,f,no_value};
 
   public:
-    MCAE(size_t timeout=1000);
+    /** @note: Se encuentra configurado con un _timeout_ de 150ms por defecto*/
+    MCAE(size_t timeout=150);
     void portReadString(string *msg, char delimeter, const char *tty_port_name);
     void portReadBufferString(string *msg, int buffer_size, const char *tty_port_name);
     size_t portWrite(string *msg, const char *tty_port_name);
@@ -93,13 +96,14 @@ namespace ap {
     void setMCAEStream(string pmt_dec, string function, double time);
     void setMCAEStream(string function, QVector<double> table);
     void setMCAEStream(string function, string data_one, string data_two="", bool time=false);
-    void setPSOCEStream(string function, string psoc_value_dec="");
+    void setPSOCEStream(string function, string size_received, string psoc_value_dec="");
     bool verifyMCAEStream(string data_received, string data_to_compare);
     string getMCA(string pmt, string function, string head, int channels, string port_name);
     string setHV(string head, string pmt, string channel_dec, string port_name);
     string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
     string setTime(string head, double time_value, string pmt, string port_name);
     string getTemp(string head, string pmt, string port_name);
+    vector<int> getRate(string head, string port_name);
     QVector<QString> parserPSOCStream(string stream);
     double getPMTTemperature(string temp_stream);
     bool isPortOpen();
@@ -140,6 +144,7 @@ namespace ap {
     string convertDecToHexUpper(int dec_number);
     string getCalibTableFormat(string function, QVector<double> table);
     int convertDoubleToInt(double value);
+    vector<int> parserRateStream(string stream);
     string convertToTwoComplement(double value, int two_complement_bits=10);
     string convertToTwoComplement(int value, int two_complement_bits=8);
     QByteArray getReverse(QByteArray seq);
@@ -178,12 +183,12 @@ namespace ap {
 
   private:
     string FunCHead, FunCSP3, FunCPSOC, BrCst;
-    string Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA;
+    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
-    string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED;
+    string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED, PSOC_SIZE_RECEIVED_ALL;
     string Energy_Calib_Table, X_Calib_Table, Y_Calib_Table, Window_Limits_Table;
-    string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin;
+    string Init_Coin, Window_Time_Coin, Select_Mode_Coin, Head_Coin, Calib_Mode;
     string Auto_Coin_Mode, Normal_Coin_Mode;
     string Generic_Received_Size, Generic_Sended_Size;
     double PSOC_ADC;
@@ -333,6 +338,11 @@ namespace ap {
          */
     string getHead_Coin() const { return Head_Coin; }
     /**
+         * @brief getCalib_Mode
+         * @return Calib_Mode
+         */
+    string getCalib_Mode() const { return Calib_Mode; }
+    /**
          * @brief getPSOC_OFF
          * @return PSOC_OFF
          */
@@ -368,15 +378,30 @@ namespace ap {
          */
     string getPSOC_SIZE_RECEIVED() const { return PSOC_SIZE_RECEIVED; }
     /**
+         * @brief getPSOC_SIZE_RECEIVED_ALL
+         * @return
+         */
+    string getPSOC_SIZE_RECEIVED_ALL() const { return PSOC_SIZE_RECEIVED_ALL; }
+    /**
          * @brief getPSOC_ADC
          * @return PSOC_ADC
          */
     double getPSOC_ADC() const { return PSOC_ADC; }
     /**
+         * @brief getInit_Calib_MCAE
+         * @return Init_Calib_MCAE
+         */
+    string getInit_Calib_MCAE() const { return Init_Calib_MCAE; }
+    /**
          * @brief getInit_MCA
          * @return Init_MCA
          */
     string getInit_MCA() const { return Init_MCA; }
+    /**
+         * @brief getRate_MCA
+         * @return
+         */
+    string getRate_MCA() const { return Rate_MCA; }
     /**
          * @brief getData_MCA
          * @return Data_MCA
