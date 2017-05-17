@@ -695,8 +695,8 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
     stream<<"FWHM sin Calibrar: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
     stream<<"   Datos pico: "<<endl;
-    stream<<"   FWTM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
-    stream<<"   FWHM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
+    stream<<"   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
+    stream<<"   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
     stream<<"   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Crudo_Vec ="<<guardar_vector_stream(vec_log)<<endl;
@@ -1028,8 +1028,8 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
     stream<<"FWHM pre calibrado: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
     stream<<"   Datos pico: "<<endl;
-    stream<<"   FWTM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
-    stream<<"   FWHM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
+    stream<<"   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
+    stream<<"   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
     stream<<"   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Pre_Cal_Vec ="<<guardar_vector_stream(vec_log)<<endl;
@@ -2382,12 +2382,12 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
 
     QFile file(nombre_inter_cab);
 
-    if (file.open(QIODevice::ReadWrite))
+    if (file.open(QIODevice::ReadWrite|QIODevice::Truncate))
     {
         QTextStream filestream(&file);
         for (int i = 0 ; i < CANTIDADdEcABEZALES ; i++)
         {
-            filestream << Ci[i]  << endl;
+            filestream << round(Ci[i])  << endl;
         }
     }
 
@@ -3326,12 +3326,12 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         QFile file(nombre_ener);
 
-        if (file.open(QIODevice::ReadWrite))
+        if (file.open(QIODevice::ReadWrite|QFile::Truncate))
         {
             QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
-                filestream << Ce[cab_num_act][i]  << endl;
+                filestream << round(Ce[cab_num_act][i]*1000)  << endl;
             }
         }
 
@@ -3344,7 +3344,7 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         QFile file(nombre_tiempo);
 
-        if (file.open(QIODevice::ReadWrite))
+        if (file.open(QIODevice::ReadWrite|QFile::Truncate))
         {
             QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
@@ -3362,7 +3362,7 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         QFile file_x(nombre_pos_x);
 
-        if (file_x.open(QIODevice::ReadWrite))
+        if (file_x.open(QIODevice::ReadWrite|QFile::Truncate))
         {
             QTextStream filestream(&file_x);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
@@ -3379,7 +3379,7 @@ void AutoCalib::guardar_tablas(int cab_num_act, bool* tipo)
 
         QFile file_y(nombre_pos_y);
 
-        if (file_y.open(QIODevice::ReadWrite))
+        if (file_y.open(QIODevice::ReadWrite|QFile::Truncate))
         {
             QTextStream filestream(&file_y);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
@@ -3423,12 +3423,12 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
 
         QFile file(nombre_ener);
 
-        if (file.open(QIODevice::ReadOnly))
+        if (file.open(QIODevice::ReadOnly|QFile::Truncate))
         {
             QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
             {
-                Ce[cab_num_act][i] = filestream.readLine().toDouble();
+                Ce[cab_num_act][i] = filestream.readLine().toDouble()/1000;
             }
         }
         else
@@ -3445,7 +3445,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
 
         QFile file(nombre_tiempo);
 
-        if (file.open(QIODevice::ReadOnly))
+        if (file.open(QIODevice::ReadOnly|QFile::Truncate))
         {
             QTextStream filestream(&file);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
@@ -3468,7 +3468,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
 
         QFile file_x(nombre_pos_x);
 
-        if (file_x.open(QIODevice::ReadOnly))
+        if (file_x.open(QIODevice::ReadOnly|QFile::Truncate))
         {
             QTextStream filestream(&file_x);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)
@@ -3486,7 +3486,7 @@ void AutoCalib::cargar_tablas(int cab_num_act, bool* tipo)
 
         QFile file_y(nombre_pos_y);
 
-        if (file_y.open(QIODevice::ReadOnly))
+        if (file_y.open(QIODevice::ReadOnly|QFile::Truncate))
         {
             QTextStream filestream(&file_y);
             for (int i = 0 ; i < CANTIDADdEpMTS ; i++)

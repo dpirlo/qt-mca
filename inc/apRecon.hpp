@@ -12,11 +12,11 @@
 
 #define     EMIN_BASE               0
 #define     EMAX_BASE               10000
-#define     CANTANILLOS_BASE        41
+#define     CANTANILLOS_BASE        164
 #define     SPAM_BASE               7
-#define     MAXDIFANILLOS_BASE      40
-#define     CANTANGULOS_BASE        248
-#define     CANTRHOS_BASE           192
+#define     MAXDIFANILLOS_BASE      82
+#define     CANTANGULOS_BASE        496
+#define     CANTRHOS_BASE           384
 #define     MAXRHO_BASE             500
 #define     MAXZ_BASE               200
 

@@ -91,14 +91,21 @@ bool Reconstructor::SetearListasProcesos()
     programas = new QString[limite_ejecucion];
     listasparametros = new QStringList[limite_ejecucion];
 
+
 }
 
 bool Reconstructor::ResetearListasProcesos()
 {
 
+    // Seteo el flag de muerto
+    muerto = 1;
+    // Mato el proceso
+    proceso->kill();
+    muerto = 0;
     limite_ejecucion = 0;
     indice_armado_cola = 0;
     indice_ejecucion = 0;
+
     //delete(programas);
     //delete(listasparametros);
 
@@ -599,11 +606,13 @@ bool Reconstructor::matar_procesos()
     // Seteo el flag de muerto
     muerto = 1;
 
+    // Mato el proceso
+    proceso->kill();
+
     // Reseteo la lista de ejecucion
     ResetearListasProcesos();
 
-    // Mato el proceso
-    proceso->kill();
+
 }
 
 //---CALLBACKS
@@ -611,22 +620,26 @@ bool Reconstructor::matar_procesos()
 void Reconstructor::on_procesoExit(int flag_exit, QProcess::ExitStatus qt_exit)
 {
     // Si llegue acá es porque finalizó algun programa, mando el proximo de la lista
-    // si no es que ya estoy en el ultimo
+    // si no es que ya estoy en el ultimo o esta muerto
     indice_ejecucion++;
-    if (indice_ejecucion < limite_ejecucion)
-        proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
-    else
+    if (!muerto)
     {
-        // Si estoy parseando y termine todo, emito la señal para desbloquear otros procesos
-        if(parsear)
-            emit signal_finParser();
-        // Si estoy reconstruyendo, emito el final de la reconstruccion
-        else if(reconstruir)
-            emit signal_finReconstruccion();
+        if (indice_ejecucion < limite_ejecucion)
+            proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
+        else
+        {
+            // Si estoy parseando y termine todo, emito la señal para desbloquear otros procesos
+            if(parsear)
+                emit signal_finParser();
+            // Si estoy reconstruyendo, emito el final de la reconstruccion
+            else if(reconstruir)
+                emit signal_finReconstruccion();
 
-        // Reseteo la lista de procesos
-        ResetearListasProcesos();
+            // Reseteo la lista de procesos
+            ResetearListasProcesos();
+        }
     }
+
 
 }
 
