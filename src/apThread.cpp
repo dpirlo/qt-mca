@@ -16,6 +16,7 @@ using namespace ap;
  * @note Se documentan las propiedades más importantes.
  *
  * @param _arpet
+ * @param _mutex
  * @param parent
  */
 Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
