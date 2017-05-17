@@ -75,7 +75,8 @@ MCAE::MCAE(size_t timeout)
     PSOC_ANS("$OK"),
     PSOC_ADC(5.8823),
     PSOC_SIZE_SENDED("14"),
-    PSOC_SIZE_RECEIVED("0051"),
+    PSOC_SIZE_RECEIVED("0031"),
+    PSOC_SIZE_RECEIVED_ALL("0003"),
 
     /*Funciones trama MCA*/
     AnsMultiInit("@0064310>"),
@@ -89,7 +90,7 @@ MCAE::MCAE(size_t timeout)
     Set_Time_MCA("80"),
     Rate_MCA("0060")
 {
-  /* Testing */    
+  /* Testing */
 }
 /**
  * @brief MCAE::~MCAE
@@ -342,7 +343,7 @@ void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_po
     {
       Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
       throw exception_timeout;
-    }  
+    }
 }
 /**
  * @brief MCAE::portReadCharArray
@@ -844,10 +845,10 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
 
   switch (file) {
     case 1:
-      for (int index=0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
+      for (int index=0; index < PMTs; index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
       break;
     case 2 ... 3:
-      for (int index=0; index < table.length(); index++)
+      for (int index=0; index < PMTs; index++)
         {
           if(table[index]>=0)
             temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
@@ -971,7 +972,9 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
   setCalibStream(function, table);
-  string size_sended=getGeneric_Sended_Size();
+  int size_calib=(int)(getTrama_Calib().size());
+  if (size_calib > 99) size_calib = 99;
+  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
   string size_received=getGeneric_Received_Size();
   string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
   setTrama_MCAE(stream);
@@ -1011,14 +1014,14 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
  * @param function
  * @param psoc_value_dec
  */
-void MCAE::setPSOCEStream(string function, string psoc_value_dec)
+void MCAE::setPSOCEStream(string function, string size_received, string psoc_value_dec)
 {
   string psoc_value;
   if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
   setPSOCStream(function, psoc_value);
   int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
-  string stream=getHeader_MCAE()+size_sended+getPSOC_SIZE_RECEIVED()+getTrama_PSOC();
+  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
   setTrama_MCAE(stream);
 }
 /**
@@ -1323,11 +1326,12 @@ vector<int> MCAE::parserRateStream(string stream)
 vector<int> MCAE::getRate(string head, string port_name)
 {
   setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
-  int size_rate=(int)(getRate_MCA().size());
+  string rate_stream = getMCAFormatStream(getRate_MCA());
+  int size_rate=(int)(rate_stream.size());
   string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
   string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
-  string stream = getHeader_MCAE() + size_sended + size_received + getMCAFormatStream(getRate_MCA());
-  setTrama_MCAE(stream);  
+  string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
+  setTrama_MCAE(stream);
 
   char delimeter='\r';
   string msg;

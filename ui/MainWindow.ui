@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>6</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -757,7 +757,7 @@
         <rect>
          <x>250</x>
          <y>8</y>
-         <width>101</width>
+         <width>121</width>
          <height>27</height>
         </rect>
        </property>
@@ -1010,6 +1010,11 @@
        <item>
         <property name="text">
          <string>Multicabezal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Todos</string>
         </property>
        </item>
       </widget>
@@ -2107,8 +2112,8 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>156</x>
-         <y>99</y>
+         <x>150</x>
+         <y>100</y>
          <width>51</width>
          <height>29</height>
         </rect>
@@ -2153,15 +2158,24 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>67</x>
-         <y>86</y>
+         <x>49</x>
+         <y>87</y>
          <width>101</width>
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>Cabezal a 
 calibrar</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <zorder>frame_adquire_advance_mode</zorder>
@@ -3206,7 +3220,7 @@ calibrar</string>
         <x>820</x>
         <y>151</y>
         <width>181</width>
-        <height>161</height>
+        <height>121</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3239,7 +3253,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>17</x>
-         <y>132</y>
+         <y>92</y>
          <width>151</width>
          <height>21</height>
         </rect>
@@ -3251,9 +3265,9 @@ calibrar</string>
       <widget class="QLineEdit" name="lineEdit_hv_value">
        <property name="geometry">
         <rect>
-         <x>57</x>
+         <x>45</x>
          <y>9</y>
-         <width>81</width>
+         <width>101</width>
          <height>33</height>
         </rect>
        </property>
@@ -3262,7 +3276,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>17</x>
-         <y>92</y>
+         <y>52</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3281,7 +3295,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>67</x>
-         <y>92</y>
+         <y>52</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3300,7 +3314,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>117</x>
-         <y>92</y>
+         <y>52</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3319,7 +3333,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>17</x>
-         <y>112</y>
+         <y>72</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3338,7 +3352,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>67</x>
-         <y>112</y>
+         <y>72</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3357,7 +3371,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>117</x>
-         <y>112</y>
+         <y>72</y>
          <width>50</width>
          <height>20</height>
         </rect>
@@ -3370,29 +3384,6 @@ calibrar</string>
        </property>
        <property name="text">
         <string>+50</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_pmt">
-       <property name="geometry">
-        <rect>
-         <x>82</x>
-         <y>52</y>
-         <width>61</width>
-         <height>31</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_38">
-       <property name="geometry">
-        <rect>
-         <x>34</x>
-         <y>58</y>
-         <width>41</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>PMT</string>
        </property>
       </widget>
      </widget>
@@ -3503,6 +3494,11 @@ calibrar</string>
         <string>Multicabezal</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>Todos</string>
+       </property>
+      </item>
      </widget>
      <widget class="QComboBox" name="comboBox_head_select_graph">
       <property name="enabled">
@@ -3554,9 +3550,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>820</x>
-        <y>315</y>
+        <y>275</y>
         <width>181</width>
-        <height>141</height>
+        <height>181</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3589,7 +3585,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>101</y>
+         <y>143</y>
          <width>161</width>
          <height>31</height>
         </rect>
@@ -3597,12 +3593,15 @@ calibrar</string>
        <property name="text">
         <string>Iniciar</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QCheckBox" name="checkBox_temp">
        <property name="geometry">
         <rect>
          <x>19</x>
-         <y>29</y>
+         <y>28</y>
          <width>71</width>
          <height>26</height>
         </rect>
@@ -3610,12 +3609,15 @@ calibrar</string>
        <property name="text">
         <string>Temp</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QCheckBox" name="checkBox_tasa">
        <property name="geometry">
         <rect>
          <x>94</x>
-         <y>29</y>
+         <y>28</y>
          <width>71</width>
          <height>26</height>
         </rect>
@@ -3623,31 +3625,56 @@ calibrar</string>
        <property name="text">
         <string>Tasa</string>
        </property>
-      </widget>
-      <widget class="QLabel" name="label_103">
-       <property name="geometry">
-        <rect>
-         <x>11</x>
-         <y>53</y>
-         <width>61</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Tiempo:</string>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QLabel" name="label_elapsed_time">
        <property name="geometry">
         <rect>
-         <x>11</x>
-         <y>70</y>
+         <x>10</x>
+         <y>107</y>
          <width>161</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
         <string/>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_between_logs">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>62</y>
+         <width>61</width>
+         <height>33</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_38">
+       <property name="geometry">
+        <rect>
+         <x>1</x>
+         <y>58</y>
+         <width>101</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tiempo entre 
+ logs (en seg.)</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </widget>
@@ -3802,9 +3829,9 @@ calibrar</string>
      <widget class="QLabel" name="label_30">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>34</x>
         <y>10</y>
-        <width>111</width>
+        <width>181</width>
         <height>21</height>
        </rect>
       </property>
@@ -3830,7 +3857,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3850,7 +3877,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3916,7 +3943,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3941,10 +3968,10 @@ calibrar</string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>683</x>
-        <y>48</y>
-        <width>724</width>
-        <height>194</height>
+        <x>681</x>
+        <y>46</y>
+        <width>311</width>
+        <height>181</height>
        </rect>
       </property>
       <property name="font">
