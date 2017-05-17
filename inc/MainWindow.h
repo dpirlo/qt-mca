@@ -236,7 +236,7 @@ private:
     void setPreferencesConfiguration();
     void getPreferencesSettingsFile();
     void setPreferencesSettingsFile(QString folder, QString variable, QString value);
-    void setLabelState(bool state, QLabel *label);
+    void setLabelState(bool state, QLabel *label, bool error=false);
     void setTextBrowserState(bool state, QTextBrowser *tbro);
     void setButtonState(bool state, QPushButton * button, bool disable=false);
     void setButtonAdquireState(bool state, bool disable=false);

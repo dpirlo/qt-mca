@@ -66,6 +66,8 @@ void Thread::getLogWork()
         cout<<"Comienza el log cada "<<time_sec<<" segundos"<<endl;
     }
 
+    int try_error_count = 0;
+
     while(!_abort)
     {
         vector<int> rates(3);
@@ -110,9 +112,21 @@ void Thread::getLogWork()
           }
           catch (Exceptions &ex)
           {
-              if (debug) cout<<"Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo. Error: "<<ex.excdesc<<endl;
+                try_error_count++;
+                if (debug)
+                {
+                    cout<<"Imposible adquirir los valores de tasa y/o temperatura en el cabezal "<<head_index<<". Error: "<<ex.excdesc<<endl;
+                    cout<<"Se continua con el proceso de logueo."<<endl;
+                }
+          }
+          if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
+          {
+              if (debug)
+              {
+                  cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
+              }
+              setAbortBool(false);
               emit sendErrorCommand();
-              setAbortBool(true);              
           }
        }
 

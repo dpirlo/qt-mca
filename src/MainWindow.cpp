@@ -701,6 +701,8 @@ void MainWindow::getHeadStatus(int head_index)
 {
     writeFooterAndHeaderDebug(true);
 
+    mMutex.lock();
+
     if(!arpet->isPortOpen())
     {
         QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
@@ -735,6 +737,7 @@ void MainWindow::getHeadStatus(int head_index)
     catch(Exceptions & ex)
     {
         if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;        
+        setLabelState(true, hv_status_table[head_index-1], true);
     }
     writeFooterAndHeaderDebug(false);
 
@@ -1000,7 +1003,6 @@ void MainWindow::on_pushButton_initialize_clicked()
        catch(Exceptions & ex)
        {
            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-           QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
        }
 
        /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
@@ -1016,7 +1018,7 @@ void MainWindow::on_pushButton_initialize_clicked()
        catch(Exceptions & ex)
        {
          if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+         setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1], true);
        }
    }
    writeFooterAndHeaderDebug(false);
@@ -2761,7 +2763,7 @@ void MainWindow::getPaths()
  * @param state
  * @param label
  */
-void MainWindow::setLabelState(bool state, QLabel *label)
+void MainWindow::setLabelState(bool state, QLabel *label, bool error)
 {
     QPalette palette;
 
@@ -2774,6 +2776,11 @@ void MainWindow::setLabelState(bool state, QLabel *label)
     {
         palette.setColor(QPalette::Background,Qt::red);
         label->setPalette(palette);
+    }
+
+    if(error)
+    {
+        label->setText("Error");
     }
 }
 /**
