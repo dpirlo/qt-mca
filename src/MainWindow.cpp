@@ -735,7 +735,7 @@ void MainWindow::getHeadStatus(int head_index)
     catch(Exceptions & ex)
     {
         if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;        
-        setLabelState(true, hv_status_table[head_index-1], true);
+        setLabelState(false, hv_status_table[head_index-1], true);
     }
     writeFooterAndHeaderDebug(false);
 
@@ -1016,7 +1016,7 @@ void MainWindow::on_pushButton_initialize_clicked()
        catch(Exceptions & ex)
        {
          if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-         setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1], true);
+         setLabelState(false, hv_status_table[head_index-1], true);
        }
    }
    writeFooterAndHeaderDebug(false);
@@ -2776,8 +2776,10 @@ void MainWindow::setLabelState(bool state, QLabel *label, bool error)
         label->setPalette(palette);
     }
 
-    if(error)
+    if(!state && error)
     {
+        palette.setColor(QPalette::Background,Qt::gray);
+        label->setPalette(palette);
         label->setText("Error");
     }
 }
