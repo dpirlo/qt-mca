@@ -699,9 +699,7 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus(int head_index)
 {
-    writeFooterAndHeaderDebug(true);
-
-    mMutex.lock();
+    writeFooterAndHeaderDebug(true);   
 
     if(!arpet->isPortOpen())
     {
