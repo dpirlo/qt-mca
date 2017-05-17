@@ -71,7 +71,7 @@ void Thread::getLogWork()
         vector<int> rates(3);
         double tempe;
 
-        mutex->lock();
+        mutex->lock();          
 
         for (int i=0;i<checkedHeads.length();i++)
         {
@@ -112,8 +112,7 @@ void Thread::getLogWork()
           {
               if (debug) cout<<"Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo. Error: "<<ex.excdesc<<endl;
               emit sendErrorCommand();
-              setAbortBool(true);
-              //mutex->unlock();
+              setAbortBool(true);              
           }
        }
 

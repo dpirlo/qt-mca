@@ -734,8 +734,7 @@ void MainWindow::getHeadStatus(int head_index)
     }
     catch(Exceptions & ex)
     {
-        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;        
     }
     writeFooterAndHeaderDebug(false);
 
@@ -1141,7 +1140,6 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     {
       showMCAEStreamDebugMode(msg);
       writeFooterAndHeaderDebug(false);
-
     }
 }
 /**
@@ -1856,6 +1854,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
     catch(Exceptions & ex)
     {
         Exceptions exception_mca(ex.excdesc);
+        mMutex.unlock();
         throw exception_mca;
     }
 

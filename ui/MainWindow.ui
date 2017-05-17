@@ -3829,9 +3829,9 @@ calibrar</string>
      <widget class="QLabel" name="label_30">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>34</x>
         <y>10</y>
-        <width>111</width>
+        <width>181</width>
         <height>21</height>
        </rect>
       </property>
@@ -3857,7 +3857,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3877,7 +3877,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3943,7 +3943,7 @@ calibrar</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -3968,8 +3968,8 @@ calibrar</string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>685</x>
-        <y>44</y>
+        <x>684</x>
+        <y>45</y>
         <width>311</width>
         <height>181</height>
        </rect>
