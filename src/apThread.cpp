@@ -76,19 +76,14 @@ void Thread::getLogWork()
 
         mutex->lock();
 
+
         for (int i=0;i<checkedHeads.length();i++)
         {
-         try
-         {
+            try
+            {
                 head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
 
-                if(rate)
-                {
-                    rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
-                    emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
-                    if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
-                }
                 emit startElapsedTime();
 
                 QVector<double> temp_vec;
@@ -97,20 +92,25 @@ void Thread::getLogWork()
                 {
                     for(int pmt = 0; pmt < PMTs; pmt++)
                     {
-                     {
                         string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
                         if (debug) cout<<"PMT: "<<QString::number(pmt+1).toStdString()<<" | "<<msg<<" | "<<arpet->getTrama_MCAE()<<endl;
                         tempe = arpet->getPMTTemperature(msg);
                         if (tempe > MIN_TEMPERATURE) temp_vec.push_back(tempe);
                     }
-              }
-              double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
-              double t_max = *max_element(temp_vec.begin(),temp_vec.end());
-              double t_min = *min_element(temp_vec.begin(),temp_vec.end());
-              emit sendTempValues(head_index, t_min, mean, t_max);
-              if (debug) cout<<"Temperaturas | Mínima: "<<QString::number(t_min).toStdString()<<" | Media: "<<QString::number(mean).toStdString()<<" | Máxima: "<<QString::number(t_max).toStdString()<<endl;
+                    double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
+                    double t_max = *max_element(temp_vec.begin(),temp_vec.end());
+                    double t_min = *min_element(temp_vec.begin(),temp_vec.end());
+                    emit sendTempValues(head_index, t_min, mean, t_max);
+                    if (debug) cout<<"Temperaturas | Mínima: "<<QString::number(t_min).toStdString()<<" | Media: "<<QString::number(mean).toStdString()<<" | Máxima: "<<QString::number(t_max).toStdString()<<endl;
+                }
+
+                if(rate)
+                {
+                    rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
+                    emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
+                    if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
+                }
             }
-          }
           catch (Exceptions &ex)
           {
                 try_error_count++;
