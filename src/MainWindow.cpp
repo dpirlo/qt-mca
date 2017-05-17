@@ -3805,6 +3805,7 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
  */
 void MainWindow::on_pushButton_clicked()
 {
+    mMutex.lock();
     QList<int> checked_PMTs, checked_Cab;
     QMessageBox messageBox;
 
@@ -3899,7 +3900,7 @@ void MainWindow::on_pushButton_clicked()
     // Devuelvo serial a arpet
     //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
-
+    mMutex.unlock();
 }
 
 
