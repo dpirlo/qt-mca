@@ -119,17 +119,17 @@ void Thread::getLogWork()
                     cout<<"Imposible adquirir los valores de tasa y/o temperatura en el cabezal "<<head_index<<". Error: "<<ex.excdesc<<endl;
                     cout<<"Se continua con el proceso de logueo."<<endl;
                 }
-          }
 
-          if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
-          {
-              if (debug)
-              {
-                  cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
-              }
-              setAbortBool(true);
-              emit sendErrorCommand();
-          }
+                if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
+                {
+                    if (debug)
+                    {
+                        cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
+                    }
+                    emit sendErrorCommand();
+                    setAbortBool(true);
+                }
+          }          
        }
 
        mutex->unlock();

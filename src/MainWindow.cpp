@@ -282,7 +282,7 @@ void MainWindow::getErrorThread()
 {
   setButtonLoggerState(false);
   ui->pushButton_logguer->setChecked(false);
-  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));  
+  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -699,7 +699,7 @@ void MainWindow::getARPETStatus()
  */
 void MainWindow::getHeadStatus(int head_index)
 {
-    writeFooterAndHeaderDebug(true);   
+    writeFooterAndHeaderDebug(true);
 
     if(!arpet->isPortOpen())
     {
@@ -734,7 +734,7 @@ void MainWindow::getHeadStatus(int head_index)
     }
     catch(Exceptions & ex)
     {
-        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;        
+        if(debug) cout<<"Hubo un inconveniente al intentar acceder al estado de la placa PSOC del cabezal. Revise la conexión. Error: "<<ex.excdesc<<endl;
         setLabelState(false, hv_status_table[head_index-1], true);
     }
     writeFooterAndHeaderDebug(false);
@@ -1767,8 +1767,7 @@ QString MainWindow::getHeadMCA(QString head)
     try
     {
         setButtonAdquireState(true);
-        msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
-        if(debug) showMCAEStreamDebugMode(msg.toStdString());
+        msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);        
         addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[head.toInt()-1]);
     }
     catch(Exceptions & ex)
@@ -1870,6 +1869,7 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
     if (multimode)
     {
         vector<int> rates = arpet->getRate(head, port_name.toStdString());
+        if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
         ui->label_title_output->setText("MCA Extended");
         ui->label_data_output->setText("Tasas: " + QString::number(rates.at(0)) + "," + QString::number(rates.at(1)) + "," + QString::number(rates.at(2)) +" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
     }
