@@ -51,6 +51,7 @@
 #define COIN_AUTOCOINCIDENCE 1
 #define COIN_AVANCED 2
 #define COIN_CALIB 3
+#define WAIT_MICROSECONDS 100000
 
 using namespace ap;
 
@@ -208,7 +209,7 @@ private slots:
     void on_pushButton_INTERFILES_3_clicked();
     void on_checkBox_MLEM_clicked(bool checked);
     void on_checkBox_Backprojection_clicked(bool checked);
-    void on_pushButton_6_clicked();    
+    void on_pushButton_6_clicked();
 
     /* Buttons de prueba/testing */
 
@@ -322,7 +323,7 @@ private:
     /* Area de prueba/testing */
 
 
-public:    
+public:
     /**
      * @brief getPreferencesDir
      */

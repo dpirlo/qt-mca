@@ -715,8 +715,8 @@ void MainWindow::getHeadStatus(int head_index)
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
     /* Inicialización del Cabezal */
-    initHead(head_index);
     initSP3(head_index);
+    initHead(head_index);
 
     string msg;
     QVector<QString> ans_psoc;
@@ -1350,6 +1350,8 @@ string MainWindow::initHead(int head)
     }
     catch(Exceptions & ex)
     {
+        /*  @note : Ver time_out interno de planar con Fede y Mati */
+        usleep(WAIT_MICROSECONDS);
         if (debug) cout<<"No se puede/n inicializar el/los cabezal/es seleccionado/s. Error: "<<ex.excdesc<<endl;
     }
     if (debug)
@@ -1381,6 +1383,8 @@ string MainWindow::initSP3(int head)
    }
    catch(Exceptions & ex)
    {
+       /*  @note : Ver time_out interno de planar con Fede y Mati */
+       usleep(WAIT_MICROSECONDS);
        if (debug) cout<<"No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Error: "<<ex.excdesc<<endl;
    }
    if (debug)
@@ -1767,7 +1771,7 @@ QString MainWindow::getHeadMCA(QString head)
     try
     {
         setButtonAdquireState(true);
-        msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);        
+        msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[head.toInt()-1]);
     }
     catch(Exceptions & ex)
