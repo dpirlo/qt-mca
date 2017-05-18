@@ -51,7 +51,7 @@
 #define COIN_AUTOCOINCIDENCE 1
 #define COIN_AVANCED 2
 #define COIN_CALIB 3
-#define WAIT_MICROSECONDS 100000
+#define WAIT_MICROSECONDS 1000000
 
 using namespace ap;
 
