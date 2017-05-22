@@ -423,7 +423,7 @@ bool Reconstructor::Reconstruir()
         // Armo la linea al programa
         programas[indice_armado_cola] = "scp";
         // Armo los argumentos
-        listasparametros[indice_armado_cola].append(arch_recon);
+        listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".h33");
         listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
         indice_armado_cola++;
 
@@ -441,7 +441,7 @@ bool Reconstructor::Reconstruir()
         // Armo la linea al programa
         programas[indice_armado_cola] = "scp";
         // Armo los argumentos
-        listasparametros[indice_armado_cola].append(arch_ini);
+        listasparametros[indice_armado_cola].append(path_Salida+nombre_sens_ini+".h33");
         listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
         indice_armado_cola++;
 
