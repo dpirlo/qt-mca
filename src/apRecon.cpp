@@ -115,85 +115,115 @@ bool Reconstructor::ResetearListasProcesos()
 bool Reconstructor::Parsear()
 {
 
-    // Voy cargando la lista
+    // Con el nuevo parseador del Doctor, se usa solo una instrucción (Si usted logra compilarlo)
 
-    //  ----- Paso 1, parseo
+    // Primero armo el archivo de parametros
+    QString nombre_archivo_parametros;
+    QTextStream stream_par;
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    nombre_archivo_parametros = path_Salida+Nombre_archivo+".ini";
+
+    QFile file(nombre_archivo_parametros);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+    {
+        consola->appendPlainText("Error al abrir/crear archivo de parametros de parseo");
+        return -1;
+    }
+
+    stream_par.setDevice(&file);
+
+    stream_par<<"; Archivo de parametros generado automaticamente por el AR-PET-Tec. Fecha: "<< asctime(timeinfo) <<endl;
+
+    // Escribo el método del doctor, no se que hace acá
+    stream_par<<"[MLEM]"<<endl;
+    // Y el resto de sus definiciones, que como por el momento no hay definición de su archivo de reconstruccion
+    // se generan con valores HARDCODEADOS D=
+    stream_par<<"\t Tamano_Voxel_X = "<< 2.0 <<endl;
+    stream_par<<"\t Tamano_Voxel_Y = "<< 2.0 <<endl;
+    stream_par<<"\t Tamano_Voxel_Z = "<< 2.0 <<endl;
+    stream_par<<"\t Cantidad_Voxeles_X = "<<200<<endl;
+    stream_par<<"\t Cantidad_Voxeles_Y = "<<200<<endl;
+    stream_par<<"\t Cantidad_Voxeles_Z = "<<200<<endl;
+
+    // Este si lo tengo =D
+    stream_par<<"\t Cantidad_Ciclos_MLEM="<<iteraciones<<endl;
+
+    // Supongo q son las salidas de la reconstrucción, las harcodeo
+    stream_par<<"\t Cantidad_Lors=18000000"<<endl;
+    stream_par<<"\t Archivo_Lors=No_debo_mezclar_los_archivos_de_parametros.lor"<<endl;
+    stream_par<<"\t Base_Archivos_Salida= No_debo_mezclar_los_archivos_de_parametros"<<endl;
+
+
+    // Ahora esta parte parece ser lo que si nos importa
+
+    // Con lo de abajo inicio la seccion donde van los campos para este programa
+    // Al estar todo dentro de una sección, se puede utilizar el mismo archivo de configuración
+    // para cada etapa del procesamiento
+    stream_par<<"[PROCESAMIENTO TRAMA]"<<endl;
+    // Archivo de entrada:
+    stream_par<<"\t Archivo_Trama = "<<arch_recon<<endl;
+    // Archivos de salidas (puedo obviar uno o los dos comentando la linea):
+    stream_par<<"\t Archivo_Lors_Normalizadas = "<<path_Salida+Nombre_archivo+".lor"<<endl;
+    //Archivo_Trama_Interpretada = Patron_Cobre_cat_2.dat
+    stream_par<<"\t Base_Archivos_Interfile = "<<path_Salida+Nombre_archivo<<endl;
+    stream_par<<"\t [[FILTROS]]"<<endl;
+    stream_par<<"\t\t E_Min = "<<Emin<<endl;
+    stream_par<<"\t\t E_Max = "<<Emax<<endl;
+    stream_par<<"\t\t Zona_Muerta = "<<zona_muerta<<endl;
+    stream_par<<"\t\t Delta_Detector = "<<Min_dif_cab<<endl;
+    stream_par<<"\t [[ESTADISTICAS]]"<<endl;
+    stream_par<<"\t\t guardar_tablas_de_estadistica=si"<<endl;
+    stream_par<<"\t\t graficar_tablas_de_estadistica=si"<<endl;
+    // Esta es la base de los archivos de estadistica, si no se indica se usara
+    // el archivo de entrada como base (sacando los últimos 4 caracteres):
+    stream_par<<"\t\t Base_Archivos_Estadisticas = "<<path_Salida+Nombre_archivo<<"_log_est"<<endl;
+    stream_par<<"\t\t Bines_Energia = "<< EST_BINES_ENERGIA <<endl;
+    stream_par<<"\t\t Ancho_Bin_Energia = "<< EST_ANCHO_BIN_ENERGIA <<endl;
+    stream_par<<"\t\t Bines_Tiempo = "<< EST_BINES_TIEMPO <<endl;
+    stream_par<<"\t\t Ancho_Bin_Tiempo = "<< EST_ANCHO_BIN_TIEMPO <<endl;
+    stream_par<<"\t\t Bines_Espacial_X = "<< EST_BINES_ESPACIAL_X <<endl;
+    stream_par<<"\t\t Bines_Espacial_Y = "<< EST_BINES_ESPACIAL_Y <<endl;
+    stream_par<<"\t\t Ancho_Bin_Espacial = "<< EST_ANCHO_BIN_ESPACIALES<<endl;
+
+
+    // Esta subseccion tiene parámetros que solo tienen interés si se pide las
+    // Lors normalizadas para que sirva de entrada a la reconstruccion via mlem en modo lista
+    // esto requiere filtrar las Lors que no pasen por el FOV y además representa las rectas
+    // de la Lor de forma que el origen de la recta es una interseccion con el FOV y la pendiente
+    // es tal que si r=origen+pendiente*a   a=1 en el otro cruce con el borde del FOV
+    // => Requiere definir el FOV:
+    stream_par<<"\t\t [[LOR NORMALIZADA]]"<<endl;
+    stream_par<<"\t\t Cantidad_Voxeles_X = "<<200<<endl;
+    stream_par<<"\t\t Cantidad_Voxeles_Y = "<<200<<endl;
+    stream_par<<"\t\t Cantidad_Voxeles_Z = "<<200<<endl;
+    stream_par<<"\t\t Tamano_Voxel_X = "<< 2.0 <<endl;
+    stream_par<<"\t\t Tamano_Voxel_Y = "<< 2.0 <<endl;
+    stream_par<<"\t\t Tamano_Voxel_Z = "<< 2.0 <<endl;
+    stream_par<<"\t [[MICHELOGRAMA]]"<<endl;
+    stream_par<<"\t\t Span = "<< Span <<endl;
+    stream_par<<"\t\t Cantidad_Anillos = "<< Cant_anillos <<endl;
+    stream_par<<"\t\t Cantidad_Angulos = "<< cant_ang <<endl;
+    stream_par<<"\t\t Cantidad_Rhos = "<< cant_rhos <<endl;
+    stream_par<<"\t\t Maxima_Diferencia_Entre_Anillos = "<< Dif_anillos <<endl;
+    stream_par<<"\t\t Rho_Maxima = "<< max_Rho <<endl;
+    stream_par<<"\t\t Z_Minima = "<< -max_Z <<endl;
+    stream_par<<"\t\t Z_Maxima = "<< max_Z <<endl;
+
+
+    //  ----- Paso unico, parseo
     // Armo la linea al programa
-    programas[indice_armado_cola] = path_PARSER+"parsear";
+    programas[indice_armado_cola] = path_PARSER+"procesar_trama";
 
     // Armo los argumentos
-    listasparametros[indice_armado_cola].append(arch_recon);
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".dat");
+    listasparametros[indice_armado_cola].append(nombre_archivo_parametros);
     indice_armado_cola++;
 
-    //  ----- Paso 2, analizo las coincidencias
-    // Armo la linea al programa
-    programas[indice_armado_cola] = path_INTERFILES+"AnalizoCoincidenciasPET.pl";
-
-    // Armo los argumentos
-    listasparametros[indice_armado_cola].append(path_INTERFILES+"AnalizoCoincidenciasPET.pl");
-    listasparametros[indice_armado_cola].append("--Emin");
-    listasparametros[indice_armado_cola].append(QString::number(Emin));
-    listasparametros[indice_armado_cola].append("--Emax");
-    listasparametros[indice_armado_cola].append(QString::number(Emax));
-    listasparametros[indice_armado_cola].append("--in");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".dat");
-    listasparametros[indice_armado_cola].append("--out");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".lor");
-    indice_armado_cola++;
-
-
-    //  ----- Paso 3, Armo el michelograma
-    // Armo la linea al programa
-    programas[indice_armado_cola] = path_INTERFILES+"GenerarMichelograma.pl";
-
-    // Armo los argumentos
-    listasparametros[indice_armado_cola].append("--in");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".lor");
-    listasparametros[indice_armado_cola].append("--out");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".i33");
-    listasparametros[indice_armado_cola].append("--CantAnillos");
-    listasparametros[indice_armado_cola].append(QString::number(Cant_anillos));
-    listasparametros[indice_armado_cola].append("--Span");
-    listasparametros[indice_armado_cola].append(QString::number(Span));
-    listasparametros[indice_armado_cola].append("--MaxDifAnillos");
-    listasparametros[indice_armado_cola].append(QString::number(Dif_anillos));
-    listasparametros[indice_armado_cola].append("--CantAngulos");
-    listasparametros[indice_armado_cola].append(QString::number(cant_ang));
-    listasparametros[indice_armado_cola].append("--CantRhos");
-    listasparametros[indice_armado_cola].append(QString::number(cant_rhos));
-    listasparametros[indice_armado_cola].append("--MaxRho");
-    listasparametros[indice_armado_cola].append(QString::number(max_Rho));
-    listasparametros[indice_armado_cola].append("--MaxZ");
-    listasparametros[indice_armado_cola].append(QString::number(max_Z));
-    indice_armado_cola++;
-
-    //  ----- Paso 3, Armo el header del michelograma
-    // Armo la linea al programa
-    programas[indice_armado_cola] = path_INTERFILES+"GenerarEncabezadoInterfile.pl";
-
-    // Armo los argumentos
-    listasparametros[indice_armado_cola].append("--archivo_datos");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".i33");
-    listasparametros[indice_armado_cola].append("--out");
-    listasparametros[indice_armado_cola].append(path_Salida+Nombre_archivo+".h33");
-    listasparametros[indice_armado_cola].append("--CantAnillos");
-    listasparametros[indice_armado_cola].append(QString::number(Cant_anillos));
-    listasparametros[indice_armado_cola].append("--Span");
-    listasparametros[indice_armado_cola].append(QString::number(Span));
-    listasparametros[indice_armado_cola].append("--MaxDifAnillos");
-    listasparametros[indice_armado_cola].append(QString::number(Dif_anillos));
-    listasparametros[indice_armado_cola].append("--CantAngulos");
-    listasparametros[indice_armado_cola].append(QString::number(cant_ang));
-    listasparametros[indice_armado_cola].append("--CantRhos");
-    listasparametros[indice_armado_cola].append(QString::number(cant_rhos));
-    listasparametros[indice_armado_cola].append("--MaxRho");
-    listasparametros[indice_armado_cola].append(QString::number(max_Rho));
-    listasparametros[indice_armado_cola].append("--MaxZ");
-    listasparametros[indice_armado_cola].append(QString::number(max_Z));
-    indice_armado_cola++;
-
-    // ejecuto el primer proceso de la lista, los sucesivos procesos se ejecutaran en el callback de finalizacion
+    // ejecuto
     proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
 
     // Ahora el archivo a recontruir dejo de ser el .raw y va a pasar a ser el .h33 que va ser generado
@@ -233,7 +263,7 @@ bool Reconstructor::Reconstruir()
     if (reconBackprojection) stream_par<<"Backproject Parameters :="<<endl;
     else if (reconMLEM) stream_par<<"MLEM Parameters :="<<endl;
 
-    stream_par<<"; Interfile generado automaticamente por el AR-PET-Tec. Fecha: "<< asctime(timeinfo) <<endl;
+    stream_par<<"; Archivo de parametros generado automaticamente por el AR-PET-Tec. Fecha: "<< asctime(timeinfo) <<endl;
 
 
     // Tipo de entrada, fija en Sinograma3DArPet

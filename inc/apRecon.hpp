@@ -10,29 +10,41 @@
 
 
 
-#define     EMIN_BASE               0
-#define     EMAX_BASE               10000
-#define     CANTANILLOS_BASE        164
-#define     SPAM_BASE               7
-#define     MAXDIFANILLOS_BASE      82
-#define     CANTANGULOS_BASE        496
-#define     CANTRHOS_BASE           384
-#define     MAXRHO_BASE             500
-#define     MAXZ_BASE               200
+#define     EMIN_BASE                   410
+#define     EMAX_BASE                   610
+#define     CANTANILLOS_BASE            164
+#define     SPAM_BASE                   7
+#define     MAXDIFANILLOS_BASE          82
+#define     CANTANGULOS_BASE            496
+#define     CANTRHOS_BASE               384
+#define     MAXRHO_BASE                 500
+#define     MAXZ_BASE                   200
 
 
-#define     FOV_AXIAL_BASE          302.6
-#define     MIN_DIF_CAB_BASE        1
-#define     RADIO_FOV_BASE          300
-#define     RADIO_PET_BASE          360
-#define     ZONA_MUERTA_BASE        00
-#define     ITERACIONES_BASE        30
+#define     FOV_AXIAL_BASE              302.6
+#define     MIN_DIF_CAB_BASE            1
+#define     RADIO_FOV_BASE              300
+#define     RADIO_PET_BASE              360
+#define     ZONA_MUERTA_BASE            50
+#define     ITERACIONES_BASE            15
 
-#define     INST_PARSEO             4
-#define     INST_RECON_LOCAL        1
-#define     INST_RECON_SERVER       8
-#define     INST_SENS_SERVER        2
-#define     INST_MOSTRAR            1
+
+#define     EST_BINES_ENERGIA           250
+#define     EST_ANCHO_BIN_ENERGIA       4.0
+#define     EST_BINES_TIEMPO            100
+#define     EST_ANCHO_BIN_TIEMPO        1.0
+#define     EST_BINES_ESPACIAL_X        100
+#define     EST_BINES_ESPACIAL_Y        65
+#define     EST_ANCHO_BIN_ESPACIALES    5.0
+
+
+#define     INST_PARSEO                 1
+#define     INST_RECON_LOCAL            1
+#define     INST_RECON_SERVER           8
+#define     INST_SENS_SERVER            2
+#define     INST_MOSTRAR                1
+
+
 
 namespace ap {
 
