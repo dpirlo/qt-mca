@@ -37,19 +37,23 @@ namespace ap {
   public:
       explicit Thread(shared_ptr<MCAE> _arpet, QMutex* _mutex ,QObject *parent = 0);
       void requestLog();
+      void requestMCA();
       void abort();
       string getLocalDateAndTime();
 
   private:
       shared_ptr<MCAE> arpet;
       QList<int> checkedHeads;
+      QList<QString> pmt_selected_list;
       bool _abort;
       bool _logging;
+      bool _mode;
+      bool _continue;
       QMutex* mutex;
       QString port_name;
       bool temp;
       bool rate;
-      bool debug;
+      bool debug;      
       int time_sec;
       bool log_finished;
       QString etime;
@@ -61,12 +65,16 @@ namespace ap {
        */
       void logRequested();            
       /**
+       * @brief mcaRequest
+       */
+      void mcaRequested();
+      /**
        * @brief sendRatesValues
        * @param index
        * @param rate_low
        * @param rate_med
        * @param rate_high
-       */
+       */      
       void sendRatesValues(int index, int rate_low, int rate_med, int rate_high);
       /**
        * @brief sendTempValues
@@ -86,9 +94,13 @@ namespace ap {
        */
       void finishedElapsedTime(bool var);
       /**
-       * @brief sendErrorCommand
+       * @brief sendLogErrorCommand
        */
-      void sendErrorCommand();
+      void sendLogErrorCommand();
+      /**
+       * @brief sendMCAErrorCommand
+       */
+      void sendMCAErrorCommand();
       /**
        * @brief startElapsedTime
        */
@@ -103,13 +115,24 @@ namespace ap {
        * @param eatime_string
        */
       void sendFinalElapsedTimeString(QString eatime_string);
+      /**
+       * @brief sendHitsMCA
+       * @param hits
+       * @param channels
+       * @param pmt_head
+       * @param mode
+       */
+      void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode);
 
   public slots:      
       void getLogWork();
       void setAbortBool(bool abort) {_abort = abort;}
+      void setModeBool(bool mode) {_mode = mode;}
+      void setContinueBool(bool cont) {_continue = cont;}
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
       void getElapsedTime();
+      void getMCA();
 
   public:
       /**
@@ -120,6 +143,11 @@ namespace ap {
        * @brief cancelLogging
        */
       void setCheckedHeads(QList<int> list) {checkedHeads = list;}
+      /**
+       * @brief setPMTSelectedList
+       * @param list
+       */
+      void setPMTSelectedList(QList<QString> list) {pmt_selected_list = list;}
       /**
        * @brief setPortName
        * @param port

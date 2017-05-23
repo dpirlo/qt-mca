@@ -111,8 +111,11 @@ private slots:
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
     void writeTempToLog(int index, double min, double med, double max);
-    void getErrorThread();
+    void getLogErrorThread();
+    void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
+    void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode);
+
 
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
@@ -156,7 +159,8 @@ private slots:
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
     void on_pushButton_hv_estado_clicked();
-    void on_pushButton_adquirir_clicked();
+    /** @note: se comenta este slots para pruebas*/
+    /*void on_pushButton_adquirir_clicked();*/
     void on_pushButton_select_pmt_clicked();
     void on_pushButton_hv_configure_clicked();
     void on_pushButton_l_5_clicked();
@@ -212,6 +216,8 @@ private slots:
     void on_pushButton_6_clicked();
 
     /* Buttons de prueba/testing */
+
+    void on_pushButton_adquirir_toggled(bool checked);
 
 private:
     void connectSlots();
@@ -287,7 +293,7 @@ private:
     /* Area de prueba/testing */
 
 signals:
-    void sendAbortCommand(bool abort);
+    void sendAbortCommand(bool abort);    
 
 private:
     Ui::MainWindow *ui;
@@ -301,6 +307,8 @@ private:
     Thread *worker;
     QThread *etime_th;
     Thread *etime_wr;
+    QThread *mcae_th;
+    Thread *mcae_wr;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
