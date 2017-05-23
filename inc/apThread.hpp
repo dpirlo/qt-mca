@@ -122,7 +122,7 @@ namespace ap {
        * @param pmt_head
        * @param mode
        */
-      void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode);
+      void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
 
   public slots:      
       void getLogWork();

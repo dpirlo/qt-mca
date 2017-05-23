@@ -213,15 +213,13 @@ void Thread::getElapsedTime()
 
 void Thread::getMCA()
 {
-    int try_error_count = 0;
-
     if(debug)
     {
         cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
         cout<<"Comienza la adquisición MCA."<<endl;
     }
 
-    while(!_abort)
+    while(!_abort || !_continue)
     {
 
         mutex->lock();
@@ -241,42 +239,33 @@ void Thread::getMCA()
                         cout<<"PMT: "<<pmt<<" "<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
-                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), _mode);
+                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
                 }
             }
             else
             {
-                for (int i=0;i<checkedHeads.length();i++)
+                for (int index=0;index<checkedHeads.length();index++)
                 {
-                    string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(i)).toStdString(),CHANNELS, port_name.toStdString());
+                    string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
                     {
-                        cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
+                        cout<<"Cabezal: "<<checkedHeads.at(index)<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
-                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(0)), _mode);
+                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(0)),index, _mode);
                 }
-            }
-            if (!_continue) setAbortBool(true);
+            }            
         }
         catch(Exceptions & ex)
         {
-            try_error_count++;
             if (debug)
             {
-                cout<<"No se pueden obtener los valores de MCA de los PMTs/cabezales seleccionados. Error:  "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
+                if (_mode) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados en el cabezal "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
+                else cout<<"No se pueden obtener los valores de MCA en el cabezal "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
             }
-
-            if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
-            {
-                if (debug)
-                {
-                    cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta la adquisición de MCA."<<endl;
-                }
-                emit sendMCAErrorCommand();
-                setAbortBool(true);
-            }
-       }
+            emit sendMCAErrorCommand();
+            setAbortBool(true);
+        }
 
         mutex->unlock();
 

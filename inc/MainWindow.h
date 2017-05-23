@@ -114,7 +114,7 @@ private slots:
     void getLogErrorThread();
     void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
-    void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode);
+    void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -161,6 +161,7 @@ private slots:
     void on_pushButton_hv_estado_clicked();
     /** @note: se comenta este slots para pruebas*/
     /*void on_pushButton_adquirir_clicked();*/
+    void on_pushButton_adquirir_toggled(bool checked);
     void on_pushButton_select_pmt_clicked();
     void on_pushButton_hv_configure_clicked();
     void on_pushButton_l_5_clicked();
@@ -217,7 +218,6 @@ private slots:
 
     /* Buttons de prueba/testing */
 
-    void on_pushButton_adquirir_toggled(bool checked);
 
 private:
     void connectSlots();

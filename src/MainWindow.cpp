@@ -247,10 +247,8 @@ void MainWindow::connectSlots()
     connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
     connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
     connect(this, SIGNAL(sendAbortCommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
-    connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
-    /* Armar slot */
-    connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, bool)));
-
+    connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));    
+    connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
 }
 /**
  * @brief MainWindow::writeRatesToLog
@@ -283,17 +281,15 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
     ui->label_elapsed_time->setText(etime_string);
 }
 
-void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode)
-{
-   QVector<int> param;
+void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
+{   
    if(mode)
    {
-       addGraph(hits, ui->specPMTs, channels, pmt_head, param);
+       addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
    }
    else
-   {
-       ui->specHead->clearGraphs();
-       addGraph(hits, ui->specHead, channels, pmt_head, param);
+   {       
+       addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
    }
 }
 
@@ -2252,6 +2248,17 @@ void MainWindow::resetHeads()
  */
 void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
+    if(!arpet->isPortOpen())
+    {
+      QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+      if(debug)
+      {
+        cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+        writeFooterAndHeaderDebug(false);
+      }
+      return;
+    }
+
     bool mode = ui->checkBox_continue->isChecked(); //Modo continuo
 
     if(checked)
@@ -2727,25 +2734,35 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
-  if(checked)
-  {
-      setButtonLoggerState(true);
-      QList<int> checkedHeads=getCheckedHeads();
-      worker->setCheckedHeads(checkedHeads);
-      if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
-      if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
-      worker->setDebugMode(debug);
-      worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
+    if(!arpet->isPortOpen())
+    {
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+        if(debug)
+        {
+            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+    if(checked)
+    {
+        setButtonLoggerState(true);
+        QList<int> checkedHeads=getCheckedHeads();
+        worker->setCheckedHeads(checkedHeads);
+        if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
+        if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
+        worker->setDebugMode(debug);
+        worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
 
-      worker->abort();
-      thread->wait();
-      worker->requestLog();
-  }
-  else
-  {
-      setButtonLoggerState(true,true);
-      emit sendAbortCommand(true);
-  }
+        worker->abort();
+        thread->wait();
+        worker->requestLog();
+    }
+    else
+    {
+        setButtonLoggerState(true,true);
+        emit sendAbortCommand(true);
+    }
 }
 
 /* Métodos generales del entorno gráfico */
