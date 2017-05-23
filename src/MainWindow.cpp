@@ -64,6 +64,9 @@ void MainWindow::setInitialConfigurations()
     etime_th = new QThread();
     etime_wr = new Thread(arpet, &mMutex);
     etime_wr->moveToThread(etime_th);
+    mcae_th = new QThread();
+    mcae_wr = new Thread(arpet, &mMutex);
+    mcae_wr->moveToThread(mcae_th);
     connectSlots();
 
     // Calibrador
@@ -231,7 +234,7 @@ void MainWindow::connectSlots()
     connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
-    connect(worker, SIGNAL(sendErrorCommand()),this,SLOT(getErrorThread()));
+    connect(worker, SIGNAL(sendLogErrorCommand()),this,SLOT(getLogErrorThread()));
 
     connect(worker, SIGNAL(startElapsedTime()), etime_th, SLOT(start()), Qt::DirectConnection);
     connect(worker, SIGNAL(finishedElapsedTime(bool)), etime_wr, SLOT(cancelLogging(bool)));
@@ -239,6 +242,15 @@ void MainWindow::connectSlots()
     connect(etime_wr, SIGNAL(finished()), etime_th, SLOT(quit()), Qt::DirectConnection);
     connect(etime_wr, SIGNAL(sendElapsedTimeString(QString)),this,SLOT(receivedElapsedTimeString(QString)));
     connect(etime_wr, SIGNAL(sendFinalElapsedTimeString(QString)),worker,SLOT(receivedFinalElapsedTimeString(QString)));
+
+    connect(mcae_wr, SIGNAL(mcaRequested()), mcae_th, SLOT(start()));
+    connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
+    connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
+    connect(this, SIGNAL(sendAbortCommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
+    connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
+    /* Armar slot */
+    connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, bool)));
+
 }
 /**
  * @brief MainWindow::writeRatesToLog
@@ -270,6 +282,20 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 {
     ui->label_elapsed_time->setText(etime_string);
 }
+
+void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, bool mode)
+{
+   QVector<int> param;
+   if(mode)
+   {
+       addGraph(hits, ui->specPMTs, channels, pmt_head, param);
+   }
+   else
+   {
+       addGraph(hits, ui->specHead, channels, pmt_head, param);
+   }
+}
+
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
  * @param arg1
@@ -278,11 +304,20 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
 {
     getHeadStatus(arg1.toInt());
 }
-void MainWindow::getErrorThread()
+/**
+ * @brief MainWindow::getLogErrorThread
+ */
+void MainWindow::getLogErrorThread()
 {
-  setButtonLoggerState(false);
-  ui->pushButton_logguer->setChecked(false);
+  setButtonLoggerState(false);  
   QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
+  ui->pushButton_logguer->setChecked(false);
+}
+void MainWindow::getMCAErrorThread()
+{
+  setButtonAdquireState(false);
+  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
+  ui->pushButton_adquirir->setChecked(false);
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -1703,7 +1738,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->show();
         ui->frame_HV->show();
         ui->frame_MCA->show();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);        
         break;
     case CABEZAL:
         ui->frame_PMT->hide();
@@ -1715,8 +1750,8 @@ void MainWindow::setAdquireMode(int index)
     case TEMPERATURE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
-        ui->frame_MCA->hide();
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);        
+        ui->frame_MCA->hide();        
     default:
         break;
     }
@@ -1806,6 +1841,7 @@ QString MainWindow::getMultiMCA(QString head)
             return msg;
         }
     ui->specPMTs->clearGraphs();
+
     try
     {
         setButtonAdquireState(true);
@@ -2210,59 +2246,156 @@ void MainWindow::resetHeads()
     }
 }
 /**
- * @brief MainWindow::on_pushButton_adquirir_clicked
+ * @brief MainWindow::on_pushButton_adquirir_toggled
+ * @param checked
  */
-void MainWindow::on_pushButton_adquirir_clicked()
+void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
-    /** @todo: Agregar el modo continuo*/
-    writeFooterAndHeaderDebug(true);
+    if(checked)
+    {
+        QList<int> checkedHeads=getCheckedHeads();
+        mcae_wr->setCheckedHeads(checkedHeads);
+        if (ui->checkBox_continue->isChecked()) mcae_wr->setContinueBool(true); //Modo continuo
 
-    QList<int> checkedHeads = getCheckedHeads();
-
-    QString q_msg;
-
-    switch (adquire_mode) {
-    case PMT:
-        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {q_msg = getMultiMCA(QString::number(checkedHeads.at(0)));}
-        else
+        switch (adquire_mode)
         {
-            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-            writeFooterAndHeaderDebug(false);
-            return;
-        }
-        break;
-    case CABEZAL:
-        ui->specHead->clearGraphs();
-        for (int i=0;i<checkedHeads.length();i++)
-        {
-            try
+        case PMT:
+            if (pmt_selected_list.isEmpty())
+                {
+                    writeFooterAndHeaderDebug(true);
+                    setButtonAdquireState(false);
+                    if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+                    QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+                    ui->pushButton_adquirir->setChecked(false);
+                    setButtonAdquireState(true, true);
+                    writeFooterAndHeaderDebug(false);
+                    return;
+                }
+            ui->specPMTs->clearGraphs();
+            if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
             {
-                if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
-                q_msg = getHeadMCA(QString::number(checkedHeads.at(i)));
+                setButtonAdquireState(true);
+                mcae_wr->setPMTSelectedList(pmt_selected_list);
+                mcae_wr->setDebugMode(debug);
+                mcae_wr->setModeBool(true);
+                mcae_wr->abort();
+                mcae_th->wait();
+                mcae_wr->requestMCA();
             }
-            catch(Exceptions & ex)
+            else
             {
-                if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
+                writeFooterAndHeaderDebug(true);
+                QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
-                setButtonAdquireState(true, true);
                 return;
             }
-        }
-        break;
-    case TEMPERATURE:
-        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {drawTemperatureBoard();}
-        else
-        {
-            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-            writeFooterAndHeaderDebug(false);
-            return;
-        }
-        break;
-    default:
-        break;
+            break;
+        case CABEZAL:
+            ui->specHead->clearGraphs();
+            setButtonAdquireState(true);
+            mcae_wr->setDebugMode(debug);
+            mcae_wr->setModeBool(false);
+            mcae_wr->abort();
+            mcae_th->wait();
+            mcae_wr->requestMCA();
+            break;
+        case TEMPERATURE:
+            if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+            {
+                drawTemperatureBoard();
+            }
+            else
+            {
+                writeFooterAndHeaderDebug(true);
+                QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+                writeFooterAndHeaderDebug(false);
+                return;
+            }
+            ui->pushButton_adquirir->setChecked(false);
+            break;
+        default:
+            break;
+        }        
     }
-    writeFooterAndHeaderDebug(false);
+    else
+    {
+        switch (adquire_mode)
+        {
+        case PMT:
+            setButtonAdquireState(true,true);
+            emit sendAbortCommand(true);
+            break;
+        case CABEZAL:
+            setButtonAdquireState(true,true);
+            emit sendAbortCommand(true);
+            break;
+        case TEMPERATURE:
+            break;
+        default:
+            break;
+        }
+    }    
 }
+///**
+// * @brief MainWindow::on_pushButton_adquirir_clicked
+// */
+//void MainWindow::on_pushButton_adquirir_clicked()
+//{
+
+//    writeFooterAndHeaderDebug(true);
+
+//    if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {drawTemperatureBoard();}
+//    else
+//    {
+//        QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+//        writeFooterAndHeaderDebug(false);
+//        return;
+//    }
+
+//    /*QString q_msg;
+
+//    switch (adquire_mode) {
+//    case PMT:
+//        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {q_msg = getMultiMCA(QString::number(checkedHeads.at(0)));}
+//        else
+//        {
+//            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+//            writeFooterAndHeaderDebug(false);
+//            return;
+//        }
+//        break;
+//    case CABEZAL:
+//        ui->specHead->clearGraphs();
+//        for (int i=0;i<checkedHeads.length();i++)
+//        {
+//            try
+//            {
+//                if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
+//                q_msg = getHeadMCA(QString::number(checkedHeads.at(i)));
+//            }
+//            catch(Exceptions & ex)
+//            {
+//                if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
+//                writeFooterAndHeaderDebug(false);
+//                setButtonAdquireState(true, true);
+//                return;
+//            }
+//        }
+//        break;
+//    case TEMPERATURE:
+//        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {drawTemperatureBoard();}
+//        else
+//        {
+//            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+//            writeFooterAndHeaderDebug(false);
+//            return;
+//        }
+//        break;
+//    default:
+//        break;
+//    }*/
+//    writeFooterAndHeaderDebug(false);
+//}
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
  */

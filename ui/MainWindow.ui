@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1729,7 +1729,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3690,6 +3690,9 @@ calibrar</string>
       <property name="text">
        <string>Adquirir</string>
       </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QPushButton" name="pushButton_reset">
       <property name="geometry">
@@ -3970,8 +3973,8 @@ calibrar</string>
        <rect>
         <x>681</x>
         <y>46</y>
-        <width>311</width>
-        <height>181</height>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">

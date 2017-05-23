@@ -22,6 +22,7 @@ using namespace ap;
 Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     QObject(parent),
     arpet(_arpet),
+    _continue(false),
     temp(false),
     rate(false),
     debug(false),
@@ -52,6 +53,14 @@ void Thread::requestLog()
 
     emit logRequested();
 }
+void Thread::requestMCA()
+{
+    mutex->lock();
+    _abort = false;
+    mutex->unlock();
+
+    emit mcaRequested();
+}
 /**
  * @brief Thread::abort
  */
@@ -61,7 +70,7 @@ void Thread::abort()
     if (_logging)
     {
         _abort = true;
-        if (debug) cout<<"Se aborta la operación de logueo bajo el thread: "<<thread()->currentThreadId()<<endl;
+        if (debug) cout<<"Se aborta la operación en el thread: "<<thread()->currentThreadId()<<endl;
     }
     mutex->unlock();
 }
@@ -141,7 +150,7 @@ void Thread::getLogWork()
                     {
                         cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
                     }
-                    emit sendErrorCommand();
+                    emit sendLogErrorCommand();
                     setAbortBool(true);
                 }
           }          
@@ -198,6 +207,86 @@ void Thread::getElapsedTime()
         emit sendFinalElapsedTimeString(etime);
     }
     restoreLoggingVariable();
+
+    emit finished();
+}
+
+void Thread::getMCA()
+{
+    int try_error_count = 0;
+
+    if(debug)
+    {
+        cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
+        cout<<"Comienza la adquisición MCA."<<endl;
+    }
+
+    while(!_abort)
+    {
+
+        mutex->lock();
+
+        try
+        {
+            if (_mode)
+            {
+                int size_pmt_selected = pmt_selected_list.length();
+                for (int index=0;index<size_pmt_selected;index++)
+                {
+                    string pmt = pmt_selected_list.at(index).toStdString();
+                    string msg = arpet->getMCA(pmt, arpet->getFunCSP3(), QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
+                    cout<<"puto"<<endl;
+                    if(debug)
+                    {
+                        cout<<"PMT: "<<pmt<<" "<<endl;
+                        cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
+                    }
+                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), _mode);
+                }
+            }
+            else
+            {                
+                for (int i=0;i<checkedHeads.length();i++)
+                {
+                    string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(i)).toStdString(),CHANNELS, port_name.toStdString());
+                    if(debug)
+                    {
+                        cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
+                        cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
+                    }
+                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(0)), _mode);
+                }
+            }
+            if (!_continue) setAbortBool(true);
+        }
+        catch(Exceptions & ex)
+        {
+//            try_error_count++;
+//            if (debug)
+//            {
+//                cout<<"No se pueden obtener los valores de MCA de los PMTs/cabezales seleccionados. Error:  "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
+//            }
+
+//            if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
+//            {
+                if (debug)
+                {
+                    cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta la adquisición de MCA."<<endl;
+                }
+                emit sendMCAErrorCommand();
+                setAbortBool(true);
+           // }
+        }
+
+        mutex->unlock();
+
+    }
+
+    if(debug)
+    {
+        cout<<"La adquisición MCA ha sido finalizada."<<endl;
+        cout<<"[END-LOG-DBG-THR] =================================================="<<endl;
+    }
 
     emit finished();
 }
