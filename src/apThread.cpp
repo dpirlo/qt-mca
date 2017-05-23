@@ -153,7 +153,7 @@ void Thread::getLogWork()
                     emit sendLogErrorCommand();
                     setAbortBool(true);
                 }
-          }          
+          }
        }
 
        mutex->unlock();
@@ -235,9 +235,9 @@ void Thread::getMCA()
                 {
                     string pmt = pmt_selected_list.at(index).toStdString();
                     string msg = arpet->getMCA(pmt, arpet->getFunCSP3(), QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                    cout<<"puto"<<endl;
                     if(debug)
                     {
+                        cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
                         cout<<"PMT: "<<pmt<<" "<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
@@ -245,7 +245,7 @@ void Thread::getMCA()
                 }
             }
             else
-            {                
+            {
                 for (int i=0;i<checkedHeads.length();i++)
                 {
                     string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(i)).toStdString(),CHANNELS, port_name.toStdString());
@@ -261,24 +261,28 @@ void Thread::getMCA()
         }
         catch(Exceptions & ex)
         {
-//            try_error_count++;
-//            if (debug)
-//            {
-//                cout<<"No se pueden obtener los valores de MCA de los PMTs/cabezales seleccionados. Error:  "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
-//            }
+            try_error_count++;
+            if (debug)
+            {
+                cout<<"No se pueden obtener los valores de MCA de los PMTs/cabezales seleccionados. Error:  "<<checkedHeads.at(0)<<". Error: "<<ex.excdesc<<endl;
+            }
 
-//            if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
-//            {
+            if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
+            {
                 if (debug)
                 {
                     cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta la adquisición de MCA."<<endl;
                 }
                 emit sendMCAErrorCommand();
                 setAbortBool(true);
-           // }
-        }
+            }
+       }
 
         mutex->unlock();
+
+        QEventLoop loop;
+        QTimer::singleShot(100, &loop, SLOT(quit()));
+        loop.exec();
 
     }
 

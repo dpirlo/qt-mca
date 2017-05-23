@@ -292,6 +292,7 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
    }
    else
    {
+       ui->specHead->clearGraphs();
        addGraph(hits, ui->specHead, channels, pmt_head, param);
    }
 }
@@ -309,7 +310,7 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
  */
 void MainWindow::getLogErrorThread()
 {
-  setButtonLoggerState(false);  
+  setButtonLoggerState(false);
   QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
   ui->pushButton_logguer->setChecked(false);
 }
@@ -1738,7 +1739,7 @@ void MainWindow::setAdquireMode(int index)
         ui->frame_PMT->show();
         ui->frame_HV->show();
         ui->frame_MCA->show();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);        
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
         break;
     case CABEZAL:
         ui->frame_PMT->hide();
@@ -1750,8 +1751,8 @@ void MainWindow::setAdquireMode(int index)
     case TEMPERATURE:
         ui->frame_PMT->hide();
         ui->frame_HV->hide();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);        
-        ui->frame_MCA->hide();        
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
+        ui->frame_MCA->hide();
     default:
         break;
     }
@@ -2251,11 +2252,13 @@ void MainWindow::resetHeads()
  */
 void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
+    bool mode = ui->checkBox_continue->isChecked(); //Modo continuo
+
     if(checked)
     {
         QList<int> checkedHeads=getCheckedHeads();
         mcae_wr->setCheckedHeads(checkedHeads);
-        if (ui->checkBox_continue->isChecked()) mcae_wr->setContinueBool(true); //Modo continuo
+        mcae_wr->setContinueBool(mode);
 
         switch (adquire_mode)
         {
@@ -2281,6 +2284,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->abort();
                 mcae_th->wait();
                 mcae_wr->requestMCA();
+                if (!mode) ui->pushButton_adquirir->setChecked(false);
             }
             else
             {
@@ -2298,6 +2302,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             mcae_wr->abort();
             mcae_th->wait();
             mcae_wr->requestMCA();
+            if (!mode) ui->pushButton_adquirir->setChecked(false);
             break;
         case TEMPERATURE:
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
@@ -2315,7 +2320,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             break;
         default:
             break;
-        }        
+        }
     }
     else
     {
@@ -2323,18 +2328,18 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         {
         case PMT:
             setButtonAdquireState(true,true);
-            emit sendAbortCommand(true);
+            if (mode) emit sendAbortCommand(true);
             break;
         case CABEZAL:
             setButtonAdquireState(true,true);
-            emit sendAbortCommand(true);
+            if (mode) emit sendAbortCommand(true);
             break;
         case TEMPERATURE:
             break;
         default:
             break;
         }
-    }    
+    }
 }
 ///**
 // * @brief MainWindow::on_pushButton_adquirir_clicked
@@ -3536,8 +3541,8 @@ void MainWindow::setHeadCustomPlotEnvironment()
  */
 void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
 {
-  channels_ui.resize(channels);
-  channels_ui = arpet->getChannels();
+    channels_ui.resize(channels);
+    channels_ui = arpet->getChannels();
 
     graph->addGraph();
     graph->graph()->setName(graph_legend);
