@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     w.checkCombosStatus();
+    qRegisterMetaType<QVector<double> >("QVector<double>");
 
     return a.exec();
 }

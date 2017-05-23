@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1729,7 +1729,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>284</height>
+          <height>211</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -3199,7 +3199,7 @@ calibrar</string>
       </widget>
       <widget class="QCheckBox" name="checkBox_continue">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -3971,10 +3971,10 @@ calibrar</string>
      <widget class="QWidget" name="gridLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>681</x>
-        <y>46</y>
-        <width>724</width>
-        <height>194</height>
+        <x>688</x>
+        <y>44</y>
+        <width>301</width>
+        <height>181</height>
        </rect>
       </property>
       <property name="font">
