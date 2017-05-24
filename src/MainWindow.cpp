@@ -297,7 +297,7 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 }
 
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
-{   
+{
     if(mode)
     {
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
@@ -735,6 +735,7 @@ void MainWindow::getARPETStatus()
         {
             cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
             writeFooterAndHeaderDebug(false);
+            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
             ui->label_power_management->setText("Error de conexión");
         }
     }
