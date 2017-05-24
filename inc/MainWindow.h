@@ -142,8 +142,7 @@ private slots:
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
     void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
-    void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
-    void PushButtonAdquirirDown();
+    void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);    
 
     /* Buttons */
     void on_pushButton_init_configure_clicked();
@@ -294,7 +293,7 @@ private:
 signals:
     void sendAbortCommand(bool abort);
     void sendAbortMCAECommand(bool abort);
-    void ToDownPushButtonAdquirir();
+    void ToPushButtonAdquirir(bool toggle);
 
 private:
     Ui::MainWindow *ui;

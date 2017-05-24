@@ -262,7 +262,7 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
 
     /* Objetos */
-    connect(this, SIGNAL(ToDownPushButtonAdquirir()),this,SLOT(PushButtonAdquirirDown()));
+    connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
 
 }
 /**
@@ -333,11 +333,6 @@ void MainWindow::getMCAErrorThread()
   QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
   ui->pushButton_adquirir->setChecked(false);
 }
-void MainWindow::PushButtonAdquirirDown()
-{
-  ui->pushButton_adquirir->setChecked(false);
-}
-
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
  * @param index
@@ -2313,7 +2308,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->abort();
                 mcae_th->wait();
                 mcae_wr->requestMCA();
-                if (!mode_continue) emit ToDownPushButtonAdquirir();//ui->pushButton_adquirir->setChecked(false);
+                if (!mode_continue) emit ToPushButtonAdquirir(false);//ui->pushButton_adquirir->setChecked(false);
             }
             else
             {
@@ -2332,7 +2327,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             mcae_wr->abort();
             mcae_th->wait();
             mcae_wr->requestMCA();
-            if (!mode_continue) emit ToDownPushButtonAdquirir();//ui->pushButton_adquirir->setChecked(false);
+            if (!mode_continue) emit ToPushButtonAdquirir(false);;//ui->pushButton_adquirir->setChecked(false);
             break;
         case TEMPERATURE:
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
