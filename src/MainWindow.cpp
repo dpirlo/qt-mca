@@ -149,20 +149,20 @@ void MainWindow::setPreferencesConfiguration()
  */
 void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
 {
-  graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-                                  QCP::iSelectLegend | QCP::iSelectPlottables);
-  graph->axisRect()->setupFullAxesBox();
-  graph->xAxis->setRange(0, channels);
-  graph->yAxis->setRange(-5, 5);
-  graph->xAxis->setLabel("Canales");
-  graph->yAxis->setLabel("Cuentas");
-  graph->legend->setVisible(true);
-  QFont legendFont = font();
-  legendFont.setPointSize(10);
-  graph->legend->setFont(legendFont);
-  graph->legend->setSelectedFont(legendFont);
-  graph->legend->setSelectableParts(QCPLegend::spItems);
-  graph->plotLayout()->insertRow(0);
+    graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                           QCP::iSelectLegend | QCP::iSelectPlottables);
+    graph->axisRect()->setupFullAxesBox();
+    graph->xAxis->setRange(0, channels);
+    graph->yAxis->setRange(-5, 5);
+    graph->xAxis->setLabel("Canales");
+    graph->yAxis->setLabel("Cuentas");
+    graph->legend->setVisible(true);
+    QFont legendFont = font();
+    legendFont.setPointSize(10);
+    graph->legend->setFont(legendFont);
+    graph->legend->setSelectedFont(legendFont);
+    graph->legend->setSelectableParts(QCPLegend::spItems);
+    graph->plotLayout()->insertRow(0);
 }
 /**
  * @brief MainWindow::SetQCustomPlotSlots
@@ -171,35 +171,35 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
  */
 void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str)
 {
-  /* Slots para PMTs */
-  QCPTextElement *title_pmt = new QCPTextElement(ui->specPMTs, title_pmt_str.c_str(), QFont("sans", 16, QFont::Bold));
-  connect(ui->specPMTs, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
-  connect(ui->specPMTs, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
-  connect(ui->specPMTs, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
-  connect(ui->specPMTs->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->specPMTs->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->specPMTs->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->specPMTs->yAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->specPMTs, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
-  connect(ui->specPMTs, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
-  connect(title_pmt, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
-  connect(ui->specPMTs, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
-  ui->specPMTs->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(ui->specPMTs, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
-  ui->specPMTs->plotLayout()->addElement(0, 0, title_pmt);
+    /* Slots para PMTs */
+    QCPTextElement *title_pmt = new QCPTextElement(ui->specPMTs, title_pmt_str.c_str(), QFont("sans", 16, QFont::Bold));
+    connect(ui->specPMTs, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
+    connect(ui->specPMTs, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
+    connect(ui->specPMTs, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelPMT()));
+    connect(ui->specPMTs->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->specPMTs->xAxis2, SLOT(setRange(QCPRange)));
+    connect(ui->specPMTs->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->specPMTs->yAxis2, SLOT(setRange(QCPRange)));
+    connect(ui->specPMTs, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickPMT(QCPAxis*,QCPAxis::SelectablePart)));
+    connect(ui->specPMTs, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickPMT(QCPLegend*,QCPAbstractLegendItem*)));
+    connect(title_pmt, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickPMT(QMouseEvent*)));
+    connect(ui->specPMTs, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    ui->specPMTs->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->specPMTs, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
+    ui->specPMTs->plotLayout()->addElement(0, 0, title_pmt);
 
-  /* Slots para Head */
-  QCPTextElement *title_head = new QCPTextElement(ui->specHead, title_head_str.c_str(), QFont("sans", 16, QFont::Bold));
-  connect(ui->specHead, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedHead()));
-  connect(ui->specHead, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressHead()));
-  connect(ui->specHead, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelHead()));
-  connect(ui->specHead->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->specHead->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->specHead->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->specHead->yAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->specHead, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickHead(QCPAxis*,QCPAxis::SelectablePart)));
-  connect(ui->specHead, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickHead(QCPLegend*,QCPAbstractLegendItem*)));
-  connect(title_head, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickHead(QMouseEvent*)));
-  connect(ui->specHead, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
-  ui->specHead->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(ui->specHead, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestHead(QPoint)));
-  ui->specHead->plotLayout()->addElement(0, 0, title_head);
+    /* Slots para Head */
+    QCPTextElement *title_head = new QCPTextElement(ui->specHead, title_head_str.c_str(), QFont("sans", 16, QFont::Bold));
+    connect(ui->specHead, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedHead()));
+    connect(ui->specHead, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressHead()));
+    connect(ui->specHead, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheelHead()));
+    connect(ui->specHead->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->specHead->xAxis2, SLOT(setRange(QCPRange)));
+    connect(ui->specHead->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->specHead->yAxis2, SLOT(setRange(QCPRange)));
+    connect(ui->specHead, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClickHead(QCPAxis*,QCPAxis::SelectablePart)));
+    connect(ui->specHead, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClickHead(QCPLegend*,QCPAbstractLegendItem*)));
+    connect(title_head, SIGNAL(doubleClicked(QMouseEvent*)), this, SLOT(titleDoubleClickHead(QMouseEvent*)));
+    connect(ui->specHead, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    ui->specHead->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->specHead, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestHead(QPoint)));
+    ui->specHead->plotLayout()->addElement(0, 0, title_head);
 }
 /**
  * @brief MainWindow::checkCombosStatus
@@ -209,29 +209,29 @@ void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str
  */
 void MainWindow::checkCombosStatus()
 {
-     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
-     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-     connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
-     connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
-     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
-     connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
-     connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
-     connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
-     connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
-     connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
-     connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
-     connect(ui->checkBox_mca_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToConfig(bool)));
-     connect(ui->checkBox_mca_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToConfig(bool)));
-     connect(ui->checkBox_mca_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToConfig(bool)));
-     connect(ui->checkBox_c_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToMCA(bool)));
-     connect(ui->checkBox_c_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToMCA(bool)));
-     connect(ui->checkBox_c_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToMCA(bool)));
-     connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
-     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
-     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
+    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
+    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+    connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
+    connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
+    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
+    connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
+    connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
+    connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
+    connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
+    connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
+    connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
+    connect(ui->checkBox_mca_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToConfig(bool)));
+    connect(ui->checkBox_mca_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToConfig(bool)));
+    connect(ui->checkBox_mca_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToConfig(bool)));
+    connect(ui->checkBox_c_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToMCA(bool)));
+    connect(ui->checkBox_c_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToMCA(bool)));
+    connect(ui->checkBox_c_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToMCA(bool)));
+    connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
+    connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
+    connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
 }
 /**
  * @brief MainWindow::connectSlots
@@ -258,7 +258,7 @@ void MainWindow::connectSlots()
     connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
     connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
     connect(this, SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
-    connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));    
+    connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
 
     /* Objetos */
@@ -274,7 +274,7 @@ void MainWindow::connectSlots()
  */
 void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate_high)
 {
-   writeLogFile("[LOG-RATE],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
+    writeLogFile("[LOG-RATE],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
 }
 /**
  * @brief MainWindow::writeTempToLog
@@ -285,7 +285,7 @@ void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate
  */
 void MainWindow::writeTempToLog(int index, double min, double med, double max)
 {
-  writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
+    writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
 }
 /**
  * @brief MainWindow::receivedElapsedTimeString
@@ -299,15 +299,15 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {   
     if(mode)
-        {
-            addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
-            if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
-        }
-        else
-       {
-            addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
-            if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
-       }
+    {
+        addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
+        if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
+    }
+    else
+    {
+        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
+        if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
+    }
 }
 
 /**
@@ -323,15 +323,15 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
  */
 void MainWindow::getLogErrorThread()
 {
-  setButtonLoggerState(false);
-  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
-  ui->pushButton_logguer->setChecked(false);
+    setButtonLoggerState(false);
+    QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
+    ui->pushButton_logguer->setChecked(false);
 }
 void MainWindow::getMCAErrorThread()
 {
-  setButtonAdquireState(false);
-  QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
-  ui->pushButton_adquirir->setChecked(false);
+    setButtonAdquireState(false);
+    QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
+    ui->pushButton_adquirir->setChecked(false);
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -514,7 +514,7 @@ void MainWindow::setQListElements()
  */
 string MainWindow::getLocalDateAndTime()
 {
-  return (QDateTime::currentDateTime().toString().toStdString());
+    return (QDateTime::currentDateTime().toString().toStdString());
 }
 /**
  * @brief MainWindow::getLogFileName
@@ -580,14 +580,14 @@ bool MainWindow::copyRecursively(const QString &srcFilePath, const QString &tgtF
  */
 void MainWindow::writeFooterAndHeaderDebug(bool header)
 {
-  if (header)
-  {
-    if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
-  }
-  else
-  {
-    if(debug) cout<<"[END-LOG-DBG] ======================================================"<<endl;
-  }
+    if (header)
+    {
+        if(debug) cout<<"[LOG-DBG] "<<getLocalDateAndTime()<<" ================================="<<endl;
+    }
+    else
+    {
+        if(debug) cout<<"[END-LOG-DBG] ======================================================"<<endl;
+    }
 }
 
 /* Menu: Preferencias */
@@ -636,7 +636,7 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
     QDir log(logs);
     if (!dir.exists())
     {
-      dir.mkdir(path);
+        dir.mkdir(path);
     }
     if (!log.exists())
     {
@@ -648,15 +648,15 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
 
     if (!force)
     {
-         if (!exist)
-         {
-             file.open(QIODevice::WriteOnly | QIODevice::Text);
-             if(debug) cout<<"No se encuentra el archivo de preferencias. Se crea el archivo por defecto."<<endl;
-             QTextStream out(&file);
-             out << pref;
-             file.close();
-             return MCAE::FILE_NOT_FOUND;
-         }
+        if (!exist)
+        {
+            file.open(QIODevice::WriteOnly | QIODevice::Text);
+            if(debug) cout<<"No se encuentra el archivo de preferencias. Se crea el archivo por defecto."<<endl;
+            QTextStream out(&file);
+            out << pref;
+            file.close();
+            return MCAE::FILE_NOT_FOUND;
+        }
     }
     else
     {
@@ -720,22 +720,22 @@ void MainWindow::getARPETStatus()
         sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
         msg = readString();
         if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
-            {
-                setButtonState(true,ui->pushButton_arpet_on);
-                setButtonState(true,ui->pushButton_arpet_off, true);
-            } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
-            {
-                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-                setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-            }
+        {
+            setButtonState(true,ui->pushButton_arpet_on);
+            setButtonState(true,ui->pushButton_arpet_off, true);
+        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
+        {
+            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+        }
     }
     catch(Exceptions & ex)
     {
         if(debug)
-            {
-                cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-                writeFooterAndHeaderDebug(false);
-            }
+        {
+            cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
         QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
     writeFooterAndHeaderDebug(false);
@@ -905,8 +905,8 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
     setPreferencesSettingsFile("Paths","conf_set_file",initfile);
     if(debug)
     {
-      cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
-      writeFooterAndHeaderDebug(false);
+        cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
+        writeFooterAndHeaderDebug(false);
     }
 
 }
@@ -938,8 +938,8 @@ void MainWindow::on_pushButton_init_configure_clicked()
         }
         catch(boost::system::system_error e)
         {
-          if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
-          QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
         }
     }
     writeFooterAndHeaderDebug(false);
@@ -950,125 +950,125 @@ void MainWindow::on_pushButton_init_configure_clicked()
  */
 void MainWindow::on_pushButton_configure_clicked()
 {
-   /* Inicialización del modo Coincidencia */
-   QString head;
-   writeFooterAndHeaderDebug(true);
-   int index=ui->comboBox_adquire_mode_coin->currentIndex();
-   try
-   {
-       switch (index)
-       {
-       case COIN_NORMAL:
-           if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
-           initCoincidenceMode();
-           usleep(5000);
-           setCoincidenceModeWindowTime();
-           usleep(5000);
-           setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-           break;
-       case COIN_AUTOCOINCIDENCE:
-           if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
-           initCoincidenceMode();
-           usleep(5000);
-           setCoincidenceModeWindowTime();
-           usleep(5000);
-           setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
-           break;
-       case COIN_AVANCED:
-           if(debug)
-           {
-               cout<<"Modo Coincidencia: Avanzado"<<endl;
-               cout<<"Trama utilizada para la configuración avanzada: "<<getCoincidenceAdvanceModeDataStream()<<endl;
-           }
-           initCoincidenceMode();
-           usleep(5000);
-           setCoincidenceModeWindowTime();
-           usleep(5000);
-           setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
-           break;
-       case COIN_CALIB:
-           head = ui->comboBox_head_select_calib->currentText();
-           if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
-           setCalibrationMode(head);
-           break;
-       default:
-           break;
-       }
-       setLabelState(true,ui->label_coincidencia_estado);
-   }
-   catch(Exceptions & ex)
-   {
-       QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
-       setLabelState(false,ui->label_coincidencia_estado);
-   }
-   writeFooterAndHeaderDebug(false);
+    /* Inicialización del modo Coincidencia */
+    QString head;
+    writeFooterAndHeaderDebug(true);
+    int index=ui->comboBox_adquire_mode_coin->currentIndex();
+    try
+    {
+        switch (index)
+        {
+        case COIN_NORMAL:
+            if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            break;
+        case COIN_AUTOCOINCIDENCE:
+            if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
+            break;
+        case COIN_AVANCED:
+            if(debug)
+            {
+                cout<<"Modo Coincidencia: Avanzado"<<endl;
+                cout<<"Trama utilizada para la configuración avanzada: "<<getCoincidenceAdvanceModeDataStream()<<endl;
+            }
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
+            break;
+        case COIN_CALIB:
+            head = ui->comboBox_head_select_calib->currentText();
+            if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
+            setCalibrationMode(head);
+            break;
+        default:
+            break;
+        }
+        setLabelState(true,ui->label_coincidencia_estado);
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
+        setLabelState(false,ui->label_coincidencia_estado);
+    }
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_initialize_clicked
  */
 void MainWindow::on_pushButton_initialize_clicked()
 {
-   writeFooterAndHeaderDebug(true);
-   if(!arpet->isPortOpen())
-   {
-     QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-     if(debug)
-     {
-       cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-       writeFooterAndHeaderDebug(false);
-     }
-     return;
-   }
+    writeFooterAndHeaderDebug(true);
+    if(!arpet->isPortOpen())
+    {
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+        if(debug)
+        {
+            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
 
-   QList<int> checkedHeads=getCheckedHeads();
+    QList<int> checkedHeads=getCheckedHeads();
 
 
-   for (int i=0;i<checkedHeads.length();i++)
-   {
-       int head_index=checkedHeads.at(i);
-       /* Inicialización del Cabezal */
-       getHeadStatus(head_index);
-       parseConfigurationFile(true, QString::number(head_index));
+    for (int i=0;i<checkedHeads.length();i++)
+    {
+        int head_index=checkedHeads.at(i);
+        /* Inicialización del Cabezal */
+        getHeadStatus(head_index);
+        parseConfigurationFile(true, QString::number(head_index));
 
-       /* Configuración de las tablas de calibración */
-       setCalibrationTables(head_index);
+        /* Configuración de las tablas de calibración */
+        setCalibrationTables(head_index);
 
-       /* Configuración del HV*/
-       ui->lineEdit_alta->setText(QString::number(AT));
-       ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-       string msg;
-       QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-       setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
-       if(debug) cout<<"Cabezal: "<<head_index<<endl;
-       try
-       {
-           sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-           msg = readString();
-           hv_status_table[head_index-1]->setText(psoc_alta);
-           if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
-       }
-       catch(Exceptions & ex)
-       {
-           if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-       }
+        /* Configuración del HV*/
+        ui->lineEdit_alta->setText(QString::number(AT));
+        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        string msg;
+        QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+        if(debug) cout<<"Cabezal: "<<head_index<<endl;
+        try
+        {
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString();
+            hv_status_table[head_index-1]->setText(psoc_alta);
+            if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
+        }
+        catch(Exceptions & ex)
+        {
+            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+        }
 
-       /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
-       setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
-       if(debug) cout<<"Cabezal: "<<head_index<<endl;
-       try
-       {
-           sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-           msg = readString();
-           setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-           if(debug) cout<< "HV encendido"<<endl;
-       }
-       catch(Exceptions & ex)
-       {
-         if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-         setLabelState(false, hv_status_table[head_index-1], true);
-       }
-   }
-   writeFooterAndHeaderDebug(false);
+        /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
+        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+        if(debug) cout<<"Cabezal: "<<head_index<<endl;
+        try
+        {
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString();
+            setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+            if(debug) cout<< "HV encendido"<<endl;
+        }
+        catch(Exceptions & ex)
+        {
+            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+            setLabelState(false, hv_status_table[head_index-1], true);
+        }
+    }
+    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
@@ -1090,15 +1090,15 @@ void MainWindow::on_pushButton_hv_set_clicked()
     }
     catch(Exceptions & ex)
     {
-      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug)
     {
-      showMCAEStreamDebugMode(msg);
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(msg);
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -1120,15 +1120,15 @@ void MainWindow::on_pushButton_hv_on_clicked()
     }
     catch(Exceptions & ex)
     {
-      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug)
     {
-      showMCAEStreamDebugMode(msg);
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(msg);
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -1150,15 +1150,15 @@ void MainWindow::on_pushButton_hv_off_clicked()
     }
     catch(Exceptions & ex)
     {
-      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug)
     {
-      showMCAEStreamDebugMode(msg);
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(msg);
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -1180,15 +1180,15 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     }
     catch(Exceptions & ex)
     {
-      if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
     if (debug)
     {
-      showMCAEStreamDebugMode(msg);
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(msg);
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -1231,8 +1231,8 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
         Exceptions exception_set_coincidence_mode_failure((string("No se puede configurar el modo coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
         if(debug)
         {
-          cout<<"No se puede configurar el modo coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-          showMCAEStreamDebugMode(msg_ans);
+            cout<<"No se puede configurar el modo coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_set_coincidence_mode_failure;
     }
@@ -1253,7 +1253,7 @@ void MainWindow::initCoincidenceMode()
     /* Inicializo nuevamente todos los cabezales */
     for ( int i = 0; i < HEADS; i++ )
     {
-       initHead(i+1);
+        initHead(i+1);
     }
 
     /* Inicialización de modo coincidencia */
@@ -1269,8 +1269,8 @@ void MainWindow::initCoincidenceMode()
         Exceptions exception_init_coincidence_failure((string("No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
         if(debug)
         {
-          cout<<"No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-          showMCAEStreamDebugMode(msg_ans);
+            cout<<"No se pueden inicializar coincidencia en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_init_coincidence_failure;
     }
@@ -1298,8 +1298,8 @@ void MainWindow::setCalibrationMode(QString head)
         Exceptions exception_calibration_failure((string("No se puede poner en modo calibración en el cabezal seleccionado. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
         if(debug)
         {
-          cout<<"No se puede poner en modo calibración en el cabezal seleccionado. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-          showMCAEStreamDebugMode(msg_ans);
+            cout<<"No se puede poner en modo calibración en el cabezal seleccionado. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_calibration_failure;
     }
@@ -1322,8 +1322,8 @@ void MainWindow::setCalibrationMode(QString head)
         Exceptions exception_coincidence_kit_failure((string("Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
         if(debug)
         {
-          cout<<"Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-          showMCAEStreamDebugMode(msg_ans);
+            cout<<"Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_coincidence_kit_failure;
     }
@@ -1358,8 +1358,8 @@ void MainWindow::setCoincidenceModeWindowTime()
         Exceptions exception_set_coincidence_window_time_failure((string("No se pueden configura la ventana de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
         if(debug)
         {
-          cout<<"No se pueden configura la ventana de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-          showMCAEStreamDebugMode(msg_ans);
+            cout<<"No se pueden configura la ventana de tiempo en el/los cabezal/es seleccionado/s. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
         }
         throw exception_set_coincidence_window_time_failure;
     }
@@ -1422,28 +1422,28 @@ string MainWindow::initHead(int head)
  */
 string MainWindow::initSP3(int head)
 {
-   /* Inicialización de las Spartans 3*/
-   setMCAEDataStream(QString::number(head).toStdString(), arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
-   string msg_pmts;
-   try
-   {
-       sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-       msg_pmts = readString();
-   }
-   catch(Exceptions & ex)
-   {
-       /*  @note : Ver time_out interno de planar con Fede y Mati */
-       usleep(WAIT_MICROSECONDS);
-       if (debug) cout<<"No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Error: "<<ex.excdesc<<endl;
-   }
-   if (debug)
-   {
-     cout<<"Inicialización de los PMTs: "<<endl;
-     showMCAEStreamDebugMode(msg_pmts);
-   }
-   setLabelState(arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head-1]);
+    /* Inicialización de las Spartans 3*/
+    setMCAEDataStream(QString::number(head).toStdString(), arpet->getFunCSP3(), arpet->getBrCst(), arpet->getInit_MCA());
+    string msg_pmts;
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_pmts = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        /*  @note : Ver time_out interno de planar con Fede y Mati */
+        usleep(WAIT_MICROSECONDS);
+        if (debug) cout<<"No se pueden inicializar los PMT en el/los cabezal/es seleccionado/s. Error: "<<ex.excdesc<<endl;
+    }
+    if (debug)
+    {
+        cout<<"Inicialización de los PMTs: "<<endl;
+        showMCAEStreamDebugMode(msg_pmts);
+    }
+    setLabelState(arpet->verifyMCAEStream(msg_pmts,arpet->getAnsMultiInit()),pmt_status_table[head-1]);
 
-   return msg_pmts;
+    return msg_pmts;
 }
 /**
  * @brief MainWindow::setCalibrationTables
@@ -1663,13 +1663,13 @@ void MainWindow::drawTemperatureBoard()
                 temp = arpet->getPMTTemperature(msg);
                 if (temp > MIN_TEMPERATURE)temp_vec.push_back(temp);
                 if(debug)
-                    {
-                        cout<<"================================"<<endl;
-                        cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                        showMCAEStreamDebugMode(msg);
-                        cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
-                        cout<<"================================"<<endl;
-                    }
+                {
+                    cout<<"================================"<<endl;
+                    cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                    showMCAEStreamDebugMode(msg);
+                    cout<<"Valor de temperatura: "<<temp<<"°C"<<endl;
+                    cout<<"================================"<<endl;
+                }
                 setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
             }
         }
@@ -1712,10 +1712,10 @@ void MainWindow::clearTemperatureBoard()
     QPalette palette_temperature;
     palette_temperature.setColor(QPalette::Background,Qt::transparent);
     for(int pmt = 0; pmt < PMTs; pmt++)
-       {
-          pmt_label_table[pmt]->setPalette(palette_temperature);
-          pmt_label_table[pmt]->setText(QString::number(pmt+1));
-       }
+    {
+        pmt_label_table[pmt]->setPalette(palette_temperature);
+        pmt_label_table[pmt]->setText(QString::number(pmt+1));
+    }
 }
 /**
  * @brief MainWindow::setTabHead
@@ -1725,11 +1725,11 @@ void MainWindow::setTabHead(int index)
 {
     if(index==MULTIHEAD || index==ALLHEADS)
     {
-       ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
     }
     else
     {
-       ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
+        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
     }
 }
 /**
@@ -1849,27 +1849,27 @@ QString MainWindow::getMultiMCA(QString head)
     QString msg;
 
     if (pmt_selected_list.isEmpty())
-        {
-            if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
-            QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-            return msg;
-        }
+    {
+        if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        return msg;
+    }
     ui->specPMTs->clearGraphs();
 
     try
     {
         setButtonAdquireState(true);
         for (int index=0;index<size_pmt_selected;index++)
+        {
+            string pmt = pmt_selected_list.at(index).toStdString();
+            msg = getMCA(head.toStdString(), arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
+            if(debug)
             {
-                string pmt = pmt_selected_list.at(index).toStdString();
-                msg = getMCA(head.toStdString(), arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
-                if(debug)
-                    {
-                        cout<<"PMT: "<<pmt<<" "<<endl;
-                        showMCAEStreamDebugMode(msg.toStdString());
-                    }
-                addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
+                cout<<"PMT: "<<pmt<<" "<<endl;
+                showMCAEStreamDebugMode(msg.toStdString());
             }
+            addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
+        }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
     }
     catch(Exceptions & ex)
@@ -1929,8 +1929,8 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
     }
     else
     {
-      ui->label_title_output->setText("MCA Extended");
-      ui->label_data_output->setText("");
+        ui->label_title_output->setText("MCA Extended");
+        ui->label_data_output->setText("");
     }
 
     if(debug && !multimode)
@@ -2046,23 +2046,23 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
  */
 int MainWindow::getPMT(QLineEdit *line_edit)
 {
-   QString pmt=line_edit->text();
-   switch (adquire_mode) {
-     case PMT:
-       if(pmt.isEmpty() || pmt.toInt()==0)
-       {
-           pmt=QString::number(1);
-           line_edit->setText(pmt);
-       }
-       break;
-      case CABEZAL:
-       line_edit->setText(0);
-       break;
-      default:
-       break;
-   }
+    QString pmt=line_edit->text();
+    switch (adquire_mode) {
+    case PMT:
+        if(pmt.isEmpty() || pmt.toInt()==0)
+        {
+            pmt=QString::number(1);
+            line_edit->setText(pmt);
+        }
+        break;
+    case CABEZAL:
+        line_edit->setText(0);
+        break;
+    default:
+        break;
+    }
 
-   return line_edit->text().toInt();
+    return line_edit->text().toInt();
 }
 /**
  * @brief MainWindow::getPSOCAlta
@@ -2074,8 +2074,8 @@ QString MainWindow::getPSOCAlta(QLineEdit *line_edit)
     QString psoc_value=line_edit->text();
     if(psoc_value.isEmpty() || psoc_value.toInt()<MIN_HIGH_HV_VOLTAGE)
     {
-            psoc_value=QString::number(MIN_HIGH_HV_VOLTAGE);
-            line_edit->setText(psoc_value);
+        psoc_value=QString::number(MIN_HIGH_HV_VOLTAGE);
+        line_edit->setText(psoc_value);
     }
 
     return line_edit->text();
@@ -2116,8 +2116,8 @@ string MainWindow::getHVValue(QLineEdit *line_edit, int value)
  */
 void MainWindow::setMCAEDataStream(string head, string function, string pmt, string mca_function, int bytes_mca, string hv_value)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + function);
-  arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + function);
+    arpet->setMCAEStream(pmt, bytes_mca, mca_function, hv_value);
 }
 /**
  * @brief MainWindow::setMCAEDataStream
@@ -2138,8 +2138,8 @@ void MainWindow::setMCAEDataStream(string head, string function, string pmt, str
  */
 void MainWindow::setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
-  arpet->setMCAEStream(pmt, mca_function, time);
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + function);
+    arpet->setMCAEStream(pmt, mca_function, time);
 }
 /**
  * @brief MainWindow::setMCAEDataStream
@@ -2157,8 +2157,8 @@ void MainWindow::setMCAEDataStream(string tab, string function, string pmt, stri
  */
 void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<double> table )
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
-  arpet->setMCAEStream(calib_function, table);
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + getHead(tab).toStdString() + arpet->getFunCHead());
+    arpet->setMCAEStream(calib_function, table);
 }
 /**
  * @brief MainWindow::setMCAEDataStream
@@ -2180,8 +2180,8 @@ void MainWindow::setMCAEDataStream(string tab, string calib_function, QVector<do
  */
 void MainWindow::setMCAEDataStream(string coin_function, string data_one, string data_two, bool time)
 {
-  arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() + arpet->getFunCHead());
-  arpet->setMCAEStream(coin_function, data_one, data_two, time);
+    arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() + arpet->getFunCHead());
+    arpet->setMCAEStream(coin_function, data_one, data_two, time);
 }
 /**
  * @brief MainWindow::setMCAEDataStream
@@ -2229,8 +2229,8 @@ int MainWindow::setPSOCDataStream(string head, string size_received, string func
  */
 void MainWindow::resetHitsValues()
 {
-  arpet->resetHitsMCA();
-  setHitsInit(true);
+    arpet->resetHitsMCA();
+    setHitsInit(true);
 }
 /**
  * @brief MainWindow::resetHeads
@@ -2267,13 +2267,13 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
     if(!arpet->isPortOpen())
     {
-      QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-      if(debug)
-      {
-        cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-        writeFooterAndHeaderDebug(false);
-      }
-      return;
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+        if(debug)
+        {
+            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
     }
 
     bool mode_continue = ui->checkBox_continue->isChecked(); //Modo continuo
@@ -2288,16 +2288,16 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         {
         case PMT:
             if (pmt_selected_list.isEmpty())
-                {
-                    writeFooterAndHeaderDebug(true);
-                    setButtonAdquireState(false);
-                    if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
-                    QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-                    ui->pushButton_adquirir->setChecked(false);
-                    setButtonAdquireState(true, true);
-                    writeFooterAndHeaderDebug(false);
-                    return;
-                }
+            {
+                writeFooterAndHeaderDebug(true);
+                setButtonAdquireState(false);
+                if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+                QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+                ui->pushButton_adquirir->setChecked(false);
+                setButtonAdquireState(true, true);
+                writeFooterAndHeaderDebug(false);
+                return;
+            }
             ui->specPMTs->clearGraphs();
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
             {
@@ -2437,26 +2437,26 @@ void MainWindow::on_pushButton_reset_clicked()
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
     switch (adquire_mode) {
-        case PMT:
-            if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
-            resetHitsValues();
-            setPMTCustomPlotEnvironment(pmt_selected_list);
-            removeAllGraphsPMT();
-            break;
-        case CABEZAL:
-            if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
-            resetHeads();
-            resetHitsValues();
-            setHeadCustomPlotEnvironment();
-            removeAllGraphsHead();
-            break;
-        case TEMPERATURE:
-            if(debug) cout<<"Se reiniciaron los valores de temperatura"<<endl;
-            clearTemperatureBoard();
-            break;
-        default:
-            break;
-        }
+    case PMT:
+        if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
+        resetHitsValues();
+        setPMTCustomPlotEnvironment(pmt_selected_list);
+        removeAllGraphsPMT();
+        break;
+    case CABEZAL:
+        if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
+        resetHeads();
+        resetHitsValues();
+        setHeadCustomPlotEnvironment();
+        removeAllGraphsHead();
+        break;
+    case TEMPERATURE:
+        if(debug) cout<<"Se reiniciaron los valores de temperatura"<<endl;
+        clearTemperatureBoard();
+        break;
+    default:
+        break;
+    }
     writeFooterAndHeaderDebug(false);
 }
 /**
@@ -2527,8 +2527,8 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     ui->label_title_output->setText("HV de Dinodo");
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2557,14 +2557,14 @@ void MainWindow::on_pushButton_l_5_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2593,14 +2593,14 @@ void MainWindow::on_pushButton_l_10_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2629,14 +2629,14 @@ void MainWindow::on_pushButton_l_50_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2671,8 +2671,8 @@ void MainWindow::on_pushButton_p_5_clicked()
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2701,14 +2701,14 @@ void MainWindow::on_pushButton_p_10_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2737,14 +2737,14 @@ void MainWindow::on_pushButton_p_50_clicked()
     }
     catch (Exceptions ex)
     {
-      if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-      QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
     if (debug)
     {
-      showMCAEStreamDebugMode(q_msg.toStdString());
-      writeFooterAndHeaderDebug(false);
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
     }
 }
 /**
@@ -2805,7 +2805,7 @@ QList<int> MainWindow::getCheckedHeads()
     }
     else
     {
-       checkedHeads.append(getHead("config").toInt());
+        checkedHeads.append(getHead("config").toInt());
     }
 
     if(checkedHeads.length() == 0)
@@ -3013,20 +3013,20 @@ void MainWindow::setButtonAdquireState(bool state, bool disable)
     QString qt_text;
 
     if (state && !disable)
-        {
-           qt_text="Adquiriendo";
-           setButtonState(state,ui->pushButton_adquirir,disable);
-        }
+    {
+        qt_text="Adquiriendo";
+        setButtonState(state,ui->pushButton_adquirir,disable);
+    }
     else if (!state && !disable)
-        {
-           qt_text="Error";
-           setButtonState(state,ui->pushButton_adquirir,disable);
-        }
+    {
+        qt_text="Error";
+        setButtonState(state,ui->pushButton_adquirir,disable);
+    }
     else
-        {
-           qt_text="Adquirir";
-           setButtonState(state,ui->pushButton_adquirir,disable);
-        }
+    {
+        qt_text="Adquirir";
+        setButtonState(state,ui->pushButton_adquirir,disable);
+    }
     ui->pushButton_adquirir->setText(qt_text);
     ui->pushButton_adquirir->update();
 }
@@ -3040,20 +3040,20 @@ void MainWindow::setButtonConnectState(bool state, bool disable)
     QString qt_text;
 
     if (state && !disable)
-        {
-           qt_text="Conectar";
-           setButtonState(state,ui->pushButton_init_configure,disable);
-        }
+    {
+        qt_text="Conectar";
+        setButtonState(state,ui->pushButton_init_configure,disable);
+    }
     else if (!state && !disable)
-        {
-           qt_text="Desconectar";
-           setButtonState(state,ui->pushButton_init_configure,disable);
-        }
+    {
+        qt_text="Desconectar";
+        setButtonState(state,ui->pushButton_init_configure,disable);
+    }
     else
-        {
-           qt_text="Conectar";
-           setButtonState(state,ui->pushButton_init_configure,disable);
-        }
+    {
+        qt_text="Conectar";
+        setButtonState(state,ui->pushButton_init_configure,disable);
+    }
     ui->pushButton_init_configure->setText(qt_text);
     ui->pushButton_init_configure->update();
 }
@@ -3062,20 +3062,20 @@ void MainWindow::setButtonLoggerState(bool state, bool disable)
     QString qt_text;
 
     if (state && !disable)
-        {
-           qt_text="Logueando";
-           setButtonState(state,ui->pushButton_logguer,disable);
-        }
+    {
+        qt_text="Logueando";
+        setButtonState(state,ui->pushButton_logguer,disable);
+    }
     else if (!state && !disable)
-        {
-           qt_text="Error";
-           setButtonState(state,ui->pushButton_logguer,disable);
-        }
+    {
+        qt_text="Error";
+        setButtonState(state,ui->pushButton_logguer,disable);
+    }
     else
-        {
-           qt_text="Iniciar";
-           setButtonState(state,ui->pushButton_logguer,disable);
-        }
+    {
+        qt_text="Iniciar";
+        setButtonState(state,ui->pushButton_logguer,disable);
+    }
     ui->pushButton_logguer->setText(qt_text);
     ui->pushButton_logguer->update();
 }
@@ -3118,19 +3118,19 @@ QString MainWindow::getHead(string tab)
     {
         if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
         {
-           head=ui->comboBox_head_select_graph->currentText();
+            head=ui->comboBox_head_select_graph->currentText();
         }
     }
     else if (tab=="config")
     {
         if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
         {
-           head=ui->comboBox_head_select_config->currentText();
+            head=ui->comboBox_head_select_config->currentText();
         }
     }
     else if (tab=="terminal")
     {
-       head=ui->comboBox_head_select_terminal->currentText();
+        head=ui->comboBox_head_select_terminal->currentText();
     }
     else head="";
 
@@ -3199,7 +3199,7 @@ string MainWindow::readBufferString(int buffer_size)
  */
 size_t MainWindow::sendString(string msg, string end)
 {
-     mMutex.lock();
+    mMutex.lock();
 
     arpet->portFlush();
     size_t bytes_transfered = 0;
@@ -3463,38 +3463,38 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
     int bytes_mca=0;
     switch (ui->comboBox_mca_function_terminal->currentIndex())
     {
-        case 0:
-            mca_function=arpet->getInit_MCA();
-            hv_value="";
-            break;
-        case 1:
-            mca_function=arpet->getData_MCA();
-            hv_value="";
-            break;
-        case 2:
-            mca_function=arpet->getSetHV_MCA();
-            hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
-            break;
-        case 3:
-            mca_function=arpet->getTemp_MCA();
-            hv_value="";
-            break;
-        default:
-            break;
+    case 0:
+        mca_function=arpet->getInit_MCA();
+        hv_value="";
+        break;
+    case 1:
+        mca_function=arpet->getData_MCA();
+        hv_value="";
+        break;
+    case 2:
+        mca_function=arpet->getSetHV_MCA();
+        hv_value=getHVValue(ui->lineEdit_pmt_hv_terminal);
+        break;
+    case 3:
+        mca_function=arpet->getTemp_MCA();
+        hv_value="";
+        break;
+    default:
+        break;
     }
 
     switch (ui->comboBox_func_terminal->currentIndex())
     {
-        case 0:
-            function=arpet->getFunCHead();
-            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS*6+16;
-            break;
-        case 1:
-            function=arpet->getFunCSP3();
-            if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS_PMT*6+16;
-            break;
-        default:
-            break;
+    case 0:
+        function=arpet->getFunCHead();
+        if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS*6+16;
+        break;
+    case 1:
+        function=arpet->getFunCSP3();
+        if (ui->comboBox_mca_function_terminal->currentIndex()==1) bytes_mca = CHANNELS_PMT*6+16;
+        break;
+    default:
+        break;
     }
 
     int pmt=getPMT(ui->lineEdit_pmt_terminal);
@@ -3508,23 +3508,23 @@ void MainWindow::on_pushButton_stream_configure_mca_terminal_clicked()
 void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
 {
     QString psoc_alta;
-   switch (ui->comboBox_psoc_function_terminal->currentIndex())
+    switch (ui->comboBox_psoc_function_terminal->currentIndex())
     {
-        case 0:
-            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
-            break;
-        case 1:
-            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
-            break;
-        case 2:
-            psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
-            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
-            break;
-        case 3:
-            setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
-            break;
-        default:
-            break;
+    case 0:
+        setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+        break;
+    case 1:
+        setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
+        break;
+    case 2:
+        psoc_alta = getPSOCAlta(ui->lineEdit_psoc_hv_terminal);
+        setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+        break;
+    case 3:
+        setPSOCDataStream(getHead("terminal").toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
+        break;
+    default:
+        break;
     }
     ui->lineEdit_terminal->setText(QString::fromStdString(arpet->getTrama_MCAE()));
 }
@@ -3536,15 +3536,15 @@ void MainWindow::on_pushButton_stream_configure_psoc_terminal_clicked()
  */
 QVector<int> MainWindow::getCustomPlotParameters()
 {
-  QVector<int> param(6);
-  param[0]=rand()%245+10;//R
-  param[1]=rand()%245+10;//G
-  param[2]=rand()%245+10;//B
-  param[3]=rand()%5+1; //LineStyle
-  param[4]=rand()%14+1;//ScatterShape
-  param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
+    QVector<int> param(6);
+    param[0]=rand()%245+10;//R
+    param[1]=rand()%245+10;//G
+    param[2]=rand()%245+10;//B
+    param[3]=rand()%5+1; //LineStyle
+    param[4]=rand()%14+1;//ScatterShape
+    param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
 
-  return param;
+    return param;
 }
 /**
  * @brief MainWindow::setPMTCustomPlotEnvironment
@@ -3553,9 +3553,9 @@ QVector<int> MainWindow::getCustomPlotParameters()
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
     for (unsigned int index=0; index < qlist.length(); index++)
-        {
-            qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
-        }
+    {
+        qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
+    }
 }
 /**
  * @brief MainWindow::setHeadCustomPlotEnvironment
@@ -3563,9 +3563,9 @@ void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 void MainWindow::setHeadCustomPlotEnvironment()
 {
     for (unsigned int index=0; index < HEADS; index++)
-        {
-            qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
-        }
+    {
+        qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
+    }
 }
 /**
  * @brief MainWindow::addGraph
@@ -3602,17 +3602,17 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
  */
 void MainWindow::axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part)
 {
-  // Renombra la etiqueta del eje a partir de un doble-clic
-  if (part == QCPAxis::spAxisLabel)
-  {
-    bool ok;
-    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
-    if (ok)
+    // Renombra la etiqueta del eje a partir de un doble-clic
+    if (part == QCPAxis::spAxisLabel)
     {
-      axis->setLabel(newLabel);
-      ui->specPMTs->replot();
+        bool ok;
+        QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+        if (ok)
+        {
+            axis->setLabel(newLabel);
+            ui->specPMTs->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::axisLabelDoubleClickHead
@@ -3621,17 +3621,17 @@ void MainWindow::axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart 
  */
 void MainWindow::axisLabelDoubleClickHead(QCPAxis *axis, QCPAxis::SelectablePart part)
 {
-  // Renombra la etiqueta del eje a partir de un doble-clic
-  if (part == QCPAxis::spAxisLabel)
-  {
-    bool ok;
-    QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
-    if (ok)
+    // Renombra la etiqueta del eje a partir de un doble-clic
+    if (part == QCPAxis::spAxisLabel)
     {
-      axis->setLabel(newLabel);
-      ui->specHead->replot();
+        bool ok;
+        QString newLabel = QInputDialog::getText(this, "QCustomPlot", "Nueva etiqueta: ", QLineEdit::Normal, axis->label(), &ok);
+        if (ok)
+        {
+            axis->setLabel(newLabel);
+            ui->specHead->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::titleDoubleClickPMT
@@ -3639,18 +3639,18 @@ void MainWindow::axisLabelDoubleClickHead(QCPAxis *axis, QCPAxis::SelectablePart
  */
 void MainWindow::titleDoubleClickPMT(QMouseEvent* event)
 {
-  Q_UNUSED(event)
-  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
-  {
-    // Renombra el título del gráfico a partir de un doble-clic
-    bool ok;
-    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
-    if (ok)
+    Q_UNUSED(event)
+    if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
     {
-      title->setText(newTitle);
-      ui->specPMTs->replot();
+        // Renombra el título del gráfico a partir de un doble-clic
+        bool ok;
+        QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+        if (ok)
+        {
+            title->setText(newTitle);
+            ui->specPMTs->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::titleDoubleClickHead
@@ -3658,18 +3658,18 @@ void MainWindow::titleDoubleClickPMT(QMouseEvent* event)
  */
 void MainWindow::titleDoubleClickHead(QMouseEvent* event)
 {
-  Q_UNUSED(event)
-  if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
-  {
-    // Renombra el título del gráfico a partir de un doble-clic
-    bool ok;
-    QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
-    if (ok)
+    Q_UNUSED(event)
+    if (QCPTextElement *title = qobject_cast<QCPTextElement*>(sender()))
     {
-      title->setText(newTitle);
-      ui->specHead->replot();
+        // Renombra el título del gráfico a partir de un doble-clic
+        bool ok;
+        QString newTitle = QInputDialog::getText(this, "QCustomPlot", "Nuevo título: ", QLineEdit::Normal, title->text(), &ok);
+        if (ok)
+        {
+            title->setText(newTitle);
+            ui->specHead->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::legendDoubleClickPMT
@@ -3678,19 +3678,19 @@ void MainWindow::titleDoubleClickHead(QMouseEvent* event)
  */
 void MainWindow::legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *item)
 {
-  // Renombra el gráfico a partir de un doble-clic
-  Q_UNUSED(legend)
-  if (item)
-  {
-    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-    bool ok;
-    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
-    if (ok)
+    // Renombra el gráfico a partir de un doble-clic
+    Q_UNUSED(legend)
+    if (item)
     {
-      plItem->plottable()->setName(newName);
-      ui->specPMTs->replot();
+        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+        bool ok;
+        QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+        if (ok)
+        {
+            plItem->plottable()->setName(newName);
+            ui->specPMTs->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::legendDoubleClickHead
@@ -3699,19 +3699,19 @@ void MainWindow::legendDoubleClickPMT(QCPLegend *legend, QCPAbstractLegendItem *
  */
 void MainWindow::legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem *item)
 {
-  // Renombra el gráfico a partir de un doble-clic
-  Q_UNUSED(legend)
-  if (item)
-  {
-    QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-    bool ok;
-    QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
-    if (ok)
+    // Renombra el gráfico a partir de un doble-clic
+    Q_UNUSED(legend)
+    if (item)
     {
-      plItem->plottable()->setName(newName);
-      ui->specHead->replot();
+        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+        bool ok;
+        QString newName = QInputDialog::getText(this, "QCustomPlot", "Nuevo nombre de gráfico: ", QLineEdit::Normal, plItem->plottable()->name(), &ok);
+        if (ok)
+        {
+            plItem->plottable()->setName(newName);
+            ui->specHead->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::contextMenuRequestPMT
@@ -3719,26 +3719,26 @@ void MainWindow::legendDoubleClickHead(QCPLegend *legend, QCPAbstractLegendItem 
  */
 void MainWindow::contextMenuRequestPMT(QPoint pos)
 {
-  QMenu *menu = new QMenu(this);
-  menu->setAttribute(Qt::WA_DeleteOnClose);
+    QMenu *menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
 
-  if (ui->specPMTs->legend->selectTest(pos, false) >= 0)
-  {
-    menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
-    menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
-    menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
-    menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
-    menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
-  } else
-  {
-    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomPMT()));
-    if (ui->specPMTs->selectedGraphs().size() > 0)
-      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
-    if (ui->specPMTs->graphCount() > 0)
-      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
-  }
+    if (ui->specPMTs->legend->selectTest(pos, false) >= 0)
+    {
+        menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+        menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+        menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+        menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+        menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendPMT()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+    } else
+    {
+        menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomPMT()));
+        if (ui->specPMTs->selectedGraphs().size() > 0)
+            menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphPMT()));
+        if (ui->specPMTs->graphCount() > 0)
+            menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsPMT()));
+    }
 
-  menu->popup(ui->specPMTs->mapToGlobal(pos));
+    menu->popup(ui->specPMTs->mapToGlobal(pos));
 }
 /**
  * @brief MainWindow::contextMenuRequestHead
@@ -3746,223 +3746,223 @@ void MainWindow::contextMenuRequestPMT(QPoint pos)
  */
 void MainWindow::contextMenuRequestHead(QPoint pos)
 {
-  QMenu *menu = new QMenu(this);
-  menu->setAttribute(Qt::WA_DeleteOnClose);
+    QMenu *menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
 
-  if (ui->specHead->legend->selectTest(pos, false) >= 0)
-  {
-    menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
-    menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
-    menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
-    menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
-    menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
-  } else
-  {
-    menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomHead()));
-    if (ui->specHead->selectedGraphs().size() > 0)
-      menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphHead()));
-    if (ui->specHead->graphCount() > 0)
-      menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsHead()));
+    if (ui->specHead->legend->selectTest(pos, false) >= 0)
+    {
+        menu->addAction("Mover hacia arriba a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+        menu->addAction("Mover hacia arriba al centro", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+        menu->addAction("Mover hacia arriba a la derecha", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+        menu->addAction("Mover hacia abajo a la derecha", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+        menu->addAction("Mover hacia abajo a la izquierda", this, SLOT(moveLegendHead()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+    } else
+    {
+        menu->addAction("Restaurar el tamaño del gráfico", this, SLOT(resetGraphZoomHead()));
+        if (ui->specHead->selectedGraphs().size() > 0)
+            menu->addAction("Eliminar el gráfico seleccionado", this, SLOT(removeSelectedGraphHead()));
+        if (ui->specHead->graphCount() > 0)
+            menu->addAction("Eliminar todos los gráficos", this, SLOT(removeAllGraphsHead()));
 
-  }
+    }
 
-  menu->popup(ui->specHead->mapToGlobal(pos));
+    menu->popup(ui->specHead->mapToGlobal(pos));
 }
 /**
  * @brief MainWindow::moveLegendPMT
  */
 void MainWindow::moveLegendPMT()
 {
-  if (QAction* contextAction = qobject_cast<QAction*>(sender()))
-  {
-    bool ok;
-    int dataInt = contextAction->data().toInt(&ok);
-    if (ok)
+    if (QAction* contextAction = qobject_cast<QAction*>(sender()))
     {
-      ui->specPMTs->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
-      ui->specPMTs->replot();
+        bool ok;
+        int dataInt = contextAction->data().toInt(&ok);
+        if (ok)
+        {
+            ui->specPMTs->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
+            ui->specPMTs->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::moveLegendHead
  */
 void MainWindow::moveLegendHead()
 {
-  if (QAction* contextAction = qobject_cast<QAction*>(sender()))
-  {
-    bool ok;
-    int dataInt = contextAction->data().toInt(&ok);
-    if (ok)
+    if (QAction* contextAction = qobject_cast<QAction*>(sender()))
     {
-      ui->specHead->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
-      ui->specHead->replot();
+        bool ok;
+        int dataInt = contextAction->data().toInt(&ok);
+        if (ok)
+        {
+            ui->specHead->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
+            ui->specHead->replot();
+        }
     }
-  }
 }
 /**
  * @brief MainWindow::mousePressPMT
  */
 void MainWindow::mousePressPMT()
 {
-  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->xAxis->orientation());
-  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->yAxis->orientation());
-  else
-    ui->specPMTs->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+    if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->xAxis->orientation());
+    else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs->axisRect()->setRangeDrag(ui->specPMTs->yAxis->orientation());
+    else
+        ui->specPMTs->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
 }
 /**
  * @brief MainWindow::mousePressHead
  */
 void MainWindow::mousePressHead()
 {
-  if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specHead->axisRect()->setRangeDrag(ui->specHead->xAxis->orientation());
-  else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specHead->axisRect()->setRangeDrag(ui->specHead->yAxis->orientation());
-  else
-    ui->specHead->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+    if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specHead->axisRect()->setRangeDrag(ui->specHead->xAxis->orientation());
+    else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specHead->axisRect()->setRangeDrag(ui->specHead->yAxis->orientation());
+    else
+        ui->specHead->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
 }
 /**
  * @brief MainWindow::mouseWheelPMT
  */
 void MainWindow::mouseWheelPMT()
 {
-  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->xAxis->orientation());
-  else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->yAxis->orientation());
-  else
-    ui->specPMTs->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->xAxis->orientation());
+    else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->yAxis->orientation());
+    else
+        ui->specPMTs->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 /**
  * @brief MainWindow::mouseWheelHead
  */
 void MainWindow::mouseWheelHead()
 {
-  if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specHead->axisRect()->setRangeZoom(ui->specHead->xAxis->orientation());
-  else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->specHead->axisRect()->setRangeZoom(ui->specHead->yAxis->orientation());
-  else
-    ui->specHead->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specHead->axisRect()->setRangeZoom(ui->specHead->xAxis->orientation());
+    else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specHead->axisRect()->setRangeZoom(ui->specHead->yAxis->orientation());
+    else
+        ui->specHead->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 /**
  * @brief MainWindow::removeSelectedGraphPMT
  */
 void MainWindow::removeSelectedGraphPMT()
 {
-  if (ui->specPMTs->selectedGraphs().size() > 0)
-  {
-    ui->specPMTs->removeGraph(ui->specPMTs->selectedGraphs().first());
-    ui->specPMTs->replot();
-  }
+    if (ui->specPMTs->selectedGraphs().size() > 0)
+    {
+        ui->specPMTs->removeGraph(ui->specPMTs->selectedGraphs().first());
+        ui->specPMTs->replot();
+    }
 }
 /**
  * @brief MainWindow::removeSelectedGraphHead
  */
 void MainWindow::removeSelectedGraphHead()
 {
-  if (ui->specHead->selectedGraphs().size() > 0)
-  {
-    ui->specHead->removeGraph(ui->specHead->selectedGraphs().first());
-    ui->specHead->replot();
-  }
+    if (ui->specHead->selectedGraphs().size() > 0)
+    {
+        ui->specHead->removeGraph(ui->specHead->selectedGraphs().first());
+        ui->specHead->replot();
+    }
 }
 /**
  * @brief MainWindow::removeAllGraphsPMT
  */
 void MainWindow::removeAllGraphsPMT()
 {
-  ui->specPMTs->clearGraphs();
-  ui->specPMTs->replot();
+    ui->specPMTs->clearGraphs();
+    ui->specPMTs->replot();
 }
 /**
  * @brief MainWindow::removeAllGraphsHead
  */
 void MainWindow::removeAllGraphsHead()
 {
-  ui->specHead->clearGraphs();
-  ui->specHead->replot();
+    ui->specHead->clearGraphs();
+    ui->specHead->replot();
 }
 /**
  * @brief MainWindow::selectionChangedPMT
  */
 void MainWindow::selectionChangedPMT()
 {
-  if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-      ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-  {
-    ui->specPMTs->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    ui->specPMTs->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-  }
-
-  if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-      ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-  {
-    ui->specPMTs->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    ui->specPMTs->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-  }
-
-
-  for (int i=0; i<ui->specPMTs->graphCount(); ++i)
-  {
-    QCPGraph *graph = ui->specPMTs->graph(i);
-    QCPPlottableLegendItem *item = ui->specPMTs->legend->itemWithPlottable(graph);
-    if (item->selected() || graph->selected())
+    if (ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
     {
-      item->setSelected(true);
-      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+        ui->specPMTs->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specPMTs->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
     }
-  }
+
+    if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+    {
+        ui->specPMTs->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specPMTs->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    }
+
+
+    for (int i=0; i<ui->specPMTs->graphCount(); ++i)
+    {
+        QCPGraph *graph = ui->specPMTs->graph(i);
+        QCPPlottableLegendItem *item = ui->specPMTs->legend->itemWithPlottable(graph);
+        if (item->selected() || graph->selected())
+        {
+            item->setSelected(true);
+            graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+        }
+    }
 }
 /**
  * @brief MainWindow::selectionChangedHead
  */
 void MainWindow::selectionChangedHead()
 {
-  if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-      ui->specHead->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-  {
-    ui->specHead->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    ui->specHead->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-  }
-
-  if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-      ui->specHead->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-  {
-    ui->specHead->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    ui->specHead->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-  }
-
-
-  for (int i=0; i<ui->specHead->graphCount(); ++i)
-  {
-    QCPGraph *graph = ui->specHead->graph(i);
-    QCPPlottableLegendItem *item = ui->specHead->legend->itemWithPlottable(graph);
-    if (item->selected() || graph->selected())
+    if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specHead->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
     {
-      item->setSelected(true);
-      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+        ui->specHead->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specHead->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
     }
-  }
+
+    if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specHead->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specHead->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+    {
+        ui->specHead->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specHead->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    }
+
+
+    for (int i=0; i<ui->specHead->graphCount(); ++i)
+    {
+        QCPGraph *graph = ui->specHead->graph(i);
+        QCPPlottableLegendItem *item = ui->specHead->legend->itemWithPlottable(graph);
+        if (item->selected() || graph->selected())
+        {
+            item->setSelected(true);
+            graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+        }
+    }
 }
 /**
  * @brief MainWindow::resetGraphZoomHead
  */
 void MainWindow::resetGraphZoomHead()
 {
-  ui->specHead->rescaleAxes();
-  ui->specHead->replot();
+    ui->specHead->rescaleAxes();
+    ui->specHead->replot();
 }
 /**
  * @brief MainWindow::resetGraphZoomPMT
  */
 void MainWindow::resetGraphZoomPMT()
 {
-  ui->specPMTs->rescaleAxes();
-  ui->specPMTs->replot();
+    ui->specPMTs->rescaleAxes();
+    ui->specPMTs->replot();
 }
 /**
  * @brief MainWindow::graphClicked
@@ -3971,10 +3971,10 @@ void MainWindow::resetGraphZoomPMT()
  */
 void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 {
-  /** @todo : Ver el funcionamiento y requerimiento de este método.*/
-  double dataValue = plottable->interface1D()->dataMainValue(dataIndex);
-  QString message = QString("Clicked on graph '%1' at data point #%2 with value %3.").arg(plottable->name()).arg(dataIndex).arg(dataValue);
-  ui->statusBar->showMessage(message, 2500);
+    /** @todo : Ver el funcionamiento y requerimiento de este método.*/
+    double dataValue = plottable->interface1D()->dataMainValue(dataIndex);
+    QString message = QString("Clicked on graph '%1' at data point #%2 with value %3.").arg(plottable->name()).arg(dataIndex).arg(dataValue);
+    ui->statusBar->showMessage(message, 2500);
 }
 
 /* Autocalib */
@@ -4060,7 +4060,7 @@ void MainWindow::on_pushButton_clicked()
     //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
     //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
 
-/*
+    /*
     double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     double lala = calibrador->Buscar_Pico(canales_locos, 1024);
     cout<<lala<<endl;
@@ -4226,7 +4226,7 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de salida"),
-                           root);
+                                                   root);
 
     calibrador->setPathSalida(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
@@ -4380,7 +4380,7 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de entrada"),
-                           root);
+                                                   root);
 
     calibrador->setPathEntrada(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
@@ -4785,7 +4785,7 @@ void MainWindow::on_pushButton_APIRL_PATH_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del build de APIRL"),
-                           root);
+                                                   root);
 
     recon_externa->setPathAPIRL(filename+"/");
 
@@ -4804,7 +4804,7 @@ void MainWindow::on_pushButton_INTERFILES_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta de scripts de interfiles"),
-                           root);
+                                                   root);
 
     recon_externa->setPathINTERFILES(filename+"/");
 
@@ -4889,7 +4889,7 @@ void MainWindow::on_pushButton_INTERFILES_2_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta de salida"),
-                           root);
+                                                   root);
 
     recon_externa->setPathSalida(filename+"/");
 
@@ -4908,7 +4908,7 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
     QFileDialog dialog;
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del parser"),
-                           root);
+                                                   root);
 
     recon_externa->setPathPARSER(filename+"/");
 

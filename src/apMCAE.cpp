@@ -25,72 +25,72 @@ using namespace ap;
  * @param timeout
  */
 MCAE::MCAE(size_t timeout)
-  :port(serial_port_ptr(new serial_port(io))),
-    timeout(timeout),
-    read_error(true),
-    timer(port->get_io_service()),
-    PortBaudRate(921600),
-    AnsAP_ON("ON"),
-    AnsAP_OFF("OFF"),
-    AP_ON("ARPETON"),
-    AP_OFF("ARPETOFF"),
-    AP_STATUS("ARPETO?"),
-    Head_MCAE("#C"),
-    Head_MCA("@"),
-    End_MCA("\r"),
-    End_PSOC("\r\n"),
+    :port(serial_port_ptr(new serial_port(io))),
+      timeout(timeout),
+      read_error(true),
+      timer(port->get_io_service()),
+      PortBaudRate(921600),
+      AnsAP_ON("ON"),
+      AnsAP_OFF("OFF"),
+      AP_ON("ARPETON"),
+      AP_OFF("ARPETOFF"),
+      AP_STATUS("ARPETO?"),
+      Head_MCAE("#C"),
+      Head_MCA("@"),
+      End_MCA("\r"),
+      End_PSOC("\r\n"),
 
-    /*Funciones trama MCAE*/
-    FunCHead("01"),
-    FunCSP3("02"),
-    FunCPSOC("03"),
+      /*Funciones trama MCAE*/
+      FunCHead("01"),
+      FunCSP3("02"),
+      FunCPSOC("03"),
 
-    /*Funciones de Tablas*/
-    Head_Calib_Coin("&"),
-    Energy_Calib_Table("001"),
-    X_Calib_Table("002"),
-    Y_Calib_Table("003"),
-    Window_Limits_Table("004"),
-    AnsEnergy_Calib_Table("&101"),
-    AnsX_Calib_Table("&102"),
-    AnsY_Calib_Table("&103"),
-    AnsWindow_Limits_Table("&104"),
-    Generic_Received_Size("0001"),
-    Generic_Sended_Size("01"),
+      /*Funciones de Tablas*/
+      Head_Calib_Coin("&"),
+      Energy_Calib_Table("001"),
+      X_Calib_Table("002"),
+      Y_Calib_Table("003"),
+      Window_Limits_Table("004"),
+      AnsEnergy_Calib_Table("&101"),
+      AnsX_Calib_Table("&102"),
+      AnsY_Calib_Table("&103"),
+      AnsWindow_Limits_Table("&104"),
+      Generic_Received_Size("0001"),
+      Generic_Sended_Size("01"),
 
-    /*Funciones trama Coincidencia*/
-    Init_Coin("701"),
-    Window_Time_Coin("702"),
-    Select_Mode_Coin("703"),
-    Normal_Coin_Mode("333333333"),
-    Auto_Coin_Mode("021120120"),
-    Head_Coin("7"),
-    Calib_Mode("6411"),
+      /*Funciones trama Coincidencia*/
+      Init_Coin("701"),
+      Window_Time_Coin("702"),
+      Select_Mode_Coin("703"),
+      Normal_Coin_Mode("333333333"),
+      Auto_Coin_Mode("021120120"),
+      Head_Coin("7"),
+      Calib_Mode("6411"),
 
-    /*Funciones trama PSOC*/
-    PSOC_OFF("$SET,STA,OFF"),
-    PSOC_ON("$SET,STA,ON"),
-    PSOC_SET("$SET,VCON,"),
-    PSOC_STA("$TEMP"),
-    PSOC_ANS("$OK"),
-    PSOC_ADC(5.8823),
-    PSOC_SIZE_SENDED("14"),
-    PSOC_SIZE_RECEIVED("0031"),
-    PSOC_SIZE_RECEIVED_ALL("0003"),
+      /*Funciones trama PSOC*/
+      PSOC_OFF("$SET,STA,OFF"),
+      PSOC_ON("$SET,STA,ON"),
+      PSOC_SET("$SET,VCON,"),
+      PSOC_STA("$TEMP"),
+      PSOC_ANS("$OK"),
+      PSOC_ADC(5.8823),
+      PSOC_SIZE_SENDED("14"),
+      PSOC_SIZE_RECEIVED("0031"),
+      PSOC_SIZE_RECEIVED_ALL("0003"),
 
-    /*Funciones trama MCA*/
-    AnsMultiInit("@0064310>"),
-    AnsHeadInit("@0064020<"),
-    BrCst("00"),
-    Init_Calib_MCAE("64"),
-    Init_MCA("6401"),
-    Data_MCA("65"),
-    SetHV_MCA("68"),
-    Temp_MCA("74000"),
-    Set_Time_MCA("80"),
-    Rate_MCA("0060")
+      /*Funciones trama MCA*/
+      AnsMultiInit("@0064310>"),
+      AnsHeadInit("@0064020<"),
+      BrCst("00"),
+      Init_Calib_MCAE("64"),
+      Init_MCA("6401"),
+      Data_MCA("65"),
+      SetHV_MCA("68"),
+      Temp_MCA("74000"),
+      Set_Time_MCA("80"),
+      Rate_MCA("0060")
 {
-  /* Testing */
+    /* Testing */
 }
 /**
  * @brief MCAE::~MCAE
@@ -100,7 +100,7 @@ MCAE::MCAE(size_t timeout)
  */
 MCAE::~MCAE()
 {
-  portDisconnect();
+    portDisconnect();
 }
 /**
  * @brief MCAE::isPortOpen
@@ -108,7 +108,7 @@ MCAE::~MCAE()
  */
 bool MCAE::isPortOpen()
 {
-  return port->is_open();
+    return port->is_open();
 }
 /**
  * @brief MCAE::portConnect
@@ -120,11 +120,11 @@ bool MCAE::isPortOpen()
  */
 error_code MCAE::portConnect(const char *tty_port_name)
 {
-  error_code error_code;
-  port->open(tty_port_name, error_code);
-  port->set_option(serial_port_base::baud_rate(PortBaudRate));
+    error_code error_code;
+    port->open(tty_port_name, error_code);
+    port->set_option(serial_port_base::baud_rate(PortBaudRate));
 
-  return error_code;
+    return error_code;
 }
 /**
  * @brief MCAE::portDisconnect
@@ -135,11 +135,11 @@ error_code MCAE::portConnect(const char *tty_port_name)
  */
 error_code MCAE::portDisconnect()
 {
-  error_code error_code;
-  if (port->is_open())
-    port->close(error_code);
+    error_code error_code;
+    if (port->is_open())
+        port->close(error_code);
 
-  return error_code;
+    return error_code;
 }
 /**
  * @brief MCAE::portWrite
@@ -152,11 +152,11 @@ error_code MCAE::portDisconnect()
  */
 size_t MCAE::portWrite(string *msg, const char *tty_port_name)
 {
-  char c_msg[msg->size()+1];
-  strcpy(c_msg, msg->c_str());
-  size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
+    char c_msg[msg->size()+1];
+    strcpy(c_msg, msg->c_str());
+    size_t bytes_transferred = port->write_some(boost::asio::buffer(c_msg,msg->size()));
 
-  return bytes_transferred;
+    return bytes_transferred;
 }
 /**
  * @brief MCAE::portRead
@@ -169,11 +169,11 @@ size_t MCAE::portWrite(string *msg, const char *tty_port_name)
  */
 size_t MCAE::portRead(string *msg, int buffer_size)
 {
-  char c_msg[buffer_size];
-  size_t bytes_transferred = port->read_some(boost::asio::buffer(c_msg,buffer_size));
-  msg->assign(c_msg);
+    char c_msg[buffer_size];
+    size_t bytes_transferred = port->read_some(boost::asio::buffer(c_msg,buffer_size));
+    msg->assign(c_msg);
 
-  return bytes_transferred;
+    return bytes_transferred;
 }
 /**
  * @brief MCAE::portRead
@@ -186,10 +186,10 @@ size_t MCAE::portRead(string *msg, int buffer_size)
  */
 size_t MCAE::portRead(char *c_msg)
 {
-  int buffer_size=1;
-  size_t bytes_transferred = port->read_some(boost::asio::buffer(c_msg,buffer_size));
+    int buffer_size=1;
+    size_t bytes_transferred = port->read_some(boost::asio::buffer(c_msg,buffer_size));
 
-  return bytes_transferred;
+    return bytes_transferred;
 }
 /**
  * @brief MCAE::portReadMCAELine
@@ -200,20 +200,20 @@ size_t MCAE::portRead(char *c_msg)
  */
 string MCAE::portReadMCAELine()
 {
-  char c;
-  string msg;
-  while(true) {
-      portRead(&c);
-      switch(c)
+    char c;
+    string msg;
+    while(true) {
+        portRead(&c);
+        switch(c)
         {
         case '\r':
-          msg+=c;
-          return msg;
+            msg+=c;
+            return msg;
         default:
-          msg+=c;
+            msg+=c;
         }
     }
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::portReadPSOCLine
@@ -224,23 +224,23 @@ string MCAE::portReadMCAELine()
  */
 string MCAE::portReadPSOCLine()
 {
-  char c;
-  string msg;
-  while(true) {
-      portRead(&c);
-      switch(c)
+    char c;
+    string msg;
+    while(true) {
+        portRead(&c);
+        switch(c)
         {
         case '\r':
-          msg+=c;
-          break;
+            msg+=c;
+            break;
         case '\n':
-          msg+=c;
-          return msg;
+            msg+=c;
+            return msg;
         default:
-          msg+=c;
+            msg+=c;
         }
     }
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::portReadComplete
@@ -253,8 +253,8 @@ string MCAE::portReadPSOCLine()
 void MCAE::portReadComplete(const boost::system::error_code& error,
                             size_t bytes_transferred)
 {
-  read_error = (error || bytes_transferred == 0);
-  timer.cancel();
+    read_error = (error || bytes_transferred == 0);
+    timer.cancel();
 }
 /**
  * @brief MCAE::portTimeOut
@@ -265,8 +265,8 @@ void MCAE::portReadComplete(const boost::system::error_code& error,
  */
 void MCAE::portTimeOut(const boost::system::error_code& error)
 {
-  if (error) { return; }
-  port->cancel();
+    if (error) { return; }
+    port->cancel();
 }
 /**
  * @brief MCAE::portReadOneChar
@@ -278,24 +278,24 @@ void MCAE::portTimeOut(const boost::system::error_code& error)
  */
 bool MCAE::portReadOneChar(char& val)
 {
-  char c;
-  val = c = '\0';
+    char c;
+    val = c = '\0';
 
-  port->get_io_service().reset();
-  port->async_read_some(boost::asio::buffer(&c, 1),
-                        boost::bind(&MCAE::portReadComplete, this,
-                                    boost::asio::placeholders::error,
-                                    boost::asio::placeholders::bytes_transferred));
-  timer.expires_from_now(boost::posix_time::milliseconds(timeout));
-  timer.async_wait(boost::bind(&MCAE::portTimeOut,
-                               this, boost::asio::placeholders::error));
+    port->get_io_service().reset();
+    port->async_read_some(boost::asio::buffer(&c, 1),
+                          boost::bind(&MCAE::portReadComplete, this,
+                                      boost::asio::placeholders::error,
+                                      boost::asio::placeholders::bytes_transferred));
+    timer.expires_from_now(boost::posix_time::milliseconds(timeout));
+    timer.async_wait(boost::bind(&MCAE::portTimeOut,
+                                 this, boost::asio::placeholders::error));
 
-  port->get_io_service().run();
+    port->get_io_service().run();
 
-  if (!read_error)
-    val = c;
+    if (!read_error)
+        val = c;
 
-  return !read_error;
+    return !read_error;
 }
 /**
  * @brief MCAE::portReadString
@@ -308,16 +308,16 @@ bool MCAE::portReadOneChar(char& val)
  */
 void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name)
 {
-  char c;
-  while (portReadOneChar(c) && c != delimeter)
+    char c;
+    while (portReadOneChar(c) && c != delimeter)
     {
-      msg->push_back(c);
+        msg->push_back(c);
     }
 
-  if (c != delimeter)
+    if (c != delimeter)
     {
-      Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
-      throw exception_timeout;
+        Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
+        throw exception_timeout;
     }
 }
 /**
@@ -331,18 +331,18 @@ void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name
  */
 void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_port_name)
 {
-  char c;
-  int buffer=1;
-  while (portReadOneChar(c) && buffer <= buffer_size)
+    char c;
+    int buffer=1;
+    while (portReadOneChar(c) && buffer <= buffer_size)
     {
-      msg->push_back(c);
-      buffer++;
+        msg->push_back(c);
+        buffer++;
     }
 
-  if (buffer <= buffer_size)
+    if (buffer <= buffer_size)
     {
-      Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
-      throw exception_timeout;
+        Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
+        throw exception_timeout;
     }
 }
 /**
@@ -356,16 +356,16 @@ void MCAE::portReadBufferString(string *msg, int buffer_size, const char *tty_po
  */
 bool MCAE::portReadCharArray(int nbytes)
 {
-  try
-  {
-    port->read_some(boost::asio::buffer(data, nbytes));
-  }
-  catch (const boost::system::system_error &ex)
-  {
-    std::cout << "Error: " << ex.what() << "\n";
-    return false;
-  }
-  return true;
+    try
+    {
+        port->read_some(boost::asio::buffer(data, nbytes));
+    }
+    catch (const boost::system::system_error &ex)
+    {
+        std::cout << "Error: " << ex.what() << "\n";
+        return false;
+    }
+    return true;
 }
 /**
  * @brief MCAE::portFlush
@@ -376,13 +376,13 @@ bool MCAE::portReadCharArray(int nbytes)
  */
 error_code MCAE::portFlush()
 {
-  error_code ec;
+    error_code ec;
 
-  const bool isFlushed =! ::tcflush(port->native(), TCIOFLUSH);
-  if (!isFlushed)
-    ec = error_code(errno,error::get_system_category());
+    const bool isFlushed =! ::tcflush(port->native(), TCIOFLUSH);
+    if (!isFlushed)
+        ec = error_code(errno,error::get_system_category());
 
-  return ec;
+    return ec;
 }
 /**
  * @brief MCAE::sendString
@@ -396,19 +396,19 @@ error_code MCAE::portFlush()
  */
 size_t MCAE::sendString(string msg, string end, string port_name)
 {
-  portFlush();
-  size_t bytes_transfered = 0;
+    portFlush();
+    size_t bytes_transfered = 0;
 
-  try{
-    string sended= msg + end;
-    bytes_transfered = portWrite(&sended, port_name.c_str());
-  }
-  catch(boost::system::system_error e){
-    Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
-    throw exception_serial_port;
-  }
+    try{
+        string sended= msg + end;
+        bytes_transfered = portWrite(&sended, port_name.c_str());
+    }
+    catch(boost::system::system_error e){
+        Exceptions exception_serial_port((string("No se puede acceder al puerto serie. Error: ")+string(e.what())).c_str());
+        throw exception_serial_port;
+    }
 
-  return bytes_transfered;
+    return bytes_transfered;
 }
 /**
  * @brief MCAE::readString
@@ -421,15 +421,15 @@ size_t MCAE::sendString(string msg, string end, string port_name)
  */
 string MCAE::readString(char delimeter, string port_name)
 {
-  string msg;
-  try{
-    portReadString(&msg,delimeter, port_name.c_str());
-  }
-  catch( Exceptions & ex ){
-    Exceptions exception_stop(ex.excdesc);
-    throw exception_stop;
-  }
-  return msg;
+    string msg;
+    try{
+        portReadString(&msg,delimeter, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+        Exceptions exception_stop(ex.excdesc);
+        throw exception_stop;
+    }
+    return msg;
 }
 /**
  * @brief MCAE::readBufferString
@@ -442,15 +442,15 @@ string MCAE::readString(char delimeter, string port_name)
  */
 string MCAE::readBufferString(int buffer_size, string port_name)
 {
-  string msg;
-  try{
-    portReadBufferString(&msg,buffer_size, port_name.c_str());
-  }
-  catch( Exceptions & ex ){
-    Exceptions exception_stop(ex.excdesc);
-    throw exception_stop;
-  }
-  return msg;
+    string msg;
+    try{
+        portReadBufferString(&msg,buffer_size, port_name.c_str());
+    }
+    catch( Exceptions & ex ){
+        Exceptions exception_stop(ex.excdesc);
+        throw exception_stop;
+    }
+    return msg;
 }
 /**
  * @brief MCAE::convertHexToDec
@@ -462,11 +462,11 @@ string MCAE::readBufferString(int buffer_size, string port_name)
  */
 int MCAE::convertHexToDec(string hex_number_s)
 {
-  bool ok;
-  QString hex_number = QString::fromStdString(hex_number_s);
-  int dec_number = hex_number.toInt(&ok,16);
+    bool ok;
+    QString hex_number = QString::fromStdString(hex_number_s);
+    int dec_number = hex_number.toInt(&ok,16);
 
-  return dec_number;
+    return dec_number;
 }
 /**
  * @brief MCAE::convertDecToHex
@@ -478,9 +478,9 @@ int MCAE::convertHexToDec(string hex_number_s)
  */
 string MCAE::convertDecToHex(int dec_number)
 {
-  QByteArray hex_number = QByteArray::number(dec_number,16);
+    QByteArray hex_number = QByteArray::number(dec_number,16);
 
-  return QString(hex_number).toStdString();
+    return QString(hex_number).toStdString();
 }
 /**
  * @brief MCAE::convertDecToHexUpper
@@ -492,9 +492,9 @@ string MCAE::convertDecToHex(int dec_number)
  */
 string MCAE::convertDecToHexUpper(int dec_number)
 {
-  QByteArray hex_number = QByteArray::number(dec_number,16).toUpper();
+    QByteArray hex_number = QByteArray::number(dec_number,16).toUpper();
 
-  return QString(hex_number).toStdString();
+    return QString(hex_number).toStdString();
 }
 /**
  * @brief MCAE::getReverse
@@ -506,14 +506,14 @@ string MCAE::convertDecToHexUpper(int dec_number)
  */
 QByteArray MCAE::getReverse(QByteArray seq)
 {
-  QByteArray reverse;
-  for( QByteArray::const_iterator i = seq.constEnd(); i !=seq.constBegin(); )
+    QByteArray reverse;
+    for( QByteArray::const_iterator i = seq.constEnd(); i !=seq.constBegin(); )
     {
-      --i;
-      reverse += *i;
+        --i;
+        reverse += *i;
     }
 
-  return reverse;
+    return reverse;
 }
 /**
  * @brief MCAE::getMCASplitData
@@ -532,20 +532,20 @@ QByteArray MCAE::getReverse(QByteArray seq)
  */
 void MCAE::getMCASplitData(string msg_data, int channels)
 {
-  int size_block=6*channels;
-  QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
+    int size_block=6*channels;
+    QByteArray q_msg_data(msg_data.c_str(), msg_data.length());
 
-  /* Adquisición de los bytes en raw data */
-  frame=convertHexToDec(getReverse(q_msg_data.left(4)).toHex().toStdString());
-  time_mca=convertHexToDec(getReverse(q_msg_data.mid(5, 5)).toHex().toStdString());
-  HV_pmt=convertHexToDec(getReverse(q_msg_data.mid(9, 2)).toHex().toStdString());
-  offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
-  var=convertHexToDec(getReverse(q_msg_data.mid(12, 2)).toHex().toStdString());
-  temp=convertHexToDec(getReverse(q_msg_data.mid(14, 2)).toHex().toStdString())*DS1820_FACTOR;
-  QByteArray data_mca_bytes = q_msg_data.right(size_block);
+    /* Adquisición de los bytes en raw data */
+    frame=convertHexToDec(getReverse(q_msg_data.left(4)).toHex().toStdString());
+    time_mca=convertHexToDec(getReverse(q_msg_data.mid(5, 5)).toHex().toStdString());
+    HV_pmt=convertHexToDec(getReverse(q_msg_data.mid(9, 2)).toHex().toStdString());
+    offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
+    var=convertHexToDec(getReverse(q_msg_data.mid(12, 2)).toHex().toStdString());
+    temp=convertHexToDec(getReverse(q_msg_data.mid(14, 2)).toHex().toStdString())*DS1820_FACTOR;
+    QByteArray data_mca_bytes = q_msg_data.right(size_block);
 
-  /* Parseo de datos de la trama que contiene las cuentas por canal */
-  getMCAHitsData(data_mca_bytes);
+    /* Parseo de datos de la trama que contiene las cuentas por canal */
+    getMCAHitsData(data_mca_bytes);
 }
 /**
  * @brief MCAE::getMCAHitsData
@@ -556,21 +556,21 @@ void MCAE::getMCASplitData(string msg_data, int channels)
  */
 void MCAE::getMCAHitsData(QByteArray data_mca)
 {
-  int channel;
-  long hits;
+    int channel;
+    long hits;
 
-  channels_id.resize(data_mca.length());
-  hits_mca.resize(data_mca.length());
+    channels_id.resize(data_mca.length());
+    hits_mca.resize(data_mca.length());
 
-  channels_id.fill(0);
-  hits_mca.fill(0);
+    channels_id.fill(0);
+    hits_mca.fill(0);
 
-  for(int i = 0; i < data_mca.length(); i+=6)
+    for(int i = 0; i < data_mca.length(); i+=6)
     {
-      channel=convertHexToDec(getReverse(data_mca.mid(i,2)).toHex().toStdString());
-      hits=(long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
-      channels_id[channel]=channel;
-      hits_mca[channel]=hits;
+        channel=convertHexToDec(getReverse(data_mca.mid(i,2)).toHex().toStdString());
+        hits=(long)convertHexToDec(getReverse(data_mca.mid(i+2,4)).toHex().toStdString());
+        channels_id[channel]=channel;
+        hits_mca[channel]=hits;
     }
 }
 /**
@@ -583,14 +583,14 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
  */
 int MCAE::getMCACheckSum(string data)
 {
-  int sum_of_elements = 0;
-  for(unsigned int i = 0; i < data.length(); ++i)
+    int sum_of_elements = 0;
+    for(unsigned int i = 0; i < data.length(); ++i)
     {
-      string token(1, data.at(i));
-      sum_of_elements = sum_of_elements + convertHexToDec(token);
+        string token(1, data.at(i));
+        sum_of_elements = sum_of_elements + convertHexToDec(token);
     }
 
-  return sum_of_elements;
+    return sum_of_elements;
 }
 /**
  * @brief MCAE::getMCAStringValues
@@ -602,13 +602,13 @@ int MCAE::getMCACheckSum(string data)
  */
 MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
 {
-  if (in_string == "a") return a;
-  if (in_string == "b") return b;
-  if (in_string == "c") return c;
-  if (in_string == "d") return d;
-  if (in_string == "e") return e;
-  if (in_string == "f") return f;
-  else return no_value;
+    if (in_string == "a") return a;
+    if (in_string == "b") return b;
+    if (in_string == "c") return c;
+    if (in_string == "d") return d;
+    if (in_string == "e") return e;
+    if (in_string == "f") return f;
+    else return no_value;
 }
 /**
  * @brief MCAE::setMCAStringValues
@@ -620,13 +620,13 @@ MCAE::string_code MCAE::getMCAStringValues(string const& in_string)
  */
 MCAE::string_code MCAE::setMCAStringValues(string const& in_string)
 {
-  if (in_string == ":") return a;
-  if (in_string == ";") return b;
-  if (in_string == "<") return c;
-  if (in_string == "=") return d;
-  if (in_string == ">") return e;
-  if (in_string == "?") return f;
-  else return no_value;
+    if (in_string == ":") return a;
+    if (in_string == ";") return b;
+    if (in_string == "<") return c;
+    if (in_string == "=") return d;
+    if (in_string == ">") return e;
+    if (in_string == "?") return f;
+    else return no_value;
 }
 /**
  * @brief MCAE::convertToMCAFormatStream
@@ -639,37 +639,37 @@ MCAE::string_code MCAE::setMCAStringValues(string const& in_string)
  */
 string MCAE::convertToMCAFormatStream(string data_with_cs)
 {
-  size_t pos = 0;
+    size_t pos = 0;
 
-  while (pos < data_with_cs.length())
+    while (pos < data_with_cs.length())
     {
-      string token = data_with_cs.substr(pos, 1);
-      switch (getMCAStringValues(token)) {
+        string token = data_with_cs.substr(pos, 1);
+        switch (getMCAStringValues(token)) {
         case a:
-          data_with_cs.replace(pos,token.length(),":");
-          break;
+            data_with_cs.replace(pos,token.length(),":");
+            break;
         case b:
-          data_with_cs.replace(pos,token.length(),";");
-          break;
+            data_with_cs.replace(pos,token.length(),";");
+            break;
         case c:
-          data_with_cs.replace(pos,token.length(),"<");
-          break;
+            data_with_cs.replace(pos,token.length(),"<");
+            break;
         case d:
-          data_with_cs.replace(pos,token.length(),"=");
-          break;
+            data_with_cs.replace(pos,token.length(),"=");
+            break;
         case e:
-          data_with_cs.replace(pos,token.length(),">");
-          break;
+            data_with_cs.replace(pos,token.length(),">");
+            break;
         case f:
-          data_with_cs.replace(pos,token.length(),"?");
-          break;
+            data_with_cs.replace(pos,token.length(),"?");
+            break;
         default:
-          break;
+            break;
         }
-      pos++;
+        pos++;
     }
 
-  return data_with_cs;
+    return data_with_cs;
 }
 /**
  * @brief MCAE::convertFromMCAFormatStream
@@ -682,41 +682,41 @@ string MCAE::convertToMCAFormatStream(string data_with_cs)
  */
 string MCAE::convertFromMCAFormatStream(string data_with_cs)
 {
-  /* Formato de data con checksum:
+    /* Formato de data con checksum:
      * @ddcc--...--ss
      */
 
-  size_t pos = 0;
+    size_t pos = 0;
 
-  while (pos < data_with_cs.length())
+    while (pos < data_with_cs.length())
     {
-      string token = data_with_cs.substr(pos, 1);
-      switch (setMCAStringValues(token)) {
+        string token = data_with_cs.substr(pos, 1);
+        switch (setMCAStringValues(token)) {
         case a:
-          data_with_cs.replace(pos,token.length(),"a");
-          break;
+            data_with_cs.replace(pos,token.length(),"a");
+            break;
         case b:
-          data_with_cs.replace(pos,token.length(),"b");
-          break;
+            data_with_cs.replace(pos,token.length(),"b");
+            break;
         case c:
-          data_with_cs.replace(pos,token.length(),"c");
-          break;
+            data_with_cs.replace(pos,token.length(),"c");
+            break;
         case d:
-          data_with_cs.replace(pos,token.length(),"d");
-          break;
+            data_with_cs.replace(pos,token.length(),"d");
+            break;
         case e:
-          data_with_cs.replace(pos,token.length(),"e");
-          break;
+            data_with_cs.replace(pos,token.length(),"e");
+            break;
         case f:
-          data_with_cs.replace(pos,token.length(),"f");
-          break;
+            data_with_cs.replace(pos,token.length(),"f");
+            break;
         default:
-          break;
+            break;
         }
-      pos++;
+        pos++;
     }
 
-  return data_with_cs;
+    return data_with_cs;
 }
 
 /**
@@ -731,12 +731,12 @@ string MCAE::convertFromMCAFormatStream(string data_with_cs)
 string MCAE::getMCAFormatStream(string data)
 {
 
-  string checksum=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
-  string data_plus_checksum = data + checksum;
-  data_plus_checksum = Head_MCA + data_plus_checksum;
-  string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
+    string checksum=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(data)));
+    string data_plus_checksum = data + checksum;
+    data_plus_checksum = Head_MCA + data_plus_checksum;
+    string data_plus_checksum_mca_format=convertToMCAFormatStream(data_plus_checksum);
 
-  return data_plus_checksum_mca_format;
+    return data_plus_checksum_mca_format;
 }
 /**
  * @brief MCAE::setMCAStream
@@ -749,8 +749,8 @@ string MCAE::getMCAFormatStream(string data)
  */
 void MCAE::setMCAStream(string pmt, string function, string channel)
 {
-  string stream_wo_cs=pmt+function+channel;
-  setTrama_MCA(getMCAFormatStream(stream_wo_cs));
+    string stream_wo_cs=pmt+function+channel;
+    setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 /**
  * @brief MCAE::setMCAStream
@@ -764,9 +764,9 @@ void MCAE::setMCAStream(string pmt, string function, string channel)
  */
 void MCAE::setMCAStream(string pmt, string function, double time)
 {
-  string time_str=QString::number(time).toStdString();
-  string stream_wo_cs=pmt+function+time_str;
-  setTrama_MCA(getMCAFormatStream(stream_wo_cs));
+    string time_str=QString::number(time).toStdString();
+    string stream_wo_cs=pmt+function+time_str;
+    setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
 /**
  * @brief MCAE::setPSOCStream
@@ -778,9 +778,9 @@ void MCAE::setMCAStream(string pmt, string function, double time)
  */
 void MCAE::setPSOCStream(string function, string psoc_value)
 {
-  string stream_psoc;
-  stream_psoc=function+psoc_value;
-  setTrama_PSOC(stream_psoc);
+    string stream_psoc;
+    stream_psoc=function+psoc_value;
+    setTrama_PSOC(stream_psoc);
 }
 /**
  * @brief MCAE::convertDoubleToInt
@@ -793,10 +793,10 @@ void MCAE::setPSOCStream(string function, string psoc_value)
  */
 int MCAE::convertDoubleToInt(double value)
 {
-  int value_int;
-  /** @note: Se elimina esta línea: value=value*1000; Modificado en el firmware de FPGA*/
+    int value_int;
+    /** @note: Se elimina esta línea: value=value*1000; Modificado en el firmware de FPGA*/
 
-  return value_int=(int)round(value);
+    return value_int=(int)round(value);
 }
 /**
  * @brief MCAE::convertToTwoComplement
@@ -809,9 +809,9 @@ int MCAE::convertDoubleToInt(double value)
  */
 string MCAE::convertToTwoComplement(double value, int two_complement_bits)
 {
-  int value_int = (1 << two_complement_bits) + convertDoubleToInt(value);
+    int value_int = (1 << two_complement_bits) + convertDoubleToInt(value);
 
-  return convertDecToHexUpper(value_int);
+    return convertDecToHexUpper(value_int);
 }
 /**
  * @brief MCAE::convertToTwoComplement
@@ -825,9 +825,9 @@ string MCAE::convertToTwoComplement(double value, int two_complement_bits)
  */
 string MCAE::convertToTwoComplement(int value, int two_complement_bits)
 {
-  int value_int = (1 << two_complement_bits) + value;
+    int value_int = (1 << two_complement_bits) + value;
 
-  return convertDecToHex(value_int);
+    return convertDecToHex(value_int);
 }
 /**
  * @brief MCAE::getCalibTableFormat
@@ -840,32 +840,32 @@ string MCAE::convertToTwoComplement(int value, int two_complement_bits)
  */
 string MCAE::getCalibTableFormat(string function, QVector<double> table)
 {
-  string calib_stream, temp_calib_stream;
-  int file=QString::fromStdString(function).toInt();
+    string calib_stream, temp_calib_stream;
+    int file=QString::fromStdString(function).toInt();
 
-  switch (file) {
+    switch (file) {
     case 1:
-      for (int index=0; index < PMTs; index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
-      break;
+        for (int index=0; index < PMTs; index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
+        break;
     case 2 ... 3:
-      for (int index=0; index < PMTs; index++)
+        for (int index=0; index < PMTs; index++)
         {
-          if(table[index]>=0)
-            temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
-          else
-            temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertToTwoComplement(table[index]));
+            if(table[index]>=0)
+                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(convertDoubleToInt(table[index])));
+            else
+                temp_calib_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertToTwoComplement(table[index]));
 
-          calib_stream = calib_stream + temp_calib_stream;
+            calib_stream = calib_stream + temp_calib_stream;
         }
-      break;
+        break;
     case 4:
-      for (int index = 0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(QString::number(table[index]).toInt()));
-      break;
+        for (int index = 0; index < table.length(); index++) calib_stream = calib_stream + formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(QString::number(table[index]).toInt()));
+        break;
     default:
-      break;
+        break;
     }
 
-  return calib_stream;
+    return calib_stream;
 }
 /**
  * @brief MCAE::setCoinStream
@@ -879,18 +879,18 @@ string MCAE::getCalibTableFormat(string function, QVector<double> table)
  */
 void MCAE::setCoinStream(string function, string data_one, string data_two, bool time)
 {
-  string stream;
-  if (time)
+    string stream;
+    if (time)
     {
-      stream = function + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_two).toInt())) + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertToTwoComplement(QString::fromStdString(data_one).toInt()));
+        stream = function + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_two).toInt())) + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertToTwoComplement(QString::fromStdString(data_one).toInt()));
     }
-  else
+    else
     {
-      stream = function + data_one;
+        stream = function + data_one;
     }
 
-  string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));
-  setTrama_Coin(getHead_Calib_Coin() + stream + cs_stream);
+    string cs_stream = formatMCAEStreamSize(CS_BUFFER_SIZE,convertDecToHex(getMCACheckSum(stream)));
+    setTrama_Coin(getHead_Calib_Coin() + stream + cs_stream);
 }
 /**
  * @brief MCAE::setCalibStream
@@ -902,9 +902,9 @@ void MCAE::setCoinStream(string function, string data_one, string data_two, bool
  */
 void MCAE::setCalibStream(string function, QVector<double> table)
 {
-  string stream_pmts = getCalibTableFormat(function,table);
-  string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(getMCACheckSum(function + stream_pmts)));
-  setTrama_Calib(getHead_Calib_Coin()+function+stream_pmts+cs_stream);
+    string stream_pmts = getCalibTableFormat(function,table);
+    string cs_stream = formatMCAEStreamSize(CS_CALIB_BUFFER_SIZE, convertDecToHexUpper(getMCACheckSum(function + stream_pmts)));
+    setTrama_Calib(getHead_Calib_Coin()+function+stream_pmts+cs_stream);
 }
 /**
  * @brief MCAE::setMCAEStream
@@ -922,15 +922,15 @@ void MCAE::setCalibStream(string function, QVector<double> table)
  */
 void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, string channel_dec)
 {
-  string channel_value;
-  if (channel_dec.length()>=1) channel_value=getHVValueCode(atoi(channel_dec.c_str()));
-  string pmt=getPMTCode(atoi(pmt_dec.c_str()));
-  setMCAStream(pmt, function, channel_value);
-  int size_mca=(int)(getTrama_MCA().size());
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
-  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_stream+size_mca));/** @todo:Verificar QString::number(size_stream+size_mca).toStdString()->to_string(size_stream+size_mca)*/
-  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
-  setTrama_MCAE(stream);
+    string channel_value;
+    if (channel_dec.length()>=1) channel_value=getHVValueCode(atoi(channel_dec.c_str()));
+    string pmt=getPMTCode(atoi(pmt_dec.c_str()));
+    setMCAStream(pmt, function, channel_value);
+    int size_mca=(int)(getTrama_MCA().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_stream+size_mca));/** @todo:Verificar QString::number(size_stream+size_mca).toStdString()->to_string(size_stream+size_mca)*/
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
+    setTrama_MCAE(stream);
 }
 /**
  * @brief MCAE::setMCAEStream
@@ -948,13 +948,13 @@ void MCAE::setMCAEStream(string pmt_dec, int size_stream, string function, strin
  */
 void MCAE::setMCAEStream(string pmt_dec, string function, double time)
 {
-  string pmt=getPMTCode(atoi(pmt_dec.c_str()));
-  setMCAStream(pmt, function, time);
-  int size_mca=(int)(getTrama_MCA().size());
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
-  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_mca));/** @todo:Verificar QString::number(size_mca).toStdString()->to_string(size_mca)*/
-  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
-  setTrama_MCAE(stream);
+    string pmt=getPMTCode(atoi(pmt_dec.c_str()));
+    setMCAStream(pmt, function, time);
+    int size_mca=(int)(getTrama_MCA().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_mca));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_mca));/** @todo:Verificar QString::number(size_mca).toStdString()->to_string(size_mca)*/
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_MCA();
+    setTrama_MCAE(stream);
 }
 /**
  * @brief MCAE::setMCAEStream
@@ -971,13 +971,13 @@ void MCAE::setMCAEStream(string pmt_dec, string function, double time)
  */
 void MCAE::setMCAEStream(string function, QVector<double> table)
 {
-  setCalibStream(function, table);
-  int size_calib=(int)(getTrama_Calib().size());
-  if (size_calib > 99) size_calib = 99;
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
-  string size_received=getGeneric_Received_Size();
-  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
-  setTrama_MCAE(stream);
+    setCalibStream(function, table);
+    int size_calib=(int)(getTrama_Calib().size());
+    if (size_calib > 99) size_calib = 99;
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_calib));
+    string size_received=getGeneric_Received_Size();
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_Calib();
+    setTrama_MCAE(stream);
 }
 /**
  * @brief MCAE::setMCAEStream
@@ -999,12 +999,12 @@ void MCAE::setMCAEStream(string function, QVector<double> table)
  */
 void MCAE::setMCAEStream(string function, string data_one, string data_two, bool time)
 {
-  setCoinStream(function, data_one, data_two, time);
-  int size_coin=(int)(getTrama_Coin().size());
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_coin));
-  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_coin));
-  string stream = getHeader_MCAE()+size_sended+size_received+convertToMCAFormatStream(getTrama_Coin());
-  setTrama_MCAE(stream);
+    setCoinStream(function, data_one, data_two, time);
+    int size_coin=(int)(getTrama_Coin().size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_coin));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_coin));
+    string stream = getHeader_MCAE()+size_sended+size_received+convertToMCAFormatStream(getTrama_Coin());
+    setTrama_MCAE(stream);
 }
 /**
  * @brief MCAE::setPSOCEStream
@@ -1016,13 +1016,13 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
  */
 void MCAE::setPSOCEStream(string function, string size_received, string psoc_value_dec)
 {
-  string psoc_value;
-  if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
-  setPSOCStream(function, psoc_value);
-  int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
-  string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
-  setTrama_MCAE(stream);
+    string psoc_value;
+    if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
+    setPSOCStream(function, psoc_value);
+    int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
+    string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
+    setTrama_MCAE(stream);
 }
 /**
  * @brief MCAE::getHVValueCode
@@ -1034,10 +1034,10 @@ void MCAE::setPSOCEStream(string function, string size_received, string psoc_val
  */
 string MCAE::getHVValueCode(int hv_value_dec)
 {
-  string hv_value= convertDecToHex(hv_value_dec);
-  hv_value=formatMCAEStreamSize(HV_BUFFER_SIZE,hv_value);
+    string hv_value= convertDecToHex(hv_value_dec);
+    hv_value=formatMCAEStreamSize(HV_BUFFER_SIZE,hv_value);
 
-  return hv_value;
+    return hv_value;
 }
 /**
  * @brief MCAE::formatMCAEStreamSize
@@ -1050,24 +1050,24 @@ string MCAE::getHVValueCode(int hv_value_dec)
  */
 string MCAE::formatMCAEStreamSize(int expected_size, string data_stream)
 {
-  switch (expected_size) {
+    switch (expected_size) {
     case 2:
-      if (data_stream.length()==1) data_stream="0" + data_stream;
-      break;
+        if (data_stream.length()==1) data_stream="0" + data_stream;
+        break;
     case 3:
-      if (data_stream.length()==1) data_stream="00" + data_stream;
-      if (data_stream.length()==2) data_stream="0" + data_stream;
-      break;
+        if (data_stream.length()==1) data_stream="00" + data_stream;
+        if (data_stream.length()==2) data_stream="0" + data_stream;
+        break;
     case 4:
-      if (data_stream.length()==1) data_stream="000" + data_stream;
-      if (data_stream.length()==2) data_stream="00" + data_stream;
-      if (data_stream.length()==3) data_stream="0" + data_stream;
-      break;
+        if (data_stream.length()==1) data_stream="000" + data_stream;
+        if (data_stream.length()==2) data_stream="00" + data_stream;
+        if (data_stream.length()==3) data_stream="0" + data_stream;
+        break;
     default:
-      break;
+        break;
     }
 
-  return data_stream;
+    return data_stream;
 }
 /**
  * @brief MCAE::getPMTCode
@@ -1079,9 +1079,9 @@ string MCAE::formatMCAEStreamSize(int expected_size, string data_stream)
  */
 string MCAE::getPMTCode(int pmt_dec)
 {
-  string pmt=formatMCAEStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
+    string pmt=formatMCAEStreamSize(PMT_BUFFER_SIZE,convertDecToHex(pmt_dec));
 
-  return pmt;
+    return pmt;
 }
 /**
  * @brief MCAE::getPMTTemperature
@@ -1093,11 +1093,11 @@ string MCAE::getPMTCode(int pmt_dec)
  */
 double MCAE::getPMTTemperature(string temp_stream)
 {
-  QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
-  /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @note : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
-  string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
+    QByteArray q_temp_stream(temp_stream.c_str(), temp_stream.length());
+    /** string temp_stream_mca_format=convertFromMCAFormatStream(getReverse(q_temp_stream.mid(5,3)).toStdString()); @note : Cambio de lógica de envío de temperatura, verificar su funcionamiento. */
+    string temp_stream_mca_format=convertFromMCAFormatStream(q_temp_stream.mid(5,3).toStdString());
 
-  return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
+    return convertHexToDec(temp_stream_mca_format)*DS1820_FACTOR;
 }
 /**
  * @brief MCAE::verifyCheckSum
@@ -1109,14 +1109,14 @@ double MCAE::getPMTTemperature(string temp_stream)
  */
 bool MCAE::verifyCheckSum(string data_mca)
 {
-  string data=convertFromMCAFormatStream(data_mca);
-  QByteArray q_data(data.c_str(), data.length());
-  QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
-  string data_cs=q_data.mid(data.length()-2,2).toStdString();
-  string checksum_received=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
-  bool checked=verifyStream(data_cs, checksum_received);
+    string data=convertFromMCAFormatStream(data_mca);
+    QByteArray q_data(data.c_str(), data.length());
+    QByteArray q_data_wo_cs=q_data.mid(1,data.length()-2);
+    string data_cs=q_data.mid(data.length()-2,2).toStdString();
+    string checksum_received=formatMCAEStreamSize(CS_BUFFER_SIZE, convertDecToHex(getMCACheckSum(q_data_wo_cs.toStdString())));
+    bool checked=verifyStream(data_cs, checksum_received);
 
-  return checked;
+    return checked;
 }
 /**
  * @brief MCAE::verifyMCAEStream
@@ -1129,7 +1129,7 @@ bool MCAE::verifyCheckSum(string data_mca)
  */
 bool MCAE::verifyMCAEStream(string data_received, string data_to_compare)
 {
-  return verifyStream(data_received,data_to_compare);
+    return verifyStream(data_received,data_to_compare);
 }
 /**
  * @brief MCAE::verifyStream
@@ -1142,10 +1142,10 @@ bool MCAE::verifyMCAEStream(string data_received, string data_to_compare)
  */
 bool MCAE::verifyStream(string data_received, string data_to_compare)
 {
-  bool checked = false;
-  if (strcmp(data_received.c_str(),data_to_compare.c_str())==0) checked=true;
+    bool checked = false;
+    if (strcmp(data_received.c_str(),data_to_compare.c_str())==0) checked=true;
 
-  return checked;
+    return checked;
 }
 /**
  * @brief MCAE::parserPSOCStream
@@ -1157,26 +1157,26 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
  */
 QVector<QString> MCAE::parserPSOCStream(string stream)
 {
-  QVector<QString> line;
-  string delimiter_1 = ",";
-  string delimiter_2 = "/";
-  size_t pos = 0, pos_line=0;
-  int vecIndex=0;
-  string token;
+    QVector<QString> line;
+    string delimiter_1 = ",";
+    string delimiter_2 = "/";
+    size_t pos = 0, pos_line=0;
+    int vecIndex=0;
+    string token;
 
-  while ((pos = stream.find(delimiter_1)) != string::npos)
+    while ((pos = stream.find(delimiter_1)) != string::npos)
     {
-      token = stream.substr(0, pos);
-      line.append(QString::fromStdString(token));
-      stream.erase(0, pos + delimiter_1.length());
-      vecIndex++;
+        token = stream.substr(0, pos);
+        line.append(QString::fromStdString(token));
+        stream.erase(0, pos + delimiter_1.length());
+        vecIndex++;
     }
 
-  pos_line = line.at(2).toStdString().find(delimiter_2);
-  token = line.at(2).toStdString().substr(0,pos_line);
-  line.replace(2,QString::fromStdString(token));
+    pos_line = line.at(2).toStdString().find(delimiter_2);
+    token = line.at(2).toStdString().substr(0,pos_line);
+    line.replace(2,QString::fromStdString(token));
 
-  return line;
+    return line;
 }
 /**
  * @brief MCAE::getMCA
@@ -1192,18 +1192,18 @@ QVector<QString> MCAE::parserPSOCStream(string stream)
  */
 string MCAE::getMCA(string pmt, string function, string head, int channels, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + function);
-  setMCAEStream(pmt, channels*6+16, getData_MCA());
-  char delimeter='\r';
-  string msg, msg_data;
+    setHeader_MCAE(getHead_MCAE() + head + function);
+    setMCAEStream(pmt, channels*6+16, getData_MCA());
+    char delimeter='\r';
+    string msg, msg_data;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
-  msg_data = readBufferString(channels*6+16, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
+    msg_data = readBufferString(channels*6+16, port_name);
 
-  getMCASplitData(msg_data, channels);
+    getMCASplitData(msg_data, channels);
 
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::setHV
@@ -1218,15 +1218,15 @@ string MCAE::getMCA(string pmt, string function, string head, int channels, stri
  */
 string MCAE::setHV(string head, string pmt, string channel_dec, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
-  setMCAEStream(pmt, 0, getSetHV_MCA(), channel_dec);
-  char delimeter='\r';
-  string msg;
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, 0, getSetHV_MCA(), channel_dec);
+    char delimeter='\r';
+    string msg;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
 
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::setCalibTable
@@ -1241,15 +1241,15 @@ string MCAE::setHV(string head, string pmt, string channel_dec, string port_name
  */
 string MCAE::setCalibTable(string head, string calib_function, QVector<double> table, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
-  setMCAEStream(calib_function, table);
-  char delimeter='\r';
-  string msg;
+    setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+    setMCAEStream(calib_function, table);
+    char delimeter='\r';
+    string msg;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
 
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::setTime
@@ -1264,15 +1264,15 @@ string MCAE::setCalibTable(string head, string calib_function, QVector<double> t
  */
 string MCAE::setTime(string head, double time_value, string pmt, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
-  setMCAEStream(pmt, getSet_Time_MCA(), time_value);
-  char delimeter='\r';
-  string msg;
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, getSet_Time_MCA(), time_value);
+    char delimeter='\r';
+    string msg;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
 
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::getTemp
@@ -1286,16 +1286,16 @@ string MCAE::setTime(string head, double time_value, string pmt, string port_nam
  */
 string MCAE::getTemp(string head, string pmt, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
-  setMCAEStream(pmt, 0, getTemp_MCA());
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAEStream(pmt, 0, getTemp_MCA());
 
-  char delimeter='\r';
-  string msg;
+    char delimeter='\r';
+    string msg;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
 
-  return msg;
+    return msg;
 }
 /**
  * @brief MCAE::parserRateStream
@@ -1325,19 +1325,19 @@ vector<int> MCAE::parserRateStream(string stream)
  */
 vector<int> MCAE::getRate(string head, string port_name)
 {
-  setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
-  string rate_stream = getMCAFormatStream(getRate_MCA());
-  int size_rate=(int)(rate_stream.size());
-  string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
-  string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
-  string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
-  setTrama_MCAE(stream);
+    setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+    string rate_stream = getMCAFormatStream(getRate_MCA());
+    int size_rate=(int)(rate_stream.size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+RECEIVED_RATE_BUFFER_SIZE));
+    string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
+    setTrama_MCAE(stream);
 
-  char delimeter='\r';
-  string msg;
+    char delimeter='\r';
+    string msg;
 
-  sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-  msg = readString(delimeter, port_name);
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
 
-  return parserRateStream(msg);
+    return parserRateStream(msg);
 }

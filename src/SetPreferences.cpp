@@ -8,10 +8,10 @@
  * @param parent
  */
 SetPreferences::SetPreferences(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::SetPreferences)
+    QDialog(parent),
+    ui(new Ui::SetPreferences)
 {
-  ui->setupUi(this);
+    ui->setupUi(this);
 }
 /**
  * @brief SetPreferences::accept
@@ -19,9 +19,9 @@ SetPreferences::SetPreferences(QWidget *parent) :
  */
 void SetPreferences::accept()
 {
-  debconsole = ui->checkBox_Debug->isChecked();
-  logfile = ui->checkBox_Log->isChecked();
-  QDialog::accept();
+    debconsole = ui->checkBox_Debug->isChecked();
+    logfile = ui->checkBox_Log->isChecked();
+    QDialog::accept();
 }
 /**
  * @brief SetPreferences::reject
@@ -29,9 +29,9 @@ void SetPreferences::accept()
  */
 void SetPreferences::reject()
 {
-  ui->checkBox_Debug->setChecked(debconsole);
-  ui->checkBox_Log->setChecked(logfile);
-  QDialog::reject();
+    ui->checkBox_Debug->setChecked(debconsole);
+    ui->checkBox_Log->setChecked(logfile);
+    QDialog::reject();
 }
 /**
  * @brief SetPreferences::exec
@@ -39,11 +39,11 @@ void SetPreferences::reject()
  */
 int SetPreferences::exec()
 {
-  ui->checkBox_Debug->setChecked(debconsole);
-  ui->checkBox_Log->setChecked(logfile);
-  ui->lineEdit_config_file->setText(initfile);
-  ui->lineEdit_config_calib->setText(root_calib_path);  
-  QDialog::exec();
+    ui->checkBox_Debug->setChecked(debconsole);
+    ui->checkBox_Log->setChecked(logfile);
+    ui->lineEdit_config_file->setText(initfile);
+    ui->lineEdit_config_calib->setText(root_calib_path);
+    QDialog::exec();
 }
 
 /**
@@ -53,7 +53,7 @@ int SetPreferences::exec()
  */
 SetPreferences::~SetPreferences()
 {
-  delete ui;
+    delete ui;
 }
 
 /**
@@ -73,7 +73,7 @@ QString SetPreferences::openConfigurationFile(bool dir)
     else
     {
         filename = QFileDialog::getExistingDirectory(this, tr("Seleccionar el directorio de configuración"),
-                                          QDir::homePath());
+                                                     QDir::homePath());
     }
 
     return filename;

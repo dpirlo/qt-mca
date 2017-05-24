@@ -41,7 +41,7 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
  */
 string Thread::getLocalDateAndTime()
 {
-  return (QDateTime::currentDateTime().toString().toStdString());
+    return (QDateTime::currentDateTime().toString().toStdString());
 }
 /**
  * @brief Thread::requestLog
@@ -138,8 +138,8 @@ void Thread::getLogWork()
                     if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
                 }
             }
-          catch (Exceptions &ex)
-          {
+            catch (Exceptions &ex)
+            {
                 try_error_count++;
                 if (debug)
                 {
@@ -156,14 +156,14 @@ void Thread::getLogWork()
                     emit sendLogErrorCommand();
                     setAbortBool(true);
                 }
-          }
-       }
+            }
+        }
 
-       mutex->unlock();
+        mutex->unlock();
 
-       QEventLoop loop;
-       QTimer::singleShot(time_sec*1000, &loop, SLOT(quit()));
-       loop.exec();
+        QEventLoop loop;
+        QTimer::singleShot(time_sec*1000, &loop, SLOT(quit()));
+        loop.exec();
     }
 
     mutex->lock();
