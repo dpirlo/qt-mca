@@ -23,6 +23,9 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     QObject(parent),
     arpet(_arpet),
     _continue(false),
+    _logging(false),
+    _mca(false),
+    _abort(false),
     temp(false),
     rate(false),
     debug(false),
@@ -30,8 +33,7 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     mutex(_mutex),
     time_sec(1)
 {
-    _logging =false;
-    _abort = false;
+
 }
 /**
  * @brief Thread::getLocalDateAndTime
@@ -56,6 +58,7 @@ void Thread::requestLog()
 void Thread::requestMCA()
 {
     mutex->lock();
+    _mca= false;
     _abort = false;
     mutex->unlock();
 
@@ -67,7 +70,7 @@ void Thread::requestMCA()
 void Thread::abort()
 {
     mutex->lock();
-    if (_logging)
+    if (_logging || _mca)
     {
         _abort = true;
         if (debug) cout<<"Se aborta la operación en el thread: "<<thread()->currentThreadId()<<endl;
@@ -219,7 +222,7 @@ void Thread::getMCA()
         cout<<"Comienza la adquisición MCA."<<endl;
     }
 
-    while(!_abort || !_continue)
+    while(!_abort)
     {
 
         mutex->lock();
@@ -252,9 +255,13 @@ void Thread::getMCA()
                         cout<<"Cabezal: "<<checkedHeads.at(index)<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
-                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(0)),index, _mode);
+                    emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(index)),index, _mode);
                 }
-            }            
+            }
+            if (!_continue)
+            {
+                setAbortBool(true);
+            }
         }
         catch(Exceptions & ex)
         {
@@ -274,6 +281,10 @@ void Thread::getMCA()
         loop.exec();
 
     }
+
+    mutex->lock();
+    _mca = false;
+    mutex->unlock();
 
     if(debug)
     {

@@ -293,7 +293,8 @@ private:
     /* Area de prueba/testing */
 
 signals:
-    void sendAbortCommand(bool abort);    
+    void sendAbortCommand(bool abort);
+    void sendAbortMCAECommand(bool abort);
 
 private:
     Ui::MainWindow *ui;

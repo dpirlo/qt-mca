@@ -49,6 +49,7 @@ namespace ap {
       bool _logging;
       bool _mode;
       bool _continue;
+      bool _mca;
       QMutex* mutex;
       QString port_name;
       bool temp;

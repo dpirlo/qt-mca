@@ -40,6 +40,17 @@ MainWindow::~MainWindow()
     thread->wait();
     delete thread;
     delete worker;
+
+    etime_wr->abort();
+    etime_th->wait();
+    delete etime_th;
+    delete etime_wr;
+
+    mcae_wr->abort();
+    mcae_th->wait();
+    delete mcae_th;
+    delete mcae_wr;
+
     delete pref;
     delete pmt_select;
     delete ui;
@@ -198,29 +209,29 @@ void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str
  */
 void MainWindow::checkCombosStatus()
 {
-     QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
-     QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-     QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-     QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-     QObject::connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
-     QObject::connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
-     QObject::connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
-     QObject::connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-     QObject::connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
-     QObject::connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
-     QObject::connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
-     QObject::connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
-     QObject::connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
-     QObject::connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
-     QObject::connect(ui->checkBox_mca_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToConfig(bool)));
-     QObject::connect(ui->checkBox_mca_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToConfig(bool)));
-     QObject::connect(ui->checkBox_mca_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToConfig(bool)));
-     QObject::connect(ui->checkBox_c_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToMCA(bool)));
-     QObject::connect(ui->checkBox_c_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToMCA(bool)));
-     QObject::connect(ui->checkBox_c_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToMCA(bool)));
-     QObject::connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
-     QObject::connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
-     QObject::connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
+     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
+     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+     connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
+     connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
+     connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
+     connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
+     connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
+     connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
+     connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
+     connect(ui->checkBox_mca_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToConfig(bool)));
+     connect(ui->checkBox_mca_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToConfig(bool)));
+     connect(ui->checkBox_mca_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToConfig(bool)));
+     connect(ui->checkBox_mca_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToConfig(bool)));
+     connect(ui->checkBox_mca_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToConfig(bool)));
+     connect(ui->checkBox_c_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToMCA(bool)));
+     connect(ui->checkBox_c_2 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead2ToMCA(bool)));
+     connect(ui->checkBox_c_3 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead3ToMCA(bool)));
+     connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
+     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
+     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
 }
 /**
  * @brief MainWindow::connectSlots
@@ -246,7 +257,7 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(mcaRequested()), mcae_th, SLOT(start()));
     connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
     connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
-    connect(this, SIGNAL(sendAbortCommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
+    connect(this, SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));    
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
 }
@@ -283,14 +294,16 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {   
-   if(mode)
-   {
-       addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
-   }
-   else
-   {       
-       addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
-   }
+    if(mode)
+        {
+            addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
+            if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
+        }
+        else
+       {
+            addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
+            if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
+       }
 }
 
 /**
@@ -2259,13 +2272,13 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
       return;
     }
 
-    bool mode = ui->checkBox_continue->isChecked(); //Modo continuo
+    bool mode_continue = ui->checkBox_continue->isChecked(); //Modo continuo
 
     if(checked)
     {
         QList<int> checkedHeads=getCheckedHeads();
         mcae_wr->setCheckedHeads(checkedHeads);
-        mcae_wr->setContinueBool(mode);
+        mcae_wr->setContinueBool(mode_continue);
 
         switch (adquire_mode)
         {
@@ -2291,13 +2304,14 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->abort();
                 mcae_th->wait();
                 mcae_wr->requestMCA();
-                if (!mode) ui->pushButton_adquirir->setChecked(false);
+                if (!mode_continue) ui->pushButton_adquirir->setChecked(false);
             }
             else
             {
                 writeFooterAndHeaderDebug(true);
                 QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
+                ui->pushButton_adquirir->setChecked(false);
                 return;
             }
             break;
@@ -2309,7 +2323,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             mcae_wr->abort();
             mcae_th->wait();
             mcae_wr->requestMCA();
-            if (!mode) ui->pushButton_adquirir->setChecked(false);
+            if (!mode_continue) ui->pushButton_adquirir->setChecked(false);
             break;
         case TEMPERATURE:
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
@@ -2321,6 +2335,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 writeFooterAndHeaderDebug(true);
                 QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
+                ui->pushButton_adquirir->setChecked(false);
                 return;
             }
             ui->pushButton_adquirir->setChecked(false);
@@ -2335,11 +2350,11 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         {
         case PMT:
             setButtonAdquireState(true,true);
-            if (mode) emit sendAbortCommand(true);
+            if (mode_continue) emit sendAbortMCAECommand(true);
             break;
         case CABEZAL:
             setButtonAdquireState(true,true);
-            if (mode) emit sendAbortCommand(true);
+            if (mode_continue) emit sendAbortMCAECommand(true);
             break;
         case TEMPERATURE:
             break;
