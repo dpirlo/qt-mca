@@ -735,8 +735,8 @@ void MainWindow::getARPETStatus()
         {
             cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
             writeFooterAndHeaderDebug(false);
+            ui->label_power_management->setText("Error de conexión");
         }
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
     }
     writeFooterAndHeaderDebug(false);
 }
