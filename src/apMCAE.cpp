@@ -63,7 +63,7 @@ MCAE::MCAE(size_t timeout)
     Window_Time_Coin("702"),
     Select_Mode_Coin("703"),
     Normal_Coin_Mode("333333333"),
-    Auto_Coin_Mode("020102121"),
+    Auto_Coin_Mode("021120120"),
     Head_Coin("7"),
     Calib_Mode("6411"),
 
