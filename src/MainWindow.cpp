@@ -315,12 +315,13 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
 
 void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode)
 {
+    QString centroid_mode = ui->checkBox_centroid->isChecked() ? "Si" : "No";
     if(mode)
     {
         if (pmt_selected_list.length()==1)
         {
             ui->label_title_output->setText("MCA Extended | PMT: " + pmt_selected_list.at(0));
-            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " |");
+            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " | Modo Centroide: " + centroid_mode + " |" );
         }
         else
         {
