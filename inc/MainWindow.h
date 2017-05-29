@@ -115,6 +115,7 @@ private slots:
     void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+    void receivedValuesMCA(long long time, int hv_pmt, int offset, int var);
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -217,9 +218,7 @@ private slots:
     /* CUIPET */
     void on_pushButton_cuipet_aqd_file_open_clicked();
 
-
     /* Buttons de prueba/testing */
-
 
 private:
     void connectSlots();
@@ -279,7 +278,8 @@ private:
     QString getPSOCAlta(QLineEdit *line_edit);
     string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();
-    void resetHeads();
+    bool resetHeads();
+    bool resetPMTs();
     void setQListElements();
     void drawTemperatureBoard();
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);

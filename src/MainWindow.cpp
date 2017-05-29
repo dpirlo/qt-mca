@@ -262,6 +262,7 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
+    connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int)),this,SLOT(receivedValuesMCA(long long, int, int, int)));
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -310,6 +311,11 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
         addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
         if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
     }
+}
+
+void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int var)
+{
+    ui->label_data_output->setText("HV: "+QString::number(hv_pmt)+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg):"+QString::number(time/1000));
 }
 
 /**
@@ -970,7 +976,6 @@ void MainWindow::on_pushButton_init_configure_clicked()
 }
 /**
  * @brief MainWindow::on_pushButton_configure_clicked
- * @todo : Agregar el modo calibración
  */
 void MainWindow::on_pushButton_configure_clicked()
 {
@@ -1104,6 +1109,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             setLabelState(false, hv_status_table[head_index-1], true);
         }
     }
+
     writeFooterAndHeaderDebug(false);
 }
 /**
@@ -1496,7 +1502,7 @@ void MainWindow::setCalibrationTables(int head)
     coefy_values=getValuesFromFiles(coefy);
     coefT_values=getValuesFromFiles(coefT);
     coefest_values=getValuesFromFiles(coefest);
-    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true;
+    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true;
     QString q_msg;
 
     mMutex.lock();
@@ -1613,9 +1619,12 @@ void MainWindow::setCalibrationTables(int head)
         set_time = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Tiempos en el Cabezal. Error: "<<ex.excdesc<<endl;
     }
+
+    lowlimit = resetHeads();
+
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
-    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time, calib_status_table[head-1]);
+    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && lowlimit, calib_status_table[head-1]);
 
     mMutex.unlock();
 }
@@ -2271,9 +2280,10 @@ void MainWindow::resetHitsValues()
 /**
  * @brief MainWindow::resetHeads
  */
-void MainWindow::resetHeads()
+bool MainWindow::resetHeads()
 {
     QList<int> checkedHeads = getCheckedHeads();
+    bool status = true;
 
     for (int i=0;i < checkedHeads.length();i++)
     {
@@ -2291,10 +2301,49 @@ void MainWindow::resetHeads()
         catch (Exceptions ex)
         {
             if(debug) cout<<"No se puede reiniciar el cabezal "<<checkedHeads.at(i)<<". Error: "<<ex.excdesc<<endl;
+            status = false;
             QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         }
     }
+    return status;
 }
+bool MainWindow::resetPMTs()
+{
+    QList<int> checkedHeads = getCheckedHeads();
+    bool status = true;
+
+    for (int i=0;i < checkedHeads.length();i++)
+    {
+        parseConfigurationFile(true, QString::number(checkedHeads.at(i)));
+
+        try
+        {
+            for(int pmt = 0; pmt < PMTs; pmt++)
+            {
+                QString hv=QString::number(hvtable_values[pmt]);
+                QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
+                if(debug)
+                {
+                    cout<<"========================================="<<endl;
+                    cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                    showMCAEStreamDebugMode(q_msg.toStdString());
+                    cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+                    cout<<"========================================="<<endl;
+
+                }
+            }
+        }
+        catch( Exceptions & ex )
+        {
+            status = false;
+            if (debug) cout<<"No se pueden configurar las tablas de calibración en HV. Error: "<<ex.excdesc<<endl;
+        }
+
+
+    }
+    return status;
+}
+
 /**
  * @brief MainWindow::on_pushButton_adquirir_toggled
  * @param checked
@@ -2416,6 +2465,7 @@ void MainWindow::on_pushButton_reset_clicked()
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
         resetHitsValues();
         setPMTCustomPlotEnvironment(pmt_selected_list);
+        resetPMTs();
         removeAllGraphsPMT();
         break;
     case CABEZAL:

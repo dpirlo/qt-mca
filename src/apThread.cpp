@@ -242,6 +242,7 @@ void Thread::getMCA()
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
+                    emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA());
                 }
             }
             else
@@ -255,6 +256,7 @@ void Thread::getMCA()
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(index)),index, _mode);
+                    emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA());
                 }
             }
         }
