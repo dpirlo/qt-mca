@@ -335,7 +335,7 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
         if (getCheckedHeads().length()==1)
         {
             ui->label_title_output->setText("MCA Extended | Cabezal: " + QString::number(getCheckedHeads().at(0)));
-            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " |");
+            ui->label_data_output->setText("| Umbral: "+ QString::number(hv_pmt) + " |");
         }
         else
         {
