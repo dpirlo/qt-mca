@@ -214,12 +214,20 @@ private slots:
     void on_checkBox_Backprojection_clicked(bool checked);
     void on_pushButton_6_clicked();
 
+    /* CUIPET */
+
+
     /* Buttons de prueba/testing */
 
+
+
+
+    void on_pushButton_cuipet_aqd_file_open_clicked();
 
 private:
     void connectSlots();
     QString openConfigurationFile();
+    QString openDirectory();
     bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
     void getPaths();
     int parseConfigurationFile(bool mode, QString head="");

@@ -2907,6 +2907,16 @@ QString MainWindow::openConfigurationFile()
     return filename;
 }
 /**
+ * @brief MainWindow::openDirectory
+ * @return
+ */
+QString MainWindow::openDirectory()
+{
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Seleccionar el directorio"),
+                                                         QDir::homePath());
+    return directory;
+}
+/**
  * @brief MainWindow::getPaths
  */
 void MainWindow::getPaths()
@@ -4940,4 +4950,12 @@ void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
 void MainWindow::on_pushButton_6_clicked()
 {
     recon_externa->matar_procesos();
+}
+
+/* CUIPET */
+
+void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
+{
+    QString directory = openDirectory();
+    ui->lineEdit_cuipet_aqd_path_file->setText(directory);
 }
