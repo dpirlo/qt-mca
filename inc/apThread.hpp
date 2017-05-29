@@ -123,7 +123,7 @@ namespace ap {
        * @param mode
        */
       void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
-      void sendValuesMCA(long long time, int hv_pmt, int offset, int var);
+      void sendValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
 
   public slots:      
       void getLogWork();

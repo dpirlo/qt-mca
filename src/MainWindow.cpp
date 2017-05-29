@@ -262,7 +262,7 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
-    connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int)),this,SLOT(receivedValuesMCA(long long, int, int, int)));
+    connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -313,9 +313,36 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
     }
 }
 
-void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int var)
+void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode)
 {
-    ui->label_data_output->setText("HV: "+QString::number(hv_pmt)+" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg):"+QString::number(time/1000));
+    if(mode)
+    {
+        if (pmt_selected_list.length()==1)
+        {
+            ui->label_title_output->setText("MCA Extended | PMT: " + pmt_selected_list.at(0));
+            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " |");
+        }
+        else
+        {
+            ui->label_title_output->setText("");
+            ui->label_data_output->setText("");
+        }
+
+    }
+    else
+    {
+        if (getCheckedHeads().length()==1)
+        {
+            ui->label_title_output->setText("MCA Extended | Cabezal: " + getCheckedHeads().at(0));
+            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " |");
+        }
+        else
+        {
+            ui->label_title_output->setText("");
+            ui->label_data_output->setText("");
+        }
+    }
+
 }
 
 /**
@@ -1744,7 +1771,7 @@ void MainWindow::drawTemperatureBoard()
     mMutex.unlock();
 
     ui->label_title_output->setText("Temperatura");
-    ui->label_data_output->setText("Media: "+QString::number(mean)+"°C"+" Máxima: "+QString::number(t_max)+"°C"+" Mínima: "+QString::number(t_min)+"°C");
+    ui->label_data_output->setText("| Media: "+QString::number(mean)+"°C"+" | Máxima: "+QString::number(t_max)+"°C"+" | Mínima: "+QString::number(t_min)+"°C |");
 }
 /**
  * @brief MainWindow::clearTemperatureBoard
