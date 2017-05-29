@@ -59,6 +59,14 @@ private:
    * Variable _booleana_ que indica si la aplicación tiene activado el modo _log_.
    */
   bool logfile;
+  /**
+   * @brief stdoutmode
+   *
+   * Variable _booleana_ que indica si la aplicación tiene activado el modo _stdout_.
+   * Este modo permite escribir en un archivo la salida por consola de debug.
+   *
+   */
+  bool stdoutmode;
   QString initfile, root_calib_path;
   QString preferencesdir, preferencesfile;
 
@@ -80,6 +88,13 @@ public:
    */
   bool getLogFileValue() const { return logfile; }
   /**
+   * @brief getDebugStdOutValue
+   *
+   * Obtiene el estado de la variable _booleana_ stdoutmode.
+   * @return stdoutmode
+   */
+  bool getDebugStdOutValue() const {return stdoutmode; }
+  /**
    * @brief setDegugConsoleValue
    *
    * Configura el estado de la variable _booleana_ debconsole.
@@ -91,8 +106,15 @@ public:
    *
    * Configura el estado de la variable _booleana_ logfile.
    * @param log
-   */
+   */  
   void setLogFileValue(bool log) { logfile = log; }
+  /**
+   * @brief setDebugStdOutValue
+   *
+   * Configura el estado de la variable _booleana_ stdoutmode.
+   * @param stdout
+   */
+  void setDebugStdOutValue(bool stdout) { stdoutmode = stdout; }
   /**
    * @brief getInitFileConfigPath
    * @return La ruta del archivo de configuración de cabezales

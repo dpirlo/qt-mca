@@ -21,6 +21,7 @@ void SetPreferences::accept()
 {
     debconsole = ui->checkBox_Debug->isChecked();
     logfile = ui->checkBox_Log->isChecked();
+    stdoutmode = ui->checkBox_StdOut->isChecked();
     QDialog::accept();
 }
 /**
@@ -31,6 +32,7 @@ void SetPreferences::reject()
 {
     ui->checkBox_Debug->setChecked(debconsole);
     ui->checkBox_Log->setChecked(logfile);
+    ui->checkBox_StdOut->setChecked(stdoutmode);
     QDialog::reject();
 }
 /**
@@ -41,6 +43,7 @@ int SetPreferences::exec()
 {
     ui->checkBox_Debug->setChecked(debconsole);
     ui->checkBox_Log->setChecked(logfile);
+    ui->checkBox_StdOut->setChecked(stdoutmode);
     ui->lineEdit_config_file->setText(initfile);
     ui->lineEdit_config_calib->setText(root_calib_path);
     QDialog::exec();

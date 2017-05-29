@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     debug(false),
     init(false),
     log(true),
+    stdout_mode(false),
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
@@ -138,9 +139,10 @@ void MainWindow::setInitialConfigurations()
 void MainWindow::setPreferencesConfiguration()
 {
     /*Configuración inicial de preferencias*/
-    QString default_pref_file = "[Modo]\ndebug=false\nlog=true\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
+    QString default_pref_file = "[Modo]\ndebug=false\nlog=true\nstdout=false\n[Paths]\nconf_set_file=" + initfile + "\ncalib_set_file=" + root_calib_path + "\n";
     writePreferencesFile(default_pref_file, preferencesfile);
     getPreferencesSettingsFile();
+    writeDebugToStdOutLogFile();
 }
 /**
  * @brief MainWindow::SetQCustomPlotConfiguration
@@ -532,8 +534,11 @@ QString MainWindow::getLogFileName(QString main)
 
 void MainWindow::writeDebugToStdOutLogFile(QString main)
 {
-    QString logFile = getPreferencesDir() + "/stdout/Debug_" + getLogFileName(main);
-    freopen(logFile.toLocal8Bit().data(), "a+", stdout);
+    if (stdout_mode)
+    {
+        QString logFile = getPreferencesDir() + "/debug/Debug_" + getLogFileName(main);
+        freopen(logFile.toLocal8Bit().data(), "a+", stdout);
+    }
 }
 /**
  * @brief MainWindow::writeLogFile
@@ -607,10 +612,12 @@ void MainWindow::on_actionPreferencias_triggered()
     pref->setConfFile(initfile);
     pref->setDegugConsoleValue(debug);
     pref->setLogFileValue(log);
+    pref->setDebugStdOutValue(stdout_mode);
 
     int ret = pref->exec();
     bool debug_console = pref->getDegugConsoleValue();
     bool log_file = pref->getLogFileValue();
+    bool stdout_pref = pref->getDebugStdOutValue();
     QString file = pref->getInitFileConfigPath();
     QString calib_path = pref->getCalibDirectoryPath();
 
@@ -618,13 +625,17 @@ void MainWindow::on_actionPreferencias_triggered()
     {
         setDebugMode(debug_console);
         setLogMode(log_file);
+        setStdOutDebugMode(stdout_pref);
         QString boolDebugText = debug_console ? "true" : "false";
         QString boolLogText = log_file ? "true" : "false";
+        QString boolStdOutText = stdout_pref ? "true" : "false";
         setPreferencesSettingsFile("Modo", "debug", boolDebugText );
         setPreferencesSettingsFile("Modo", "log", boolLogText );
+        setPreferencesSettingsFile("Modo", "stdout", boolStdOutText );
         setPreferencesSettingsFile("Paths", "conf_set_file", file);
         setPreferencesSettingsFile("Paths", "calib_set_file", calib_path);
         getPreferencesSettingsFile();
+        writeDebugToStdOutLogFile();
     }
 }
 /**
@@ -638,8 +649,10 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
 {
     QString path = getPreferencesDir();
     QString logs = getPreferencesDir() + "/logs";
+    QString debugs = getPreferencesDir() + "/debug";
     QDir dir(path);
     QDir log(logs);
+    QDir deb(debugs);
     if (!dir.exists())
     {
         dir.mkdir(path);
@@ -647,6 +660,10 @@ int MainWindow::writePreferencesFile(QString pref, QString filename, bool force)
     if (!log.exists())
     {
         log.mkdir(logs);
+    }
+    if (!deb.exists())
+    {
+        deb.mkdir(debugs);
     }
 
     QFile file( path + "/" + filename );
@@ -684,9 +701,9 @@ void MainWindow::getPreferencesSettingsFile()
 
     debug = qtmcasettins.value("Modo/debug", "US").toBool();
     log = qtmcasettins.value("Modo/log", "US").toBool();
+    stdout_mode = qtmcasettins.value("Modo/stdout", "US").toBool();
     initfile = qtmcasettins.value("Paths/conf_set_file", "US").toString();
     root_calib_path = qtmcasettins.value("Paths/calib_set_file", "US").toString();
-
 }
 /**
  * @brief MainWindow::setPreferencesSettingsFile

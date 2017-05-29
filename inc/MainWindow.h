@@ -215,14 +215,11 @@ private slots:
     void on_pushButton_6_clicked();
 
     /* CUIPET */
+    void on_pushButton_cuipet_aqd_file_open_clicked();
 
 
     /* Buttons de prueba/testing */
 
-
-
-
-    void on_pushButton_cuipet_aqd_file_open_clicked();
 
 private:
     void connectSlots();
@@ -329,7 +326,7 @@ private:
     QList<QString> pmt_selected_list;
     QList<QPushButton*> pmt_button_table;
     int adquire_mode;
-    bool debug, init, log;
+    bool debug, init, log, stdout_mode;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
@@ -372,6 +369,14 @@ public:
      * @param mode
      */
     void setLogMode(bool mode) { log = mode; }
+    /**
+     * @brief setStdOutDebugMode
+     *
+     * Configura el valor de _stdout\_mode_ a partir del menú preferencias.
+     *
+     * @param mode
+     */
+    void setStdOutDebugMode(bool mode) { stdout_mode = mode; }
     /**
      * @brief setPMTSelectedList
      *
