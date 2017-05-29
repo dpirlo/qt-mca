@@ -2370,13 +2370,13 @@ bool MainWindow::resetPMTs()
     }
     return status;
 }
-
 /**
  * @brief MainWindow::on_pushButton_adquirir_toggled
  * @param checked
  */
 void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
+    bool centroide = ui->checkBox_centroid->isChecked();
     if(checked)
     {
         if(!arpet->isPortOpen())
@@ -2418,6 +2418,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->setPMTSelectedList(pmt_selected_list);
                 mcae_wr->setDebugMode(debug);
                 mcae_wr->setModeBool(true);
+                mcae_wr->setCentroidMode(centroide);
                 mcae_wr->abort();
                 mcae_th->wait();
                 mcae_wr->requestMCA();                

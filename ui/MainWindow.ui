@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2217,7 +2217,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -3417,10 +3417,10 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_select_pmt">
        <property name="geometry">
         <rect>
-         <x>16</x>
-         <y>40</y>
-         <width>81</width>
-         <height>71</height>
+         <x>12</x>
+         <y>35</y>
+         <width>91</width>
+         <height>61</height>
         </rect>
        </property>
        <property name="text">
@@ -3456,6 +3456,19 @@ calibrar</string>
          <width>61</width>
          <height>121</height>
         </rect>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_centroid">
+       <property name="geometry">
+        <rect>
+         <x>8</x>
+         <y>105</y>
+         <width>95</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Centroide</string>
        </property>
       </widget>
      </widget>

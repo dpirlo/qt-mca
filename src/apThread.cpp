@@ -25,6 +25,7 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     _logging(false),
     _mca(false),
     _abort(false),
+    _centroid(false),
     temp(false),
     rate(false),
     debug(false),
@@ -221,6 +222,17 @@ void Thread::getMCA()
         cout<<"Comienza la adquisición MCA."<<endl;
     }
 
+    string pmt_function;
+
+    if (_centroid)
+    {
+        pmt_function = arpet->getFunCHead();
+    }
+    else
+    {
+        pmt_function = arpet->getFunCSP3();
+    }
+
     while(!_abort)
     {
 
@@ -234,7 +246,7 @@ void Thread::getMCA()
                 for (int index=0;index<size_pmt_selected;index++)
                 {
                     string pmt = pmt_selected_list.at(index).toStdString();
-                    string msg = arpet->getMCA(pmt, arpet->getFunCSP3(), QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
+                    string msg = arpet->getMCA(pmt, pmt_function, QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
                     if(debug)
                     {
                         cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;

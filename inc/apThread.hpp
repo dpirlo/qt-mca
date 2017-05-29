@@ -49,6 +49,7 @@ namespace ap {
       bool _logging;
       bool _mode;      
       bool _mca;
+      bool _centroid;
       QMutex* mutex;
       QString port_name;
       bool temp;
@@ -127,8 +128,9 @@ namespace ap {
 
   public slots:      
       void getLogWork();
-      void setAbortBool(bool abort) {_abort = abort;}
-      void setModeBool(bool mode) {_mode = mode;}      
+      void setAbortBool(bool abort) { _abort = abort;}
+      void setModeBool(bool mode) { _mode = mode; }
+      void setCentroidMode(bool mode) { _centroid = mode; }
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
       void getElapsedTime();
