@@ -21,8 +21,7 @@ using namespace ap;
  */
 Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     QObject(parent),
-    arpet(_arpet),
-    _continue(false),
+    arpet(_arpet),    
     _logging(false),
     _mca(false),
     _abort(false),
@@ -257,10 +256,6 @@ void Thread::getMCA()
                     }
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(index)),index, _mode);
                 }
-            }
-            if (!_continue)
-            {
-                setAbortBool(true);
             }
         }
         catch(Exceptions & ex)

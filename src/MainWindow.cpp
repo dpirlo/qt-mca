@@ -263,7 +263,7 @@ void MainWindow::connectSlots()
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
-
+    connect(this, SIGNAL(ToPushButtonLogger(bool)),ui->pushButton_logguer,SLOT(setChecked(bool)));
 }
 /**
  * @brief MainWindow::writeRatesToLog
@@ -529,6 +529,12 @@ QString MainWindow::getLogFileName(QString main)
 
     return prefix + main + suffix + extension;
 }
+
+void MainWindow::writeDebugToStdOutLogFile(QString main)
+{
+    QString logFile = getPreferencesDir() + "/stdout/Debug_" + getLogFileName(main);
+    freopen(logFile.toLocal8Bit().data(), "a+", stdout);
+}
 /**
  * @brief MainWindow::writeLogFile
  */
@@ -542,7 +548,7 @@ void MainWindow::writeLogFile(QString log_text, QString main)
         QTextStream out(&logger);
         out << log_text;
         logger.close();
-    }
+    }    
 }
 /**
  * @brief MainWindow::copyRecursively
@@ -2266,24 +2272,25 @@ void MainWindow::resetHeads()
  */
 void MainWindow::on_pushButton_adquirir_toggled(bool checked)
 {
-    if(!arpet->isPortOpen())
-    {
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-        if(debug)
-        {
-            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-            writeFooterAndHeaderDebug(false);
-        }
-        return;
-    }
-
-    bool mode_continue = ui->checkBox_continue->isChecked(); //Modo continuo
-
     if(checked)
     {
+        if(!arpet->isPortOpen())
+        {
+            writeFooterAndHeaderDebug(true);
+            setButtonAdquireState(false);
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+            if(debug)
+            {
+                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+            setButtonAdquireState(true, true);
+            emit ToPushButtonAdquirir(false);
+            return;
+        }
+
         QList<int> checkedHeads=getCheckedHeads();
-        mcae_wr->setCheckedHeads(checkedHeads);
-        mcae_wr->setContinueBool(mode_continue);
+        mcae_wr->setCheckedHeads(checkedHeads);        
 
         switch (adquire_mode)
         {
@@ -2294,7 +2301,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 setButtonAdquireState(false);
                 if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
                 QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-                ui->pushButton_adquirir->setChecked(false);
+                emit ToPushButtonAdquirir(false);
                 setButtonAdquireState(true, true);
                 writeFooterAndHeaderDebug(false);
                 return;
@@ -2308,15 +2315,14 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->setModeBool(true);
                 mcae_wr->abort();
                 mcae_th->wait();
-                mcae_wr->requestMCA();
-                if (!mode_continue) emit ToPushButtonAdquirir(false);//ui->pushButton_adquirir->setChecked(false);
+                mcae_wr->requestMCA();                
             }
             else
             {
                 writeFooterAndHeaderDebug(true);
                 QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
-                ui->pushButton_adquirir->setChecked(false);
+                emit ToPushButtonAdquirir(false);
                 return;
             }
             break;
@@ -2327,8 +2333,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             mcae_wr->setModeBool(false);
             mcae_wr->abort();
             mcae_th->wait();
-            mcae_wr->requestMCA();
-            if (!mode_continue) emit ToPushButtonAdquirir(false);;//ui->pushButton_adquirir->setChecked(false);
+            mcae_wr->requestMCA();            
             break;
         case TEMPERATURE:
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
@@ -2340,10 +2345,10 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 writeFooterAndHeaderDebug(true);
                 QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
-                ui->pushButton_adquirir->setChecked(false);
+                emit ToPushButtonAdquirir(false);
                 return;
             }
-            ui->pushButton_adquirir->setChecked(false);
+            emit ToPushButtonAdquirir(false);
             break;
         default:
             break;
@@ -2355,11 +2360,11 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         {
         case PMT:
             setButtonAdquireState(true,true);
-            if (mode_continue) emit sendAbortMCAECommand(true);
+            emit sendAbortMCAECommand(true);
             break;
         case CABEZAL:
             setButtonAdquireState(true,true);
-            if (mode_continue) emit sendAbortMCAECommand(true);
+            emit sendAbortMCAECommand(true);
             break;
         case TEMPERATURE:
             break;
@@ -2368,66 +2373,6 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         }
     }
 }
-///**
-// * @brief MainWindow::on_pushButton_adquirir_clicked
-// */
-//void MainWindow::on_pushButton_adquirir_clicked()
-//{
-
-//    writeFooterAndHeaderDebug(true);
-
-//    if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {drawTemperatureBoard();}
-//    else
-//    {
-//        QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-//        writeFooterAndHeaderDebug(false);
-//        return;
-//    }
-
-//    /*QString q_msg;
-
-//    switch (adquire_mode) {
-//    case PMT:
-//        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {q_msg = getMultiMCA(QString::number(checkedHeads.at(0)));}
-//        else
-//        {
-//            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-//            writeFooterAndHeaderDebug(false);
-//            return;
-//        }
-//        break;
-//    case CABEZAL:
-//        ui->specHead->clearGraphs();
-//        for (int i=0;i<checkedHeads.length();i++)
-//        {
-//            try
-//            {
-//                if(debug) cout<<"Cabezal: "<<checkedHeads.at(i)<<endl;
-//                q_msg = getHeadMCA(QString::number(checkedHeads.at(i)));
-//            }
-//            catch(Exceptions & ex)
-//            {
-//                if(debug) cout<<"No se puede continuar con el proceso de adquisición. Error: "<<ex.excdesc<<endl;
-//                writeFooterAndHeaderDebug(false);
-//                setButtonAdquireState(true, true);
-//                return;
-//            }
-//        }
-//        break;
-//    case TEMPERATURE:
-//        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD) {drawTemperatureBoard();}
-//        else
-//        {
-//            QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-//            writeFooterAndHeaderDebug(false);
-//            return;
-//        }
-//        break;
-//    default:
-//        break;
-//    }*/
-//    writeFooterAndHeaderDebug(false);
-//}
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
  */
@@ -2753,19 +2698,24 @@ void MainWindow::on_pushButton_p_50_clicked()
  * @param checked
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
-{
-    if(!arpet->isPortOpen())
-    {
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-        if(debug)
-        {
-            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-            writeFooterAndHeaderDebug(false);
-        }
-        return;
-    }
+{    
     if(checked)
     {
+        if(!arpet->isPortOpen())
+        {
+            writeFooterAndHeaderDebug(true);
+            setButtonLoggerState(false);
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+            if(debug)
+            {
+                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+            setButtonLoggerState(true, true);
+            emit ToPushButtonLogger(false);
+            return;
+        }
+
         setButtonLoggerState(true);
         QList<int> checkedHeads=getCheckedHeads();
         worker->setCheckedHeads(checkedHeads);

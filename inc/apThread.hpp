@@ -47,8 +47,7 @@ namespace ap {
       QList<QString> pmt_selected_list;
       bool _abort;
       bool _logging;
-      bool _mode;
-      bool _continue;
+      bool _mode;      
       bool _mca;
       QMutex* mutex;
       QString port_name;
@@ -128,8 +127,7 @@ namespace ap {
   public slots:      
       void getLogWork();
       void setAbortBool(bool abort) {_abort = abort;}
-      void setModeBool(bool mode) {_mode = mode;}
-      void setContinueBool(bool cont) {_continue = cont;}
+      void setModeBool(bool mode) {_mode = mode;}      
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
       void getElapsedTime();

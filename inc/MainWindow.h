@@ -238,6 +238,7 @@ private:
     void writeFooterAndHeaderDebug(bool header);
     QString getLogFileName(QString main="");
     void writeLogFile(QString log_text, QString main="");
+    void writeDebugToStdOutLogFile(QString main="");
     int writePreferencesFile(QString pref, QString filename, bool force=false);
     void getElapsedTime();
     void getHeadStatus(int head_index);
@@ -302,6 +303,7 @@ signals:
     void sendAbortCommand(bool abort);
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
+    void ToPushButtonLogger(bool toggle);
 
 private:
     Ui::MainWindow *ui;
