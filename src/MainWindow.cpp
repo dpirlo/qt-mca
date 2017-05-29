@@ -975,6 +975,18 @@ void MainWindow::on_pushButton_init_configure_clicked()
 void MainWindow::on_pushButton_configure_clicked()
 {
     /* Inicialización del modo Coincidencia */
+
+    if(!arpet->isPortOpen())
+    {
+        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+        if(debug)
+        {
+            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
     QString head;
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
