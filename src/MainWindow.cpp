@@ -1620,13 +1620,13 @@ void MainWindow::setCalibrationTables(int head)
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Tiempos en el Cabezal. Error: "<<ex.excdesc<<endl;
     }
 
+    mMutex.unlock();
+
     lowlimit = resetHeads();
 
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
     setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && lowlimit, calib_status_table[head-1]);
-
-    mMutex.unlock();
 }
 
 /* Pestaña: "MCA" */
