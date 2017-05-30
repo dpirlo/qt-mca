@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Debug en STDOUT</string>
+     <string>Debug en archivo</string>
     </property>
    </widget>
   </widget>
