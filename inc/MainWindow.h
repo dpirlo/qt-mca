@@ -143,7 +143,7 @@ private slots:
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
     void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
-    void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);    
+    void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /* Buttons */
     void on_pushButton_init_configure_clicked();
@@ -159,7 +159,7 @@ private slots:
     void on_pushButton_hv_set_clicked();
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
-    void on_pushButton_hv_estado_clicked();    
+    void on_pushButton_hv_estado_clicked();
     void on_pushButton_adquirir_toggled(bool checked);
     void on_pushButton_select_pmt_clicked();
     void on_pushButton_hv_configure_clicked();
@@ -317,6 +317,7 @@ private:
     Thread *etime_wr;
     QThread *mcae_th;
     Thread *mcae_wr;
+    bool is_abort_mcae, is_abort_log;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
@@ -386,6 +387,8 @@ public:
      * @param list
      */
     void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
+    void setIsAbortMCAEFlag(bool flag) { is_abort_mcae = flag; }
+    void setIsAbortLogFlag(bool flag) { is_abort_log = flag; }
     /**
      * @brief getPMTSelectedList
      *

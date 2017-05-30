@@ -21,7 +21,7 @@ using namespace ap;
  */
 Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     QObject(parent),
-    arpet(_arpet),    
+    arpet(_arpet),
     _logging(false),
     _mca(false),
     _abort(false),
@@ -34,6 +34,11 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     time_sec(1)
 {
 
+}
+void Thread::setAbortBool(bool abort)
+{
+    _abort = abort;
+    if (debug) cout<<"Se aborta la operación en el thread: "<<thread()->currentThreadId()<<endl;
 }
 /**
  * @brief Thread::getLocalDateAndTime
@@ -293,7 +298,6 @@ void Thread::getMCA()
         QEventLoop loop;
         QTimer::singleShot(100, &loop, SLOT(quit()));
         loop.exec();
-
     }
 
     mutex->lock();

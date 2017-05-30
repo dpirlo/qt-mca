@@ -10,6 +10,8 @@
  */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
+    is_abort_mcae(true),
+    is_abort_log(true),
     debug(false),
     init(false),
     log(true),
@@ -603,7 +605,7 @@ void MainWindow::writeLogFile(QString log_text, QString main)
         QTextStream out(&logger);
         out << log_text;
         logger.close();
-    }    
+    }
 }
 /**
  * @brief MainWindow::copyRecursively
@@ -2435,6 +2437,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         {
             writeFooterAndHeaderDebug(true);
             setButtonAdquireState(false);
+            setIsAbortMCAEFlag(false);
             QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
             if(debug)
             {
@@ -2447,7 +2450,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         }
 
         QList<int> checkedHeads=getCheckedHeads();
-        mcae_wr->setCheckedHeads(checkedHeads);        
+        mcae_wr->setCheckedHeads(checkedHeads);
 
         switch (adquire_mode)
         {
@@ -2456,6 +2459,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             {
                 writeFooterAndHeaderDebug(true);
                 setButtonAdquireState(false);
+                setIsAbortMCAEFlag(false);
                 if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
                 QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
                 emit ToPushButtonAdquirir(false);
@@ -2473,11 +2477,12 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
                 mcae_wr->setCentroidMode(centroide);
                 mcae_wr->abort();
                 mcae_th->wait();
-                mcae_wr->requestMCA();                
+                mcae_wr->requestMCA();
             }
             else
             {
                 writeFooterAndHeaderDebug(true);
+                setIsAbortMCAEFlag(false);
                 QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
                 writeFooterAndHeaderDebug(false);
                 emit ToPushButtonAdquirir(false);
@@ -2491,7 +2496,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
             mcae_wr->setModeBool(false);
             mcae_wr->abort();
             mcae_th->wait();
-            mcae_wr->requestMCA();            
+            mcae_wr->requestMCA();
             break;
         case TEMPERATURE:
             if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
@@ -2516,13 +2521,14 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
     {
         switch (adquire_mode)
         {
-        case PMT:
+        case PMT...CABEZAL:
             setButtonAdquireState(true,true);
-            emit sendAbortMCAECommand(true);
-            break;
-        case CABEZAL:
-            setButtonAdquireState(true,true);
-            emit sendAbortMCAECommand(true);
+            if (is_abort_mcae)
+            {
+                if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<mcae_th->currentThreadId()<<endl;
+                emit sendAbortMCAECommand(true);
+            }
+            setIsAbortMCAEFlag(true);
             break;
         case TEMPERATURE:
             break;
@@ -2857,13 +2863,14 @@ void MainWindow::on_pushButton_p_50_clicked()
  * @param checked
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
-{    
+{
     if(checked)
     {
         if(!arpet->isPortOpen())
         {
             writeFooterAndHeaderDebug(true);
             setButtonLoggerState(false);
+            setIsAbortLogFlag(false);
             QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
             if(debug)
             {
@@ -2889,8 +2896,13 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
     }
     else
     {
-        setButtonLoggerState(true,true);
-        emit sendAbortCommand(true);
+        setButtonLoggerState(true,true);        
+        if (is_abort_log)
+        {
+            if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<thread->currentThreadId()<<endl;
+            emit sendAbortCommand(true);
+        }
+        setIsAbortLogFlag(true);
     }
 }
 

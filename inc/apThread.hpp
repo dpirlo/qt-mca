@@ -47,14 +47,14 @@ namespace ap {
       QList<QString> pmt_selected_list;
       bool _abort;
       bool _logging;
-      bool _mode;      
+      bool _mode;
       bool _mca;
       bool _centroid;
       QMutex* mutex;
       QString port_name;
       bool temp;
       bool rate;
-      bool debug;      
+      bool debug;
       int time_sec;
       bool log_finished;
       QString etime;
@@ -64,7 +64,7 @@ namespace ap {
       /**
        * @brief logRequested
        */
-      void logRequested();            
+      void logRequested();
       /**
        * @brief mcaRequest
        */
@@ -75,7 +75,7 @@ namespace ap {
        * @param rate_low
        * @param rate_med
        * @param rate_high
-       */      
+       */
       void sendRatesValues(int index, int rate_low, int rate_med, int rate_high);
       /**
        * @brief sendTempValues
@@ -126,9 +126,9 @@ namespace ap {
       void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
       void sendValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
 
-  public slots:      
+  public slots:
       void getLogWork();
-      void setAbortBool(bool abort) { _abort = abort;}
+      void setAbortBool(bool abort);
       void setModeBool(bool mode) { _mode = mode; }
       void setCentroidMode(bool mode) { _centroid = mode; }
       void cancelLogging(bool var) { log_finished = var; }
