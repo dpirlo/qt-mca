@@ -213,7 +213,12 @@ void Thread::getElapsedTime()
 
     emit finished();
 }
-
+/**
+ * @brief Thread::getMCA
+ *
+ * Realiza la adquisición de cuentas MCA
+ *
+ */
 void Thread::getMCA()
 {
     if(debug)

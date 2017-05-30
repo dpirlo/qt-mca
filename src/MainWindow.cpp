@@ -298,7 +298,14 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 {
     ui->label_elapsed_time->setText(etime_string);
 }
-
+/**
+ * @brief MainWindow::receivedHitsMCA
+ * @param hits
+ * @param channels
+ * @param pmt_head
+ * @param index
+ * @param mode
+ */
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
     if(mode)
@@ -312,7 +319,14 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
         if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
     }
 }
-
+/**
+ * @brief MainWindow::receivedValuesMCA
+ * @param time
+ * @param hv_pmt
+ * @param offset
+ * @param var
+ * @param mode
+ */
 void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode)
 {
     QString centroid_mode = ui->checkBox_centroid->isChecked() ? "Si" : "No";
@@ -345,7 +359,6 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
     }
 
 }
-
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
  * @param arg1
@@ -565,7 +578,10 @@ QString MainWindow::getLogFileName(QString main)
 
     return prefix + main + suffix + extension;
 }
-
+/**
+ * @brief MainWindow::writeDebugToStdOutLogFile
+ * @param main
+ */
 void MainWindow::writeDebugToStdOutLogFile(QString main)
 {
     if (stdout_mode)
@@ -2335,6 +2351,10 @@ bool MainWindow::resetHeads()
     }
     return status;
 }
+/**
+ * @brief MainWindow::resetPMTs
+ * @return
+ */
 bool MainWindow::resetPMTs()
 {
     QList<int> checkedHeads = getCheckedHeads();
@@ -5011,7 +5031,9 @@ void MainWindow::on_pushButton_6_clicked()
 }
 
 /* CUIPET */
-
+/**
+ * @brief MainWindow::on_pushButton_cuipet_aqd_file_open_clicked
+ */
 void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
 {
     QString directory = openDirectory();
