@@ -99,6 +99,7 @@ namespace ap {
     void setPSOCEStream(string function, string size_received, string psoc_value_dec="");
     bool verifyMCAEStream(string data_received, string data_to_compare);
     string getMCA(string pmt, string function, string head, int channels, string port_name);
+    string setHV(string head, string channel_dec, string port_name);
     string setHV(string head, string pmt, string channel_dec, string port_name);
     string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
     string setTime(string head, double time_value, string pmt, string port_name);

@@ -272,6 +272,7 @@ private:
     void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
     void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
     QString setHV(string head, string hv_value, string pmt);
+    QString setHV(string head, string hv_value);
     QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
     QString setTime(string head, double time_value, string pmt);
     int getPMT(QLineEdit *line_edit);

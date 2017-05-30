@@ -2129,6 +2129,37 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
     return QString::fromStdString(msg);
 }
 /**
+ * @brief MainWindow::setHV
+ *
+ * Configuración del umbral para un cabezal determinado
+ *
+ * @param head
+ * @param hv_value
+ * @return Devuelve el mensaje de respuesta en _QString_
+ */
+QString MainWindow::setHV(string head, string hv_value)
+{
+    string msg;
+
+    mMutex.lock();
+
+    try
+    {
+        msg = arpet->setHV(head, hv_value, port_name.toStdString());
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_hv(ex.excdesc);
+        mMutex.unlock();
+        throw exception_hv;
+    }
+    resetHitsValues();
+
+    mMutex.unlock();
+
+    return QString::fromStdString(msg);
+}
+/**
  * @brief MainWindow::getPMT
  * @param line_edit
  * @return Valor de PMT
@@ -2335,7 +2366,7 @@ bool MainWindow::resetHeads()
 
         try
         {
-            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit).toStdString(),"00");
+            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit).toStdString());
             if(debug)
             {
                 cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<LowLimit<<endl;

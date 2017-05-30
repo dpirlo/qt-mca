@@ -1229,6 +1229,28 @@ string MCAE::setHV(string head, string pmt, string channel_dec, string port_name
     return msg;
 }
 /**
+ * @brief MCAE::setHV
+ *
+ * Configuración del umbral en el cabezal
+ *
+ * @param head
+ * @param channel_dec
+ * @param port_name
+ * @return
+ */
+string MCAE::setHV(string head, string channel_dec, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+    setMCAEStream("0", 0, getSetHV_MCA(), channel_dec);
+    char delimeter='\r';
+    string msg;
+
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
+
+    return msg;
+}
+/**
  * @brief MCAE::setCalibTable
  *
  * Configuración de las tablas de calibración
