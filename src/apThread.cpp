@@ -35,6 +35,13 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
 {
 
 }
+/**
+ * @brief Thread::setAbortBool
+ *
+ * Slot de aborto del proceso
+ *
+ * @param abort
+ */
 void Thread::setAbortBool(bool abort)
 {
     _abort = abort;

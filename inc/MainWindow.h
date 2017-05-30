@@ -387,7 +387,23 @@ public:
      * @param list
      */
     void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
+    /**
+     * @brief setIsAbortMCAEFlag
+     *
+     * Configura la bandera de aborto que habilita a enviar las señales para abortar
+     * el proceso de adquisición MCAE
+     *
+     * @param flag
+     */
     void setIsAbortMCAEFlag(bool flag) { is_abort_mcae = flag; }
+    /**
+     * @brief setIsAbortLogFlag
+     *
+     * Configura la bandera de aborto que habilita a enviar las señales para abortar
+     * el proceso log
+     *
+     * @param flag
+     */
     void setIsAbortLogFlag(bool flag) { is_abort_log = flag; }
     /**
      * @brief getPMTSelectedList

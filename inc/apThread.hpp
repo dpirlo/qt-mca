@@ -124,6 +124,14 @@ namespace ap {
        * @param mode
        */
       void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+      /**
+       * @brief sendValuesMCA
+       * @param time
+       * @param hv_pmt
+       * @param offset
+       * @param var
+       * @param mode
+       */
       void sendValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
 
   public slots:
