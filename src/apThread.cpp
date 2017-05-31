@@ -259,6 +259,7 @@ void Thread::getMCA()
         {
             if (_mode)
             {
+                emit  clearGraphsPMTs();
                 int size_pmt_selected = pmt_selected_list.length();
                 for (int index=0;index<size_pmt_selected;index++)
                 {
@@ -276,6 +277,7 @@ void Thread::getMCA()
             }
             else
             {
+                emit  clearGraphsHeads();               
                 for (int index=0;index<checkedHeads.length();index++)
                 {
                     string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());

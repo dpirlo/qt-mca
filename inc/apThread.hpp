@@ -133,6 +133,8 @@ namespace ap {
        * @param mode
        */
       void sendValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
+      void clearGraphsPMTs();
+      void clearGraphsHeads();
 
   public slots:
       void getLogWork();

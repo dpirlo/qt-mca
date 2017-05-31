@@ -265,6 +265,8 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
+    connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
+    connect(mcae_wr, SIGNAL(clearGraphsHeads()),this,SLOT(clearSpecHeadsGraphs()));
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -300,6 +302,14 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 {
     ui->label_elapsed_time->setText(etime_string);
 }
+void MainWindow::clearSpecPMTsGraphs()
+{
+  ui->specPMTs->clearGraphs();
+}
+void MainWindow::clearSpecHeadsGraphs()
+{
+  ui->specHead->clearGraphs();
+}
 /**
  * @brief MainWindow::receivedHitsMCA
  * @param hits
@@ -312,13 +322,13 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
 {
     if(mode)
     {
+        //if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
-        if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
     }
     else
     {
         addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
-        if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
+        //if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
     }
 }
 /**
@@ -2896,7 +2906,7 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
     }
     else
     {
-        setButtonLoggerState(true,true);        
+        setButtonLoggerState(true,true);
         if (is_abort_log)
         {
             if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<thread->currentThreadId()<<endl;
