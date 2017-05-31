@@ -302,10 +302,16 @@ void MainWindow::receivedElapsedTimeString(QString etime_string)
 {
     ui->label_elapsed_time->setText(etime_string);
 }
+/**
+ * @brief MainWindow::clearSpecPMTsGraphs
+ */
 void MainWindow::clearSpecPMTsGraphs()
 {
   ui->specPMTs->clearGraphs();
 }
+/**
+ * @brief MainWindow::clearSpecHeadsGraphs
+ */
 void MainWindow::clearSpecHeadsGraphs()
 {
   ui->specHead->clearGraphs();
@@ -321,14 +327,12 @@ void MainWindow::clearSpecHeadsGraphs()
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
     if(mode)
-    {
-        //if (index == pmt_selected_list.length()-1) ui->specPMTs->clearGraphs();
+    {        
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
     }
     else
     {
-        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
-        //if (index == getCheckedHeads().length()-1) ui->specHead->clearGraphs();
+        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);        
     }
 }
 /**

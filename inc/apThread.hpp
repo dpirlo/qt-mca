@@ -133,7 +133,13 @@ namespace ap {
        * @param mode
        */
       void sendValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
+      /**
+       * @brief clearGraphsPMTs
+       */
       void clearGraphsPMTs();
+      /**
+       * @brief clearGraphsHeads
+       */
       void clearGraphsHeads();
 
   public slots:
