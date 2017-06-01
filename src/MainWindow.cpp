@@ -389,19 +389,14 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
 void MainWindow::getLogErrorThread()
 {
     setButtonLoggerState(false);
-    setIsAbortLogFlag(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
-    emit ToPushButtonLogger(false);
+    ui->pushButton_logguer->setChecked(false);
 }
-/**
- * @brief MainWindow::getMCAErrorThread
- */
 void MainWindow::getMCAErrorThread()
 {
     setButtonAdquireState(false);
-    setIsAbortMCAEFlag(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
-    emit ToPushButtonAdquirir(false);
+    ui->pushButton_adquirir->setChecked(false);
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
@@ -2407,21 +2402,21 @@ bool MainWindow::resetHeads()
  * @brief MainWindow::resetPMTs
  * @return
  */
-bool MainWindow::resetPMTs()
+bool MainWindow::resetPMTs(bool centroide)
 {
     QList<int> checkedHeads = getCheckedHeads();
     bool status = true;
 
-    for (int i=0;i < checkedHeads.length();i++)
-    {
-        parseConfigurationFile(true, QString::number(checkedHeads.at(i)));
+
+        parseConfigurationFile(true, QString::number(checkedHeads.at(0)));
 
         try
         {
+            if (centroide) setHV(QString::number(checkedHeads.at(0)).toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
             for(int pmt = 0; pmt < PMTs; pmt++)
             {
                 QString hv=QString::number(hvtable_values[pmt]);
-                QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
+                QString q_msg = setHV(QString::number(checkedHeads.at(0)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
                 if(debug)
                 {
                     cout<<"========================================="<<endl;
@@ -2440,7 +2435,7 @@ bool MainWindow::resetPMTs()
         }
 
 
-    }
+
     return status;
 }
 /**
@@ -2561,7 +2556,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
  */
 void MainWindow::on_pushButton_reset_clicked()
 {
-    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */    
     writeFooterAndHeaderDebug(true);
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
@@ -2570,7 +2565,7 @@ void MainWindow::on_pushButton_reset_clicked()
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
         resetHitsValues();
         setPMTCustomPlotEnvironment(pmt_selected_list);
-        resetPMTs();
+        resetPMTs(ui->checkBox_centroid->isChecked());
         removeAllGraphsPMT();
         break;
     case CABEZAL:
@@ -2644,8 +2639,9 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     QString q_msg;
     try
     {
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
         ui->label_data_output->setText("PMT: "+pmt_selected_list.at(0)+" | Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
     }
     catch (Exceptions ex)
@@ -2682,8 +2678,13 @@ void MainWindow::on_pushButton_l_5_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-5)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2718,8 +2719,13 @@ void MainWindow::on_pushButton_l_10_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-10)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2754,8 +2760,13 @@ void MainWindow::on_pushButton_l_50_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,-50)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2790,8 +2801,13 @@ void MainWindow::on_pushButton_p_5_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,5)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2826,8 +2842,13 @@ void MainWindow::on_pushButton_p_10_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,10)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2846,7 +2867,7 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    writeFooterAndHeaderDebug(true);
+    writeFooterAndHeaderDebug(true);    
 
     if (pmt_selected_list.isEmpty())
     {
@@ -2862,8 +2883,13 @@ void MainWindow::on_pushButton_p_50_clicked()
     QString q_msg;
     try
     {
+        mMutex.lock();
+        arpet->getMCA(pmt_selected_list.at(0).toStdString(), arpet->getFunCSP3(), getHead("mca").toStdString(),CHANNELS_PMT, port_name.toStdString());
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
+        mMutex.unlock();
+        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<getHVValue(ui->lineEdit_hv_value,50)<<endl;
+        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -4138,6 +4164,7 @@ void MainWindow::on_pushButton_clicked()
     QList<int> checked_PMTs, checked_Cab;
     QMessageBox messageBox;
 
+    cout<<"Autocalibrando"<<endl;
 
     if (ui->checkBox_Cab_Completo->isChecked())
     {
@@ -4160,6 +4187,7 @@ void MainWindow::on_pushButton_clicked()
         {
             messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
             messageBox.setFixedSize(500,200);
+            mMutex.unlock();
             return;
         }
         calibrador->setPMT_List(checked_PMTs);
@@ -4173,9 +4201,12 @@ void MainWindow::on_pushButton_clicked()
     {
         messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
         messageBox.setFixedSize(500,200);
+        mMutex.unlock();
         return;
     }
     calibrador->setCanal_Obj(Canal_obj.toInt());
+
+    cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
 
     // Recupero el tiempo de adquisicion
     QString Tiempo_adq = ui->Tiempo_adq_box->text();
@@ -4183,6 +4214,7 @@ void MainWindow::on_pushButton_clicked()
     {
         messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
         messageBox.setFixedSize(500,200);
+        mMutex.unlock();
         return;
     }
     calibrador->setTiempo_adq(Tiempo_adq.toInt());
@@ -4203,6 +4235,7 @@ void MainWindow::on_pushButton_clicked()
     {
         messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
         messageBox.setFixedSize(500,200);
+        mMutex.unlock();
         return;
     }
     calibrador->setCab_List(checked_Cab);

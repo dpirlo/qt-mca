@@ -282,7 +282,7 @@ private:
     string getHVValue(QLineEdit *line_edit, int value=0);
     void resetHitsValues();
     bool resetHeads();
-    bool resetPMTs();
+    bool resetPMTs(bool centroide=false);
     void setQListElements();
     void drawTemperatureBoard();
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
