@@ -275,7 +275,7 @@ void Thread::getMCA()
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
-                timer_wait_milisec = (100 + size_pmt_selected*20);
+                timer_wait_milisec = (100 + size_pmt_selected*100);
             }
             else
             {
@@ -308,7 +308,7 @@ void Thread::getMCA()
         mutex->unlock();
 
         QEventLoop loop;
-        QTimer::singleShot(timer_wait_milisec, &loop, SLOT(quit()));
+        QTimer::singleShot(timer_wait_milisec, &loop, SLOT(quit()));        
         loop.exec();
     }
 
