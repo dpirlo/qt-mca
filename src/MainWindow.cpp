@@ -2027,10 +2027,11 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
 
     if (multimode)
     {
+        QString centroid_mode = ui->checkBox_centroid->isChecked() ? "Si" : "No";
         vector<int> rates = arpet->getRate(head, port_name.toStdString());
         if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
-        ui->label_title_output->setText("MCA Extended");
-        ui->label_data_output->setText("Tasas: " + QString::number(rates.at(0)) + "," + QString::number(rates.at(1)) + "," + QString::number(rates.at(2)) +" Varianza: "+QString::number(var)+" Offset ADC: "+QString::number(offset)+" Tiempo (mseg): "+QString::number(time_mca/1000));
+        ui->label_title_output->setText("MCA Extended | PMT: " + QString::fromStdString(pmt));
+        ui->label_data_output->setText("| Tasas: " + QString::number(rates.at(0)) + "," + QString::number(rates.at(1)) + "," + QString::number(rates.at(2)) + "| HV: "+QString::number(HV_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time_mca/1000) + " | Modo Centroide: " + centroid_mode + " |" );
     }
     else
     {
@@ -2642,20 +2643,20 @@ void MainWindow::on_pushButton_hv_configure_clicked()
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
-        ui->label_data_output->setText("PMT: "+pmt_selected_list.at(0)+" | Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
+        ui->label_data_output->setText("| Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
     }
     catch (Exceptions ex)
     {
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
-        ui->label_data_output->setText("PMT: "+pmt_selected_list.at(0)+" | Error en la configuración de la tensión de dinodo.");
+        ui->label_data_output->setText("Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }
-    ui->label_title_output->setText("HV de Dinodo");
+    }    
+    ui->label_title_output->setText("HV de Dinodo | PMT: " + pmt_selected_list.at(0));
     if (debug)
     {
         showMCAEStreamDebugMode(q_msg.toStdString());
         writeFooterAndHeaderDebug(false);
-    }
+    }    
 }
 /**
  * @brief MainWindow::on_pushButton_l_5_clicked
