@@ -113,6 +113,7 @@ private slots:
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
     void writeTempToLog(int index, double min, double med, double max);
     void getLogErrorThread();
+    void getCalibErrorThread();
     void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);

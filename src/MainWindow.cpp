@@ -54,6 +54,11 @@ MainWindow::~MainWindow()
     delete mcae_th;
     delete mcae_wr;
 
+    calib_wr->abort();
+    calib_th->wait();
+    delete calib_th;
+    delete calib_wr;
+
     delete pref;
     delete pmt_select;
     delete ui;
@@ -272,6 +277,14 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
     connect(mcae_wr, SIGNAL(clearGraphsHeads()),this,SLOT(clearSpecHeadsGraphs()));
 
+//    connect(calib_wr, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
+//    connect(calib_wr, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
+    connect(calib_wr, SIGNAL(calibRequested()), calib_th, SLOT(start()));
+    connect(calib_th, SIGNAL(started()), calib_wr, SLOT(getCalib()));
+    connect(calib_wr, SIGNAL(finished()), calib_th, SLOT(quit()), Qt::DirectConnection);
+    connect(this, SIGNAL(sendAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
+    connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
+
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
     connect(this, SIGNAL(ToPushButtonLogger(bool)),ui->pushButton_logguer,SLOT(setChecked(bool)));
@@ -395,6 +408,12 @@ void MainWindow::getLogErrorThread()
     setButtonLoggerState(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
     ui->pushButton_logguer->setChecked(false);
+}
+void MainWindow::getCalibErrorThread()
+{
+    setButtonLoggerState(false);
+    QMessageBox::critical(this,tr("Error"),tr("Imposible calibrar sararasasdasdfsdllllllllllllllllllllllllllllllllllg."));
+//    ui->pushButton_logguer->setChecked(false);
 }
 void MainWindow::getMCAErrorThread()
 {
