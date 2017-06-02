@@ -406,8 +406,9 @@ void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QStrin
 void MainWindow::getLogErrorThread()
 {
     setButtonLoggerState(false);
+    setIsAbortLogFlag(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de tasa y/o temperatura en el proceso de logueo."));
-    ui->pushButton_logguer->setChecked(false);
+    emit ToPushButtonLogger(false);
 }
 void MainWindow::getCalibErrorThread()
 {
@@ -418,8 +419,9 @@ void MainWindow::getCalibErrorThread()
 void MainWindow::getMCAErrorThread()
 {
     setButtonAdquireState(false);
+    setIsAbortMCAEFlag(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
-    ui->pushButton_adquirir->setChecked(false);
+    emit ToPushButtonAdquirir(false);
 }
 /**
  * @brief MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged
