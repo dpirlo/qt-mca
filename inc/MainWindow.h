@@ -35,6 +35,7 @@
 #include "apAutoCalib.hpp"
 #include "apRecon.hpp"
 #include "apThread.hpp"
+#include "apAutoCalibThread.hpp"
 #include <QThread>
 #include <cstdio>
 #include <QString>
@@ -319,6 +320,8 @@ private:
     Thread *etime_wr;
     QThread *mcae_th;
     Thread *mcae_wr;
+    AutoCalibThread *calib_wr;
+    QThread *calib_th;
     bool is_abort_mcae, is_abort_log;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;

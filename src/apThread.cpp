@@ -67,6 +67,9 @@ void Thread::requestLog()
 
     emit logRequested();
 }
+/**
+ * @brief Thread::requestMCA
+ */
 void Thread::requestMCA()
 {
     mutex->lock();

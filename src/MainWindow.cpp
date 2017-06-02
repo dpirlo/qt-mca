@@ -71,6 +71,9 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
 
+    // Calibrador
+    calibrador = shared_ptr<AutoCalib>(new AutoCalib());
+
     //Threads
     thread = new QThread();
     worker = new Thread(arpet, &mMutex);
@@ -81,10 +84,11 @@ void MainWindow::setInitialConfigurations()
     mcae_th = new QThread();
     mcae_wr = new Thread(arpet, &mMutex);
     mcae_wr->moveToThread(mcae_th);
+    calib_th = new QThread();
+    calib_wr = new AutoCalibThread(calibrador, &mMutex);
+    calib_wr->moveToThread(calib_th);
     connectSlots();
 
-    // Calibrador
-    calibrador = shared_ptr<AutoCalib>(new AutoCalib());
     // Reconstructor
     recon_externa = shared_ptr<Reconstructor>(new Reconstructor());
     // Lleno defaults de la solapa del constructor
