@@ -184,7 +184,7 @@ namespace ap {
 
   private:
     string FunCHead, FunCSP3, FunCPSOC, BrCst;
-    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA;
+    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA, SetHVMCA_MCA;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
     string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED, PSOC_SIZE_RECEIVED_ALL;
@@ -413,6 +413,11 @@ namespace ap {
          * @return SetHV_MCA
          */
     string getSetHV_MCA() const { return SetHV_MCA; }
+    /**
+        * @brief getSetHVMCA_MCA
+        * @return SetHVMCA_MCA
+        */
+    string getSetHVMCA_MCA() const { return SetHVMCA_MCA; }
     /**
          * @brief getTemp_MCA
          * @return Temp_MCA

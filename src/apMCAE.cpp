@@ -86,6 +86,7 @@ MCAE::MCAE(size_t timeout)
       Init_MCA("6401"),
       Data_MCA("65"),
       SetHV_MCA("68"),
+      SetHVMCA_MCA("67"),
       Temp_MCA("74000"),
       Set_Time_MCA("80"),
       Rate_MCA("0060")
