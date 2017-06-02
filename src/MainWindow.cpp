@@ -2683,7 +2683,8 @@ void MainWindow::on_pushButton_l_5_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2722,7 +2723,8 @@ void MainWindow::on_pushButton_l_10_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2761,7 +2763,8 @@ void MainWindow::on_pushButton_l_50_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2800,7 +2803,8 @@ void MainWindow::on_pushButton_p_5_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2839,7 +2843,8 @@ void MainWindow::on_pushButton_p_10_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
@@ -2878,7 +2883,8 @@ void MainWindow::on_pushButton_p_50_clicked()
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
-        if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
+        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
     {
