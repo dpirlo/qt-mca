@@ -79,54 +79,36 @@ AutoCalib::AutoCalib()
 
 }
 
-
-
-bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
+void AutoCalib::initCalib()
 {
     portConnect(port_name.toStdString().c_str());
 
-    // Parametros del ploteo
-    int param[6];
-    param[0]=0;//R
-    param[1]=61;//G
-    param[2]=245;//B
-    param[3]=5+1; //LineStyle
-    param[4]=14+1;//ScatterShape
-    param[5]=1/(double)RAND_MAX*2+1;//setWidthF
-
     // Paso inicial del hv dinodo
-    int paso_dinodo[PMTs];
+    paso_dinodo[PMTs];
     fill_n(paso_dinodo, PMTs, BASE_MOV_DIN);
 
     // Armo el vector de canal objetivo
-    double Canal_Obj_vec[PMTs];
+    Canal_Obj_vec[PMTs];
     fill_n(Canal_Obj_vec, PMTs, Canal_Obj);
-    double Canal_Obj_dif[PMTs];
 
     // Memoria del paso previo
-    double Picos_PMT_ant[PMTs];
-    double Dinodos_PMT_ant[PMTs];
+    Picos_PMT_ant[PMTs];
+    Dinodos_PMT_ant[PMTs];
 
-    // Parametros de linealización de paso
-    double A_param[PMTs];
-    double B_param[PMTs];
-
-    int PMT_index = 0;
     int Cab_index = 0;
 
-    int PMT_actual = PMTs_List[PMT_index];
-    int Cab_actual = Cab_List[Cab_index];
-
-    QString nombre_plot;
-    nombre_plot = "PMT "+ QString::number(PMT_actual);
-
-    cout<<"Cantidad de PMTs seleccionados: "<<PMTs_List.length()<<endl;
+    Cab_actual = Cab_List[Cab_index];
 
     // Loop de calibracion
-    int iter_actual = 0;
+    iter_actual = 0;
+}
+
+bool AutoCalib::calibrar_simple()
+{
 //    while(1)
 //    {
-
+    try
+    {
         // Borro memoria de la clase
         for (int j=0 ; j < PMTs ; j++)
         {
@@ -142,10 +124,6 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
         // Espero el tiempo indicado
 //        sleep(tiempo_adq);
-
-        clock_t endwait;
-        endwait = clock () + tiempo_adq * CLOCKS_PER_SEC;
-        while (clock() < endwait){/* Do stuff while waiting */}
 
         cout<<"Esperando tiempo..."<<endl;
 
@@ -179,7 +157,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
             std::vector<double> auxVector;
             auxVector.assign(aux_double_hits, aux_double_hits+ CHANNELS);
             aux_hits.fromStdVector(auxVector);
-            plot_MCA(aux_hits, getChannels(), plot_hand , nombre_plot, param, 1);
+//            plot_MCA(aux_hits, getChannels(), plot_hand , nombre_plot, param, 1);
 
             // Leo el HV actual y lo guardo en memoria
             if (!pedir_MCA_PMT(Cab_actual , PMTs_List[i], CHANNELS, 0)) return -1;
@@ -193,7 +171,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         // Comparo la posición actual con la objetivo
         // usando armadillo
         mat Canal_Obj_vec_arma(Canal_Obj_vec, PMTs, 1);
-        mat Canal_Obj_dif_arma(Canal_Obj_dif, PMTs, 1);
+        mat Canal_Obj_dif_arma(Canal_Obj_vec, PMTs, 1);
         mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
 
         // Diferencia
@@ -244,6 +222,10 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
         // Calculo el step linealizando
         cout<<"iter :"<<iter_actual<<endl;
+        // Parametros de linealización de paso
+        double A_param[PMTs];
+        double B_param[PMTs];
+
         if (iter_actual > 0 )
         {
             for (int j = 0 ; j < PMTs_List.length() ; j++)
@@ -346,8 +328,7 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
         for (int i = 0 ; i < PMTs/2 ; i++)
         {
             int PMT_mover = color_tablero[i]-1;
-            try
-            {
+
                 if (PMTs_List.contains(PMT_mover+1))
                 {
                     if (iter_actual == 0)
@@ -369,12 +350,8 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
                         setHV(QString::number(Cab_actual).toStdString(),QString::number(Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]).toStdString(),QString::number(PMT_mover+1).toStdString());
                     }
                 }
-            }
-            catch (Exceptions ex)
-            {
-            }
-        }
 
+            }
 
        // paso_dinodo = paso_dinodo - (paso_dinodo/10);
 
@@ -417,7 +394,11 @@ bool AutoCalib::calibrar_simple(QCustomPlot* plot_hand)
 
 
 
+        }
 
+    catch (Exceptions ex)
+    {
+    }
 
         // Ploteo
         //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);

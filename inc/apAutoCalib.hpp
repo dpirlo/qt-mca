@@ -134,7 +134,8 @@ namespace ap {
             // Constructor
             AutoCalib();
             // Calibracion Simple
-            bool calibrar_simple(QCustomPlot* plot_hand);
+            void initCalib();
+            bool calibrar_simple();
 
             // Busqueda de pico sobre vector
             struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
@@ -150,6 +151,7 @@ namespace ap {
             void setCanal_Obj(int Canal_Obj_par) {this->Canal_Obj = Canal_Obj_par;}
             // Set de tiempo adquisicion
             void setTiempo_adq(int tiempo_adq_par) {this->tiempo_adq = tiempo_adq_par;}
+            int getTiempo_adq() {return this->tiempo_adq;}
             // Set de puerto serie
             void setPort_Name(QString port_name_par) {this->port_name = port_name_par;}
             // Set de Count skimming
@@ -206,7 +208,16 @@ namespace ap {
             QLabel Almohadon_emergente[CANTIDADdEcABEZALES];
             QLabel Almohadon_emergente_skimmed[CANTIDADdEcABEZALES];
 
-
+            // Número de iteración
+            int iter_actual;
+            // Cabezal actual
+            int Cab_actual;
+            int paso_dinodo[PMTs];
+            // Armo el vector de canal objetivo
+            double Canal_Obj_vec[PMTs];
+            // Memoria del paso previo
+            double Picos_PMT_ant[PMTs];
+            double Dinodos_PMT_ant[PMTs];
             // Memoria de los PMT
             double Acum_PMT[PMTs][CHANNELS];
             // Posiciones de los picos

@@ -279,11 +279,12 @@ void MainWindow::connectSlots()
 
 //    connect(calib_wr, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
 //    connect(calib_wr, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
-    connect(calib_wr, SIGNAL(calibRequested()), calib_th, SLOT(start()));
+    connect(calib_wr, SIGNAL(CalibRequested()), calib_th, SLOT(start()));
     connect(calib_th, SIGNAL(started()), calib_wr, SLOT(getCalib()));
     connect(calib_wr, SIGNAL(finished()), calib_th, SLOT(quit()), Qt::DirectConnection);
-    connect(this, SIGNAL(sendAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
+    connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
+    connect(calib_wr, SIGNAL(sendConnectPorArpet()),this,SLOT(connectPortArpet()));
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -412,7 +413,6 @@ void MainWindow::getLogErrorThread()
 }
 void MainWindow::getCalibErrorThread()
 {
-    setButtonLoggerState(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible calibrar sararasasdasdfsdllllllllllllllllllllllllllllllllllg."));
 }
 void MainWindow::getMCAErrorThread()
@@ -4174,115 +4174,224 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 }
 
 /* Autocalib */
-/**
- * @brief MainWindow::on_pushButton_clicked
- */
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_toggled(bool checked)
 {
-    mMutex.lock();
-    QList<int> checked_PMTs, checked_Cab;
-    QMessageBox messageBox;
-
-    cout<<"Autocalibrando"<<endl;
-
-    if (ui->checkBox_Cab_Completo->isChecked())
+    if (checked)
     {
-        for(int i = 0;  i< PMTs ; i++ )
+        QList<int> checked_PMTs, checked_Cab;
+        QMessageBox messageBox;
+
+        cout<<"Autocalibrando"<<endl;
+
+        if (ui->checkBox_Cab_Completo->isChecked())
         {
-            checked_PMTs.append(i+1);
-        }
-    }
-    else
-    {
-        // Recupero los PMT checkeados
-        for(int i = 0;  i< PMTs ; i++ )
-        {
-            if (pmt_button_table[i]->isChecked())
+            for(int i = 0;  i< PMTs ; i++ )
             {
                 checked_PMTs.append(i+1);
             }
         }
-        if(checked_PMTs.length() == 0)
+        else
         {
-            messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
+            // Recupero los PMT checkeados
+            for(int i = 0;  i< PMTs ; i++ )
+            {
+                if (pmt_button_table[i]->isChecked())
+                {
+                    checked_PMTs.append(i+1);
+                }
+            }
+            if(checked_PMTs.length() == 0)
+            {
+                messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
+                messageBox.setFixedSize(500,200);
+                return;
+            }
+            calibrador->setPMT_List(checked_PMTs);
+        }
+
+
+
+        // Recupero el canal objetivo
+        QString Canal_obj = ui->Canal_objetivo->text();
+        if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
+        {
+            messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
             messageBox.setFixedSize(500,200);
-            mMutex.unlock();
             return;
         }
-        calibrador->setPMT_List(checked_PMTs);
-    }
+        calibrador->setCanal_Obj(Canal_obj.toInt());
 
+        cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
 
-
-    // Recupero el canal objetivo
-    QString Canal_obj = ui->Canal_objetivo->text();
-    if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
-    {
-        messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
-        messageBox.setFixedSize(500,200);
-        mMutex.unlock();
-        return;
-    }
-    calibrador->setCanal_Obj(Canal_obj.toInt());
-
-    cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
-
-    // Recupero el tiempo de adquisicion
-    QString Tiempo_adq = ui->Tiempo_adq_box->text();
-    if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
-    {
-        messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
-        messageBox.setFixedSize(500,200);
-        mMutex.unlock();
-        return;
-    }
-    calibrador->setTiempo_adq(Tiempo_adq.toInt());
-
-
-
-    // Recupero los cabezales
-    for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
-    {
-        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
-
-        if(q->checkState() == Qt::Checked)
+        // Recupero el tiempo de adquisicion
+        QString Tiempo_adq = ui->Tiempo_adq_box->text();
+        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
         {
-            checked_Cab.append(i+1);
+            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+            messageBox.setFixedSize(500,200);
+            return;
         }
+        calibrador->setTiempo_adq(Tiempo_adq.toInt());
+
+        // Recupero los cabezales
+        for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
+        {
+            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
+
+            if(q->checkState() == Qt::Checked)
+            {
+                checked_Cab.append(i+1);
+            }
+        }
+        if(checked_Cab.length() == 0)
+        {
+            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+            messageBox.setFixedSize(500,200);
+            return;
+        }
+        calibrador->setCab_List(checked_Cab);
+
+        // Debug
+        //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
+        //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
+
+        /*
+        double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        double lala = calibrador->Buscar_Pico(canales_locos, 1024);
+        cout<<lala<<endl;
+    */
+
+        // Cierro el serie de arpet
+        //cout<<"Soltando puerto serie de arpet..."<<endl;
+        arpet->portDisconnect();
+
+        calib_wr->abort();
+        calib_th->wait();
+        calib_wr->requestCalib();
+
     }
-    if(checked_Cab.length() == 0)
+    else
     {
-        messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
-        messageBox.setFixedSize(500,200);
-        mMutex.unlock();
-        return;
+        emit sendCalibAbortCommand(true);
     }
-    calibrador->setCab_List(checked_Cab);
+}
 
-    // Debug
-    //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
-    //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
-
-    /*
-    double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    double lala = calibrador->Buscar_Pico(canales_locos, 1024);
-    cout<<lala<<endl;
-*/
-
-
-    // Cierro el serie de arpet
-    //cout<<"Soltando puerto serie de arpet..."<<endl;
-    arpet->portDisconnect();
-
-    // Calibro
-    //cout<<"Calibrador..."<<endl;
-    calibrador->calibrar_simple(ui->specPMTs_2);
-
+void MainWindow::connectPortArpet()
+{
     // Devuelvo serial a arpet
     //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
-    mMutex.unlock();
 }
+
+/**
+ * @brief MainWindow::on_pushButton_clicked
+ */
+//void MainWindow::on_pushButton_clicked()
+//{
+//    mMutex.lock();
+//    QList<int> checked_PMTs, checked_Cab;
+//    QMessageBox messageBox;
+
+//    cout<<"Autocalibrando"<<endl;
+
+//    if (ui->checkBox_Cab_Completo->isChecked())
+//    {
+//        for(int i = 0;  i< PMTs ; i++ )
+//        {
+//            checked_PMTs.append(i+1);
+//        }
+//    }
+//    else
+//    {
+//        // Recupero los PMT checkeados
+//        for(int i = 0;  i< PMTs ; i++ )
+//        {
+//            if (pmt_button_table[i]->isChecked())
+//            {
+//                checked_PMTs.append(i+1);
+//            }
+//        }
+//        if(checked_PMTs.length() == 0)
+//        {
+//            messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
+//            messageBox.setFixedSize(500,200);
+//            mMutex.unlock();
+//            return;
+//        }
+//        calibrador->setPMT_List(checked_PMTs);
+//    }
+
+
+
+//    // Recupero el canal objetivo
+//    QString Canal_obj = ui->Canal_objetivo->text();
+//    if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
+//    {
+//        messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
+//        messageBox.setFixedSize(500,200);
+//        mMutex.unlock();
+//        return;
+//    }
+//    calibrador->setCanal_Obj(Canal_obj.toInt());
+
+//    cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
+
+//    // Recupero el tiempo de adquisicion
+//    QString Tiempo_adq = ui->Tiempo_adq_box->text();
+//    if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+//    {
+//        messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+//        messageBox.setFixedSize(500,200);
+//        mMutex.unlock();
+//        return;
+//    }
+//    calibrador->setTiempo_adq(Tiempo_adq.toInt());
+
+
+
+//    // Recupero los cabezales
+//    for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
+//    {
+//        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
+
+//        if(q->checkState() == Qt::Checked)
+//        {
+//            checked_Cab.append(i+1);
+//        }
+//    }
+//    if(checked_Cab.length() == 0)
+//    {
+//        messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+//        messageBox.setFixedSize(500,200);
+//        mMutex.unlock();
+//        return;
+//    }
+//    calibrador->setCab_List(checked_Cab);
+
+//    // Debug
+//    //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
+//    //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
+
+//    /*
+//    double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+//    double lala = calibrador->Buscar_Pico(canales_locos, 1024);
+//    cout<<lala<<endl;
+//*/
+
+
+//    // Cierro el serie de arpet
+//    //cout<<"Soltando puerto serie de arpet..."<<endl;
+//    arpet->portDisconnect();
+
+//    // Calibro
+//    //cout<<"Calibrador..."<<endl;
+//    calibrador->calibrar_simple(ui->specPMTs_2);
+
+//    // Devuelvo serial a arpet
+//    //cout<<"Devolviendo puerto serie de arpet..."<<endl;
+//    arpet->portConnect(port_name.toStdString().c_str());
+//    mMutex.unlock();
+//}
 
 
 /* Calibracion Fina */

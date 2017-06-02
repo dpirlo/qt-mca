@@ -120,6 +120,7 @@ private slots:
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
     void clearSpecPMTsGraphs();
     void clearSpecHeadsGraphs();
+    void connectPortArpet();
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -186,7 +187,8 @@ private slots:
     void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
-    void on_pushButton_clicked();
+//    void on_pushButton_clicked();
+    void on_pushButton_toggled(bool checked);
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
     void on_pushButton_triple_ventana_4_clicked();
@@ -223,6 +225,8 @@ private slots:
     void on_pushButton_cuipet_aqd_file_open_clicked();
 
     /* Buttons de prueba/testing */
+
+
 
 private:
     void connectSlots();
@@ -303,6 +307,7 @@ private:
 
 signals:
     void sendAbortCommand(bool abort);
+    void sendCalibAbortCommand(bool abort);
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
     void ToPushButtonLogger(bool toggle);

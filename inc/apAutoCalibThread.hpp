@@ -31,6 +31,9 @@ namespace ap {
 
   signals:
       void CalibRequested();
+      void finished();
+      void sendConnectPorArpet();
+      void sendCalibErrorCommand();
 
   public slots:
       void setAbortBool(bool abort);

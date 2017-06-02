@@ -27,7 +27,8 @@ void AutoCalibThread::abort()
 void AutoCalibThread::setAbortBool(bool abort)
 {
     _abort = abort;
-    if (debug) cout<<"Se aborta la operación en el AutoCalibThread: "<<thread()->currentThreadId()<<endl;
+//    if (debug)
+    cout<<"Se aborta la operación en el AutoCalibThread: "<<thread()->currentThreadId()<<endl;
 }
 
 void AutoCalibThread::requestCalib()
@@ -42,5 +43,21 @@ void AutoCalibThread::requestCalib()
 
 void AutoCalibThread::getCalib()
 {
+    // Calibro
+    //cout<<"Calibrador..."<<endl;
+    calibrador->initCalib();
+    while(!_abort)
+    {
+//        calibrador->calibrar_simple(ui->specPMTs_2);
+        QEventLoop loop;
+        QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
+        loop.exec();
+        cout<<"Tiempo_Adq :"<<calibrador->getTiempo_adq()<<"  Abort = "<<_abort<<endl;
+//        sleep(calibrador->getTiempo_adq());
+        calibrador->calibrar_simple();
+    }
+    emit sendConnectPorArpet();
+    cout<<"ME JUUUIIIII"<<endl;
+    emit finished();
 
 }
