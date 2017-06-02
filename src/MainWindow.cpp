@@ -414,7 +414,6 @@ void MainWindow::getCalibErrorThread()
 {
     setButtonLoggerState(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible calibrar sararasasdasdfsdllllllllllllllllllllllllllllllllllg."));
-//    ui->pushButton_logguer->setChecked(false);
 }
 void MainWindow::getMCAErrorThread()
 {
