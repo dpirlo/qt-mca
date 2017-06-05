@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1729,7 +1729,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -4107,8 +4107,8 @@ calibrar</string>
        <rect>
         <x>672</x>
         <y>44</y>
-        <width>331</width>
-        <height>181</height>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">

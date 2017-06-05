@@ -33,7 +33,8 @@ namespace ap {
       void finished();
       void sendConnectPortArpet();
       void sendCalibErrorCommand();
-//      void sendHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+      void sendHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+      void clearGraphsCalib();
 
   public slots:
       void setAbortBool(bool abort);

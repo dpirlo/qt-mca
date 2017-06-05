@@ -85,6 +85,7 @@ public:
 private slots:
     /* Slots de sincronización para QCustomPlot */
     void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
+    void addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -120,6 +121,7 @@ private slots:
     void receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
     void clearSpecPMTsGraphs();
+    void clearSpecCalibGraphs();
     void clearSpecHeadsGraphs();
     void connectPortArpet();
 
@@ -277,6 +279,7 @@ private:
     void setMCAEDataStream(string head, bool coin=false);
     int setPSOCDataStream(string head, string size_received, string function, QString psoc_value="");
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
+    void setPMTCalibCustomPlotEnvironment(QList<int> qlist);
     void setHeadCustomPlotEnvironment();
     QVector<int> getCustomPlotParameters();
     void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
@@ -345,7 +348,7 @@ private:
     bool debug, init, log, stdout_mode;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
     QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
-    QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters;
+    QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit, Target;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;

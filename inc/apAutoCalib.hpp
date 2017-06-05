@@ -178,8 +178,7 @@ namespace ap {
 
             // Visualizacion planar
             bool visualizar_planar(void);
-
-
+            QList<int> PMTs_List;
 
         private:
             // Pedir MCA
@@ -190,7 +189,7 @@ namespace ap {
             bool reset_Mem_Cab(int Cabezal);
 
             // Datos calibracion
-            QList<int> PMTs_List;
+//            QList<int> PMTs_List;
             QList<int> Cab_List;
             QList<int> Vis_List;
             int  Canal_Obj, tiempo_adq;
@@ -218,12 +217,14 @@ namespace ap {
             // Memoria del paso previo
             double Picos_PMT_ant[PMTs];
             double Dinodos_PMT_ant[PMTs];
+            double Tiempos_PMT_ant[PMTs];
             // Memoria de los PMT
             double Acum_PMT[PMTs][CHANNELS];
             // Posiciones de los picos
             double Picos_PMT[PMTs];
             // Valor de los dinodos
             double Dinodos_PMT[PMTs];
+            double Tiempos_PMT[PMTs];
 
             // Blancas Ajedres
             const double weisse[24]      = {1 , 3 , 5 , 7 , 10 , 12 , 14 , 16 , 17 , 19 , 21 , 23 , 26 , 28 , 30 , 32 , 33 , 35 , 37 , 39 , 42 , 44 , 46 , 48};

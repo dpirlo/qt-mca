@@ -284,7 +284,8 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
-//    connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
+    connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
+    connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
     connect(this, SIGNAL(ToPushButtonLogger(bool)),ui->pushButton_logguer,SLOT(setChecked(bool)));
@@ -326,6 +327,12 @@ void MainWindow::clearSpecPMTsGraphs()
 {
   ui->specPMTs->clearGraphs();
 }
+
+void MainWindow::clearSpecCalibGraphs()
+{
+  ui->specPMTs_2->clearGraphs();
+}
+
 /**
  * @brief MainWindow::clearSpecHeadsGraphs
  */
@@ -355,7 +362,7 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
 
 void MainWindow::receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
-    addGraph(hits, ui->specPMTs_2, channels, pmt_head, qcp_pmt_parameters[index]);
+    addGraph_Calib(hits, ui->specPMTs_2, channels, pmt_head, qcp_pmt_calib_parameters[index]);
 }
 /**
  * @brief MainWindow::receivedValuesMCA
@@ -3778,6 +3785,15 @@ void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
         qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
     }
 }
+
+void MainWindow::setPMTCalibCustomPlotEnvironment(QList<int> qlist)
+{
+    for (unsigned int index=0; index < qlist.length(); index++)
+    {
+        qcp_pmt_calib_parameters.insert(index, 1, getCustomPlotParameters());
+    }
+}
+
 /**
  * @brief MainWindow::setHeadCustomPlotEnvironment
  */
@@ -3800,6 +3816,27 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
 {
     channels_ui.resize(channels);
     channels_ui = arpet->getChannels();
+
+    graph->addGraph();
+    graph->graph()->setName(graph_legend);
+    graph->graph()->setData(channels_ui,hits);
+    graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
+    QPen graphPen;
+    graphPen.setColor(QColor(param[0], param[1], param[2]));
+    graphPen.setWidthF(param[5]);
+    graph->graph()->setPen(graphPen);
+    graph->legend->setVisible(true);
+    graph->legend->setWrap(4);
+    graph->legend->setRowSpacing(1);
+    graph->legend->setColumnSpacing(2);
+    graph->replot();
+    graph->rescaleAxes();
+}
+
+void MainWindow::addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
+{
+    channels_ui.resize(channels);
+    channels_ui = calibrador->getChannels();
 
     graph->addGraph();
     graph->graph()->setName(graph_legend);
@@ -4237,6 +4274,8 @@ void MainWindow::on_pushButton_toggled(bool checked)
             }
             calibrador->setPMT_List(checked_PMTs);
         }
+
+        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
         QString Canal_obj = ui->Canal_objetivo->text();

@@ -137,6 +137,7 @@ namespace ap {
        * @brief clearGraphsPMTs
        */
       void clearGraphsPMTs();
+      void clearGraphsCalib();
       /**
        * @brief clearGraphsHeads
        */

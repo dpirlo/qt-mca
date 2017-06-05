@@ -538,7 +538,7 @@ void MCAE::getMCASplitData(string msg_data, int channels)
 
     /* Adquisición de los bytes en raw data */
     frame=convertHexToDec(getReverse(q_msg_data.left(4)).toHex().toStdString());
-    time_mca=convertHexToDec(getReverse(q_msg_data.mid(5, 5)).toHex().toStdString());
+    time_mca=convertHexToDec(getReverse(q_msg_data.mid(4, 5)).toHex().toStdString());
     HV_pmt=convertHexToDec(getReverse(q_msg_data.mid(9, 2)).toHex().toStdString());
     offset=convertHexToDec(q_msg_data.mid(11, 1).toHex().toStdString());
     var=convertHexToDec(getReverse(q_msg_data.mid(12, 2)).toHex().toStdString());
