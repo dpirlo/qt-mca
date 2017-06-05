@@ -117,6 +117,7 @@ private slots:
     void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+    void receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
     void clearSpecPMTsGraphs();
     void clearSpecHeadsGraphs();
@@ -258,6 +259,7 @@ private:
     void setTextBrowserState(bool state, QTextBrowser *tbro);
     void setButtonState(bool state, QPushButton * button, bool disable=false);
     void setButtonAdquireState(bool state, bool disable=false);
+    void setButtonCalibState(bool state, bool disable=false);
     void setButtonConnectState(bool state, bool disable=false);
     void setButtonLoggerState(bool state, bool disable=false);
     string readString(char delimeter='\r');
@@ -311,6 +313,7 @@ signals:
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
     void ToPushButtonLogger(bool toggle);
+    void ToPushButtonCalib(bool toggle);
 
 private:
     Ui::MainWindow *ui;
@@ -328,7 +331,7 @@ private:
     Thread *mcae_wr;
     AutoCalibThread *calib_wr;
     QThread *calib_th;
-    bool is_abort_mcae, is_abort_log;
+    bool is_abort_mcae, is_abort_log, is_abort_calib;
     QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
@@ -407,6 +410,7 @@ public:
      * @param flag
      */
     void setIsAbortMCAEFlag(bool flag) { is_abort_mcae = flag; }
+    void setIsAbortCalibFlag(bool flag) { is_abort_calib = flag; }
     /**
      * @brief setIsAbortLogFlag
      *

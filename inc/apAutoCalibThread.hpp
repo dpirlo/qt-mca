@@ -28,12 +28,12 @@ namespace ap {
       bool debug;
       bool _calibing;
 
-
   signals:
       void CalibRequested();
       void finished();
-      void sendConnectPorArpet();
+      void sendConnectPortArpet();
       void sendCalibErrorCommand();
+//      void sendHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
 
   public slots:
       void setAbortBool(bool abort);

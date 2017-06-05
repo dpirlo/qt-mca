@@ -135,7 +135,7 @@ namespace ap {
             AutoCalib();
             // Calibracion Simple
             void initCalib();
-            bool calibrar_simple();
+            int calibrar_simple();
 
             // Busqueda de pico sobre vector
             struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
@@ -358,6 +358,7 @@ namespace ap {
                         double 	(AutoCalib::*fx)(double X, double *P),
                         double (AutoCalib::*dfx)(double X, double *P,int nP),
                         estadogna *estado);
+
 
     };
 

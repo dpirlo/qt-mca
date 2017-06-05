@@ -11,6 +11,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     is_abort_mcae(true),
+    is_abort_calib(true),
     is_abort_log(true),
     debug(false),
     init(false),
@@ -277,15 +278,13 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
     connect(mcae_wr, SIGNAL(clearGraphsHeads()),this,SLOT(clearSpecHeadsGraphs()));
 
-//    connect(calib_wr, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
-//    connect(calib_wr, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
     connect(calib_wr, SIGNAL(CalibRequested()), calib_th, SLOT(start()));
     connect(calib_th, SIGNAL(started()), calib_wr, SLOT(getCalib()));
     connect(calib_wr, SIGNAL(finished()), calib_th, SLOT(quit()), Qt::DirectConnection);
     connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
-    connect(calib_wr, SIGNAL(sendConnectPorArpet()),this,SLOT(connectPortArpet()));
-
+    connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
+//    connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
     connect(this, SIGNAL(ToPushButtonLogger(bool)),ui->pushButton_logguer,SLOT(setChecked(bool)));
@@ -352,6 +351,11 @@ void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt
     {
         addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);        
     }
+}
+
+void MainWindow::receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
+{
+    addGraph(hits, ui->specPMTs_2, channels, pmt_head, qcp_pmt_parameters[index]);
 }
 /**
  * @brief MainWindow::receivedValuesMCA
@@ -1155,9 +1159,6 @@ void MainWindow::on_pushButton_initialize_clicked()
         getHeadStatus(head_index);
         parseConfigurationFile(true, QString::number(head_index));
 
-        /* Configuración de las tablas de calibración */
-        setCalibrationTables(head_index);
-
         /* Configuración del HV*/
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
@@ -1176,7 +1177,8 @@ void MainWindow::on_pushButton_initialize_clicked()
         {
             if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
         }
-
+        /* Configuración de las tablas de calibración */
+        setCalibrationTables(head_index);
         /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -3226,6 +3228,29 @@ void MainWindow::setButtonAdquireState(bool state, bool disable)
     ui->pushButton_adquirir->setText(qt_text);
     ui->pushButton_adquirir->update();
 }
+
+void MainWindow::setButtonCalibState(bool state, bool disable)
+{
+    QString qt_text;
+
+    if (state && !disable)
+    {
+        qt_text="Adquiriendo";
+        setButtonState(state,ui->pushButton,disable);
+    }
+    else if (!state && !disable)
+    {
+        qt_text="Error";
+        setButtonState(state,ui->pushButton,disable);
+    }
+    else
+    {
+        qt_text="Adquirir";
+        setButtonState(state,ui->pushButton,disable);
+    }
+    ui->pushButton->setText(qt_text);
+    ui->pushButton->update();
+}
 /**
  * @brief MainWindow::setButtonConnectState
  * @param state
@@ -4204,12 +4229,14 @@ void MainWindow::on_pushButton_toggled(bool checked)
             {
                 messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
                 messageBox.setFixedSize(500,200);
+                setButtonCalibState(false);
+                setIsAbortCalibFlag(false);
+                setButtonCalibState(true,true);
+                emit ToPushButtonCalib(false);
                 return;
             }
             calibrador->setPMT_List(checked_PMTs);
         }
-
-
 
         // Recupero el canal objetivo
         QString Canal_obj = ui->Canal_objetivo->text();
@@ -4217,6 +4244,10 @@ void MainWindow::on_pushButton_toggled(bool checked)
         {
             messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
             messageBox.setFixedSize(500,200);
+            setButtonCalibState(false);
+            setIsAbortCalibFlag(false);
+            setButtonCalibState(true,true);
+            emit ToPushButtonCalib(false);
             return;
         }
         calibrador->setCanal_Obj(Canal_obj.toInt());
@@ -4229,6 +4260,10 @@ void MainWindow::on_pushButton_toggled(bool checked)
         {
             messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
             messageBox.setFixedSize(500,200);
+            setButtonCalibState(false);
+            setIsAbortCalibFlag(false);
+            setButtonCalibState(true,true);
+            emit ToPushButtonCalib(false);
             return;
         }
         calibrador->setTiempo_adq(Tiempo_adq.toInt());
@@ -4247,22 +4282,14 @@ void MainWindow::on_pushButton_toggled(bool checked)
         {
             messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
             messageBox.setFixedSize(500,200);
+            setButtonCalibState(false);
+            setIsAbortCalibFlag(false);
+            setButtonCalibState(true,true);
+            emit ToPushButtonCalib(false);
             return;
         }
         calibrador->setCab_List(checked_Cab);
 
-        // Debug
-        //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
-        //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
-
-        /*
-        double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        double lala = calibrador->Buscar_Pico(canales_locos, 1024);
-        cout<<lala<<endl;
-    */
-
-        // Cierro el serie de arpet
-        //cout<<"Soltando puerto serie de arpet..."<<endl;
         arpet->portDisconnect();
 
         calib_wr->abort();
@@ -4272,7 +4299,13 @@ void MainWindow::on_pushButton_toggled(bool checked)
     }
     else
     {
-        emit sendCalibAbortCommand(true);
+        setButtonCalibState(true,true);
+        if (is_abort_calib)
+        {
+            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
+            emit sendCalibAbortCommand(true);
+        }
+        setIsAbortCalibFlag(true);
     }
 }
 

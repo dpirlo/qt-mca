@@ -54,10 +54,20 @@ void AutoCalibThread::getCalib()
         loop.exec();
         cout<<"Tiempo_Adq :"<<calibrador->getTiempo_adq()<<"  Abort = "<<_abort<<endl;
 //        sleep(calibrador->getTiempo_adq());
+//        QVector<double> aux_hits;
+//        calibrador->calibrar_simple();
+//        QVector<double> aux_hits = calibrador->calibrar_simple();
         calibrador->calibrar_simple();
+//        cout<<aux_hits<<endl;
+        //emit sendHitsCalib(, CHANNELS_PMT, QString::number(1), 1, true);
+//        emit sendHitsCalib(calibrador->getHitsMCA(), CHANNELS_PMT, QString::number(PMTs_List[5]), Cab_actual-1, true);
     }
-    emit sendConnectPorArpet();
+    calibrador->portDisconnect();
+    emit sendConnectPortArpet();
     cout<<"ME JUUUIIIII"<<endl;
     emit finished();
 
 }
+
+
+

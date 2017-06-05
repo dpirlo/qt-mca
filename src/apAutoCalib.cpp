@@ -103,33 +103,29 @@ void AutoCalib::initCalib()
     iter_actual = 0;
 }
 
-bool AutoCalib::calibrar_simple()
+//QVector<double> AutoCalib::calibrar_simple()
+int AutoCalib::calibrar_simple()
 {
-//    while(1)
-//    {
+    cout<<"iter :"<<iter_actual<<endl;
     try
     {
         // Borro memoria de la clase
         for (int j=0 ; j < PMTs ; j++)
         {
-            for (int i=0 ; i < CHANNELS ; i++)
-            {
-                Acum_PMT[j][i] = 0;
-            }
             Picos_PMT[j] = 0;
         }
 
         // Reseteo la memoria de SP6
         setHV(QString::number(Cab_actual).toStdString(),"150",port_name.toStdString());
 
-        // Espero el tiempo indicado
-//        sleep(tiempo_adq);
-
-        cout<<"Esperando tiempo..."<<endl;
-
         // LLeno los buffers de memoria de la clase
-          for (int i=0 ; i<PMTs_List.length() ; i++)
+        for (int i=0 ; i<PMTs_List.length() ; i++)
         {
+//            QVector<double> aux_hits;
+            // Leo el HV actual y lo guardo en memoria
+            if (!pedir_MCA_PMT(Cab_actual , PMTs_List[i], CHANNELS, 0)) return -1;//aux_hits;//-1;
+            Dinodos_PMT[PMTs_List[i]-1] = getHVMCA();
+
             // Pido MCA de calibracion del PMT actual
             getMCA(QString::number(PMTs_List[i]).toStdString(), getFunCHead(), QString::number(Cab_actual).toStdString(), CHANNELS, port_name.toStdString());
 
@@ -142,12 +138,6 @@ bool AutoCalib::calibrar_simple()
               aux_double_hits[j] = aux_hits[j];
             }
 
-            // Acumulo en mi memoria
-//            for (int j=0 ; j < CHANNELS ; j++)
-//            {
-//                Acum_PMT[PMTs_List[i]-1][j] = Acum_PMT[PMTs_List[i]-1][j] +  aux_double_hits[j];
-//            };
-
             // Busco el pico
             struct Pico_espectro aux;
             aux = Buscar_Pico(aux_double_hits, CHANNELS);
@@ -159,14 +149,8 @@ bool AutoCalib::calibrar_simple()
             aux_hits.fromStdVector(auxVector);
 //            plot_MCA(aux_hits, getChannels(), plot_hand , nombre_plot, param, 1);
 
-            // Leo el HV actual y lo guardo en memoria
-            if (!pedir_MCA_PMT(Cab_actual , PMTs_List[i], CHANNELS, 0)) return -1;
-            Dinodos_PMT[PMTs_List[i]-1] = getHVMCA();
-
             cout<<"PMT: "<< PMTs_List[i] << "--" <<Picos_PMT[PMTs_List[i]-1]<<"---"<<Dinodos_PMT[PMTs_List[i]-1]<<"FWHM :"<<aux.limites_FWHM[0]<<"   "<<aux.limites_FWHM[1]<<endl;
-
         }
-
 
         // Comparo la posición actual con la objetivo
         // usando armadillo
@@ -178,7 +162,6 @@ bool AutoCalib::calibrar_simple()
         Canal_Obj_dif_arma = (Canal_Obj_vec_arma - Picos_PMT_arma);
         // Diferencia cuadratica
         mat Canal_Obj_dif_arma_cuad = Canal_Obj_dif_arma % Canal_Obj_dif_arma;
-
 
 //        // Ignoro los PMT no seleccionados
 //        bool adentro = false;
@@ -221,7 +204,7 @@ bool AutoCalib::calibrar_simple()
         }
 
         // Calculo el step linealizando
-        cout<<"iter :"<<iter_actual<<endl;
+
         // Parametros de linealización de paso
         double A_param[PMTs];
         double B_param[PMTs];
@@ -380,32 +363,23 @@ bool AutoCalib::calibrar_simple()
         //cout << "Enviando a cabezal "<<Cab_actual<<" PMT "<<PMT_actual<<endl;
 
 
-
-
-
-
-
-
-
-
         // Seteo HV de dinodo
         //modificar_HV_PMT(Cab_actual , PMT_actual, 600+10);
-
-
-
 
         }
 
     catch (Exceptions ex)
     {
+        cout<<"Se va por Exception: "<<ex.excdesc<<endl;
     }
 
         // Ploteo
         //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
 
 //    }
-    portDisconnect();
 
+
+//    return getHitsMCA();
     return 1;
 }
 
