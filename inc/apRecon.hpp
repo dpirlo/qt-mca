@@ -76,7 +76,7 @@ namespace ap {
             void setPathAPIRL(QString par_string) {this->path_APIRL = par_string;}
             void setPathINTERFILES(QString par_string) {this->path_INTERFILES = par_string;}
             void setPathPARSER(QString par_string) {this->path_PARSER = par_string;}
-            void setPathSalida(QString par_string) {this->path_INTERFILES = par_string;}
+            void setPathSalida(QString par_string) {this->path_Salida = par_string;}
             void setNombre_archivo(QString par_string) {this->Nombre_archivo = par_string;}
             // Get de paths
             QString getPathAPIRL() {return this->path_APIRL;}
