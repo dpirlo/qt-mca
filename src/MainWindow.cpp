@@ -1163,7 +1163,8 @@ void MainWindow::on_pushButton_initialize_clicked()
     {
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
-        getHeadStatus(head_index);
+        initSP3(head_index);
+        initHead(head_index);
         parseConfigurationFile(true, QString::number(head_index));
 
         /* Configuración de la Alta Tensión*/
@@ -1194,7 +1195,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
             msg = readString();
             setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-            if(debug) cout<< "HV encendido"<<endl;
+            if(debug) cout<< "Alta tensión encendida"<<endl;
         }
         catch(Exceptions & ex)
         {
@@ -1534,7 +1535,7 @@ string MainWindow::initHead(int head)
     }
     catch(Exceptions & ex)
     {
-        /*  @note : Ver time_out interno de planar con Fede y Mati */
+        /**  @note : Ver time_out interno de planar con Fede y Mati */
         usleep(WAIT_MICROSECONDS);
         if (debug) cout<<"No se puede/n inicializar el/los cabezal/es seleccionado/s. Error: "<<ex.excdesc<<endl;
     }
