@@ -1166,7 +1166,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         getHeadStatus(head_index);
         parseConfigurationFile(true, QString::number(head_index));
 
-        /* Configuración del HV*/
+        /* Configuración de la Alta Tensión*/
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
@@ -1178,7 +1178,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
             msg = readString();
             hv_status_table[head_index-1]->setText(psoc_alta);
-            if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
+            if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
         }
         catch(Exceptions & ex)
         {

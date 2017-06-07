@@ -229,8 +229,6 @@ private slots:
 
     /* Buttons de prueba/testing */
 
-
-
 private:
     void connectSlots();
     QString openConfigurationFile();

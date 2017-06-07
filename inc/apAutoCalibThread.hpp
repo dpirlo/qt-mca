@@ -1,5 +1,6 @@
 #ifndef APAUTOCALIBTHREAD_H
 #define APAUTOCALIBTHREAD_H
+
 #include "apAutoCalib.hpp"
 #include <QTimer>
 #include <QMutex>

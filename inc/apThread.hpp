@@ -19,6 +19,7 @@
  */
 #ifndef APTHREAD_H
 #define APTHREAD_H
+
 #include "apMCAE.hpp"
 #include <QTimer>
 #include <QMutex>
