@@ -2145,6 +2145,9 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
     // Recupero el nombre del archivo
     stream<<"Leyendo: "<<QString::fromStdString(adq_coin)<< endl;
 
+    // Antes de leer el .dat, lo genero con el parser
+    Parsear_raw();
+
     // Levanto el archivo
     Tiempos_inter_cab.load(adq_coin, raw_ascii);
     stream<<"Archivo leido, matriz de "<<Tiempos_inter_cab.n_rows<<" por "<<Tiempos_inter_cab.n_cols<<endl;
@@ -2362,8 +2365,81 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
     return 1;
 }
 
+/* -------------------------------------------------------------------
+ * -------------------- Parsear Raw Coincidencia ---------------------
+ * -------------------------------------------------------------------
+ */
+bool AutoCalib::Parsear_raw(void)
+{
+    // Primero armo el archivo de parametros
+    QString nombre_archivo_parametros, adq_coin_name, adq_coin_qstring;
+    QTextStream stream_par;
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    adq_coin_qstring = QString::fromStdString(adq_coin);
+
+    // Saco el nombre del archivo, del path
+    adq_coin_name =  adq_coin_qstring.split('.').first().split('/').last();
+
+    // Genero el archivo
+    nombre_archivo_parametros = path_salida+adq_coin_name+".ini";
+
+    QFile file(nombre_archivo_parametros);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+    {
+        cout<<"Error al abrir/crear archivo de parametros de parseo"<<endl;
+        return -1;
+    }
+
+    stream_par.setDevice(&file);
+
+    stream_par<<"; Archivo de parametros generado automaticamente por el AR-PET-Tec. Fecha: "<< asctime(timeinfo) <<endl;
 
 
+    stream_par<<"[PROCESAMIENTO TRAMA]"<<endl;
+    // Archivo de entrada:
+    stream_par<<"\t Archivo_Trama = "<<adq_coin_qstring<<endl;
+    // Archivos de salidas (puedo obviar uno o los dos comentando la linea):
+    stream_par<<"\t Archivo_Trama_Interpretada = "<<path_salida+adq_coin_name+".dat"<<endl;
+
+    stream_par<<"\t [[FILTROS]]"<<endl;
+    stream_par<<"\t\t E_Min = "<<EMIN_BASE_COIN<<endl;
+    stream_par<<"\t\t E_Max = "<<EMAX_BASE_COIN<<endl;
+    stream_par<<"\t\t Zona_Muerta = "<<ZONA_MUERTA_BASE_COIN<<endl;
+    stream_par<<"\t\t Delta_Detector = "<<0<<endl;
+    stream_par<<"\t [[ESTADISTICAS]]"<<endl;
+    stream_par<<"\t\t guardar_tablas_de_estadistica=si"<<endl;
+    stream_par<<"\t\t graficar_tablas_de_estadistica=si"<<endl;
+    // Esta es la base de los archivos de estadistica, si no se indica se usara
+    // el archivo de entrada como base (sacando los últimos 4 caracteres):
+    stream_par<<"\t\t Base_Archivos_Estadisticas = "<<path_salida+adq_coin_name<<"_log_est"<<endl;
+    stream_par<<"\t\t Bines_Energia = "<< EST_BINES_ENERGIA_COIN <<endl;
+    stream_par<<"\t\t Ancho_Bin_Energia = "<< EST_ANCHO_BIN_ENERGIA_COIN <<endl;
+    stream_par<<"\t\t Bines_Tiempo = "<< EST_BINES_TIEMPO_COIN <<endl;
+    stream_par<<"\t\t Ancho_Bin_Tiempo = "<< EST_ANCHO_BIN_TIEMPO_COIN <<endl;
+    stream_par<<"\t\t Bines_Espacial_X = "<< EST_BINES_ESPACIAL_X_COIN <<endl;
+    stream_par<<"\t\t Bines_Espacial_Y = "<< EST_BINES_ESPACIAL_Y_COIN <<endl;
+    stream_par<<"\t\t Ancho_Bin_Espacial = "<< EST_ANCHO_BIN_ESPACIALES_COIN <<endl;
+
+
+    //  ----- Parseo
+    QProcess *proceso;
+    QString programa;
+    QStringList listasparametros;
+    // Armo la linea al programa
+    programa = path_PARSER+"procesar_trama";
+    listasparametros.append(nombre_archivo_parametros);
+
+    // Ejecuto
+    proceso->start(programa, listasparametros);
+
+    // Cambio el nombre al nuevo archivo de parametros
+    adq_coin = nombre_archivo_parametros.toStdString();
+}
 
 
 

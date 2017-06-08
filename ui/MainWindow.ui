@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1729,7 +1729,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -4107,8 +4107,8 @@ calibrar</string>
        <rect>
         <x>680</x>
         <y>40</y>
-        <width>321</width>
-        <height>181</height>
+        <width>724</width>
+        <height>194</height>
        </rect>
       </property>
       <property name="font">
@@ -5685,20 +5685,20 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>240</y>
+        <y>230</y>
         <width>171</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Carpeta de tablas:</string>
+       <string>Directorios:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_64">
       <property name="geometry">
        <rect>
         <x>100</x>
-        <y>260</y>
+        <y>240</y>
         <width>41</width>
         <height>41</height>
        </rect>
@@ -5711,7 +5711,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>172</x>
-        <y>270</y>
+        <y>250</y>
         <width>661</width>
         <height>21</height>
        </rect>
@@ -5724,7 +5724,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>840</x>
-        <y>270</y>
+        <y>250</y>
         <width>71</width>
         <height>21</height>
        </rect>
@@ -5747,6 +5747,45 @@ calibrar</string>
       </property>
       <property name="text">
        <string>Total Skimming</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="parser_coincidencia">
+      <property name="geometry">
+       <rect>
+        <x>840</x>
+        <y>280</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Abrir</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="textBrowser_parser_coin">
+      <property name="geometry">
+       <rect>
+        <x>172</x>
+        <y>280</y>
+        <width>661</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_106">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>270</y>
+        <width>51</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Parser</string>
       </property>
      </widget>
     </widget>
@@ -7895,7 +7934,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

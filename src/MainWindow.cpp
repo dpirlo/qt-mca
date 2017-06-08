@@ -4595,7 +4595,7 @@ void MainWindow::on_pushButton_triple_ventana_8_clicked()
     getPreferencesSettingsFile();
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de adquisición"),
                                                     root_calib_path,
-                                                    tr("Adquisición parseada (*.dat)"));
+                                                    tr("Adquisición cruda (*.raw)"));
     calibrador->setAdq_Coin(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
@@ -4617,6 +4617,23 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
     ui->textBrowser_salida->setText(filename);
+}
+
+void MainWindow::on_parser_coincidencia_clicked()
+{
+    QString root="../../../Parser/";
+
+    QFileDialog dialog;
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del parser"),
+                                                   root);
+
+    calibrador->setPathPARSER(filename+"/");
+
+
+    cout<<"Directorio parser: "<<filename.toStdString()<<endl;
+
+    ui->textBrowser_parser_coin->setText(filename);
 }
 
 
@@ -5335,3 +5352,5 @@ void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
     QString directory = openDirectory();
     ui->lineEdit_cuipet_aqd_path_file->setText(directory);
 }
+
+

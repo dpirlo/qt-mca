@@ -229,6 +229,8 @@ private slots:
 
     /* Buttons de prueba/testing */
 
+    void on_parser_coincidencia_clicked();
+
 private:
     void connectSlots();
     QString openConfigurationFile();

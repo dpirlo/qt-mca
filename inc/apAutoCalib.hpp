@@ -29,6 +29,8 @@
 
 #include <ctime>
 
+#include "qprocess.h"
+
 
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 250
@@ -71,7 +73,7 @@
 #define     PORC_ALETA                          100
 #define     MAX_ITER_ENERGIA                    10
 
-#define     PORCENTUAL_ENERGIA_VECINO           40
+#define     PORCENTUAL_ENERGIA_VECINO           30
 
 #define     PMTs_X                              8
 #define     PMTs_Y                              6
@@ -93,6 +95,20 @@
 #define     Coin_Calib_Y_2                      11
 #define     Coin_Calib_Z_2                      12
 #define     Coin_Calib_Energia_2                13
+
+
+// Parseo coincidencia
+#define     EMIN_BASE_COIN                      410
+#define     EMAX_BASE_COIN                      610
+#define     ZONA_MUERTA_BASE_COIN               50
+
+#define     EST_BINES_ENERGIA_COIN              250
+#define     EST_ANCHO_BIN_ENERGIA_COIN          4.0
+#define     EST_BINES_TIEMPO_COIN               100
+#define     EST_ANCHO_BIN_TIEMPO_COIN           1.0
+#define     EST_BINES_ESPACIAL_X_COIN           100
+#define     EST_BINES_ESPACIAL_Y_COIN           65
+#define     EST_ANCHO_BIN_ESPACIALES_COIN       5.0
 
 using namespace arma;
 
@@ -172,6 +188,10 @@ namespace ap {
             void setPathSalida(QString par_string) {this->path_salida = par_string;}
             void setPathEntrada(QString par_string) {this->path_entrada = par_string;}
 
+            // Parser
+            void setPathPARSER(QString par_string) {this->path_PARSER = par_string;}
+            QString getPathPARSER() {return this->path_PARSER;}
+
 
             // Calibración fina
             bool calibrar_fina(void);
@@ -193,6 +213,9 @@ namespace ap {
             QList<int> Cab_List;
             QList<int> Vis_List;
             int  Canal_Obj, tiempo_adq;
+
+            // Path al parser
+            QString path_PARSER;
 
             // Puerto serie
             QString port_name;
@@ -317,6 +340,8 @@ namespace ap {
             bool LevantarArchivo_Planar(int cab_num_act);
             // Parseo de trama
             unsigned char * Trama(unsigned char *tramaEntrada,int tamanioTramaEntrada,int * tamanioTramaSalidaPointer);
+            // Parsear .raw de coincidencia
+            bool Parsear_raw();
 
             // Flag de RAM
             bool IsLowRAM;
