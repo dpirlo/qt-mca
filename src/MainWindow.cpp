@@ -559,54 +559,7 @@ void MainWindow::setQListElements()
     heads_coin_table.push_back(ui->comboBox_coin_9);
 
 
-    pmt_button_table.push_back(ui->pushButton_01);
-    pmt_button_table.push_back(ui->pushButton_02);
-    pmt_button_table.push_back(ui->pushButton_03);
-    pmt_button_table.push_back(ui->pushButton_04);
-    pmt_button_table.push_back(ui->pushButton_05);
-    pmt_button_table.push_back(ui->pushButton_06);
-    pmt_button_table.push_back(ui->pushButton_07);
-    pmt_button_table.push_back(ui->pushButton_08);
-    pmt_button_table.push_back(ui->pushButton_09);
-    pmt_button_table.push_back(ui->pushButton_10);
-    pmt_button_table.push_back(ui->pushButton_11);
-    pmt_button_table.push_back(ui->pushButton_12);
-    pmt_button_table.push_back(ui->pushButton_13);
-    pmt_button_table.push_back(ui->pushButton_14);
-    pmt_button_table.push_back(ui->pushButton_15);
-    pmt_button_table.push_back(ui->pushButton_16);
-    pmt_button_table.push_back(ui->pushButton_17);
-    pmt_button_table.push_back(ui->pushButton_18);
-    pmt_button_table.push_back(ui->pushButton_19);
-    pmt_button_table.push_back(ui->pushButton_20);
-    pmt_button_table.push_back(ui->pushButton_21);
-    pmt_button_table.push_back(ui->pushButton_22);
-    pmt_button_table.push_back(ui->pushButton_23);
-    pmt_button_table.push_back(ui->pushButton_24);
-    pmt_button_table.push_back(ui->pushButton_25);
-    pmt_button_table.push_back(ui->pushButton_26);
-    pmt_button_table.push_back(ui->pushButton_27);
-    pmt_button_table.push_back(ui->pushButton_28);
-    pmt_button_table.push_back(ui->pushButton_29);
-    pmt_button_table.push_back(ui->pushButton_30);
-    pmt_button_table.push_back(ui->pushButton_31);
-    pmt_button_table.push_back(ui->pushButton_32);
-    pmt_button_table.push_back(ui->pushButton_33);
-    pmt_button_table.push_back(ui->pushButton_34);
-    pmt_button_table.push_back(ui->pushButton_35);
-    pmt_button_table.push_back(ui->pushButton_36);
-    pmt_button_table.push_back(ui->pushButton_37);
-    pmt_button_table.push_back(ui->pushButton_38);
-    pmt_button_table.push_back(ui->pushButton_39);
-    pmt_button_table.push_back(ui->pushButton_40);
-    pmt_button_table.push_back(ui->pushButton_41);
-    pmt_button_table.push_back(ui->pushButton_42);
-    pmt_button_table.push_back(ui->pushButton_43);
-    pmt_button_table.push_back(ui->pushButton_44);
-    pmt_button_table.push_back(ui->pushButton_45);
-    pmt_button_table.push_back(ui->pushButton_46);
-    pmt_button_table.push_back(ui->pushButton_47);
-    pmt_button_table.push_back(ui->pushButton_48);
+
 }
 /**
  * @brief MainWindow::getLocalDateAndTime
@@ -5354,3 +5307,33 @@ void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
 }
 
 
+
+void MainWindow::on_pushButton_select_pmt_2_clicked()
+{
+    writeFooterAndHeaderDebug(true);
+    resetHitsValues();
+    removeAllGraphsPMT();
+
+    int ret = pmt_select->exec();
+    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+
+    if(ret == QDialog::Accepted)
+    {
+        setPMTSelectedList(qlist);
+    }
+
+    if(debug)
+    {
+        cout<<"La lista seleccionada tiene "<< qlist.size()<<" elementos"<<endl;
+        QList<QString>::const_iterator stlIter;
+        for( stlIter = qlist.begin(); stlIter != qlist.end(); ++stlIter )
+            cout<<(*stlIter).toStdString()<<endl;
+    }
+
+    setPMTCustomPlotEnvironment(qlist);
+
+    qSort(qlist);
+    ui->listWidget->clear();
+    ui->listWidget->addItems(qlist);
+    writeFooterAndHeaderDebug(false);
+}
