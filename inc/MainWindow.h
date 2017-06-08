@@ -231,6 +231,9 @@ private slots:
 
     void on_parser_coincidencia_clicked();
 
+    void on_pushButton_select_pmt_2_clicked();
+
+
 private:
     void connectSlots();
     QString openConfigurationFile();
