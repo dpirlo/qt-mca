@@ -233,6 +233,7 @@ private slots:
 
     void on_pushButton_select_pmt_2_clicked();
 
+    void on_pushButton_tiempos_cabezal_2_clicked();
 
 private:
     void connectSlots();
@@ -349,8 +350,8 @@ private:
     QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug, init, log, stdout_mode;
-    QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
-    QVector<double> hvtable_values, coefenerg_values, coefT_values, coefx_values, coefy_values, coefest_values;
+    QString coefenerg, coefT,coefTIntra, hvtable, coefx, coefy, coefest;
+    QVector<double> hvtable_values, coefenerg_values, coefT_values,coefTIntra_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit, Target;
     QVector<double> channels_ui;
