@@ -1097,6 +1097,7 @@ void MainWindow::on_pushButton_configure_clicked()
  */
 void MainWindow::on_pushButton_initialize_clicked()
 {
+    /** @todo: Verificar la inicialización y configuración de la alta tensión */
     writeFooterAndHeaderDebug(true);
     if(!arpet->isPortOpen())
     {
@@ -1548,7 +1549,10 @@ void MainWindow::setCalibrationTables(int head)
     coefx_values=getValuesFromFiles(coefx);
     coefy_values=getValuesFromFiles(coefy);
     coefT_values=getValuesFromFiles(coefT);
+    coefTInter_values=getValuesFromFiles(coefTInter);
     coefest_values=getValuesFromFiles(coefest);
+
+
     bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true;
     QString q_msg;
 
@@ -1650,7 +1654,7 @@ void MainWindow::setCalibrationTables(int head)
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            q_msg = setTime(QString::number(head).toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());
+            q_msg = setTime(QString::number(head).toStdString(), coefT_values[pmt]+coefTInter_values[head-1], QString::number(pmt+1).toStdString());
             if(debug)
             {
                 cout<<"========================================="<<endl;
@@ -3038,6 +3042,7 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
     coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
     coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
     coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
+    coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
 
     return MCAE::OK;
 }
@@ -3078,6 +3083,7 @@ void MainWindow::getPaths()
         ui->textBrowser_posicion_X->setText(coefx);
         ui->textBrowser_posicion_Y->setText(coefy);
         ui->textBrowser_tiempos_cabezal->setText(coefT);
+        ui->textBrowser_tiempos_Inter_cabezal->setText(coefTInter);
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
     }
@@ -4262,15 +4268,15 @@ void MainWindow::on_pushButton_toggled(bool checked)
         calibrador->setTiempo_adq(Tiempo_adq.toInt());
 
         // Recupero los cabezales
-        for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
-        {
-            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
+//        for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
+//        {
+//            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
 
-            if(q->checkState() == Qt::Checked)
-            {
-                checked_Cab.append(i+1);
-            }
-        }
+//            if(q->checkState() == Qt::Checked)
+//            {
+//                checked_Cab.append(i+1);
+//            }
+//        }
         if(checked_Cab.length() == 0)
         {
             messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
@@ -5333,4 +5339,10 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     ui->listWidget->clear();
     ui->listWidget->addItems(qlist);
     writeFooterAndHeaderDebug(false);
+}
+
+void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
+{
+    QString fileName = openConfigurationFile();
+    ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
 }

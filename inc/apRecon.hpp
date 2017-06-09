@@ -223,10 +223,10 @@ namespace ap {
             QPlainTextEdit *consola;
             QString *programas;
             QStringList *listasparametros;
-            int indice_ejecucion = 0;
-            int limite_ejecucion = 0;
-            int indice_armado_cola = 0;
-            bool muerto = 0;
+            int indice_ejecucion;
+            int limite_ejecucion;
+            int indice_armado_cola;
+            bool muerto = false;
 
             // Server
             QString SERVER_BASE;
