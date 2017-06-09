@@ -1549,7 +1549,7 @@ void MainWindow::setCalibrationTables(int head)
     coefx_values=getValuesFromFiles(coefx);
     coefy_values=getValuesFromFiles(coefy);
     coefT_values=getValuesFromFiles(coefT);
-    coefTIntra_values=getValuesFromFiles(coefTIntra);
+    coefTInter_values=getValuesFromFiles(coefTInter);
     coefest_values=getValuesFromFiles(coefest);
 
 
@@ -1654,7 +1654,7 @@ void MainWindow::setCalibrationTables(int head)
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            q_msg = setTime(QString::number(head).toStdString(), coefT_values[pmt]+coefTIntra_values[head], QString::number(pmt+1).toStdString());
+            q_msg = setTime(QString::number(head).toStdString(), coefT_values[pmt]+coefTInter_values[head-1], QString::number(pmt+1).toStdString());
             if(debug)
             {
                 cout<<"========================================="<<endl;
@@ -3042,7 +3042,7 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
     coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
     coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
     coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
-    coefTIntra = root+settings.value("Cabezal"+head+"/coefTIntra", "US").toInt();
+    coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
 
     return MCAE::OK;
 }
@@ -3083,7 +3083,7 @@ void MainWindow::getPaths()
         ui->textBrowser_posicion_X->setText(coefx);
         ui->textBrowser_posicion_Y->setText(coefy);
         ui->textBrowser_tiempos_cabezal->setText(coefT);
-        ui->textBrowser_tiempos_Intra_cabezal->setText(coefTIntra);
+        ui->textBrowser_tiempos_Inter_cabezal->setText(coefTInter);
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
     }
@@ -5347,5 +5347,5 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
 void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_tiempos_Intra_cabezal->setText(fileName);
+    ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
 }

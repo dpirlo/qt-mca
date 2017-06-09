@@ -1194,7 +1194,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Delta T interCab</string>
+        <string>Delta T intraCab</string>
        </property>
       </widget>
       <widget class="QLabel" name="label">
@@ -1372,7 +1372,7 @@
         <string>Obtener config.ini</string>
        </property>
       </widget>
-      <widget class="QTextBrowser" name="textBrowser_tiempos_Intra_cabezal">
+      <widget class="QTextBrowser" name="textBrowser_tiempos_Inter_cabezal">
        <property name="geometry">
         <rect>
          <x>130</x>
@@ -1395,7 +1395,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Delta T IntraCab</string>
+        <string>Delta T InterCab</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_tiempos_cabezal_2">
