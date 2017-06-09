@@ -874,6 +874,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         espectro_suma_crudo %= espectro_suma_crudo;
         canal_norm[index_PMT_cent] = espectro_suma_crudo.index_min();
 
+
     }
 
     // Guardo las tasas
