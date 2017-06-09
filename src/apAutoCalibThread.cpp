@@ -51,10 +51,26 @@ void AutoCalibThread::getCalib()
         QEventLoop loop;
         QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
         loop.exec();
-        cout<<"Tiempo_Adq :"<<calibrador->getTiempo_adq()<<"  Abort = "<<_abort<<endl;
-        calibrador->calibrar_simple();
+        QVector<double> aux_hits;
         emit clearGraphsCalib();
-        emit sendHitsCalib(calibrador->getHitsMCA(), CHANNELS, QString::number(calibrador->PMTs_List[0]), 0, false);
+        for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
+        {
+            // Pido estado de SP3
+            calibrador->getMCA(QString::number(calibrador->PMTs_List[i]).toStdString(), calibrador->getFunCSP3(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
+            calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1] = calibrador->getHVMCA();
+
+            // Pido MCA de calibracion
+            calibrador->getMCA(QString::number(calibrador->PMTs_List[i]).toStdString(), calibrador->getFunCHead(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
+
+            // Leo los hits y los paso a double
+            aux_hits = calibrador->getHitsMCA();
+            for (int j = 0 ; j < CHANNELS ; j++)
+            {
+              calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
+            }
+            emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
+        }
+        calibrador->calibrar_simple();
     }
     calibrador->portDisconnect();
     emit sendConnectPortArpet();

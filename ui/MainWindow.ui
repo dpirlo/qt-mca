@@ -6843,7 +6843,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

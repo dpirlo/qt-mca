@@ -60,7 +60,7 @@ private:
      *
      */
   QList<QString> pmt_selected_list;
-  QList<QPushButton*> pmt_button_table;
+
 
 public:
   /**
@@ -72,6 +72,7 @@ public:
      * @see pmt_selected_list
      */
   QList<QString> GetPMTSelectedList() const { return pmt_selected_list; }
+  QList<QPushButton*> pmt_button_table;
 
 };
 

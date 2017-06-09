@@ -77,6 +77,8 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
 
+    pmt_select_autocalib = new SetPMTs(this);
+
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
 
@@ -4192,6 +4194,7 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 /* Autocalib */
 void MainWindow::on_pushButton_toggled(bool checked)
 {
+    QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
     if (checked)
     {
         QList<int> checked_PMTs, checked_Cab;
@@ -4208,15 +4211,16 @@ void MainWindow::on_pushButton_toggled(bool checked)
         }
         else
         {
+            cout<<"Pass 1"<<endl;
             // Recupero los PMT checkeados
-            for(int i = 0;  i< PMTs ; i++ )
+            for(int i = 0;  i< qlist.length() ; i++ )
             {
-                if (pmt_button_table[i]->isChecked())
-                {
-                    checked_PMTs.append(i+1);
-                }
+                cout<<"Pass 2"<<endl;
+                cout<<qlist[i].toStdString()<<endl;
+                checked_PMTs.append(qlist[i].toInt());
+
             }
-            if(checked_PMTs.length() == 0)
+            if(qlist.length() == 0)
             {
                 messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
                 messageBox.setFixedSize(500,200);
@@ -4229,6 +4233,7 @@ void MainWindow::on_pushButton_toggled(bool checked)
             calibrador->setPMT_List(checked_PMTs);
         }
 
+        cout<<"Pass 4"<<endl;
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
@@ -5310,14 +5315,19 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     writeFooterAndHeaderDebug(true);
     resetHitsValues();
     removeAllGraphsPMT();
+    int i;
 
-    int ret = pmt_select->exec();
-    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+    int ret = pmt_select_autocalib->exec();
+    QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
+
+
 
     if(ret == QDialog::Accepted)
     {
-        setPMTSelectedList(qlist);
+        //setPMTSelectedList(qlist);
+        setPMTSelectedListAutocalib(qlist);
     }
+
 
     if(debug)
     {
@@ -5330,7 +5340,9 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     setPMTCustomPlotEnvironment(qlist);
 
     qSort(qlist);
-    ui->listWidget->clear();
-    ui->listWidget->addItems(qlist);
+    ui->listWidget_2->clear();
+    ui->listWidget_2->addItems(qlist);
+
+
     writeFooterAndHeaderDebug(false);
 }

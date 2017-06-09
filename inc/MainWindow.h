@@ -325,6 +325,7 @@ private:
     Ui::MainWindow *ui;
     SetPreferences *pref;
     SetPMTs *pmt_select;
+    SetPMTs *pmt_select_autocalib;
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
@@ -346,7 +347,8 @@ private:
     QList<QLabel*> hv_status_table;
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
-    QList<QPushButton*> pmt_button_table;
+    QList<QString> pmt_selected_list_autocalib;
+  //  QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug, init, log, stdout_mode;
     QString coefenerg, coefT, hvtable, coefx, coefy, coefest;
@@ -407,6 +409,7 @@ public:
      * @param list
      */
     void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
+    void setPMTSelectedListAutocalib(QList<QString> list) { pmt_selected_list = list; }
     /**
      * @brief setIsAbortMCAEFlag
      *

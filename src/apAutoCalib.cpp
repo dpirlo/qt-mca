@@ -119,61 +119,28 @@ int AutoCalib::calibrar_simple()
             Picos_PMT[j] = 0;
         }
 
-        // Reseteo la memoria de SP6
-//        setHV(QString::number(Cab_actual).toStdString(),"150",port_name.toStdString());
-
         // LLeno los buffers de memoria de la clase
         for (int i=0 ; i<PMTs_List.length() ; i++)
         {
-//            QVector<double> aux_hits;
-            // Leo el HV actual y lo guardo en memoria
-            //if (!pedir_MCA_PMT(Cab_actual , PMTs_List[i], CHANNELS, 0)) return -1;//aux_hits;//-1;
-            getMCA(QString::number(PMTs_List[i]).toStdString(), getFunCSP3(), QString::number(Cab_actual).toStdString(), CHANNELS, port_name.toStdString());
-            Dinodos_PMT[PMTs_List[i]-1] = getHVMCA();
-            Tiempos_PMT[PMTs_List[i]-1] = getTimeMCA();
-
-            // Pido MCA de calibracion del PMT actual
-            getMCA(QString::number(PMTs_List[i]).toStdString(), getFunCHead(), QString::number(Cab_actual).toStdString(), CHANNELS, port_name.toStdString());
-
-            // Leo los hits y los paso a double
-            QVector<double> aux_hits;
-            aux_hits = getHitsMCA();
-            double aux_double_hits[CHANNELS];
-            for (int j = 0 ; j < CHANNELS ; j++)
-            {
-              aux_double_hits[j] = aux_hits[j];
-            }
-
             // Busco el pico
             struct Pico_espectro aux;
-            aux = Buscar_Pico(aux_double_hits, CHANNELS);
+            aux = Buscar_Pico(Hist_Double[PMTs_List[i]-1], CHANNELS);
             Picos_PMT[PMTs_List[i]-1] = aux.canal_pico;
-
-            // Paso a Qvector y ploteo
-            std::vector<double> auxVector;
-            auxVector.assign(aux_double_hits, aux_double_hits+ CHANNELS);
-            aux_hits.fromStdVector(auxVector);
-//            plot_MCA(aux_hits, getChannels(), plot_hand , nombre_plot, param, 1);
 
             // Suma en FWHM
             double cuentas_FWHM = 0,cuentas_FWTM = 0;
             for (int j = aux.limites_FWHM[0] ; j < aux.limites_FWHM[1] ; j++)
             {
-              cuentas_FWHM = cuentas_FWHM + aux_double_hits[j];
+              cuentas_FWHM = cuentas_FWHM + Hist_Double[PMTs_List[i]-1][j];
             }
             for (int j = aux.limites_FWTM[0] ; j < aux.limites_FWTM[1] ; j++)
             {
-              cuentas_FWTM = cuentas_FWTM + aux_double_hits[j];
+              cuentas_FWTM = cuentas_FWTM + Hist_Double[PMTs_List[i]-1][j];
             }
 
-            cout<<"PMT: "<< PMTs_List[i] << "--" <<Picos_PMT[PMTs_List[i]-1]<<"---"<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
-            cout<<"FWHM: "<<aux.limites_FWHM[0]<<"   "<<aux.limites_FWHM[1]<<endl;
-            cout<<"FWTM: "<<aux.limites_FWTM[0]<<"   "<<aux.limites_FWTM[1]<<endl;
-            cout<<"Cuentas en FWHM: "<<cuentas_FWHM<<endl;
-            cout<<"Cuentas en FWTM: "<<cuentas_FWTM<<endl;
-            cout<<"Time Ant: "<<Tiempos_PMT_ant[PMTs_List[i]-1]<<endl;
-            cout<<"Time Now: "<<Tiempos_PMT[PMTs_List[i]-1]<<endl;
-            cout<<"Time Dif: "<<Tiempos_PMT[PMTs_List[i]-1] - Tiempos_PMT_ant[PMTs_List[i]-1]<<endl;
+            cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1]<<", Dinodo antual: "<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
+            cout<<"FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1]<<endl;
+            cout<<"Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
         }
 
         // Comparo la posición actual con la objetivo
@@ -252,14 +219,11 @@ int AutoCalib::calibrar_simple()
                     // Checkeo que debido a ruido en la posicion del pico no este haciendo fruta
                     if (A_param[PMTs_List[j]-1] > 0 && A_param[PMTs_List[j]-1] < 100000)
                     {
-
                         // Calculo la posicion final del dinodo para llegar al objetivo
                         paso_dinodo[PMTs_List[j]-1] = ( (Canal_Obj_vec_arma[PMTs_List[j]-1] - B_param[PMTs_List[j]-1])/ A_param[PMTs_List[j]-1] ) - Dinodos_PMT[PMTs_List[j]-1];
 
                         // Peso el valor del dinodo con el coeficiente de PMT centroide a total de energia
                         paso_dinodo[PMTs_List[j]-1] = paso_dinodo[PMTs_List[j]-1] * 0.65;
-
-
 
                         // Checkeo que debido a una pendiente muy baja no me mande al diablo y saturo
                         if (paso_dinodo[PMTs_List[j]-1]*paso_dinodo[PMTs_List[j]-1] > MAX_MOV_DIN*MAX_MOV_DIN)
@@ -330,7 +294,6 @@ int AutoCalib::calibrar_simple()
           }
         }
 
-
         // Recorro y modifico todos los PMT del color
         for (int i = 0 ; i < PMTs/2 ; i++)
         {
@@ -361,35 +324,19 @@ int AutoCalib::calibrar_simple()
             }
 
         // Reset de todas las memorias del cabezal
+        // Limpio memorias en SP6
+        // ***** cambiar el "150" por lo que va
         setHV(QString::number(Cab_actual).toStdString(),QString::number(getHVMCA()).toStdString(),port_name.toStdString());
 
         // paso_dinodo = paso_dinodo - (paso_dinodo/10);
 
-//        for (int i=0 ; i< PMTs ; i++)
         for (int i = 0 ; i < PMTs_List.length(); i++)
         {
             Picos_PMT_ant[PMTs_List[i]-1] =  Picos_PMT[PMTs_List[i]-1];
             Dinodos_PMT_ant[PMTs_List[i]-1] = Dinodos_PMT[PMTs_List[i]-1];
-            Tiempos_PMT_ant[PMTs_List[i]-1] = Tiempos_PMT[PMTs_List[i]-1];
         }
 
         iter_actual++;
-
-
-        // Pido el total del cabezal y ploteo
-        //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
-
-
-//        if (!pedir_MCA_PMT(Cab_actual , 1, CHANNELS, 1)) return -1;
-//        plot_MCA(getHitsMCA(), getChannels(), plot_hand , nombre_plot, param, 1);
-
-
-        //cout << "Enviando a cabezal "<<Cab_actual<<" PMT "<<PMT_actual<<endl;
-
-
-        // Seteo HV de dinodo
-        //modificar_HV_PMT(Cab_actual , PMT_actual, 600+10);
-
         }
 
     catch (Exceptions ex)
@@ -397,21 +344,6 @@ int AutoCalib::calibrar_simple()
         cout<<"Se va por Exception: "<<ex.excdesc<<endl;
     }
 
-//    QVector<double> ahits;
-//    ahits = getHitsMCA();
-//    cout<<"Hist antes de irme: "<<endl;
-//    for (int j = 0 ; j < CHANNELS ; j++)
-//    {
-//      cout<<"Hits "<<j<<": "<<ahits[j]<<endl;
-//    }
-
-        // Ploteo
-        //plot_MCA(getHitsMCA(), plot_hand , nombre_plot, param);
-
-//    }
-
-
-//    return getHitsMCA();
     return 1;
 }
 
