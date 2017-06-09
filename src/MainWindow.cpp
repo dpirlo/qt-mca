@@ -4586,10 +4586,7 @@ void MainWindow::on_parser_coincidencia_clicked()
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir carpeta del parser"),
                                                    root);
-
     calibrador->setPathPARSER(filename+"/");
-
-
     cout<<"Directorio parser: "<<filename.toStdString()<<endl;
 
     ui->textBrowser_parser_coin->setText(filename);

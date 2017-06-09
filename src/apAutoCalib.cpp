@@ -70,6 +70,10 @@ AutoCalib::AutoCalib()
     // Seteo el default de entrada
     path_entrada = "Salidas/";
 
+    // Seteo el default de parser
+    path_PARSER = "../../../Parser/";
+
+
 
     // Mando esto a la nada para evitar errores
     //QString nombre_Log = "/dev/null";
@@ -460,7 +464,7 @@ bool AutoCalib::calibrar_fina(void)
             //QTextStream stream_open(&file);
             stream.setDevice(&file);
 
-            stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+            stream<<"% Log iniciado: "<<asctime(timeinfo)<<endl;
 
             string nombre_archivo = adq_cab[cab_num_act];
             string path_archivo = nombre_archivo.substr(0, nombre_archivo.find_last_of("\\/"));
@@ -469,9 +473,9 @@ bool AutoCalib::calibrar_fina(void)
             if(Count_skim_calib)
             {
 
-                stream<<"ACHTUNG!!!!        Modo de count skimming, se van a utilizar todos los archivos de la carpeta."<<endl;
+                stream<<"% ACHTUNG!!!!        Modo de count skimming, se van a utilizar todos los archivos de la carpeta."<<endl;
                 cant_archivos = todos_archivos.length();
-                stream<<"Se leeran "<<cant_archivos<<" archivos"<<endl;
+                stream<<"% Se leeran "<<cant_archivos<<" archivos"<<endl;
             }
 
 
@@ -507,8 +511,8 @@ bool AutoCalib::calibrar_fina(void)
             {
                 for (int skim_i = 0 ; skim_i < cant_archivos ;  skim_i++)
                 {
-                    stream<<"----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
-                    cout<<"----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
+                    stream<<"% ----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
+                    cout<<"% ----------------Calculando planares "<<skim_i+1<<" de "<<cant_archivos<<endl;
 
                     if(Count_skim_calib)
                     {
@@ -548,7 +552,7 @@ bool AutoCalib::calibrar_fina(void)
             if(Count_skim_calib) tipo[3] = 1;
             guardar_tablas(cab_num_act, tipo);
 
-            stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
+            stream<<"% Log finalizado: "<<asctime(timeinfo)<<endl;
 
         }
         // Sino calibro tiempos
@@ -572,12 +576,11 @@ bool AutoCalib::calibrar_fina(void)
 
             stream.setDevice(&file);
 
-            stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
-
+            stream<<" %Log iniciado: "<<asctime(timeinfo)<<endl;
             // Calibro
             calibrar_tiempo_intercabezal();
 
-            stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
+            stream<<" %Log finalizado: "<<asctime(timeinfo)<<endl;
         }
 
     }
@@ -600,7 +603,7 @@ bool AutoCalib::calibrar_fina(void)
             return -1;
         }
 
-        stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+        stream<<" %Log iniciado: "<<asctime(timeinfo)<<endl;
 
         // Aplico el inter skimming
         calibrar_inter_count_skimming();
@@ -609,7 +612,7 @@ bool AutoCalib::calibrar_fina(void)
         for (int cab_num_act = 0 ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
             guardar_tablas(cab_num_act, tipo);
 
-        stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
+        stream<<" %Log finalizado: "<<asctime(timeinfo)<<endl;
 
     }
 
@@ -621,15 +624,15 @@ bool AutoCalib::calibrar_fina(void)
 
 bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 {
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     // Saco la suma de los canales del evento
     rowvec Suma_canales = sum( Energia_calib[cab_num_act], 0);
 
     // Logueo numero de eventos totales
-    stream<<"Eventos limpios: "<<Suma_canales.n_elem<<endl;
+    stream<<" %Eventos limpios: "<<Suma_canales.n_elem<<endl;
 
     // Creo el vector de centros para el histograma
     vec centros_hist = linspace<vec>(0,8000,BinsHist);
@@ -652,11 +655,11 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     cout<<"Sin Calibrar:"<<endl;
     cout<<"FWHM: "<<pico_sin_calib.FWHM*100<<" %"<<endl;
 
-    stream<<"FWHM sin Calibrar: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
-    stream<<"   Datos pico: "<<endl;
-    stream<<"   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
-    stream<<"   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
-    stream<<"   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
+    stream<<" %FWHM sin Calibrar: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
+    stream<<" %   Datos pico: "<<endl;
+    stream<<" %   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
+    stream<<" %   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
+    stream<<" %   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Crudo_Vec ="<<guardar_vector_stream(vec_log)<<endl;
 
@@ -694,7 +697,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     Tiempo_calib_FWHM = Tiempo_calib_FWHM.cols(indices_aux);
 
 
-    stream<<"Eventos en FWTM: "<<Energia_calib_FWHM.n_cols<<endl;
+    stream<<" %Eventos en FWTM: "<<Energia_calib_FWHM.n_cols<<endl;
     rowvec suma_FWTM = sum( Energia_calib_FWHM, 0);
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(hist(suma_FWTM, centros_hist));
@@ -720,7 +723,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
         stream<<endl;
-        stream<<"---------------------- EVENTOS POR PMT ------------------------------"<<endl;
+        stream<<" %---------------------- EVENTOS POR PMT ------------------------------"<<endl;
         stream<<endl;
 
         // Extraigo los eventos en los cuales el PMT fue maximo
@@ -735,7 +738,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         Porcentaje_PMT(index_PMT_cent) = ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100;
         Tasa_PMT(index_PMT_cent) = Fila_max_PMT.n_elem / Tiempo_medicion[cab_num_act];
 
-        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< Porcentaje_PMT(index_PMT_cent) <<" % del total en FWHM"<<endl;
+        stream<<" %       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< Porcentaje_PMT(index_PMT_cent) <<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
@@ -793,7 +796,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         // Paso los vectores a Qvector para plotear
         for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
         for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-        nombre_plot = "PMT Nº "+ QString::number(index_PMT_cent+1);
+        nombre_plot = QString::number(index_PMT_cent+1);
         if (plotear)
         {
             plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
@@ -803,7 +806,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         qApp->processEvents();
 
 
-        stream<<"       --------Centroides usados: "<<indices_aux.n_elem<<endl;
+        stream<<" %       --------Centroides usados: "<<indices_aux.n_elem<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Eventos_max_PMT.row(index_PMT_cent),centros_hist));
@@ -911,7 +914,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
             canal_medio_zona[2] += canal_norm[index_PMT_cent]/24;
         }
     }
-    stream<<"Canales Normalizados: "<<canal_medio_zona[0]<<" - "<<canal_medio_zona[1]<<" - "<<canal_medio_zona[2]<<endl;
+    stream<<" %Canales Normalizados: "<<canal_medio_zona[0]<<" - "<<canal_medio_zona[1]<<" - "<<canal_medio_zona[2]<<endl;
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
         // Esquina
@@ -939,18 +942,18 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 }
 
 
 bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 {
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: Pre_calibrar_aleta ------------------------------------------------------------ "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: Pre_calibrar_aleta ------------------------------------------------------------ "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
     colvec Ce_arma(Ce_pre[cab_num_act], CANTIDADdEpMTS);
@@ -985,11 +988,11 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     cout<<"FWHM: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
 
 
-    stream<<"FWHM pre calibrado: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
-    stream<<"   Datos pico: "<<endl;
-    stream<<"   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
-    stream<<"   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
-    stream<<"   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
+    stream<<" %FWHM pre calibrado: "<<pico_sin_calib.FWHM*100<<"%"<<endl;
+    stream<<" %   Datos pico: "<<endl;
+    stream<<" %   FWHM: "<<pico_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWHM[1])<<endl;
+    stream<<" %   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
+    stream<<" %   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Pre_Cal_Vec ="<<guardar_vector_stream(vec_log)<<endl;
 
@@ -1024,7 +1027,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     Tiempo_calib_FWHM = Tiempo_calib_FWHM.cols(indices_aux);
 
 
-    stream<<"Eventos en FWTM: "<<Energia_calib_FWHM.n_cols<<endl;
+    stream<<" %Eventos en FWTM: "<<Energia_calib_FWHM.n_cols<<endl;
     rowvec suma_FWTM = sum( Energia_calib_FWHM, 0);
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(hist(suma_FWTM, centros_hist));
@@ -1047,7 +1050,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
     {
         stream<<endl;
-        stream<<"---------------------- EVENTOS POR PMT ------------------------------"<<endl;
+        stream<<" %---------------------- EVENTOS POR PMT ------------------------------"<<endl;
         stream<<endl;
 
 
@@ -1062,7 +1065,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         Porcentaje_PMT(index_PMT_cent) = ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100;
         Tasa_PMT(index_PMT_cent) = Fila_max_PMT.n_elem / Tiempo_medicion[cab_num_act];
 
-        stream<<"       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<" % del total en FWHM"<<endl;
+        stream<<" %       Eventos maximo PMT "<<index_PMT_cent+1<<": "<<Fila_max_PMT.n_elem<<"   ---   "<< ((double)Fila_max_PMT.n_elem/(double)Energia_calib_FWHM.n_cols)*100<<" % del total en FWHM"<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
@@ -1121,14 +1124,14 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         // Paso los vectores a Qvector para plotear
         for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
         for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-        nombre_plot = "PMT Nº "+ QString::number(index_PMT_cent+1);
+        nombre_plot = QString::number(index_PMT_cent+1);
         plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
         Espectro_PMT_emergente[cab_num_act].show();
         Espectro_PMT_emergente[cab_num_act].resize(1000,500);
         qApp->processEvents();
 
 
-        stream<<"       --------Centroides usados: "<<indices_aux.n_elem<<endl;
+        stream<<" %       --------Centroides usados: "<<indices_aux.n_elem<<endl;
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Eventos_max_PMT.row(index_PMT_cent),centros_hist));
@@ -1196,9 +1199,9 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
 
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: Pre_calibrar_aleta ------------------------------------------------------------ "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: Pre_calibrar_aleta ------------------------------------------------------------ "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
     return 1;
@@ -1208,9 +1211,9 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 {
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     // Creo el vector de energía objetivo
     colvec Ener_obj;
@@ -1263,7 +1266,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     }
     pico_calib = Buscar_Pico(aux_espectro, BinsHist);
     cout<<"Primer paso Calibrar:  "<<pico_calib.FWHM*100<<" %"<<endl;
-    stream<<"Primer paso Calibrar:  "<<pico_calib.FWHM*100<<" %"<<endl;
+    stream<<" %Primer paso Calibrar:  "<<pico_calib.FWHM*100<<" %"<<endl;
 
     // Guardo los parametros iniciales
     double FWHM_mejor = pico_calib.FWHM;
@@ -1358,7 +1361,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
         }
 
         cout<<"Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
-        stream<<"       Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
+        stream<<" %       Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
         vec_log = arma::conv_to<vec>::from(Ce_arma);
         stream<<"       Ce_paso = "<<guardar_vector_stream(vec_log)<<endl;
 
@@ -1375,7 +1378,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     }
 
     cout<<"Final: "<<pico_calib.FWHM*100<<"%"<<endl;
-    stream<<"Final: "<<pico_calib.FWHM*100<<"%"<<endl;
+    stream<<" %Final: "<<pico_calib.FWHM*100<<"%"<<endl;
     vec_log = arma::conv_to<vec>::from(Ce_mejor);
     stream<<"       Ce_final = ["<<guardar_vector_stream(vec_log)<<endl;
 
@@ -1394,9 +1397,9 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     qApp->processEvents();
 
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 }
 
@@ -1406,12 +1409,12 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
 {
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_fina_tiempos --------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_fina_tiempos --------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     stream<<endl;
-    stream<<"No hay mucho que loguear aca..."<<endl;
+    stream<<" %No hay mucho que loguear aca..."<<endl;
     stream<<endl;
 
 
@@ -1457,9 +1460,9 @@ bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
         Ct[cab_num_act][i] = Tiempos_finales.Correccion_Temporal_out(i);
     }
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_fina_tiempos --------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_fina_tiempos --------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
     return 1;
@@ -1748,9 +1751,9 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
 {
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_fina_posiciones ------------------------------------------------------ "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_fina_posiciones ------------------------------------------------------ "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     double Lado_X_Cabezal = (Lado_PMT*PMTs_X)/2;
     double Lado_Y_Cabezal = (Lado_PMT*PMTs_Y)/2;
@@ -1843,9 +1846,9 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     delete(vec_y);
     delete(vec_x);
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_fina_posiciones ------------------------------------------------------ "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_fina_posiciones ------------------------------------------------------ "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     return 1;
 }
@@ -1986,9 +1989,9 @@ bool AutoCalib::calcular_almohadon(int cab_num_act)
 
 bool AutoCalib::calibrar_count_skimming(int cab_num_act)
 {
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     // Copio el almohadon a la matriz de count skimming
     count_skimm[cab_num_act] = almohadon[cab_num_act];
@@ -2044,9 +2047,9 @@ bool AutoCalib::calibrar_count_skimming(int cab_num_act)
     double px_pico =  max(px_activos);
     double px_total =  sum(px_activos);
 
-    stream<<"Cuentas en pixel base: "<<px_base<<endl;
-    stream<<"Cuentas en pixel pico: "<<px_pico<<endl;
-    stream<<"Cuentas totales en area util: "<<px_total<<endl;
+    stream<<" %Cuentas en pixel base: "<<px_base<<endl;
+    stream<<" %Cuentas en pixel pico: "<<px_pico<<endl;
+    stream<<" %Cuentas totales en area util: "<<px_total<<endl;
 
 
     // Le resto a todos los elementos el valor de este pixel y dejo los bordes en 0
@@ -2068,9 +2071,9 @@ bool AutoCalib::calibrar_count_skimming(int cab_num_act)
     delete(vec_x);
 
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
 
@@ -2080,9 +2083,9 @@ bool AutoCalib::calibrar_count_skimming(int cab_num_act)
 
 bool AutoCalib::calibrar_inter_count_skimming()
 {
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     vec px_base(CANTIDADdEcABEZALES);
     vec px_pico(CANTIDADdEcABEZALES);
@@ -2109,9 +2112,9 @@ bool AutoCalib::calibrar_inter_count_skimming()
 
     // Saco el minimo de los 6
     double px_min_total = min(px_base);
-    stream<<"Minimo global de eventos: "<<px_min_total<<" (Cabezal :"<<px_base.index_min()+1<<")"<<endl;
+    stream<<" %Minimo global de eventos: "<<px_min_total<<" (Cabezal :"<<px_base.index_min()+1<<")"<<endl;
     double px_max_total = max(px_pico);
-    stream<<"Maximo global de eventos: "<<px_max_total<<" (Cabezal :"<<px_base.index_max()+1<<")"<<endl;
+    stream<<" %Maximo global de eventos: "<<px_max_total<<" (Cabezal :"<<px_base.index_max()+1<<")"<<endl;
 
     for(int cab_num_act ; cab_num_act < CANTIDADdEcABEZALES ; cab_num_act++)
     {
@@ -2125,9 +2128,9 @@ bool AutoCalib::calibrar_inter_count_skimming()
 
     cout<<"Finalizado Inter-Count Skimming"<<endl;
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_inter_count_skimming ------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
 
@@ -2138,19 +2141,20 @@ bool AutoCalib::calibrar_inter_count_skimming()
 bool AutoCalib::calibrar_tiempo_intercabezal()
 {
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     // Recupero el nombre del archivo
-    stream<<"Leyendo: "<<QString::fromStdString(adq_coin)<< endl;
+    stream<<" %Leyendo: "<<QString::fromStdString(adq_coin)<< endl;
 
     // Antes de leer el .dat, lo genero con el parser
     Parsear_raw();
+    stream<<" %Archivo parseado a leer: "<<QString::fromStdString(adq_coin)<<endl;
 
     // Levanto el archivo
     Tiempos_inter_cab.load(adq_coin, raw_ascii);
-    stream<<"Archivo leido, matriz de "<<Tiempos_inter_cab.n_rows<<" por "<<Tiempos_inter_cab.n_cols<<endl;
+    stream<<" %Archivo leido, matriz de "<<Tiempos_inter_cab.n_rows<<" por "<<Tiempos_inter_cab.n_cols<<endl;
 
     // Calculo el FWHM de las energías de los eventos, tanto en el evento 1 como el evento 2
     colvec Energias_1 = Tiempos_inter_cab.col(Coin_Calib_Energia_1);
@@ -2166,10 +2170,10 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
     vec vec_log;
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(espectro_1);
-    stream<<"               Pico_1"<<guardar_vector_stream(vec_log)<<endl;
+    stream<<" %               Pico_1"<<guardar_vector_stream(vec_log)<<endl;
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(espectro_2);
-    stream<<"               Pico_2"<<guardar_vector_stream(vec_log)<<endl;
+    stream<<" %               Pico_2"<<guardar_vector_stream(vec_log)<<endl;
 
     // Calculo el FWHM
     struct Pico_espectro pico_1, pico_2;
@@ -2184,9 +2188,9 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
     pico_2 = Buscar_Pico(aux_espectro_2, BinsHist);
 
     cout<<"FWHM eventos 1: "<<pico_1.FWHM*100<<"%"<<endl;
-    stream<<"FWHM eventos 1: "<<pico_1.FWHM*100<<"%"<<endl;
+    stream<<" %FWHM eventos 1: "<<pico_1.FWHM*100<<"%"<<endl;
     cout<<"FWHM eventos 2: "<<pico_2.FWHM*100<<"%"<<endl;
-    stream<<"FWHM eventos 2: "<<pico_2.FWHM*100<<"%"<<endl;
+    stream<<" %FWHM eventos 2: "<<pico_2.FWHM*100<<"%"<<endl;
 
     // Me quedo con los extremos del FWHM
     double FWHM_lim[2];
@@ -2197,7 +2201,7 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
     if (pico_1.limites_FWHM[1] > pico_2.limites_FWHM[1]) FWHM_lim[1] = pico_1.limites_FWHM[1];
     else FWHM_lim[1] = pico_2.limites_FWHM[1];
 
-    stream<<"Limites FWHM: "<<centros_hist(FWHM_lim[0])<<" - "<<centros_hist(FWHM_lim[1])<<endl;
+    stream<<" %Limites FWHM: "<<centros_hist(FWHM_lim[0])<<" - "<<centros_hist(FWHM_lim[1])<<endl;
 
     // Filtro por la ventana de energía
     mat Tiempos_inter_cab_FWHM;
@@ -2218,7 +2222,7 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
 
 
 
-    stream<<"Eventos en FWHM: "<<Tiempos_inter_cab_FWHM.n_elem<<endl;
+    stream<<" %Eventos en FWHM: "<<Tiempos_inter_cab_FWHM.n_elem<<endl;
 
     // Para identificar cabezales
     //colvec cabezal_1 = Tiempos_inter_cab_FWHM.col(Coin_Calib_Iden_cabezal_1);
@@ -2358,9 +2362,9 @@ bool AutoCalib::calibrar_tiempo_intercabezal()
 
 
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: calibrar_tiempo_intercabezal -------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
     return 1;
 }
@@ -2391,20 +2395,21 @@ bool AutoCalib::Parsear_raw(void)
     QFile file(nombre_archivo_parametros);
     if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
     {
-        cout<<"Error al abrir/crear archivo de parametros de parseo"<<endl;
+        stream<<" %Error al abrir/crear archivo de parametros de parseo"<<endl;
         return -1;
     }
+
 
     stream_par.setDevice(&file);
 
     stream_par<<"; Archivo de parametros generado automaticamente por el AR-PET-Tec. Fecha: "<< asctime(timeinfo) <<endl;
-
 
     stream_par<<"[PROCESAMIENTO TRAMA]"<<endl;
     // Archivo de entrada:
     stream_par<<"\t Archivo_Trama = "<<adq_coin_qstring<<endl;
     // Archivos de salidas (puedo obviar uno o los dos comentando la linea):
     stream_par<<"\t Archivo_Trama_Interpretada = "<<path_salida+adq_coin_name+".dat"<<endl;
+    stream_par<<"\t Modo_Calibracion = Si"<<endl;
 
     stream_par<<"\t [[FILTROS]]"<<endl;
     stream_par<<"\t\t E_Min = "<<EMIN_BASE_COIN<<endl;
@@ -2434,11 +2439,20 @@ bool AutoCalib::Parsear_raw(void)
     programa = path_PARSER+"procesar_trama";
     listasparametros.append(nombre_archivo_parametros);
 
+    stream<<" %Linea de parser:  ";
+    stream<<programa<<" "<<listasparametros.first()<<endl;
+
     // Ejecuto
+    proceso = new QProcess();
     proceso->start(programa, listasparametros);
 
+
     // Cambio el nombre al nuevo archivo de parametros
-    adq_coin = nombre_archivo_parametros.toStdString();
+    QString Archivo_salida_parseado = path_salida+adq_coin_name+".dat";
+    adq_coin = Archivo_salida_parseado.toStdString();
+
+    // Espero que termine
+    proceso->waitForFinished();
 }
 
 
@@ -2480,7 +2494,7 @@ bool AutoCalib::visualizar_planar(void)
         //QTextStream stream_open(&file);
         stream.setDevice(&file);
 
-        stream<<"Log iniciado: "<<asctime(timeinfo)<<endl;
+        stream<<" %Log iniciado: "<<asctime(timeinfo)<<endl;
 
         // Vector de tablas a cargar
         bool carga[5] = {0 , 0 , 0 , 0, 0};
@@ -2559,7 +2573,7 @@ bool AutoCalib::visualizar_planar(void)
         TimeStamp_calib[cab_num_act].set_size(1, 1);
 
 
-        stream<<"Log finalizado: "<<asctime(timeinfo)<<endl;
+        stream<<" %Log finalizado: "<<asctime(timeinfo)<<endl;
 
     }
 
@@ -3631,9 +3645,9 @@ void AutoCalib::plot_MCA(QVector<double> hits, QVector<double> channels_ui, QCus
 bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
 {
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------INICIO DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------INICIO DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
 
@@ -3653,7 +3667,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
 
     // Recupero el nombre del archivo
     string nombre_adq = adq_cab[cab_num_act];
-    stream << "Levantando archivo: "<<QString::fromStdString(nombre_adq)<< endl;
+    stream <<" %Levantando archivo: "<<QString::fromStdString(nombre_adq)<< endl;
 
 
     // abro archivo
@@ -3662,7 +3676,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     if (archivo == NULL)
     {
         cout<<"ahhh exploto el archivooooo"<< endl;
-        stream <<"ahhh exploto el archivooooo"<< endl;
+        stream <<" %ahhh exploto el archivooooo"<< endl;
         return -1;
     }
 
@@ -3696,14 +3710,14 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     fseek(archivo, 0, SEEK_END);
     long int BytesLeer = ftell(archivo);
     rewind(archivo);
-    stream <<"Se leeran "<<BytesLeer<<" Bytes"<< endl;
+    stream <<" %Se leeran "<<BytesLeer<<" Bytes"<< endl;
 
 
     // Leo todo a memoria
     unsigned char * entrada = (unsigned char *) malloc(BytesLeer);
     int bytes_leidos = fread(entrada, sizeof(unsigned char), BytesLeer, archivo);
 
-    stream <<"Se leyeron "<<bytes_leidos<<" Bytes"<< endl;
+    stream <<" %Se leyeron "<<bytes_leidos<<" Bytes"<< endl;
 
     // Cierro archivo
     fclose(archivo);
@@ -3718,7 +3732,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     // Calculo la cantidad de eventos leidos
     int num_columnas = cantidadDeTramaSalida/CANTiNFO;
 
-    stream <<"Total de eventos: "<<num_columnas<<endl;
+    stream <<" %Total de eventos: "<<num_columnas<<endl;
 
     // Configuro las matrices de los cabezales
     Energia_calib[cab_num_act].set_size(CANTIDADdEpMTS, num_columnas);
@@ -3818,17 +3832,17 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     Tiempo_medicion[cab_num_act] = modification - timeSinceEpoch;
 
     // Informo el tiempo de adquisicion
-    stream<<"Tiempo de adquisicion: "
+    stream<<" %Tiempo de adquisicion: "
             ""<<Tiempo_medicion[cab_num_act]<<endl;
 
     free(vectorSalida);
     free(entrada);
-    stream<<"Memoria de buffer de entrada liberada"<<endl;
+    stream<<" %Memoria de buffer de entrada liberada"<<endl;
 
 
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
-    stream<<"----------------------------------SALIDA DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
-    stream<<"---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+    stream<<" %----------------------------------SALIDA DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
+    stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
 
 
