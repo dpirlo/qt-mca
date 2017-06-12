@@ -1018,7 +1018,7 @@ void MCAE::setMCAEStream(string function, string data_one, string data_two, bool
 void MCAE::setPSOCEStream(string function, string size_received, string psoc_value_dec)
 {
     string psoc_value;
-    if (psoc_value_dec.length()>=1) psoc_value=QString::number(round(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
+    if (psoc_value_dec.length()>=1) psoc_value=QString::number(floor(QString::fromStdString(psoc_value_dec).toInt()/getPSOC_ADC())).toStdString();
     setPSOCStream(function, psoc_value);
     int size_psoc=(int)(getTrama_PSOC().size())+CRLF_SIZE;
     string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
@@ -1158,6 +1158,8 @@ bool MCAE::verifyStream(string data_received, string data_to_compare)
  */
 QVector<QString> MCAE::parserPSOCStream(string stream)
 {
+    /* $HV,OFF,000/254,004/255,000/255 */
+
     QVector<QString> line;
     string delimiter_1 = ",";
     string delimiter_2 = "/";
@@ -1173,9 +1175,9 @@ QVector<QString> MCAE::parserPSOCStream(string stream)
         vecIndex++;
     }
 
-    pos_line = line.at(2).toStdString().find(delimiter_2);
-    token = line.at(2).toStdString().substr(0,pos_line);
-    line.replace(2,QString::fromStdString(token));
+    pos_line = line.at(3).toStdString().find(delimiter_2);
+    token = line.at(3).toStdString().substr(0,pos_line);
+    line.replace(3,QString::fromStdString(token));
 
     return line;
 }
