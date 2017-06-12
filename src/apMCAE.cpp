@@ -765,7 +765,9 @@ void MCAE::setMCAStream(string pmt, string function, string channel)
  */
 void MCAE::setMCAStream(string pmt, string function, double time)
 {
-    string time_str=QString::number(time).toStdString();
+    QString hexa;
+    hexa.setNum((int)time,16);
+    string time_str=formatMCAEStreamSize(TIME_BUFFER_SIZE,hexa.toStdString());
     string stream_wo_cs=pmt+function+time_str;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }

@@ -1661,7 +1661,9 @@ void MainWindow::setCalibrationTables(int head)
             {
                 cout<<"========================================="<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
-                cout<<"Valor de tiempo: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"Valor de tiempo Intracabezal: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"Valor de tiempo Intercabezal: "<< QString::number(coefTInter_values[head-1]).toStdString() <<endl;
+
                 cout<<"========================================="<<endl;
             }
 
@@ -3097,6 +3099,7 @@ void MainWindow::getPaths()
         ui->textBrowser_posicion_X->setText("");
         ui->textBrowser_posicion_Y->setText("");
         ui->textBrowser_tiempos_cabezal->setText("");
+        ui->textBrowser_tiempos_Inter_cabezal->setText("");
         ui->lineEdit_alta->setText("");
         ui->lineEdit_limiteinferior->setText("");
     }
