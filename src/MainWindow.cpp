@@ -353,12 +353,12 @@ void MainWindow::clearSpecHeadsGraphs()
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
     if(mode)
-    {        
+    {
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
     }
     else
     {
-        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);        
+        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
     }
 }
 
@@ -854,8 +854,8 @@ void MainWindow::getHeadStatus(int head_index)
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
-        ans_psoc = arpet->parserPSOCStream(msg);
-        hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
+        ans_psoc = arpet->parserPSOCStream(msg);        
+        hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(3).toDouble()*arpet->getPSOC_ADC())));
         if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
             setLabelState(true, hv_status_table[head_index-1]);
         else
@@ -2550,7 +2550,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
  */
 void MainWindow::on_pushButton_reset_clicked()
 {
-    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */    
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
     writeFooterAndHeaderDebug(true);
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
@@ -2643,13 +2643,13 @@ void MainWindow::on_pushButton_hv_configure_clicked()
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
         ui->label_data_output->setText("Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }    
+    }
     ui->label_title_output->setText("HV de Dinodo | PMT: " + pmt_selected_list.at(0));
     if (debug)
     {
         showMCAEStreamDebugMode(q_msg.toStdString());
         writeFooterAndHeaderDebug(false);
-    }    
+    }
 }
 /**
  * @brief MainWindow::on_pushButton_l_5_clicked
@@ -2673,7 +2673,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2713,7 +2713,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2753,7 +2753,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2793,7 +2793,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2833,7 +2833,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2856,7 +2856,7 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    writeFooterAndHeaderDebug(true);    
+    writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
     {
@@ -2873,7 +2873,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
