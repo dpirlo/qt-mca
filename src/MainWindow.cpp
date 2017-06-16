@@ -1043,6 +1043,7 @@ void MainWindow::on_pushButton_configure_clicked()
     }
 
     QString head;
+    QString ignore;
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
     try
@@ -1081,6 +1082,24 @@ void MainWindow::on_pushButton_configure_clicked()
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
+            usleep(5000);
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString()); }
+            break;
+        case COIN_VERIF:
+            head = ui->comboBox_head_select_calib->currentText();
+            if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
+            setCalibrationMode(head);
+            break;
+        case COIN_INTER_CABEZAL:
+            if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            usleep(5000);
+            coefT_values=getValuesFromFiles(coefT);
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
             break;
         default:
             break;
@@ -1119,8 +1138,10 @@ void MainWindow::on_pushButton_initialize_clicked()
     {
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
-        initSP3(head_index);
         initHead(head_index);
+
+        initSP3(head_index);
+
         parseConfigurationFile(true, QString::number(head_index));
 
         /* Configuración de la Alta Tensión*/
@@ -1128,21 +1149,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
         QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
-        if(debug) cout<<"Cabezal: "<<head_index<<endl;
-        try
-        {
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-            msg = readString();
-            hv_status_table[head_index-1]->setText(psoc_alta);
-            if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
-        }
-        catch(Exceptions & ex)
-        {
-            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-        }
-        /* Configuración de las tablas de calibración */
-        setCalibrationTables(head_index);
+
         /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -1151,13 +1158,37 @@ void MainWindow::on_pushButton_initialize_clicked()
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
             msg = readString();
             setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+            cout<< "------------------------"<<endl;
+            cout<< "DEBUG"<<endl;
+
+            cout<<  arpet->getTrama_MCAE()<<endl;
+            cout<< "------------------------"<<endl;
+
             if(debug) cout<< "Alta tensión encendida"<<endl;
+            //usleep(5000);
         }
         catch(Exceptions & ex)
         {
-            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+            if (debug) cout<<"No se puede prender Alta Tension Error: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
             setLabelState(false, hv_status_table[head_index-1], true);
         }
+
+        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+        if(debug) cout<<"Cabezal: "<<head_index<<endl;
+        try
+        {
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString(CHAR_LF);
+            hv_status_table[head_index-1]->setText(psoc_alta);
+            if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
+        }
+        catch(Exceptions & ex)
+        {
+            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<< arpet->getPSOC_SET()<< psoc_alta.toStdString()<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+        /* Configuración de las tablas de calibración */
+        setCalibrationTables(head_index);
+
     }
 
     writeFooterAndHeaderDebug(false);
@@ -1555,7 +1586,7 @@ void MainWindow::setCalibrationTables(int head)
     coefest_values=getValuesFromFiles(coefest);
 
 
-    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true;
+    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true, set_time_INTER = true;
     QString q_msg;
 
     mMutex.lock();
@@ -1679,9 +1710,11 @@ void MainWindow::setCalibrationTables(int head)
 
     lowlimit = resetHeads();
 
+    setTextBrowserState(set_time_INTER, ui->textBrowser_tiempos_Inter_cabezal);
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
-    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && lowlimit, calib_status_table[head-1]);
+    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && set_time_INTER && lowlimit, calib_status_table[head-1]);
+
 }
 
 /* Pestaña: "MCA" */

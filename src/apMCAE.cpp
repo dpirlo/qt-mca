@@ -76,7 +76,7 @@ MCAE::MCAE(size_t timeout)
       PSOC_ADC(5.8823),
       PSOC_SIZE_SENDED("14"),
       PSOC_SIZE_RECEIVED("0031"),
-      PSOC_SIZE_RECEIVED_ALL("0003"),
+      PSOC_SIZE_RECEIVED_ALL("0004"),
 
       /*Funciones trama MCA*/
       AnsMultiInit("@0064310>"),
@@ -1026,6 +1026,7 @@ void MCAE::setPSOCEStream(string function, string size_received, string psoc_val
     string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_psoc));
     string stream=getHeader_MCAE()+size_sended+size_received+getTrama_PSOC();
     setTrama_MCAE(stream);
+
 }
 /**
  * @brief MCAE::getHVValueCode

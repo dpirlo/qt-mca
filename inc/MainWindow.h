@@ -52,6 +52,11 @@
 #define COIN_AUTOCOINCIDENCE 1
 #define COIN_AVANCED 2
 #define COIN_CALIB 3
+#define COIN_VERIF 4
+#define COIN_INTER_CABEZAL 5
+#define TIEMPOS_NULOS_PMTS 0
+#define CHAR_LF 0x0A
+
 #define WAIT_MICROSECONDS 1000000
 
 using namespace ap;
@@ -234,6 +239,7 @@ private slots:
     void on_pushButton_select_pmt_2_clicked();
 
     void on_pushButton_tiempos_cabezal_2_clicked();
+
 
 private:
     void connectSlots();
