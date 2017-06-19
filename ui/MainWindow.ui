@@ -1568,8 +1568,8 @@ Tensión: </string>
       <widget class="QLabel" name="label_40">
        <property name="geometry">
         <rect>
-         <x>8</x>
-         <y>2</y>
+         <x>10</x>
+         <y>0</y>
          <width>251</width>
          <height>31</height>
         </rect>
@@ -1588,9 +1588,9 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_configure">
        <property name="geometry">
         <rect>
-         <x>86</x>
-         <y>178</y>
-         <width>95</width>
+         <x>10</x>
+         <y>180</y>
+         <width>201</width>
          <height>31</height>
         </rect>
        </property>
@@ -1604,8 +1604,8 @@ Tensión: </string>
       <widget class="QComboBox" name="comboBox_adquire_mode_coin">
        <property name="geometry">
         <rect>
-         <x>32</x>
-         <y>34</y>
+         <x>10</x>
+         <y>30</y>
          <width>141</width>
          <height>29</height>
         </rect>
@@ -1630,12 +1630,22 @@ Tensión: </string>
          <string>Calibración</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Verificación</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tiempos Inter Cabezal</string>
+        </property>
+       </item>
       </widget>
       <widget class="QFrame" name="frame_window_coin">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>69</y>
+         <x>10</x>
+         <y>70</y>
          <width>201</width>
          <height>101</height>
         </rect>
@@ -1768,7 +1778,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>284</height>
+          <height>266</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -2129,10 +2139,10 @@ Tensión: </string>
       <widget class="QLabel" name="label_coincidencia_estado">
        <property name="geometry">
         <rect>
-         <x>185</x>
-         <y>36</y>
+         <x>160</x>
+         <y>30</y>
          <width>46</width>
-         <height>24</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="autoFillBackground">
@@ -2217,10 +2227,10 @@ calibrar</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
+      <zorder>comboBox_adquire_mode_coin</zorder>
       <zorder>frame_adquire_advance_mode</zorder>
       <zorder>label_40</zorder>
       <zorder>pushButton_configure</zorder>
-      <zorder>comboBox_adquire_mode_coin</zorder>
       <zorder>frame_window_coin</zorder>
       <zorder>label_coincidencia_estado</zorder>
       <zorder>comboBox_head_select_calib</zorder>

@@ -99,9 +99,9 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>21</x>
-      <y>48</y>
-      <width>451</width>
+      <x>20</x>
+      <y>50</y>
+      <width>441</width>
       <height>201</height>
      </rect>
     </property>

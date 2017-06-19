@@ -77,6 +77,8 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
 
+    pmt_select_autocalib = new SetPMTs(this);
+
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
 
@@ -351,12 +353,12 @@ void MainWindow::clearSpecHeadsGraphs()
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
     if(mode)
-    {        
+    {
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
     }
     else
     {
-        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);        
+        addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
     }
 }
 
@@ -852,8 +854,8 @@ void MainWindow::getHeadStatus(int head_index)
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
-        ans_psoc = arpet->parserPSOCStream(msg);
-        hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(2).toDouble()*arpet->getPSOC_ADC())));
+        ans_psoc = arpet->parserPSOCStream(msg);        
+        hv_status_table[head_index-1]->setText(QString::number(round(ans_psoc.at(3).toDouble()*arpet->getPSOC_ADC())));
         if (arpet->verifyMCAEStream(ans_psoc.at(1).toStdString(),"ON"))
             setLabelState(true, hv_status_table[head_index-1]);
         else
@@ -1041,6 +1043,7 @@ void MainWindow::on_pushButton_configure_clicked()
     }
 
     QString head;
+    QString ignore;
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
     try
@@ -1079,6 +1082,24 @@ void MainWindow::on_pushButton_configure_clicked()
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
+            usleep(5000);
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString()); }
+            break;
+        case COIN_VERIF:
+            head = ui->comboBox_head_select_calib->currentText();
+            if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
+            setCalibrationMode(head);
+            break;
+        case COIN_INTER_CABEZAL:
+            if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            usleep(5000);
+            coefT_values=getValuesFromFiles(coefT);
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
             break;
         default:
             break;
@@ -1117,8 +1138,10 @@ void MainWindow::on_pushButton_initialize_clicked()
     {
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
-        initSP3(head_index);
         initHead(head_index);
+
+        initSP3(head_index);
+
         parseConfigurationFile(true, QString::number(head_index));
 
         /* Configuración de la Alta Tensión*/
@@ -1126,21 +1149,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
         QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
-        if(debug) cout<<"Cabezal: "<<head_index<<endl;
-        try
-        {
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-            msg = readString();
-            hv_status_table[head_index-1]->setText(psoc_alta);
-            if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
-        }
-        catch(Exceptions & ex)
-        {
-            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-        }
-        /* Configuración de las tablas de calibración */
-        setCalibrationTables(head_index);
+
         /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
@@ -1149,13 +1158,37 @@ void MainWindow::on_pushButton_initialize_clicked()
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
             msg = readString();
             setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+            cout<< "------------------------"<<endl;
+            cout<< "DEBUG"<<endl;
+
+            cout<<  arpet->getTrama_MCAE()<<endl;
+            cout<< "------------------------"<<endl;
+
             if(debug) cout<< "Alta tensión encendida"<<endl;
+            //usleep(5000);
         }
         catch(Exceptions & ex)
         {
-            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Error: "<<ex.excdesc<<endl;
+            if (debug) cout<<"No se puede prender Alta Tension Error: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
             setLabelState(false, hv_status_table[head_index-1], true);
         }
+
+        setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+        if(debug) cout<<"Cabezal: "<<head_index<<endl;
+        try
+        {
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString(CHAR_LF);
+            hv_status_table[head_index-1]->setText(psoc_alta);
+            if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
+        }
+        catch(Exceptions & ex)
+        {
+            if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<< arpet->getPSOC_SET()<< psoc_alta.toStdString()<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+        /* Configuración de las tablas de calibración */
+        setCalibrationTables(head_index);
+
     }
 
     writeFooterAndHeaderDebug(false);
@@ -1553,7 +1586,7 @@ void MainWindow::setCalibrationTables(int head)
     coefest_values=getValuesFromFiles(coefest);
 
 
-    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true;
+    bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true, set_time_INTER = true;
     QString q_msg;
 
     mMutex.lock();
@@ -1659,7 +1692,9 @@ void MainWindow::setCalibrationTables(int head)
             {
                 cout<<"========================================="<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
-                cout<<"Valor de tiempo: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"Valor de tiempo Intracabezal: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"Valor de tiempo Intercabezal: "<< QString::number(coefTInter_values[head-1]).toStdString() <<endl;
+
                 cout<<"========================================="<<endl;
             }
 
@@ -1675,9 +1710,11 @@ void MainWindow::setCalibrationTables(int head)
 
     lowlimit = resetHeads();
 
+    setTextBrowserState(set_time_INTER, ui->textBrowser_tiempos_Inter_cabezal);
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
-    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && lowlimit, calib_status_table[head-1]);
+    setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && set_time_INTER && lowlimit, calib_status_table[head-1]);
+
 }
 
 /* Pestaña: "MCA" */
@@ -2548,7 +2585,7 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
  */
 void MainWindow::on_pushButton_reset_clicked()
 {
-    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */    
+    /** @todo Verificar el reinicio de datos en los vectores de cuentas de MCA. Reiniciar con la función '67' */
     writeFooterAndHeaderDebug(true);
     if(debug) cout<<"Cabezal: "<<getHead("mca").toStdString()<<endl;
 
@@ -2641,13 +2678,13 @@ void MainWindow::on_pushButton_hv_configure_clicked()
         if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
         ui->label_data_output->setText("Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-    }    
+    }
     ui->label_title_output->setText("HV de Dinodo | PMT: " + pmt_selected_list.at(0));
     if (debug)
     {
         showMCAEStreamDebugMode(q_msg.toStdString());
         writeFooterAndHeaderDebug(false);
-    }    
+    }
 }
 /**
  * @brief MainWindow::on_pushButton_l_5_clicked
@@ -2671,7 +2708,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2711,7 +2748,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2751,7 +2788,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2791,7 +2828,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2831,7 +2868,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -2854,7 +2891,7 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
-    writeFooterAndHeaderDebug(true);    
+    writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
     {
@@ -2871,7 +2908,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     try
     {
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
-        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));        
+        ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
@@ -3095,6 +3132,7 @@ void MainWindow::getPaths()
         ui->textBrowser_posicion_X->setText("");
         ui->textBrowser_posicion_Y->setText("");
         ui->textBrowser_tiempos_cabezal->setText("");
+        ui->textBrowser_tiempos_Inter_cabezal->setText("");
         ui->lineEdit_alta->setText("");
         ui->lineEdit_limiteinferior->setText("");
     }
@@ -4198,6 +4236,7 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 /* Autocalib */
 void MainWindow::on_pushButton_toggled(bool checked)
 {
+    QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
     if (checked)
     {
         QList<int> checked_PMTs, checked_Cab;
@@ -4214,15 +4253,16 @@ void MainWindow::on_pushButton_toggled(bool checked)
         }
         else
         {
+            cout<<"Pass 1"<<endl;
             // Recupero los PMT checkeados
-            for(int i = 0;  i< PMTs ; i++ )
+            for(int i = 0;  i< qlist.length() ; i++ )
             {
-                if (pmt_button_table[i]->isChecked())
-                {
-                    checked_PMTs.append(i+1);
-                }
+                cout<<"Pass 2"<<endl;
+                cout<<qlist[i].toStdString()<<endl;
+                checked_PMTs.append(qlist[i].toInt());
+
             }
-            if(checked_PMTs.length() == 0)
+            if(qlist.length() == 0)
             {
                 messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
                 messageBox.setFixedSize(500,200);
@@ -4235,6 +4275,7 @@ void MainWindow::on_pushButton_toggled(bool checked)
             calibrador->setPMT_List(checked_PMTs);
         }
 
+        cout<<"Pass 4"<<endl;
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
@@ -5316,14 +5357,19 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     writeFooterAndHeaderDebug(true);
     resetHitsValues();
     removeAllGraphsPMT();
+    int i;
 
-    int ret = pmt_select->exec();
-    QList<QString> qlist = pmt_select->GetPMTSelectedList();
+    int ret = pmt_select_autocalib->exec();
+    QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
+
+
 
     if(ret == QDialog::Accepted)
     {
-        setPMTSelectedList(qlist);
+        //setPMTSelectedList(qlist);
+        setPMTSelectedListAutocalib(qlist);
     }
+
 
     if(debug)
     {
@@ -5336,8 +5382,10 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     setPMTCustomPlotEnvironment(qlist);
 
     qSort(qlist);
-    ui->listWidget->clear();
-    ui->listWidget->addItems(qlist);
+    ui->listWidget_2->clear();
+    ui->listWidget_2->addItems(qlist);
+
+
     writeFooterAndHeaderDebug(false);
 }
 

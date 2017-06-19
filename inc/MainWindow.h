@@ -52,6 +52,11 @@
 #define COIN_AUTOCOINCIDENCE 1
 #define COIN_AVANCED 2
 #define COIN_CALIB 3
+#define COIN_VERIF 4
+#define COIN_INTER_CABEZAL 5
+#define TIEMPOS_NULOS_PMTS 0
+#define CHAR_LF 0x0A
+
 #define WAIT_MICROSECONDS 1000000
 
 using namespace ap;
@@ -235,6 +240,7 @@ private slots:
 
     void on_pushButton_tiempos_cabezal_2_clicked();
 
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -326,6 +332,7 @@ private:
     Ui::MainWindow *ui;
     SetPreferences *pref;
     SetPMTs *pmt_select;
+    SetPMTs *pmt_select_autocalib;
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
@@ -347,7 +354,8 @@ private:
     QList<QLabel*> hv_status_table;
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
-    QList<QPushButton*> pmt_button_table;
+    QList<QString> pmt_selected_list_autocalib;
+  //  QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug, init, log, stdout_mode;
     QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest;
@@ -408,6 +416,7 @@ public:
      * @param list
      */
     void setPMTSelectedList(QList<QString> list) { pmt_selected_list = list; }
+    void setPMTSelectedListAutocalib(QList<QString> list) { pmt_selected_list = list; }
     /**
      * @brief setIsAbortMCAEFlag
      *
