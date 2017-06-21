@@ -441,7 +441,7 @@ void MainWindow::getMCAErrorThread()
  */
 void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
 {
-    if(index==3)
+    if(index==3|| index==4)
     {
         ui->comboBox_head_select_calib->show();
         ui->label_calib->show();
