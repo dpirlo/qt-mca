@@ -4237,8 +4237,11 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 void MainWindow::on_pushButton_toggled(bool checked)
 {
     QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
+
     if (checked)
     {
+        //setLabelState(true, ui->pushButton);
+
         QList<int> checked_PMTs, checked_Cab;
         QMessageBox messageBox;
 
@@ -4249,18 +4252,18 @@ void MainWindow::on_pushButton_toggled(bool checked)
             for(int i = 0;  i< PMTs ; i++ )
             {
                 checked_PMTs.append(i+1);
+                cout<<checked_PMTs[i]<<endl;
             }
+            calibrador->setPMT_List(checked_PMTs);
         }
         else
         {
-            cout<<"Pass 1"<<endl;
             // Recupero los PMT checkeados
             for(int i = 0;  i< qlist.length() ; i++ )
             {
                 cout<<"Pass 2"<<endl;
-                cout<<qlist[i].toStdString()<<endl;
                 checked_PMTs.append(qlist[i].toInt());
-
+                cout<<checked_PMTs[i]<<endl;
             }
             if(qlist.length() == 0)
             {
@@ -4275,7 +4278,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
             calibrador->setPMT_List(checked_PMTs);
         }
 
-        cout<<"Pass 4"<<endl;
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
@@ -4318,16 +4320,17 @@ void MainWindow::on_pushButton_toggled(bool checked)
 //                checked_Cab.append(i+1);
 //            }
 //        }
-        if(checked_Cab.length() == 0)
-        {
-            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
-            messageBox.setFixedSize(500,200);
-            setButtonCalibState(false);
-            setIsAbortCalibFlag(false);
-            setButtonCalibState(true,true);
-            emit ToPushButtonCalib(false);
-            return;
-        }
+//        if(checked_Cab == null)
+//        {
+//            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+//            messageBox.setFixedSize(500,200);
+//            setButtonCalibState(false);
+//            setIsAbortCalibFlag(false);
+//            setButtonCalibState(true,true);
+//            emit ToPushButtonCalib(false);
+//            return;
+//        }
+        checked_Cab[0]=ui->comboBox_head_select_graph_2->currentIndex()+1;
         calibrador->setCab_List(checked_Cab);
 
         arpet->portDisconnect();
@@ -4339,6 +4342,8 @@ void MainWindow::on_pushButton_toggled(bool checked)
     }
     else
     {
+        //setLabelState(false, ui->pushButton);
+
         setButtonCalibState(true,true);
         if (is_abort_calib)
         {
@@ -5394,3 +5399,4 @@ void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
     QString fileName = openConfigurationFile();
     ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
 }
+

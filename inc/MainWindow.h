@@ -192,7 +192,6 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
     void on_pushButton_logguer_toggled(bool checked);
-    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
 //    void on_pushButton_clicked();
@@ -228,6 +227,7 @@ private slots:
     void on_checkBox_MLEM_clicked(bool checked);
     void on_checkBox_Backprojection_clicked(bool checked);
     void on_pushButton_6_clicked();
+    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* CUIPET */
     void on_pushButton_cuipet_aqd_file_open_clicked();
@@ -239,6 +239,7 @@ private slots:
     void on_pushButton_select_pmt_2_clicked();
 
     void on_pushButton_tiempos_cabezal_2_clicked();
+
 
 
 private:

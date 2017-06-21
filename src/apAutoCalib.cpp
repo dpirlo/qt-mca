@@ -119,6 +119,8 @@ int AutoCalib::calibrar_simple()
             Picos_PMT[j] = 0;
         }
 
+        int PMTsEnPico = 0;
+
         // LLeno los buffers de memoria de la clase
         for (int i=0 ; i<PMTs_List.length() ; i++)
         {
@@ -126,6 +128,9 @@ int AutoCalib::calibrar_simple()
             struct Pico_espectro aux;
             aux = Buscar_Pico(Hist_Double[PMTs_List[i]-1], CHANNELS);
             Picos_PMT[PMTs_List[i]-1] = aux.canal_pico;
+
+            if(std::abs(aux.canal_pico - Canal_Obj) < 10)
+                PMTsEnPico++;
 
             // Suma en FWHM
             double cuentas_FWHM = 0,cuentas_FWTM = 0;
@@ -138,206 +143,217 @@ int AutoCalib::calibrar_simple()
               cuentas_FWTM = cuentas_FWTM + Hist_Double[PMTs_List[i]-1][j];
             }
 
-            cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1]<<", Dinodo antual: "<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
-            cout<<"FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1]<<endl;
-            cout<<"Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
+            cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1]<<", Dinodo antual: "<<Dinodos_PMT[PMTs_List[i]-1];
+            cout<<"; FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1];
+            cout<<"; Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
         }
 
-        // Comparo la posición actual con la objetivo
-        // usando armadillo
-        mat Canal_Obj_vec_arma(Canal_Obj_vec, PMTs, 1);
-        mat Canal_Obj_dif_arma(Canal_Obj_vec, PMTs, 1);
-        mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
+        cout<<"PMTs calibrados: "<<PMTsEnPico<<endl;
 
-        // Diferencia
-        Canal_Obj_dif_arma = (Canal_Obj_vec_arma - Picos_PMT_arma);
-        // Diferencia cuadratica
-        mat Canal_Obj_dif_arma_cuad = Canal_Obj_dif_arma % Canal_Obj_dif_arma;
-
-//        // Ignoro los PMT no seleccionados
-//        bool adentro = false;
-//        for (int j = 0 ;j < PMTs ; j++)
-//        {
-//            adentro = false;
-//            for(int i = 0 ; i < PMTs_List.length() ; i++)
-//            {
-//                if ((PMTs_List[i]-1) == j)
-//                {
-//                    adentro = true;
-//                }
-//            }
-//            if (!adentro)
-//            {
-//                Canal_Obj_dif_arma_cuad[j] = 0;
-//                Canal_Obj_dif_arma[j] = 0;
-//                Picos_PMT[j] = -1;
-//            }
-//        }
-
-        // Ignoro los PMT no seleccionados
-        bool adentro = false;
-        for (int j = 0 ;j < PMTs ; j++)
+        if(PMTsEnPico < PMTs_List.length())
         {
-            adentro = false;
-            for(int i = 0 ; i < PMTs_List.length() ; i++)
+            // Comparo la posición actual con la objetivo
+            // usando armadillo
+            mat Canal_Obj_vec_arma(Canal_Obj_vec, PMTs, 1);
+            mat Canal_Obj_dif_arma(Canal_Obj_vec, PMTs, 1);
+            mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
+
+            // Diferencia
+            Canal_Obj_dif_arma = (Canal_Obj_vec_arma - Picos_PMT_arma);
+            // Diferencia cuadratica
+            mat Canal_Obj_dif_arma_cuad = Canal_Obj_dif_arma % Canal_Obj_dif_arma;
+
+    //        // Ignoro los PMT no seleccionados
+    //        bool adentro = false;
+    //        for (int j = 0 ;j < PMTs ; j++)
+    //        {
+    //            adentro = false;
+    //            for(int i = 0 ; i < PMTs_List.length() ; i++)
+    //            {
+    //                if ((PMTs_List[i]-1) == j)
+    //                {
+    //                    adentro = true;
+    //                }
+    //            }
+    //            if (!adentro)
+    //            {
+    //                Canal_Obj_dif_arma_cuad[j] = 0;
+    //                Canal_Obj_dif_arma[j] = 0;
+    //                Picos_PMT[j] = -1;
+    //            }
+    //        }
+
+            // Ignoro los PMT no seleccionados
+            bool adentro = false;
+            for (int j = 0 ;j < PMTs ; j++)
             {
-                if ((PMTs_List[i]-1) == j)
+                adentro = false;
+                for(int i = 0 ; i < PMTs_List.length() ; i++)
                 {
-                    adentro = true;
-                }
-            }
-            if (!adentro)
-            {
-                Canal_Obj_dif_arma_cuad[j] = 0;
-                Canal_Obj_dif_arma[j] = 0;
-                Picos_PMT[j] = -1;
-            }
-        }
-
-        // Calculo el step linealizando
-
-        // Parametros de linealización de paso
-        double A_param[PMTs];
-        double B_param[PMTs];
-
-        if (iter_actual > 0 )
-        {
-            for (int j = 0 ; j < PMTs_List.length() ; j++)
-            {
-                // Si falle al encontrar el pico, no me muevo
-                if (Picos_PMT[PMTs_List[j]-1] == -1)
-                {
-                    paso_dinodo[PMTs_List[j]-1] = 0;
-                    cout<<"Flasheó -1 en PMT :"<<PMTs_List[j]<<endl;
-                }
-                else
-                {
-                    //Calculo la recta entre picos
-                    A_param[PMTs_List[j]-1] = (Picos_PMT_ant[PMTs_List[j]-1] - Picos_PMT[PMTs_List[j]-1])/(Dinodos_PMT_ant[PMTs_List[j]-1]-Dinodos_PMT[PMTs_List[j]-1]); // Pendiente
-                    B_param[PMTs_List[j]-1] = Picos_PMT[PMTs_List[j]-1] - A_param[PMTs_List[j]-1] * Dinodos_PMT[PMTs_List[j]-1]; // Ordenada
-
-                    // Checkeo que debido a ruido en la posicion del pico no este haciendo fruta
-                    if (A_param[PMTs_List[j]-1] > 0 && A_param[PMTs_List[j]-1] < 100000)
+                    if ((PMTs_List[i]-1) == j)
                     {
-                        // Calculo la posicion final del dinodo para llegar al objetivo
-                        paso_dinodo[PMTs_List[j]-1] = ( (Canal_Obj_vec_arma[PMTs_List[j]-1] - B_param[PMTs_List[j]-1])/ A_param[PMTs_List[j]-1] ) - Dinodos_PMT[PMTs_List[j]-1];
+                        adentro = true;
+                    }
+                }
+                if (!adentro)
+                {
+                    Canal_Obj_dif_arma_cuad[j] = 0;
+                    Canal_Obj_dif_arma[j] = 0;
+                    Picos_PMT[j] = -1;
+                }
+            }
 
-                        // Peso el valor del dinodo con el coeficiente de PMT centroide a total de energia
-                        paso_dinodo[PMTs_List[j]-1] = paso_dinodo[PMTs_List[j]-1] * 0.65;
+            // Calculo el step linealizando
 
-                        // Checkeo que debido a una pendiente muy baja no me mande al diablo y saturo
-                        if (paso_dinodo[PMTs_List[j]-1]*paso_dinodo[PMTs_List[j]-1] > MAX_MOV_DIN*MAX_MOV_DIN)
+            // Parametros de linealización de paso
+            double A_param[PMTs];
+            double B_param[PMTs];
+
+            if (iter_actual > 0 )
+            {
+                for (int j = 0 ; j < PMTs_List.length() ; j++)
+                {
+                    // Si falle al encontrar el pico, no me muevo
+                    if (Picos_PMT[PMTs_List[j]-1] == -1)
+                    {
+                        paso_dinodo[PMTs_List[j]-1] = 0;
+                        cout<<"Flasheó -1 en PMT :"<<PMTs_List[j]<<endl;
+                    }
+                    else
+                    {
+                        //Calculo la recta entre picos
+                        A_param[PMTs_List[j]-1] = (Picos_PMT_ant[PMTs_List[j]-1] - Picos_PMT[PMTs_List[j]-1])/(Dinodos_PMT_ant[PMTs_List[j]-1]-Dinodos_PMT[PMTs_List[j]-1]); // Pendiente
+                        B_param[PMTs_List[j]-1] = Picos_PMT[PMTs_List[j]-1] - A_param[PMTs_List[j]-1] * Dinodos_PMT[PMTs_List[j]-1]; // Ordenada
+
+                        // Checkeo que debido a ruido en la posicion del pico no este haciendo fruta
+                        if (A_param[PMTs_List[j]-1] > 0 && A_param[PMTs_List[j]-1] < 100000)
                         {
-                            if (paso_dinodo[PMTs_List[j]-1] < 0)
+                            // Calculo la posicion final del dinodo para llegar al objetivo
+                            paso_dinodo[PMTs_List[j]-1] = ( (Canal_Obj_vec_arma[PMTs_List[j]-1] - B_param[PMTs_List[j]-1])/ A_param[PMTs_List[j]-1] ) - Dinodos_PMT[PMTs_List[j]-1];
+
+                            // Peso el valor del dinodo con el coeficiente de PMT centroide a total de energia
+                            paso_dinodo[PMTs_List[j]-1] = paso_dinodo[PMTs_List[j]-1] * 0.65;
+
+                            // Checkeo que debido a una pendiente muy baja no me mande al diablo y saturo
+                            if (std::abs(paso_dinodo[PMTs_List[j]-1]) > std::abs(MAX_MOV_DIN))
                             {
-                                paso_dinodo[PMTs_List[j]-1] = -MAX_MOV_DIN;
+                                if (paso_dinodo[PMTs_List[j]-1] < 0)
+                                {
+                                    paso_dinodo[PMTs_List[j]-1] = -MAX_MOV_DIN;
+                                }
+                                else
+                                {
+                                    paso_dinodo[PMTs_List[j]-1] = MAX_MOV_DIN;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (Canal_Obj_dif_arma[PMTs_List[j]-1] > 0)
+                            {
+                                paso_dinodo[PMTs_List[j]-1] = BASE_MOV_DIN;
+                            }
+                            else if (Canal_Obj_dif_arma[PMTs_List[j]-1] < 0)
+                            {
+                                paso_dinodo[PMTs_List[j]-1] = -BASE_MOV_DIN;
                             }
                             else
                             {
-                                paso_dinodo[PMTs_List[j]-1] = MAX_MOV_DIN;
+                                paso_dinodo[PMTs_List[j]-1] = 0;
                             }
                         }
                     }
-                    else
-                    {
-                        if (Canal_Obj_dif_arma[PMTs_List[j]-1] > 0)
-                        {
-                            paso_dinodo[PMTs_List[j]-1] = BASE_MOV_DIN;
-                        }
-                        else if (Canal_Obj_dif_arma[PMTs_List[j]-1] < 0)
-                        {
-                            paso_dinodo[PMTs_List[j]-1] = -BASE_MOV_DIN;
-                        }
-                        else
-                        {
-                            paso_dinodo[PMTs_List[j]-1] = 0;
-                        }
-                    }
+                    cout<<"Paso "<<PMTs_List[j]<<":"<<paso_dinodo[PMTs_List[j]-1]<<endl;
                 }
-                cout<<"Paso :"<<paso_dinodo[PMTs_List[j]-1]<<endl;
             }
-        }
 
-        // Puntero al color del paso actual
-        const double *color_tablero;
+            // Puntero al color del paso actual
+            const double *color_tablero;
 
-        // --- Modo tablero de ajedrez
+            // --- Modo tablero de ajedrez
 
-        // Busco el de mayor diferencia
-        int ind_max_dif = -1;
-        double aux_maximo= 0;
-        for (int i=0 ; i < Canal_Obj_dif_arma_cuad.size() ; i++)
-        {
-            if (Canal_Obj_dif_arma_cuad[i] > aux_maximo)
+            // Busco el de mayor diferencia
+            int ind_max_dif = -1;
+            double aux_maximo= 0;
+            for (int i=0 ; i < Canal_Obj_dif_arma_cuad.size() ; i++)
             {
-                ind_max_dif = i;
-                aux_maximo = Canal_Obj_dif_arma_cuad[i];
-            }
-        }
-        cout<<ind_max_dif<<endl;
-
-        // Busco el color
-        for (int i = 0 ; i < PMTs/2 ; i++)
-        {
-          if (weisse[i] == ind_max_dif+1)
-          {
-            cout<<"blancas.."<<endl;
-            color_tablero = weisse;
-          }
-        }
-        for (int i = 0 ; i < PMTs/2 ; i++)
-        {
-          if (schwarze[i] == ind_max_dif+1)
-          {
-            cout<<"negras.."<<endl;
-            color_tablero = schwarze;
-          }
-        }
-
-        // Recorro y modifico todos los PMT del color
-        for (int i = 0 ; i < PMTs/2 ; i++)
-        {
-            int PMT_mover = color_tablero[i]-1;
-
-                if (PMTs_List.contains(PMT_mover+1))
+                if (Canal_Obj_dif_arma_cuad[i] > aux_maximo)
                 {
-                    if (iter_actual == 0)
+                    ind_max_dif = i;
+                    aux_maximo = Canal_Obj_dif_arma_cuad[i];
+                }
+            }
+
+            // Busco el color
+            for (int i = 0 ; i < PMTs/2 ; i++)
+            {
+              if (weisse[i] == ind_max_dif+1)
+              {
+                cout<<"blancas.."<<endl;
+                color_tablero = weisse;
+              }
+            }
+            for (int i = 0 ; i < PMTs/2 ; i++)
+            {
+              if (schwarze[i] == ind_max_dif+1)
+              {
+                cout<<"negras.."<<endl;
+                color_tablero = schwarze;
+              }
+            }
+
+            // Recorro y modifico todos los PMT del color
+            int Nuevo_Dinodo;
+            for (int i = 0 ; i < PMTs/2 ; i++)
+            {
+                int PMT_mover = color_tablero[i]-1;
+
+                    if (PMTs_List.contains(PMT_mover+1))
                     {
-                        if (Canal_Obj_dif_arma(PMT_mover) > 0)
+                        if (iter_actual == 0)
                         {
-                            cout<< "Subiendo PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
-                            setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]).toStdString(),port_name.toStdString().c_str());
+                            if (Canal_Obj_dif_arma(PMT_mover) > 0)
+                            {
+                                Nuevo_Dinodo = Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover];
+                                if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
+                                cout<< "Subiendo PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
+                                setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
+                            }
+                            else
+                            {
+                                Nuevo_Dinodo = Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover];
+                                if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN;
+                                cout<< "Bajando PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
+                                setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
+                            }
                         }
                         else
                         {
-                            cout<< "Bajando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover])<<endl;
-                            setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover]).toStdString(),port_name.toStdString().c_str());
+                            Nuevo_Dinodo = Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover];
+                            if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
+                            cout<< "Modificando PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
+                            setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
                         }
                     }
-                    else
-                    {
-                        cout<< "Modificando PMT "<<PMT_mover+1<<" a "<< (Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover])<<endl;
-                        setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover]).toStdString(),port_name.toStdString().c_str());
-                    }
+
                 }
 
+            // Reset de todas las memorias del cabezal
+            // Limpio memorias en SP6
+            // ***** cambiar el "150" por lo que va
+            setHV(QString::number(Cab_actual).toStdString(),QString::number(getHVMCA()).toStdString(),port_name.toStdString());
+
+            // paso_dinodo = paso_dinodo - (paso_dinodo/10);
+
+            for (int i = 0 ; i < PMTs_List.length(); i++)
+            {
+                Picos_PMT_ant[PMTs_List[i]-1] =  Picos_PMT[PMTs_List[i]-1];
+                Dinodos_PMT_ant[PMTs_List[i]-1] = Dinodos_PMT[PMTs_List[i]-1];
             }
 
-        // Reset de todas las memorias del cabezal
-        // Limpio memorias en SP6
-        // ***** cambiar el "150" por lo que va
-        setHV(QString::number(Cab_actual).toStdString(),QString::number(getHVMCA()).toStdString(),port_name.toStdString());
-
-        // paso_dinodo = paso_dinodo - (paso_dinodo/10);
-
-        for (int i = 0 ; i < PMTs_List.length(); i++)
-        {
-            Picos_PMT_ant[PMTs_List[i]-1] =  Picos_PMT[PMTs_List[i]-1];
-            Dinodos_PMT_ant[PMTs_List[i]-1] = Dinodos_PMT[PMTs_List[i]-1];
+            iter_actual++;
         }
-
-        iter_actual++;
-        }
+    }
 
     catch (Exceptions ex)
     {
@@ -2741,7 +2757,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     for(int i=0,sseprev=0.0;i<len;i++)
     {
         double sse = sumacuadrados(x,y,ndatos,p,&AutoCalib::f_gauss);
-        printf("(%d)\tsse: %f\n",i+1,sse);
+        //printf("(%d)\tsse: %f\n",i+1,sse);
         if(gaussnewton(x,y,ndatos,p,NP,paso,&AutoCalib::f_gauss,&AutoCalib::df_gauss,&estado)<0) break;
         if(sse>sseprev && i) break;
         sseprev=sse;

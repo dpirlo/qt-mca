@@ -44,10 +44,11 @@ void AutoCalibThread::requestCalib()
 void AutoCalibThread::getCalib()
 {
     // Calibro
-    //cout<<"Calibrador..."<<endl;
+    cout<<"Calibrador..."<<endl;
     calibrador->initCalib();
     while(!_abort)
     {
+     try{
         QEventLoop loop;
         QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
         loop.exec();
@@ -69,8 +70,16 @@ void AutoCalibThread::getCalib()
               calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
             }
             emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
+
         }
+
         calibrador->calibrar_simple();
+
+    }
+    catch (Exceptions ex)
+    {
+        cout<<"Se va el Thread por Exception: "<<ex.excdesc<<endl;
+    }
     }
     calibrador->portDisconnect();
     emit sendConnectPortArpet();
