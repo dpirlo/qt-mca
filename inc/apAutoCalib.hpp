@@ -31,7 +31,10 @@
 
 #include "qprocess.h"
 
-
+// Mínimo valor de Dinodo
+#define DINODO_MIN 1000
+// Máximo valor de Dinodo
+#define DINODO_MAX 3500
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 250
 // Valor base de movimiento de canal

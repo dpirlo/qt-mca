@@ -162,7 +162,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Estado del 
+        <string>Estado del
  equipo</string>
        </property>
       </widget>
@@ -1778,7 +1778,7 @@ Tensión: </string>
           <x>4</x>
           <y>4</y>
           <width>226</width>
-          <height>266</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -2220,7 +2220,7 @@ Tensión: </string>
         </font>
        </property>
        <property name="text">
-        <string>Cabezal a 
+        <string>Cabezal a
 calibrar</string>
        </property>
        <property name="alignment">
@@ -2288,7 +2288,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -3495,7 +3495,7 @@ calibrar</string>
         </rect>
        </property>
        <property name="text">
-        <string>Seleccionar 
+        <string>Seleccionar
  PMTs</string>
        </property>
       </widget>
@@ -3738,7 +3738,7 @@ calibrar</string>
         </font>
        </property>
        <property name="text">
-        <string>Tiempo entre 
+        <string>Tiempo entre
  logs (en seg.)</string>
        </property>
        <property name="alignment">
@@ -4053,8 +4053,8 @@ calibrar</string>
        </rect>
       </property>
       <property name="text">
-       <string>Escribir el archivo 
- de configuración 
+       <string>Escribir el archivo
+ de configuración
  del cuipet</string>
       </property>
      </widget>
@@ -4311,7 +4311,7 @@ calibrar</string>
         </rect>
        </property>
        <property name="text">
-        <string>Seleccionar 
+        <string>Seleccionar
  PMTs</string>
        </property>
       </widget>
@@ -7070,7 +7070,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
