@@ -1926,6 +1926,14 @@ void MainWindow::setAdvanceCoinMode(int index)
         ui->frame_adquire_advance_mode->hide();
         ui->frame_window_coin->hide();
         break;
+    case COIN_VERIF:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->hide();
+        break;
+    case COIN_INTER_CABEZAL:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->show();
+        break;
     default:
         break;
     }
