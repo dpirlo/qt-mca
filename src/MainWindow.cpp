@@ -5394,3 +5394,20 @@ void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
     QString fileName = openConfigurationFile();
     ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
 }
+
+void MainWindow::on_pushButton_arch_recon_2_clicked()
+{
+    QString fileName = openConfigurationFile();
+    ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
+}
+
+
+void MainWindow::on_pushButton_log_clicked()
+{
+    QString fileName = openConfigurationFile();
+    ui->textBrowser_log->setText(fileName);
+
+}
+
+
+

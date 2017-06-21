@@ -18,6 +18,7 @@
  */
 #ifndef APEXCEPTIONS_H
 #define APEXCEPTIONS_H
+
 #include <QException>
 #include <QDebug>
 

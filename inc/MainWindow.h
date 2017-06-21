@@ -241,6 +241,10 @@ private slots:
     void on_pushButton_tiempos_cabezal_2_clicked();
 
 
+    void on_pushButton_arch_recon_2_clicked();
+
+    void on_pushButton_log_clicked();
+
 private:
     void connectSlots();
     QString openConfigurationFile();
