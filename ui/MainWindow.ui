@@ -1775,15 +1775,15 @@ Tensión: </string>
        <widget class="QWidget" name="gridLayoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>4</x>
-          <y>4</y>
-          <width>226</width>
+          <x>70</x>
+          <y>10</y>
+          <width>161</width>
           <height>211</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
          <property name="sizeConstraint">
-          <enum>QLayout::SetFixedSize</enum>
+          <enum>QLayout::SetDefaultConstraint</enum>
          </property>
          <item row="1" column="1">
           <widget class="QComboBox" name="comboBox_coin_2">
@@ -1845,6 +1845,12 @@ Tensión: </string>
          </item>
          <item row="5" column="0">
           <widget class="QLabel" name="label_44">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C2C6   </string>
            </property>
@@ -1855,8 +1861,17 @@ Tensión: </string>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_47">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C1C4   </string>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1865,6 +1880,12 @@ Tensión: </string>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_42">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C3C5   </string>
            </property>
@@ -1875,6 +1896,12 @@ Tensión: </string>
          </item>
          <item row="7" column="0">
           <widget class="QLabel" name="label_41">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C3C6   </string>
            </property>
@@ -1885,6 +1912,12 @@ Tensión: </string>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_48">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C1C5   </string>
            </property>
@@ -1895,6 +1928,12 @@ Tensión: </string>
          </item>
          <item row="8" column="0">
           <widget class="QLabel" name="label_50">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C4C6   </string>
            </property>
@@ -1992,8 +2031,17 @@ Tensión: </string>
          </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_49">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C1C3   </string>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2060,6 +2108,12 @@ Tensión: </string>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_46">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C2C4   </string>
            </property>
@@ -2070,6 +2124,12 @@ Tensión: </string>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_45">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>C2C5   </string>
            </property>
