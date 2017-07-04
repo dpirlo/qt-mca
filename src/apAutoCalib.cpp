@@ -7,7 +7,6 @@ using namespace ap;
 
 AutoCalib::AutoCalib()
 {
-
     // Checkeo la RAM para geder...
 
     FILE *meminfo = fopen("/proc/meminfo", "r");
@@ -119,7 +118,7 @@ int AutoCalib::calibrar_simple()
             Picos_PMT[j] = 0;
         }
 
-        int PMTsEnPico = 0;
+        PMTsEnPico = 0;
 
         // LLeno los buffers de memoria de la clase
         for (int i=0 ; i<PMTs_List.length() ; i++)
@@ -2564,6 +2563,8 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     int ind_estado = 0;
     int outpoint = -1, low_extrema = -1;
 
+    bool fail_ini = false;
+
     // Seteo el limite
     // Copio los canales a una matriz
     vec Canales_mat(Canales,num_canales,1);
@@ -2632,14 +2633,26 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
                 Estados[3] =  0;
                 ind_estado = 2;
             }
+
+        }
+        if (Canales[i] == 0 && i < (num_canales/2) )
+        {
+            cout<<"Pico no encontrado, llegamos al limite, intentando con espectro entero..."<<endl;
+            low_extrema = i+window_size;
+            outpoint = low_extrema;
+            fail_ini = true;
+            break;
         }
 
     }
     if (outpoint == -1) {
 //        return Pico_calculado;
         low_extrema = window_size +1;
+        fail_ini = true;
+        cout<<"Pico no encontrado, intentando con espectro entero..."<<endl;
     };
     if (low_extrema < window_size) {
+        fail_ini = true;
 //        return Pico_calculado;
         low_extrema = window_size +1;
     };
@@ -2649,9 +2662,12 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     // Fitteo la curva gausseana por newton-gauss by Juan
     int NP = 3;
 
+    int limite_bajo;
+    limite_bajo = (low_extrema-window_size);
+//    limite_bajo = (low_extrema);
     // Me quedo solo con los eventos en el limite encontrado
     //int ndatos = Pico_calculado.limites_Pico[1] - Pico_calculado.limites_Pico[0];
-    int ndatos = (num_canales-1) - (low_extrema-window_size);
+    int ndatos = (num_canales-1) - limite_bajo;
 //    int ndatos = (num_canales-1) - (low_extrema);
     double* x;
     double* y;
@@ -2659,7 +2675,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     y = new double[ndatos];
     for (int i=0 ; i<ndatos ; i++)
     {
-        x[i] = (low_extrema-window_size) + i;
+        x[i] = limite_bajo + i;
 //        x[i] = (low_extrema) + i;
         int aux = x[i];
         y[i] = Canales[aux];
@@ -2710,6 +2726,11 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     uword max_idx, std_idx;
     double Gauss_max = canales_peak.max(max_idx);
     double Gauss_mean = max_idx;
+    if (fail_ini)
+    {
+        Gauss_mean = ndatos/2;
+        Gauss_max = y[ndatos/2];
+    }
     // Busco el 68 % desde el lado de mas alta energia
     uvec mayores_std = find(canales_peak > 0.68*Gauss_max);
     mayores_std.max(std_idx);
@@ -2717,7 +2738,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
     double p[NP];
     p[0] = 1;
-    p[1] = Gauss_mean+(low_extrema-window_size);
+    p[1] = Gauss_mean+limite_bajo;
     //p[2] = Gauss_std*2*3.14;
     //p[2] = p[1]/10;
     p[2] = ((p[1]*0.08)/2)*2;

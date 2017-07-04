@@ -205,6 +205,8 @@ namespace ap {
             double Hist_Double[PMTs][CHANNELS];
             // Cabezal actual
             int Cab_actual;
+            // PMTs Calibrados
+            int PMTsEnPico;
             // Puerto serie
             QString port_name;
             // Valor de los dinodos

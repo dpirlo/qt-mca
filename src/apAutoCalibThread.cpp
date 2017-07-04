@@ -50,9 +50,21 @@ void AutoCalibThread::getCalib()
     {
      try{
         QEventLoop loop;
-        QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
-        loop.exec();
+//        QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
+        for (int i=0 ; i<1000 ; i++)
+        {
+            QTimer::singleShot(calibrador->getTiempo_adq(), &loop, SLOT(quit()));
+            if(!_abort) loop.exec();
+        }
+
         QVector<double> aux_hits;
+        if(!_abort)
+        {
+//            emit sendAbortCalib();
+//            emit sendOffButtonCalib();
+//            break;
+//        }
+
         emit clearGraphsCalib();
         for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
         {
@@ -75,6 +87,13 @@ void AutoCalibThread::getCalib()
 
         calibrador->calibrar_simple();
 
+        if(calibrador->PMTsEnPico == calibrador->PMTs_List.length())
+        {
+//            emit sendOffButtonCalib();
+            emit sendAbortCalib();
+//            break;
+        }
+    }
     }
     catch (Exceptions ex)
     {

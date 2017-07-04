@@ -291,6 +291,8 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
+    connect(calib_wr, SIGNAL(sendAbortCalib()),this,SLOT(AbortCalib()));
+    connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
     /* Objetos */
@@ -4367,8 +4369,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
     }
     else
     {
-        //setLabelState(false, ui->pushButton);
-
         setButtonCalibState(true,true);
         if (is_abort_calib)
         {
@@ -4384,6 +4384,38 @@ void MainWindow::connectPortArpet()
     // Devuelvo serial a arpet
     //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
+}
+
+void MainWindow::AbortCalib()
+{
+    cout<<"Ponele que apagó el botón Abortando"<<endl;
+    setButtonCalibState(true,true);
+//    if(calib_wr->_abort)
+////    {
+//        if (is_abort_calib)
+//        {
+//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
+//            emit sendCalibAbortCommand(true);
+//        }
+//        setIsAbortCalibFlag(true);
+//    }
+    //ui->pushButton->setChecked(false);
+}
+
+void MainWindow::OffButtonCalib()
+{
+    cout<<"Ponele que apagó el botón"<<endl;
+    setButtonCalibState(true,true);
+//    if(calib_wr->_abort)
+//    {
+//        if (is_abort_calib)
+//        {
+//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
+//            emit sendCalibAbortCommand(true);
+//        }
+//        setIsAbortCalibFlag(true);
+//    }
+    //ui->pushButton->setChecked(false);
 }
 
 /**

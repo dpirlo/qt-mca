@@ -129,6 +129,8 @@ private slots:
     void clearSpecCalibGraphs();
     void clearSpecHeadsGraphs();
     void connectPortArpet();
+    void AbortCalib();
+    void OffButtonCalib();
 
 
     /* Slots de sincronización en el entorno gráfico */
