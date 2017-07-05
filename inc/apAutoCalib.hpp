@@ -31,7 +31,10 @@
 
 #include "qprocess.h"
 
-
+// Mínimo valor de Dinodo
+#define DINODO_MIN 1000
+// Máximo valor de Dinodo
+#define DINODO_MAX 3500
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 250
 // Valor base de movimiento de canal
@@ -202,6 +205,8 @@ namespace ap {
             double Hist_Double[PMTs][CHANNELS];
             // Cabezal actual
             int Cab_actual;
+            // PMTs Calibrados
+            int PMTsEnPico;
             // Puerto serie
             QString port_name;
             // Valor de los dinodos

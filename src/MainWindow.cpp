@@ -122,13 +122,16 @@ void MainWindow::setInitialConfigurations()
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
     recon_externa->setConsola(ui->plainTextEdit_Recon_console); // Conecto la consola de salida
     ui->textBrowser_entrada_2->setReadOnly(false);
-
+    ui->frame_multihead_graph_2->hide();
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->frame_adquire_advance_mode->hide();
     ui->comboBox_head_select_calib->hide();
     ui->label_calib->hide();
+
+    ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
+    ui->dateTimeEdit_2->setDateTime( QDateTime::currentDateTime());
     setButtonConnectState(true);
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
@@ -248,6 +251,8 @@ void MainWindow::checkCombosStatus()
     connect(ui->checkBox_c_4 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead4ToMCA(bool)));
     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
+    connect(ui->comboBox_head_mode_select_graph_2 ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabLog(int)));
+
 }
 /**
  * @brief MainWindow::connectSlots
@@ -286,6 +291,8 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
+    connect(calib_wr, SIGNAL(sendAbortCalib()),this,SLOT(AbortCalib()));
+    connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
     /* Objetos */
@@ -441,7 +448,7 @@ void MainWindow::getMCAErrorThread()
  */
 void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
 {
-    if(index==3)
+    if(index==3|| index==4)
     {
         ui->comboBox_head_select_calib->show();
         ui->label_calib->show();
@@ -1926,6 +1933,14 @@ void MainWindow::setAdvanceCoinMode(int index)
         ui->frame_adquire_advance_mode->hide();
         ui->frame_window_coin->hide();
         break;
+    case COIN_VERIF:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->hide();
+        break;
+    case COIN_INTER_CABEZAL:
+        ui->frame_adquire_advance_mode->hide();
+        ui->frame_window_coin->show();
+        break;
     default:
         break;
     }
@@ -3097,6 +3112,18 @@ QString MainWindow::openConfigurationFile()
     return filename;
 }
 /**
+ * @brief MainWindow::openLogFile
+ * @return
+ */
+QString MainWindow::openLogFile()
+{
+    QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de log"),
+                                                    root_config_path,
+                                                    tr("Log (*.log)"));
+    initfile = filename;
+    return filename;
+}
+/**
  * @brief MainWindow::openDirectory
  * @return
  */
@@ -4237,8 +4264,11 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 void MainWindow::on_pushButton_toggled(bool checked)
 {
     QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
+
     if (checked)
     {
+        //setLabelState(true, ui->pushButton);
+
         QList<int> checked_PMTs, checked_Cab;
         QMessageBox messageBox;
 
@@ -4249,18 +4279,18 @@ void MainWindow::on_pushButton_toggled(bool checked)
             for(int i = 0;  i< PMTs ; i++ )
             {
                 checked_PMTs.append(i+1);
+                cout<<checked_PMTs[i]<<endl;
             }
+            calibrador->setPMT_List(checked_PMTs);
         }
         else
         {
-            cout<<"Pass 1"<<endl;
             // Recupero los PMT checkeados
             for(int i = 0;  i< qlist.length() ; i++ )
             {
                 cout<<"Pass 2"<<endl;
-                cout<<qlist[i].toStdString()<<endl;
                 checked_PMTs.append(qlist[i].toInt());
-
+                cout<<checked_PMTs[i]<<endl;
             }
             if(qlist.length() == 0)
             {
@@ -4275,7 +4305,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
             calibrador->setPMT_List(checked_PMTs);
         }
 
-        cout<<"Pass 4"<<endl;
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
@@ -4318,16 +4347,17 @@ void MainWindow::on_pushButton_toggled(bool checked)
 //                checked_Cab.append(i+1);
 //            }
 //        }
-        if(checked_Cab.length() == 0)
-        {
-            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
-            messageBox.setFixedSize(500,200);
-            setButtonCalibState(false);
-            setIsAbortCalibFlag(false);
-            setButtonCalibState(true,true);
-            emit ToPushButtonCalib(false);
-            return;
-        }
+//        if(checked_Cab == null)
+//        {
+//            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
+//            messageBox.setFixedSize(500,200);
+//            setButtonCalibState(false);
+//            setIsAbortCalibFlag(false);
+//            setButtonCalibState(true,true);
+//            emit ToPushButtonCalib(false);
+//            return;
+//        }
+        checked_Cab[0]=ui->comboBox_head_select_graph_2->currentIndex()+1;
         calibrador->setCab_List(checked_Cab);
 
         arpet->portDisconnect();
@@ -4354,6 +4384,38 @@ void MainWindow::connectPortArpet()
     // Devuelvo serial a arpet
     //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
+}
+
+void MainWindow::AbortCalib()
+{
+    cout<<"Ponele que apagó el botón Abortando"<<endl;
+    setButtonCalibState(true,true);
+//    if(calib_wr->_abort)
+////    {
+//        if (is_abort_calib)
+//        {
+//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
+//            emit sendCalibAbortCommand(true);
+//        }
+//        setIsAbortCalibFlag(true);
+//    }
+    //ui->pushButton->setChecked(false);
+}
+
+void MainWindow::OffButtonCalib()
+{
+    cout<<"Ponele que apagó el botón"<<endl;
+    setButtonCalibState(true,true);
+//    if(calib_wr->_abort)
+//    {
+//        if (is_abort_calib)
+//        {
+//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
+//            emit sendCalibAbortCommand(true);
+//        }
+//        setIsAbortCalibFlag(true);
+//    }
+    //ui->pushButton->setChecked(false);
 }
 
 /**
@@ -5350,14 +5412,14 @@ void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
     ui->lineEdit_cuipet_aqd_path_file->setText(directory);
 }
 
-
-
+/**
+ * @brief MainWindow::on_pushButton_select_pmt_2_clicked
+ */
 void MainWindow::on_pushButton_select_pmt_2_clicked()
 {
     writeFooterAndHeaderDebug(true);
     resetHitsValues();
     removeAllGraphsPMT();
-    int i;
 
     int ret = pmt_select_autocalib->exec();
     QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
@@ -5388,9 +5450,204 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
 
     writeFooterAndHeaderDebug(false);
 }
-
+/**
+ * @brief MainWindow::on_pushButton_tiempos_cabezal_2_clicked
+ */
 void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
 {
     QString fileName = openConfigurationFile();
     ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
+}
+
+/**
+ * @brief MainWindow::on_pushButton_log_filename_clicked
+ */
+void MainWindow::on_pushButton_log_filename_clicked()
+{
+    QString fileName = openLogFile();
+    ui->textBrowser_log->setText(fileName);
+    root_log = fileName;
+
+}
+
+/**
+ * @brief MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged
+ * @param index
+ */
+void MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged(int index)
+{
+    switch (index) {
+    case 0:
+        ui->comboBox_head_select_graph_3->show();
+        ui->frame_multihead_graph_2->hide();
+        break;
+    case 1:
+        ui->comboBox_head_select_graph_3->hide();
+        ui->frame_multihead_graph_2->show();
+        ui->checkBox_mca_12->setChecked(false);
+        ui->checkBox_mca_11->setChecked(false);
+        ui->checkBox_mca_10->setChecked(false);
+        ui->checkBox_mca_9->setChecked(false);
+        ui->checkBox_mca_7->setChecked(false);
+        ui->checkBox_mca_8->setChecked(false);
+        break;
+    case 2:
+        ui->comboBox_head_select_graph_3->hide();
+        ui->frame_multihead_graph_2->show();
+
+        ui->checkBox_mca_12->setChecked(true);
+        ui->checkBox_mca_11->setChecked(true);
+        ui->checkBox_mca_10->setChecked(true);
+        ui->checkBox_mca_9->setChecked(true);
+        ui->checkBox_mca_7->setChecked(true);
+        ui->checkBox_mca_8->setChecked(true);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief MainWindow::setTabLog
+ * @param index
+ */
+void MainWindow::setTabLog(int index) {
+    if(index==0) {
+        ui->comboBox_head_select_graph_3->show();
+        ui->frame_multihead_graph_2->hide();
+    }
+}
+
+/**
+ * @brief MainWindow::on_pushButton_Log_clicked
+ */
+void MainWindow::on_pushButton_Log_clicked() {
+
+    if (ui->checkBox_temp_log->isChecked()) {
+
+        QRegExp rx("[,]");
+        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-TEMP]");
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Configuracion de la trama:
+        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
+        //    [LOG-TEMP],Tue May 30 06:55:25 2017,Cabezal,  4,          27.375,    35.1393,   44.5625
+        //              "ddd MMM dd HH:mm:ss yyyy"
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        QDateTime FechaMedicionInterna;
+        FechaMedicionInterna= QDateTime::fromString( lista.at(1),Qt::RFC2822Date);
+        cout<<"---------------------------------";
+
+
+
+        // generate some data:
+        QVector<double> x(lista.length()/7);
+        QVector<double> y(lista.length()/7); // initialize with entries 0..100
+        for (int i=0; i<(lista.length()/7); i++)
+        {
+          x[i] = i; // x goes from -1 to 1
+          y[i] = QString(lista.at(5+i*7)).toDouble(); // let's plot a quadratic function
+        }
+        // create graph and assign data to it:
+        ui->specPMTs_3->addGraph();
+        ui->specPMTs_3->graph(0)->setData(x, y);
+        // give the axes some labels:
+        ui->specPMTs_3->xAxis->setLabel("Tiempo");
+        ui->specPMTs_3->yAxis->setLabel("ºC");
+        // set axes ranges, so we see all data:
+        ui->specPMTs_3->replot();
+        ui->specPMTs_3->rescaleAxes();
+
+
+
+    }
+    else if (ui->checkBox_rate_log->isChecked()) {
+        QRegExp rx("[,]");
+        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATE]");
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Configuracion de la trama:
+        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
+        //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        cout<<"---------------------------------";
+        cout<<"fecha: "+lista.at(1).toStdString();
+        cout<<"---------------------------------";
+
+
+        // generate some data:
+        QVector<double> x(lista.length()/7);
+        QVector<double> y(lista.length()/7); // initialize with entries 0..100
+        for (int i=0; i<(lista.length()/7); i++)
+        {
+          x[i] = i; // x goes from -1 to 1
+          y[i] = QString(lista.at(5+i*7)).toDouble(); // let's plot a quadratic function
+        }
+        // create graph and assign data to it:
+        ui->specPMTs_3->addGraph();
+        ui->specPMTs_3->graph(0)->setData(x, y);
+        // give the axes some labels:
+        ui->specPMTs_3->xAxis->setLabel("Tiempo");
+        ui->specPMTs_3->yAxis->setLabel("Tasa");
+        // set axes ranges, so we see all data:
+        ui->specPMTs_3->replot();
+        ui->specPMTs_3->rescaleAxes();
+    }
+    else {
+        QMessageBox::critical(this,tr("Error"),tr("seleccione una opcion "));
+    }
+}
+
+/**
+ * @brief MainWindow::on_checkBox_temp_log_toggled
+ * @param checked
+ */
+void MainWindow::on_checkBox_temp_log_toggled(bool checked) {
+    if (checked) {
+        ui->checkBox_rate_log->setChecked(false);
+    }
+}
+
+/**
+ * @brief MainWindow::on_checkBox_rate_log_toggled
+ * @param checked
+ */
+void MainWindow::on_checkBox_rate_log_toggled(bool checked)
+{
+    if (checked){
+        ui->checkBox_temp_log->setChecked(false);
+    }
+}
+
+/**
+ * @brief MainWindow::getLogFromFiles
+ *
+ * Analizador de archivo de texto
+ *
+ * @param filename
+ * @param hv
+ * @return Vector con los valores obtenidos del archivo
+ */
+QStringList MainWindow::getLogFromFiles(QString filename,QRegExp rx, string parser)
+{
+    QString values;
+    QFile inputFile(filename);
+
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&inputFile);
+
+            while (!in.atEnd())
+            {
+                QString line = in.readLine();
+                while (-1==line.toStdString().find(parser)&&!in.atEnd()){
+                   line = in.readLine();
+                }
+                if (in.atEnd()) break;
+                values+=line+",";
+            }
+
+        inputFile.close();
+    }
+
+    return values.split(rx, QString::SkipEmptyParts);
 }

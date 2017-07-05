@@ -44,14 +44,27 @@ void AutoCalibThread::requestCalib()
 void AutoCalibThread::getCalib()
 {
     // Calibro
-    //cout<<"Calibrador..."<<endl;
+    cout<<"Calibrador..."<<endl;
     calibrador->initCalib();
     while(!_abort)
     {
+     try{
         QEventLoop loop;
-        QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
-        loop.exec();
+//        QTimer::singleShot(calibrador->getTiempo_adq()*1000, &loop, SLOT(quit()));
+        for (int i=0 ; i<1000 ; i++)
+        {
+            QTimer::singleShot(calibrador->getTiempo_adq(), &loop, SLOT(quit()));
+            if(!_abort) loop.exec();
+        }
+
         QVector<double> aux_hits;
+        if(!_abort)
+        {
+//            emit sendAbortCalib();
+//            emit sendOffButtonCalib();
+//            break;
+//        }
+
         emit clearGraphsCalib();
         for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
         {
@@ -69,8 +82,23 @@ void AutoCalibThread::getCalib()
               calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
             }
             emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
+
         }
+
         calibrador->calibrar_simple();
+
+        if(calibrador->PMTsEnPico == calibrador->PMTs_List.length())
+        {
+//            emit sendOffButtonCalib();
+            emit sendAbortCalib();
+//            break;
+        }
+    }
+    }
+    catch (Exceptions ex)
+    {
+        cout<<"Se va el Thread por Exception: "<<ex.excdesc<<endl;
+    }
     }
     calibrador->portDisconnect();
     emit sendConnectPortArpet();

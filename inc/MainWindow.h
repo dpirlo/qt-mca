@@ -129,6 +129,8 @@ private slots:
     void clearSpecCalibGraphs();
     void clearSpecHeadsGraphs();
     void connectPortArpet();
+    void AbortCalib();
+    void OffButtonCalib();
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -139,6 +141,7 @@ private slots:
     void setAdquireMode(int index);
     void setTabMode(int index);
     void setTabHead(int index);
+    void setTabLog(int index);
     void syncHeadComboBoxToMCA(int index);
     void syncHeadModeComboBoxToMCA(int index);
     void syncCheckBoxHead1ToMCA(bool check);
@@ -192,7 +195,6 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
     void on_pushButton_logguer_toggled(bool checked);
-    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* AutoCalib */
 //    void on_pushButton_clicked();
@@ -228,6 +230,7 @@ private slots:
     void on_checkBox_MLEM_clicked(bool checked);
     void on_checkBox_Backprojection_clicked(bool checked);
     void on_pushButton_6_clicked();
+    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* CUIPET */
     void on_pushButton_cuipet_aqd_file_open_clicked();
@@ -240,10 +243,21 @@ private slots:
 
     void on_pushButton_tiempos_cabezal_2_clicked();
 
+    void on_pushButton_log_filename_clicked();
+
+    void on_comboBox_head_mode_select_graph_2_currentIndexChanged(int index);
+
+    void on_pushButton_Log_clicked();
+
+    void on_checkBox_temp_log_toggled(bool checked);
+
+    void on_checkBox_rate_log_toggled(bool checked);
+
 
 private:
     void connectSlots();
     QString openConfigurationFile();
+    QString openLogFile();
     QString openDirectory();
     bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
     void getPaths();
@@ -310,6 +324,7 @@ private:
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
     QVector<double> getValuesFromFiles(QString filename, bool hv=false);
+    QStringList getLogFromFiles(QString filename, QRegExp rx, string parser);
     void setCoincidenceModeDataStream(string stream);
     string getCoincidenceAdvanceModeDataStream();
     void initCoincidenceMode();
@@ -355,10 +370,11 @@ private:
     QList<QLabel*> calib_status_table;
     QList<QString> pmt_selected_list;
     QList<QString> pmt_selected_list_autocalib;
+    QVector<string> logTemp_values,logRate_values;
   //  QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug, init, log, stdout_mode;
-    QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest;
+    QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest, logTemp, logRate,root_log;
     QVector<double> hvtable_values, coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit, Target;
