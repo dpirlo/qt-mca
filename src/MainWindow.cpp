@@ -291,9 +291,9 @@ void MainWindow::connectSlots()
     connect(this, SIGNAL(sendCalibAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
-    connect(calib_wr, SIGNAL(sendAbortCalib()),this,SLOT(AbortCalib()));
     connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
+    connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
     connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -412,6 +412,13 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
         }
     }
 
+}
+
+void MainWindow::receivedValuesMCACalib(int umbral, int pico, int FWHM)
+{
+    ui->label_title_output->setText("Cabezal calibrado");
+    float num = (float)(FWHM*100)/pico;
+    ui->label_data_output->setText("                     | Umbral: "+QString::number(umbral)+" | Pico: "+QString::number(pico)+" | FWHM: "+QString::number(num,'g',4)+"%");
 }
 /**
  * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
@@ -3854,8 +3861,8 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
     graph->legend->setWrap(4);
     graph->legend->setRowSpacing(1);
     graph->legend->setColumnSpacing(2);
-    graph->replot();
     graph->rescaleAxes();
+    graph->replot();
 }
 
 void MainWindow::addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param)
@@ -3872,11 +3879,11 @@ void MainWindow::addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int c
     graphPen.setWidthF(param[5]);
     graph->graph()->setPen(graphPen);
     graph->legend->setVisible(true);
-    graph->legend->setWrap(4);
+    graph->legend->setWrap(8);
     graph->legend->setRowSpacing(1);
     graph->legend->setColumnSpacing(2);
-    graph->replot();
     graph->rescaleAxes();
+    graph->replot();
 }
 /**
  * @brief MainWindow::axisLabelDoubleClickPMT
@@ -4386,36 +4393,9 @@ void MainWindow::connectPortArpet()
     arpet->portConnect(port_name.toStdString().c_str());
 }
 
-void MainWindow::AbortCalib()
-{
-    cout<<"Ponele que apagó el botón Abortando"<<endl;
-    setButtonCalibState(true,true);
-//    if(calib_wr->_abort)
-////    {
-//        if (is_abort_calib)
-//        {
-//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
-//            emit sendCalibAbortCommand(true);
-//        }
-//        setIsAbortCalibFlag(true);
-//    }
-    //ui->pushButton->setChecked(false);
-}
-
 void MainWindow::OffButtonCalib()
 {
-    cout<<"Ponele que apagó el botón"<<endl;
     setButtonCalibState(true,true);
-//    if(calib_wr->_abort)
-//    {
-//        if (is_abort_calib)
-//        {
-//            if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread: "<<mcae_th->currentThreadId()<<endl;
-//            emit sendCalibAbortCommand(true);
-//        }
-//        setIsAbortCalibFlag(true);
-//    }
-    //ui->pushButton->setChecked(false);
 }
 
 /**

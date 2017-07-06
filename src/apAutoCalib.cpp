@@ -132,7 +132,12 @@ int AutoCalib::calibrar_simple()
                 PMTsEnPico++;
 
             // Suma en FWHM
-            double cuentas_FWHM = 0,cuentas_FWTM = 0;
+            double cuentas_Totales = 0,cuentas_FWHM = 0,cuentas_FWTM = 0;
+            for (int j = 0 ; j < CHANNELS ; j++)
+            {
+              cuentas_Totales = cuentas_Totales + Hist_Double[PMTs_List[i]-1][j];
+//              cout<<j+1<<" "<<Hist_Double[PMTs_List[i]-1][j]<<endl;
+            }
             for (int j = aux.limites_FWHM[0] ; j < aux.limites_FWHM[1] ; j++)
             {
               cuentas_FWHM = cuentas_FWHM + Hist_Double[PMTs_List[i]-1][j];
@@ -144,7 +149,7 @@ int AutoCalib::calibrar_simple()
 
             cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1]<<", Dinodo antual: "<<Dinodos_PMT[PMTs_List[i]-1];
             cout<<"; FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1];
-            cout<<"; Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
+            cout<<"; Cuentas Totales: "<<cuentas_Totales<<"; Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
         }
 
         cout<<"PMTs calibrados: "<<PMTsEnPico<<endl;
@@ -2569,6 +2574,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     // Copio los canales a una matriz
     vec Canales_mat(Canales,num_canales,1);
     min_count_diff = (int) (sum(sum(Canales_mat))*0.01);
+    cout<<"min_count_diff = "<<min_count_diff<<endl;
 
     // La busqueda arranca en el ultimo canal
     for (int i = num_canales ; i >= window_size ; i--)

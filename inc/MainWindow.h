@@ -125,11 +125,11 @@ private slots:
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
+    void receivedValuesMCACalib(int umbral, int pico, int FWHM);
     void clearSpecPMTsGraphs();
     void clearSpecCalibGraphs();
     void clearSpecHeadsGraphs();
     void connectPortArpet();
-    void AbortCalib();
     void OffButtonCalib();
 
 

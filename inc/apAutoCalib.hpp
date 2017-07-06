@@ -319,7 +319,6 @@ namespace ap {
             // Cargar tablas
             void cargar_tablas(int cab_num_act, bool* tipo);
 
-
             // Calcular alohadon
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
@@ -340,7 +339,6 @@ namespace ap {
             // Puntero al archivo de log
             QTextStream stream;
 
-
             // Levantar archivo de calibración
             bool LevantarArchivo_Planar(int cab_num_act);
             // Parseo de trama
@@ -350,11 +348,6 @@ namespace ap {
 
             // Flag de RAM
             bool IsLowRAM;
-
-
-
-
-
 
             // Newton-Gauss de juan
             double f_gauss(double X,double *P);
@@ -392,12 +385,6 @@ namespace ap {
 
 
     };
-
-
-
-
-
-
 }
 
 #endif // AUTOCALIB_H
