@@ -2559,122 +2559,48 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     Pico_calculado.limites_Pico[0] = 0;
     Pico_calculado.limites_Pico[1] = 0;
 
-    int window_size = num_canales/20;
-    int span = (window_size);
-    int min_count_diff = 50;
-    double Low_win, High_win;
-    char Estados[4] = {0 , 0 , 0, 0};
-    char Estado_aux;
-    int ind_estado = 0;
-    int outpoint = -1, low_extrema = -1;
 
-    bool fail_ini = false;
-
-    // Seteo el limite
     // Copio los canales a una matriz
     vec Canales_mat(Canales,num_canales,1);
-    min_count_diff = (int) (sum(sum(Canales_mat))*0.01);
-    cout<<"min_count_diff = "<<min_count_diff<<endl;
 
-    // La busqueda arranca en el ultimo canal
-    for (int i = num_canales ; i >= window_size ; i--)
+
+    // Busqueda de pico gruesa
+    int 	picos[num_canales];
+    int 	picos_abs[num_canales];
+    int 	npicos;
+    int 	npicos_abs;
+    double	delta;
+
+
+
+    // Calculo la fraccion del maximo que dara el salto que debe existir para considerar que hay pico
+    delta = fract_maximo(Canales,num_canales,0.25);
+
+    //
+    if(detect_peak((const double*)Canales,num_canales,picos,&npicos,num_canales,picos_abs,&npicos_abs,num_canales,delta,0))
     {
-        // Reseteo las ventanas
-        Low_win = 0;
-        High_win = 0;
-
-        // Calculo los valores de las ventanas
-        for (int j = 0 ; j < window_size ; j ++)
-        {
-            High_win += Canales[i - j];
-        }
-        High_win = High_win/window_size;
-        for (int j = 0 ; j < window_size ; j ++)
-        {
-            Low_win += Canales[i - window_size - span - j];
-        }
-        Low_win = Low_win/window_size;
-
-        // Me fijo la direccion
-        if ((Low_win - High_win) > min_count_diff)
-        {
-            Estado_aux = 1;
-        }
-        else if (-(Low_win - High_win) > min_count_diff)
-        {
-            Estado_aux = -1;
-        }
-        else
-        {
-            Estado_aux = 0;
-        }
-
-        // Si el estado cambio lo actualizo
-        if (Estados[ind_estado] != Estado_aux)
-        {
-            ind_estado++;
-            Estados[ind_estado] = Estado_aux;
-        }
-
-        // Checkeo si encontre pico
-        if (ind_estado == 3)
-        {
-            if( Estados[0] == 1 && Estados[1] == 0 && Estados[2] == -1 &&  (Estados[3] == 1 || Estados[3] == 0 ) )
-            {
-                // Retorno lo que encontre
-                low_extrema = (i - (2*window_size) - span);
-                outpoint = i;
-
-                Pico_calculado.limites_Pico[0] = low_extrema;
-                Pico_calculado.limites_Pico[1] = outpoint;
-
-                break;
-            }
-            else
-            {
-                // Si no encontre nada corro la ventana de estados
-                Estados[0] =  Estados[1];
-                Estados[1] =  Estados[2];
-                Estados[2] =  Estados[3];
-                Estados[3] =  0;
-                ind_estado = 2;
-            }
-
-        }
-        if (Canales[i] == 0 && i < (num_canales/2) )
-        {
-            cout<<"Pico no encontrado, llegamos al limite, intentando con espectro entero..."<<endl;
-            low_extrema = i+window_size;
-            outpoint = low_extrema;
-            fail_ini = true;
-            break;
-        }
-
+            cout<<"Error en la busqueda de pico"<<endl;
+            return Pico_calculado;
     }
-    if (outpoint == -1) {
-//        return Pico_calculado;
-        low_extrema = window_size +1;
-        fail_ini = true;
-        cout<<"Pico no encontrado, intentando con espectro entero..."<<endl;
-    };
-    if (low_extrema < window_size) {
-        fail_ini = true;
-//        return Pico_calculado;
-        low_extrema = window_size +1;
-    };
+    if(!npicos)
+    {
+            cout<<"No detecto picos!!"<<endl;
+            return Pico_calculado;
+    }
 
+    // Si todo va bien, este es el pico
+    int can_pico = picos[npicos-1];
+    // Suponiendo que el pico tiene un bruto FWHM de 40%, los limites seran:
+    // 0.4 = (2*dist)/can_pico
+    int dist = (can_pico*0.4)/2;
+    int limite_bajo = can_pico - dist;
+    int limite_alto = can_pico + dist;
 
 
     // Fitteo la curva gausseana por newton-gauss by Juan
     int NP = 3;
-
-    int limite_bajo;
-    limite_bajo = (low_extrema-window_size);
-//    limite_bajo = (low_extrema);
-    // Me quedo solo con los eventos en el limite encontrado
-    //int ndatos = Pico_calculado.limites_Pico[1] - Pico_calculado.limites_Pico[0];
-    int ndatos = (num_canales-1) - limite_bajo;
-//    int ndatos = (num_canales-1) - (low_extrema);
+    // Cantidad de canales a pasar a juan
+    int ndatos = limite_alto - limite_bajo;
     double* x;
     double* y;
     x = new double[ndatos];
@@ -2682,42 +2608,13 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     for (int i=0 ; i<ndatos ; i++)
     {
         x[i] = limite_bajo + i;
-//        x[i] = (low_extrema) + i;
+
         int aux = x[i];
         y[i] = Canales[aux];
     }
 
 
-/*
-    time_t rawtime;
-  struct tm * timeinfo;
-  char buffer[80];
 
-  time (&rawtime);
-  timeinfo = localtime(&rawtime);
-
-
-    QString path_salida = "Salidas/";
-
-    if ( 1)
-    {
-        strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
-        std::string str(buffer);
-        QString nombre_ener = path_salida +QString::fromStdString( str );
-
-        QFile file(nombre_ener);
-
-        if (file.open(QIODevice::ReadWrite))
-        {
-            QTextStream stream(&file);
-            for (int i = 0 ; i < ndatos ; i++)
-            {
-                stream << y[i]  << endl;
-            }
-        }
-
-    }
-*/
 
 
     // Defino los parametros
@@ -2732,11 +2629,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     uword max_idx, std_idx;
     double Gauss_max = canales_peak.max(max_idx);
     double Gauss_mean = max_idx;
-    if (fail_ini)
-    {
-        Gauss_mean = ndatos/2;
-        Gauss_max = y[ndatos/2];
-    }
+
     // Busco el 68 % desde el lado de mas alta energia
     uvec mayores_std = find(canales_peak > 0.68*Gauss_max);
     mayores_std.max(std_idx);
@@ -2775,27 +2668,19 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     for(int i=0;i<ndatos;i++)  y[i]/=tmp;
 
 
-    //for (int i = 0 ; i < ndatos ; i++) cout<<y[i]<<endl;
-    //for (int i = 0 ; i < ndatos ; i++) cout<<f_gauss(x[i],p)<<endl;
-
+    
 
 
     double sseprev=0.0;
     for(int i=0,sseprev=0.0;i<len;i++)
     {
         double sse = sumacuadrados(x,y,ndatos,p,&AutoCalib::f_gauss);
-        //printf("(%d)\tsse: %f\n",i+1,sse);
+        
         if(gaussnewton(x,y,ndatos,p,NP,paso,&AutoCalib::f_gauss,&AutoCalib::df_gauss,&estado)<0) break;
         if(sse>sseprev && i) break;
         sseprev=sse;
     }
-    //printf("\n\n");
-    //printf("ym: %f\n",tmp);
-    //for(int i=0;i<NP;i++)
-    //{
-    //    printf("p%d: %f\n",i,p[i]);
-    //}
-    //printf("%0.01f\n",p[1]+(double)min);
+
     liberargna(&estado);
     delete(x);
     delete(y);
@@ -2908,10 +2793,95 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 }
 
 
+int AutoCalib::detect_peak(
+        const double*   data, /* the data */
+        int             data_count, /* row count of data */
+        int*            emi_peaks, /* emission peaks will be put here */
+        int*            num_emi_peaks, /* number of emission peaks found */
+        int             max_emi_peaks, /* maximum number of emission peaks */
+        int*            absop_peaks, /* absorption peaks will be put here */
+        int*            num_absop_peaks, /* number of absorption peaks found */
+        int             max_absop_peaks, /* maximum number of absorption peaks*/
+        double          delta, /* delta used for distinguishing peaks */
+        int             emi_first /* should we search emission peak first ofabsorption peak first? */
+        )
+{
+    int     i;
+        double  mx;
+        double  mn;
+        int     mx_pos = 0;
+        int     mn_pos = 0;
+        int     is_detecting_emi = emi_first;
 
 
+        mx = data[0];
+        mn = data[0];
+
+        *num_emi_peaks = 0;
+        *num_absop_peaks = 0;
+
+        for(i = 1; i < data_count; ++i)
+        {
+            if(data[i] > mx)
+            {
+                mx_pos = i;
+                mx = data[i];
+            }
+            if(data[i] < mn)
+            {
+                mn_pos = i;
+                mn = data[i];
+            }
+
+            if(is_detecting_emi &&
+                    data[i] < mx - delta)
+            {
+                if(*num_emi_peaks >= max_emi_peaks) /* not enough spaces */
+                    return 1;
+
+                emi_peaks[*num_emi_peaks] = mx_pos;
+                ++ (*num_emi_peaks);
+
+                is_detecting_emi = 0;
+
+                i = mx_pos - 1;
+
+                mn = data[mx_pos];
+                mn_pos = mx_pos;
+            }
+            else if((!is_detecting_emi) &&
+                    data[i] > mn + delta)
+            {
+                if(*num_absop_peaks >= max_absop_peaks)
+                    return 2;
+
+                absop_peaks[*num_absop_peaks] = mn_pos;
+                ++ (*num_absop_peaks);
+
+                is_detecting_emi = 1;
+
+                i = mn_pos - 1;
+
+                mx = data[mn_pos];
+                mx_pos = mn_pos;
+            }
+        }
+
+        return 0;
+}
 
 
+double AutoCalib::fract_maximo(double *valores, int len, double fract)
+{
+        int i;
+        double max;
+        if(len>0) max=valores[0];
+        for(i=0;i<len;i++)
+        {
+                if(valores[i]>max) max=valores[i];
+        }
+        return fract*max;
+}
 
 
 

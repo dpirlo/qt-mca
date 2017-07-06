@@ -319,6 +319,7 @@ namespace ap {
             // Cargar tablas
             void cargar_tablas(int cab_num_act, bool* tipo);
 
+
             // Calcular alohadon
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
@@ -339,6 +340,7 @@ namespace ap {
             // Puntero al archivo de log
             QTextStream stream;
 
+
             // Levantar archivo de calibración
             bool LevantarArchivo_Planar(int cab_num_act);
             // Parseo de trama
@@ -348,6 +350,13 @@ namespace ap {
 
             // Flag de RAM
             bool IsLowRAM;
+
+
+            // Busqueda pico chino
+            int detect_peak(const double* data, int data_count, int* emi_peaks, int* num_emi_peaks, int max_emi_peaks, int* absop_peaks, int* num_absop_peaks, int max_absop_peaks, double delta, int emi_first);
+            double fract_maximo(double *valores, int len, double fract);
+
+
 
             // Newton-Gauss de juan
             double f_gauss(double X,double *P);
@@ -385,6 +394,12 @@ namespace ap {
 
 
     };
+
+
+
+
+
+
 }
 
 #endif // AUTOCALIB_H
