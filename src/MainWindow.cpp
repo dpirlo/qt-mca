@@ -1223,6 +1223,8 @@ void MainWindow::on_pushButton_hv_set_clicked()
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
+        resetPMTs(false);
+        resetPMTs(true);
         if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
     catch(Exceptions & ex)
@@ -5629,4 +5631,42 @@ QStringList MainWindow::getLogFromFiles(QString filename,QRegExp rx, string pars
     }
 
     return values.split(rx, QString::SkipEmptyParts);
+}
+
+void MainWindow::on_pushButton_p_51_clicked()
+{
+    writeFooterAndHeaderDebug(true);
+
+    if (pmt_selected_list.isEmpty())
+    {
+        QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+        if(debug)
+        {
+            cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+            writeFooterAndHeaderDebug(false);
+        }
+        return;
+    }
+
+    QString q_msg;
+    try
+    {
+        for(int i=0;i < pmt_selected_list.length();i++)
+        {
+            q_msg =setHV(getHead("mca").toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
+        }
+        setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
+        ui->label_data_output->setText("| Canal configurado en todos los PMT: 350 |");
+    }
+    catch (Exceptions ex)
+    {
+        if(debug) cout<<"No se puede configurar el valor de HV. Error: "<<ex.excdesc<<endl;
+        ui->label_data_output->setText("Error en la configuración de la tensión de dinodo.");
+        QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+    }
+    if (debug)
+    {
+        showMCAEStreamDebugMode(q_msg.toStdString());
+        writeFooterAndHeaderDebug(false);
+    }
 }

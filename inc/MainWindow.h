@@ -254,6 +254,8 @@ private slots:
     void on_checkBox_rate_log_toggled(bool checked);
 
 
+    void on_pushButton_p_51_clicked();
+
 private:
     void connectSlots();
     QString openConfigurationFile();

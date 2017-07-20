@@ -225,9 +225,9 @@ int AutoCalib::calibrar_simple()
                     else
                     {
                         // Me fijo que valga la pena mover el pico
-                        double diff_Picos = std::abs(Picos_PMT[PMTs_List[j]-1] - Pico_Obj_Estimado);
-                        cout<<"Diff_Picos = "<<diff_Picos<<" "<<PMTs_List[j]<<" => ";
-                        if(diff_Picos > 2)
+                        double diff_Picos = Picos_PMT[PMTs_List[j]-1] - Pico_Obj_Estimado;
+                        //cout<<"Diff_Picos = "<<diff_Picos<<" "<<PMTs_List[j]<<" => ";
+                        if(std::abs(diff_Picos) > 2)
                         {
                             //Calculo la recta entre picos
                             A_param[PMTs_List[j]-1] = (Picos_PMT_ant[PMTs_List[j]-1] - Picos_PMT[PMTs_List[j]-1])/(Dinodos_PMT_ant[PMTs_List[j]-1]-Dinodos_PMT[PMTs_List[j]-1]); // Pendiente

@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2351,7 +2351,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -3372,7 +3372,7 @@ calibrar</string>
         <rect>
          <x>17</x>
          <y>92</y>
-         <width>151</width>
+         <width>91</width>
          <height>21</height>
         </rect>
        </property>
@@ -3502,6 +3502,25 @@ calibrar</string>
        </property>
        <property name="text">
         <string>+50</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_p_51">
+       <property name="geometry">
+        <rect>
+         <x>106</x>
+         <y>92</y>
+         <width>61</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>3500</string>
        </property>
       </widget>
      </widget>
