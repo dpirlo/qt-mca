@@ -1023,7 +1023,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             calibrador->setPort_Name(port_name);
             worker->setPortName(port_name);
             arpet->portConnect(port_name.toStdString().c_str());
-            QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
+            //QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
@@ -4295,7 +4295,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
             // Recupero los PMT checkeados
             for(int i = 0;  i< qlist.length() ; i++ )
             {
-                cout<<"Pass 2"<<endl;
                 checked_PMTs.append(qlist[i].toInt());
                 cout<<checked_PMTs[i]<<endl;
             }

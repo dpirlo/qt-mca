@@ -58,6 +58,7 @@ void AutoCalibThread::getCalib()
         QVector<double> aux_hits;
         emit clearGraphsCalib();
         if(!_abort){
+            calibrador->InitSP3(QString::number(calibrador->Cab_actual).toStdString(), calibrador->port_name.toStdString());
             for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
             {
                 // Pido estado de SP3
@@ -74,7 +75,6 @@ void AutoCalibThread::getCalib()
                   calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
                 }
                 emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
-
             }
 
             calibrador->calibrar_simple();

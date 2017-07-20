@@ -101,6 +101,7 @@ namespace ap {
     string getMCA(string pmt, string function, string head, int channels, string port_name);
     string setHV(string head, string channel_dec, string port_name);
     string setHV(string head, string pmt, string channel_dec, string port_name);
+    string InitSP3(string head, string port_name);
     string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
     string setTime(string head, double time_value, string pmt, string port_name);
     string getTemp(string head, string pmt, string port_name);
@@ -123,6 +124,7 @@ namespace ap {
     bool portReadOneChar(char& val);
     void setMCAStream(string pmt, string function, string channel="");
     void setMCAStream(string pmt, string function, double time);
+    void setMCAStream(string function);
     void setCalibStream(string function, QVector<double> table);
     void setCoinStream(string function, string data_one, string data_two="", bool time=false);
     void setPSOCStream(string function, string psoc_value="");

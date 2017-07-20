@@ -36,9 +36,9 @@
 // Máximo valor de Dinodo
 #define DINODO_MAX 3500
 // Valor maximo de movimiento de canal
-#define MAX_MOV_DIN 250
+#define MAX_MOV_DIN 500
 // Valor base de movimiento de canal
-#define BASE_MOV_DIN 50
+#define BASE_MOV_DIN 100
 
 // Memoria para mantener los 6 cabezales en RAM (Suponiendo un archivo de 1 GB de calibracion)
 #define     HighMemDevice               10*6*1024*1024
@@ -241,10 +241,12 @@ namespace ap {
 
             // Número de iteración
             int iter_actual;
+            int Pico_Obj_Estimado = 255;
 
             int paso_dinodo[PMTs];
             // Armo el vector de canal objetivo
             double Canal_Obj_vec[PMTs];
+            double Pico_Obj_Estimado_vec[PMTs];
             // Memoria del paso previo
             double Picos_PMT_ant[PMTs];
             double Dinodos_PMT_ant[PMTs];

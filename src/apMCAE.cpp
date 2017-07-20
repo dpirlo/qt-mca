@@ -771,6 +771,12 @@ void MCAE::setMCAStream(string pmt, string function, double time)
     string stream_wo_cs=pmt+function+time_str;
     setTrama_MCA(getMCAFormatStream(stream_wo_cs));
 }
+
+void MCAE::setMCAStream(string function)
+{
+    string stream_wo_cs="00"+function;
+    setTrama_MCA(getMCAFormatStream(stream_wo_cs));
+}
 /**
  * @brief MCAE::setPSOCStream
  *
@@ -1230,6 +1236,20 @@ string MCAE::setHV(string head, string pmt, string channel_dec, string port_name
     string msg;
 
     sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
+
+    return msg;
+}
+
+string MCAE::InitSP3(string head, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
+    setMCAStream(getInit_MCA());
+    char delimeter='\r';
+    string msg;
+
+    // Arreglar la siguiente chanchada
+    sendString(getHeader_MCAE()+"090009"+getTrama_MCA(), getEnd_MCA(), port_name);
     msg = readString(delimeter, port_name);
 
     return msg;

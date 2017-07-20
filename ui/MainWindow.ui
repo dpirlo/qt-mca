@@ -1778,7 +1778,7 @@ Tensión: </string>
           <x>70</x>
           <y>10</y>
           <width>161</width>
-          <height>211</height>
+          <height>284</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
