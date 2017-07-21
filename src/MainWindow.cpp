@@ -4316,7 +4316,7 @@ void MainWindow::on_pushButton_toggled(bool checked)
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
         // Recupero el canal objetivo
-        QString Canal_obj = ui->Canal_objetivo->text();
+/*        QString Canal_obj = ui->Canal_objetivo->text();
         if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
         {
             messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
@@ -4329,7 +4329,7 @@ void MainWindow::on_pushButton_toggled(bool checked)
         }
         calibrador->setCanal_Obj(Canal_obj.toInt());
 
-        cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
+        cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;*/
 
         // Recupero el tiempo de adquisicion
         QString Tiempo_adq = ui->Tiempo_adq_box->text();
