@@ -644,7 +644,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     stream<<" %   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
     stream<<" %   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
-    stream<<"   Espect_Crudo_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"   Espect_Crudo_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
 
     // ----------------------- Ploteo
@@ -684,7 +684,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     rowvec suma_FWTM = sum( Energia_calib_FWHM, 0);
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(hist(suma_FWTM, centros_hist));
-    stream<<"   FWTM_Vec = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"   FWTM_Vec_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
 
@@ -725,12 +725,12 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
-        stream<<"       Eventos_maximo_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"       Eventos_maximo_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
         centros_hist = linspace<vec>(0,8000,BinsHist);
         vec_log.set_size(0,0);
         rowvec suma_log = sum( Eventos_max_PMT, 0);
         vec_log = arma::conv_to<vec>::from(hist(suma_log, centros_hist));
-        stream<<"       Eventos_maximo_Suma_PMT_"<<index_PMT_cent+1<<"_Vec = "<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"       Eventos_maximo_Suma_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
         //Saco tiempos
@@ -793,11 +793,11 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Eventos_max_PMT.row(index_PMT_cent),centros_hist));
-        stream<<"               Aleta_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"               Aleta_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
         centros_hist = linspace<vec>(0,8000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
-        stream<<"               Aleta_Suma_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"               Aleta_Suma_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
 
 
@@ -853,21 +853,23 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         espectro_suma_crudo = hist(Eventos_max_PMT.row(index_PMT_cent), centros_hist);
 
+
         espectro_suma_crudo = (espectro_suma_crudo - (NUM_EVENT_CENTRO/PORC_ALETA));
+//        espectro_suma_crudo = (espectro_suma_crudo - (  ( espectro_suma_crudo.max()  )   *(10.0/100.0))  );
         espectro_suma_crudo %= espectro_suma_crudo;
         canal_norm[index_PMT_cent] = espectro_suma_crudo.index_min();
 
     }
 
     // Guardo las tasas
-    stream<<"               Porcentaje_PMT = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
-    stream<<"               Tasa_PMT = "<<guardar_vector_stream(Tasa_PMT)<<endl;
+    stream<<"               Porcentaje_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
+    stream<<"               Tasa_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Tasa_PMT)<<endl;
 
 
 
-    stream<<"               Mat_prom_inicial = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
-    stream<<"               Mat_tiempos_inicial = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
-    stream<<"               Canales_a_normalizar = ["<< canal_norm[0];
+    stream<<"               Mat_prom_inicial_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
+    stream<<"               Mat_tiempos_inicial_"<<cab_num_act+1<<" = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
+    stream<<"               Canales_a_normalizar_"<<cab_num_act+1<<" = ["<< canal_norm[0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< canal_norm[i_log];
     stream<<"];"<<endl;
 
@@ -921,7 +923,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
     }
 
-    stream<<"               Ce_inicial = ["<< Ce_pre[cab_num_act][0];
+    stream<<"               Ce_inicial_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
 
@@ -977,7 +979,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     stream<<" %   FWTM: "<<pico_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_sin_calib.limites_FWTM[1])<<endl;
     stream<<" %   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
-    stream<<"   Espect_Pre_Cal_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"   Espect_Pre_Cal_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
 
     QVector<double> aux_qvec_cent(BinsHist);
@@ -1014,7 +1016,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     rowvec suma_FWTM = sum( Energia_calib_FWHM, 0);
     vec_log.set_size(0,0);
     vec_log = arma::conv_to<vec>::from(hist(suma_FWTM, centros_hist));
-    stream<<"   FWTM_pre_Cal_Vec = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"   FWTM_pre_Cal_Vec_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
     // Borro espectros individuales anteriores
@@ -1052,12 +1054,12 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Fila_max_PMT, centros_hist));
-        stream<<"       Eventos_maximo_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"       Eventos_maximo_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
         centros_hist = linspace<vec>(0,8000,BinsHist);
         vec_log.set_size(0,0);
         rowvec suma_log = sum( Eventos_max_PMT, 0);
         vec_log = arma::conv_to<vec>::from(hist(suma_log, centros_hist));
-        stream<<"       Eventos_maximo_Suma_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec = "<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"       Eventos_maximo_Suma_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
         //Saco tiempos
@@ -1118,11 +1120,11 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         centros_hist = linspace<vec>(0000,2000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(hist(Eventos_max_PMT.row(index_PMT_cent),centros_hist));
-        stream<<"               Aleta_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"               Aleta_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
         centros_hist = linspace<vec>(0,8000,BinsHist);
         vec_log.set_size(0,0);
         vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
-        stream<<"               Aleta_Suma_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec ="<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"               Aleta_Suma_pre_cal_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
 
 
@@ -1172,13 +1174,13 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
 
     // Guardo las tasas
-    stream<<"               Porcentaje_PMT = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
-    stream<<"               Tasa_PMT = "<<guardar_vector_stream(Tasa_PMT)<<endl;
+    stream<<"               Porcentaje_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
+    stream<<"               Tasa_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Tasa_PMT)<<endl;
 
 
 
-    stream<<"               Mat_prom_inicial = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
-    stream<<"               Mat_tiempos_inicial = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
+    stream<<"               Mat_prom_inicial_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
+    stream<<"               Mat_tiempos_inicial_"<<cab_num_act+1<<" = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
 
 
 
@@ -1207,7 +1209,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     // Paso todos los eventos a energía pre calirbada
     colvec Ce_arma_ant(Ce_pre[cab_num_act], CANTIDADdEpMTS);
 
-    stream<<endl<<"Ce_inicial = ["<< Ce_pre[cab_num_act][0];
+    stream<<endl<<"Ce_inicial_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
     stream<<endl;
@@ -1216,12 +1218,12 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     // E_prom\Ener_obj  == solve(E_prom,Ener_obj)
     colvec Ce_arma_mat_prom = solve(E_prom_PMT[cab_num_act],Ener_obj);
     vec vec_log = arma::conv_to<vec>::from(Ce_arma_mat_prom);
-    stream<<"Ce_aux_ini = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"Ce_aux_ini_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
     colvec Ce_arma = Ce_arma_mat_prom % Ce_arma_ant;
 
      vec_log = arma::conv_to<vec>::from(Ce_arma);
-    stream<<"Ce_ini = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"Ce_ini_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
     colvec Ce_iter;
 
 
@@ -1346,7 +1348,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
         cout<<"Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
         stream<<" %       Paso "<<iter_act<<": "<<pico_calib.FWHM*100<<"%"<<endl;
         vec_log = arma::conv_to<vec>::from(Ce_arma);
-        stream<<"       Ce_paso = "<<guardar_vector_stream(vec_log)<<endl;
+        stream<<"       Ce_paso_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
         // que no se apague la pantalla
         qApp->processEvents();
@@ -1363,7 +1365,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     cout<<"Final: "<<pico_calib.FWHM*100<<"%"<<endl;
     stream<<" %Final: "<<pico_calib.FWHM*100<<"%"<<endl;
     vec_log = arma::conv_to<vec>::from(Ce_mejor);
-    stream<<"       Ce_final = ["<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"       Ce_final_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
     // ----------------------- Ploteo
@@ -1748,7 +1750,7 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     Ce_aux /= Ce_aux_pre;
     //cout<<Ce_aux<<endl;
     E_prom_PMT_keV = E_prom_PMT_keV.each_row()%Ce_aux;
-    stream<<"E_prom_PMT_keV = "<<guardar_matriz_stream(E_prom_PMT_keV)<<endl;
+    stream<<"E_prom_PMT_keV_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(E_prom_PMT_keV)<<endl;
 
 
 
@@ -1821,9 +1823,13 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
 
 
     vec vec_log = arma::conv_to<vec>::from(Cx_arma);
-    stream<<"       Cx = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"       Cx_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
     vec_log = arma::conv_to<vec>::from(Cy_arma);
-    stream<<"       Cy = "<<guardar_vector_stream(vec_log)<<endl;
+    stream<<"       Cy_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
+
+    // Guardo el almohadon en el log
+    stream<<"       almohadon_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(almohadon[cab_num_act])<<endl;
+
 
 
     delete(vec_y);
@@ -2716,12 +2722,12 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     delete(x);
     delete(y);
 
-
+    int i = 0;
     // Recupero el canal del pico
     Pico_calculado.canal_pico = p[1];
-
+/*
     // Calculo el FWTM usando la función fiteada
-    int i = 0;
+    i = 0;
     while (Pico_calculado.limites_FWTM[0] == 0)
     {
         if (0.1 >=  f_gauss(round(Pico_calculado.canal_pico) - i , p)  )
@@ -2789,29 +2795,40 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         i++;
     }
     Pico_calculado.FWHM = (Pico_calculado.limites_FWHM[1]-Pico_calculado.limites_FWHM[0])/Pico_calculado.canal_pico;
-/*
+
     // Calculo el FWTM usando el espectro
-    i = 0;
+    // Arranco desdel el FWHM
+    i = Pico_calculado.canal_pico + 1 - Pico_calculado.limites_FWHM[0];
     while (Pico_calculado.limites_FWTM[0] == 0)
     {
         if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
         {
            Pico_calculado.limites_FWTM[0] =  Pico_calculado.canal_pico - i +1;
         }
+        // Es muy pobable que hacia las bajas energias no llegue nunca al 10% del pico
+        // así que lo corto antes
+        if (maximo_pico*0.55 <=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
+        {
+           Pico_calculado.limites_FWTM[0] =  Pico_calculado.canal_pico - i +1;
+        }
+
+
         i++;
     }
-    i = 0;
+    i = Pico_calculado.limites_FWHM[1] - Pico_calculado.canal_pico + 1;
     while (Pico_calculado.limites_FWTM[1] == 0)
     {
         if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico + i))  )
         {
            Pico_calculado.limites_FWTM[1] =  Pico_calculado.canal_pico + i -1;
         }
+
+
         i++;
     }
     Pico_calculado.FWTM = (Pico_calculado.limites_FWTM[1]-Pico_calculado.limites_FWTM[0])/Pico_calculado.canal_pico;
 
-*/
+
 
 
 
@@ -3239,6 +3256,12 @@ bool AutoCalib::plotear_espectro(int cab_num_act,  bool calibrado)
 
 bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
 {
+
+    mat grilla;
+    grilla.set_size(306,306);
+    grilla.load("../../images/grilla.dat", raw_ascii);
+
+
     // Almohadon auxiliar para presentar
     mat almohadon_aux = almohadon[cab_num_act];
 
@@ -3250,10 +3273,6 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
     double val_mid = val_max/2;
     double val_min = 0;
     double Y1, X1, Y2, X2;
-
-
-
-
 
     X1 = val_min;
     Y1 = 255;
@@ -3280,12 +3299,32 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
     double a_r = ((Y2-Y1)/(X2-X1)) , b_r = Y1 - X1 * ((Y2-Y1)/(X2-X1));
 
 
-    cube aux_save;
-    aux_save.set_size(BinsAlmohadon,BinsAlmohadon,3);
 
-    for(int i = 0 ; i<BinsAlmohadon ; i++)
+
+    // Escalo la grilla al maximo
+    grilla = grilla * val_max+100;
+    // Incluyo el almohadon en la grilla
+    for (int i = 24 ; i < 280 ; i++)
     {
-        for(int j = 0 ; j<BinsAlmohadon ; j++)
+        for (int j = 24 ; j < 280 ; j++)
+        {
+            grilla(i,j) = almohadon_aux(i-24,j-24);
+        }
+    }
+//    grilla( span(24,281), span(24,281) ) = almohadon_aux;
+
+    almohadon_aux = grilla;
+
+
+    int BinsAlmohadon_aux = 306;
+
+
+    cube aux_save;
+    aux_save.set_size(BinsAlmohadon_aux,BinsAlmohadon_aux,3);
+
+    for(int i = 0 ; i<BinsAlmohadon_aux ; i++)
+    {
+        for(int j = 0 ; j<BinsAlmohadon_aux ; j++)
         {
             aux_save(i,j,0) = almohadon_aux(i,j)*a_r + b_r;
 
@@ -3300,6 +3339,20 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
             }
 
             aux_save(i,j,2) = almohadon_aux(i,j)*a_b + b_b;
+
+            // Ponemos el fondo en negro
+            if (almohadon_aux(i,j) <= 1 || (i < 24) || (i>280) || (j < 24) || (j > 280)  )
+            {
+                aux_save(i,j,0) = 0;
+                aux_save(i,j,1) = 0;
+                aux_save(i,j,2) = 0;
+            }
+            if (almohadon_aux(i,j) == (val_max+100) )
+            {
+                aux_save(i,j,0) = 255;
+                aux_save(i,j,1) = 255;
+                aux_save(i,j,2) = 255;
+            }
         }
     }
 
@@ -3323,6 +3376,11 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
     if (skimm) nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+"_skimmed.ppm";
     else nombre_almohadon = path_salida_aux+"Almohadon_Cabezal_"+nombre_cab+".ppm";
     aux_save.save(nombre_almohadon.toStdString(), ppm_binary);
+
+
+
+
+
 
     // Las muestro
     QPixmap file(nombre_almohadon);
