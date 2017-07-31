@@ -923,7 +923,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
     }
 
-    stream<<"               Ce_inicial_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
+    stream<<"               Ce_pre_cal_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
 
@@ -1174,13 +1174,13 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 
 
     // Guardo las tasas
-    stream<<"               Porcentaje_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
-    stream<<"               Tasa_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Tasa_PMT)<<endl;
+    stream<<"               Porcentaje_PMT_Pre_Cal_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
+    stream<<"               Tasa_PMT_Pre_Cal_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Tasa_PMT)<<endl;
 
 
 
-    stream<<"               Mat_prom_inicial_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
-    stream<<"               Mat_tiempos_inicial_"<<cab_num_act+1<<" = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
+    stream<<"               Mat_prom_inicial_Pre_Cal_"<<cab_num_act+1<<" = "<<guardar_matriz_stream(E_prom_PMT[cab_num_act])<<endl;
+    stream<<"               Mat_tiempos_inicial_Pre_Cal_"<<cab_num_act+1<<" = "<< guardar_matriz_stream(desv_temp_media_central[cab_num_act])<<endl;
 
 
 
@@ -1361,6 +1361,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     {
         Ce[cab_num_act][i] = Ce_mejor(i);
     }
+
 
     cout<<"Final: "<<pico_calib.FWHM*100<<"%"<<endl;
     stream<<" %Final: "<<pico_calib.FWHM*100<<"%"<<endl;
