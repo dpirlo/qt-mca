@@ -646,6 +646,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Crudo_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
+    // Guardo el FW actual
+    FW_struct_Cabezal[cab_num_act] = pico_sin_calib;
+
 
     // ----------------------- Ploteo
     // Paso los vectores a Qvector para plotear
@@ -980,6 +983,39 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     stream<<" %   Canal pico: "<<centros_hist(pico_sin_calib.canal_pico)<<endl;
     vec vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
     stream<<"   Espect_Pre_Cal_Vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
+
+
+
+    // Checkeo que el pre-calibrado no arruine mas el FWHM.
+    // Esto es posible cuando los cabezales vienen medio mal y porque el criterio de alineado
+    // de aleta no esta del todo solido...
+    if (pico_sin_calib.FWHM > FW_struct_Cabezal[cab_num_act].FWHM)
+    {
+        // No mejoro, tiro todo para atras
+        stream<<" % El FWHM empeoro, abortando pre-calibracion. Este paso sera una copia del anterior. "<<endl;
+
+        // Pongo en 1 todo el Ce de pre calibracion
+        for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+            Ce_pre[cab_num_act][index_PMT_cent] = 1;
+
+        // Recupero el pico
+        pico_sin_calib = FW_struct_Cabezal[cab_num_act];
+
+        // Recupero los datos de la matriz de energía
+        Energia_calib_aux = Energia_calib[cab_num_act];
+        Suma_canales = sum( Energia_calib_aux, 0);
+        espectro_suma_crudo = hist(Suma_canales, centros_hist);
+
+    }
+    else
+    {
+        // Guardo el FW actual, ya que mejoro
+        FW_struct_Cabezal[cab_num_act] = pico_sin_calib;
+    }
+
+
+
+
 
 
     QVector<double> aux_qvec_cent(BinsHist);

@@ -254,6 +254,8 @@ namespace ap {
             double Acum_PMT[PMTs][CHANNELS];
             // Posiciones de los picos
             double Picos_PMT[PMTs];
+            // FWHM de cabezales
+            struct Pico_espectro FW_struct_Cabezal[CANTIDADdEcABEZALES];
 
 
             // Blancas Ajedres
