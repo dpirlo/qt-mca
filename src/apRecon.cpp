@@ -51,11 +51,11 @@ Reconstructor::Reconstructor()
     iteraciones = ITERACIONES_BASE;
 
     // Server Paths
-    SERVER_BASE     =   "/mounting/running/recon/apirl-mediciones/";
-    SERVER_ENCABEZADOS     =   "/mounting/running/recon/apirl-mediciones/encabezados/";
-    SERVER_ENTRADAS =   "/mounting/running/recon/apirl-mediciones/datos_Entrada/";
-    SERVER_SALIDAS  =   "/mounting/running/recon/apirl-mediciones/output_APIRL/";
-    SERVER_APIRL    =   "/mounting/running/recon/apirl-code-pet/build/cmd/";
+    SERVER_BASE             =   "/mnt/running/apirl-mediciones/";
+    SERVER_ENCABEZADOS      =   "/mnt/running/apirl-mediciones/encabezados/";
+    SERVER_ENTRADAS         =   "/mnt/running/apirl-mediciones/datos_Entrada/";
+    SERVER_SALIDAS          =   "/mnt/running/apirl-mediciones/output_APIRL/";
+    SERVER_APIRL            =   "/mnt/running/apirl-code-pet/build/cmd/";
 
 
 }
@@ -437,8 +437,6 @@ bool Reconstructor::Reconstruir()
         }
 
 
-
-
         //  ----- Si voy a reconstruir en el server copio los archivos ahi
 
         // Paso el archivo de parametros
@@ -467,20 +465,23 @@ bool Reconstructor::Reconstruir()
         indice_armado_cola++;
 
 
+
         // Paso el h33 de la imagen de sensibilidad
         // Armo la linea al programa
         programas[indice_armado_cola] = "scp";
         // Armo los argumentos
-        listasparametros[indice_armado_cola].append(path_Salida+nombre_sens_ini+".h33");
+//        listasparametros[indice_armado_cola].append(path_Salida+nombre_sens_ini+".h33");
+        aux_string = arch_ini.section(".",0,0);
+        listasparametros[indice_armado_cola].append(path_Salida+nombre_img_ini+".h33");
         listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
         indice_armado_cola++;
 
         // Paso el i33 de la imagen de sensibilidad
-        aux_string = arch_ini.section(".",0,0);
         // Armo la linea al programa
         programas[indice_armado_cola] = "scp";
         // Armo los argumentos
-        listasparametros[indice_armado_cola].append(aux_string+".i33");
+//        listasparametros[indice_armado_cola].append(aux_string+".i33");
+        listasparametros[indice_armado_cola].append(path_Salida+nombre_img_ini+".i33");
         listasparametros[indice_armado_cola].append(ip_SERVER+":"+SERVER_ENTRADAS);
         indice_armado_cola++;
 
@@ -560,10 +561,6 @@ bool Reconstructor::Reconstruir()
 
 
 
-
-
-
-
     // Mando el proceso
     proceso->start(programas[indice_ejecucion],listasparametros[indice_ejecucion]);
 
@@ -592,6 +589,7 @@ bool Reconstructor::Reconstruir()
             return -1;
         }
 
+
         // Busco la linea que contiene el archivo .i33 y la remplazo por el nombre directo
         QString s_out;
         QTextStream t_out(&archivo_recuperado);
@@ -606,6 +604,8 @@ bool Reconstructor::Reconstruir()
         archivo_recuperado.resize(0);
         t_out << s_out;
         archivo_recuperado.close();
+
+
     }
 
 
