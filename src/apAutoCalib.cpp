@@ -2478,7 +2478,7 @@ bool AutoCalib::Parsear_raw(void)
     adq_coin = Archivo_salida_parseado.toStdString();
 
     // Espero que termine
-    proceso->waitForFinished();
+    proceso->waitForFinished(-1);
 }
 
 
