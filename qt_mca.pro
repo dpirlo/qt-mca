@@ -45,8 +45,9 @@ FORMS += \
         ui/SetPMTs.ui
 
 INCLUDEPATH +=/opt/armadillo/include
-LIBS +=-lblas
 LIBS +=-llapack
+LIBS +=-lblas
+
 
 
 CONFIG(debug, debug|release) {
