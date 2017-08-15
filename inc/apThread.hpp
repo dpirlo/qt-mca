@@ -87,6 +87,12 @@ namespace ap {
        */
       void sendTempValues(int index, double min, double medium, double max);
       /**
+       * @brief sendOffSetValues
+       * @param index
+       * @param offsets
+       */
+      void sendOffSetValues(int index,int *offsets);
+      /**
        * @brief finished
        */
       void finished();
@@ -125,6 +131,15 @@ namespace ap {
        * @param mode
        */
       void sendHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+
+      /**
+       * @brief sendSaturated
+       * @param head
+       * @param Saturados
+       * @param mode
+       */
+      void sendSaturated(int head, double *Saturados ,bool mode);
+
       /**
        * @brief sendValuesMCA
        * @param time

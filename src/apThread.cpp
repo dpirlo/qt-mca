@@ -102,11 +102,28 @@ void Thread::abort()
  */
 void Thread::getLogWork()
 {
+
+    double CuentasTotales=0;
+    double Saturados[48];
+    string pmt_function;
+
     if(debug)
     {
         cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
         cout<<"Comienza el log cada "<<time_sec<<" segundos"<<endl;
     }
+
+    if (_centroid)
+    {
+        pmt_function = arpet->getFunCHead();
+    }
+    else
+    {
+        pmt_function = arpet->getFunCSP3();
+    }
+
+
+
 
     int try_error_count = 0;
 
@@ -115,6 +132,7 @@ void Thread::getLogWork()
         vector<int> rates(3);
         double tempe;
         int head_index;
+        int offsets[48];
 
         mutex->lock();
 
@@ -145,13 +163,41 @@ void Thread::getLogWork()
                     emit sendTempValues(head_index, t_min, mean, t_max);
                     if (debug) cout<<"Temperaturas | Mínima: "<<QString::number(t_min).toStdString()<<" | Media: "<<QString::number(mean).toStdString()<<" | Máxima: "<<QString::number(t_max).toStdString()<<endl;
                 }
+                if(temp)
+                {
+                    for(int pmt = 0; pmt < PMTs; pmt++)
+                    {
+                        string msg = arpet->getMCA(QString::number(pmt).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
+                        if (debug) cout<<"PMT OFFSET: "<<QString::number(pmt+1).toStdString()<<" | "<<QString::number(arpet->getOffSetMCA()).toStdString()<<" |s"<<endl;
+                        offsets[pmt]=arpet->getOffSetMCA();
+                    }
 
+                    emit sendOffSetValues(head_index, offsets);
+                    if (debug) cout<<"termino el volcado de offset"<<endl;
+                }
                 if(rate)
                 {
                     rates = arpet->getRate(QString::number(head_index).toStdString(), port_name.toStdString());
                     emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
                     if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
                 }
+
+                // TASA////////////////////////
+                for (int j=0;j<48;j++){
+                    string msg = arpet->getMCA(QString::number(j).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
+                    cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
+//                          cout<<"PMT: "<<pmt<<" "<<endl;
+
+                    for(int k=0;k<255;k++){
+                        CuentasTotales+=arpet->getHitsMCA()[k];
+                    }
+                    Saturados[j]=(arpet->getHitsMCA()[255]/CuentasTotales)*100;
+                    cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
+
+                }
+                emit sendSaturated(QString::number(head_index).toInt(), Saturados ,true);
+                //// FIN TASA
+
             }
             catch (Exceptions &ex)
             {
@@ -244,6 +290,8 @@ void Thread::getMCA()
 
     string pmt_function;
     int timer_wait_milisec;
+    double CuentasTotales=0;
+    double Saturados[48];
 
     if (_centroid)
     {
@@ -272,9 +320,15 @@ void Thread::getMCA()
                     if(debug)
                     {
                         cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
-                        cout<<"PMT: "<<pmt<<" "<<endl;
+//                        cout<<"PMT: "<<pmt<<" "<<endl;
+
+                        for(int i=0;i<255;i++){
+                            CuentasTotales+=arpet->getHitsMCA()[i];
+                        }
+                        cout<<"PMT: "<<pmt<<" "<<"Saturados "<< pmt<<": " << QString::number((arpet->getHitsMCA()[255]/CuentasTotales)*100).toStdString()<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
+
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
@@ -288,12 +342,17 @@ void Thread::getMCA()
                     string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
                     {
+
                         cout<<"Cabezal: "<<checkedHeads.at(index)<<endl;
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
+
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(index)),index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
+
+
+
                 timer_wait_milisec = (100 + checkedHeads.length()*50);
             }
         }

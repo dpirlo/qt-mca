@@ -118,6 +118,7 @@ private slots:
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
     void writeTempToLog(int index, double min, double med, double max);
+    void writeOffSetToLog(int index,int *offsets);
     void getLogErrorThread();
     void getCalibErrorThread();
     void getMCAErrorThread();
@@ -131,6 +132,7 @@ private slots:
     void clearSpecHeadsGraphs();
     void connectPortArpet();
     void OffButtonCalib();
+    void recievedSaturated(int Cabezal, double *Saturados,bool modo);
 
 
     /* Slots de sincronización en el entorno gráfico */

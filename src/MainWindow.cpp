@@ -262,10 +262,11 @@ void MainWindow::connectSlots()
     /* Threads signals/slots */
     connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
     connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
+    connect(worker, SIGNAL(sendOffSetValues(int, int *)), this, SLOT(writeOffSetToLog(int,  int *)));
     connect(worker, SIGNAL(logRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
-    connect(this, SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
+    connect(this,   SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
     connect(worker, SIGNAL(sendLogErrorCommand()),this,SLOT(getLogErrorThread()));
 
     connect(worker, SIGNAL(startElapsedTime()), etime_th, SLOT(start()), Qt::DirectConnection);
@@ -278,9 +279,11 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(mcaRequested()), mcae_th, SLOT(start()));
     connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
     connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
-    connect(this, SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
+    connect(this,   SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
+    connect(worker, SIGNAL(sendSaturated(int , double * ,bool)),this, SLOT( recievedSaturated(int , double * ,bool)));
+
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
     connect(mcae_wr, SIGNAL(clearGraphsHeads()),this,SLOT(clearSpecHeadsGraphs()));
@@ -321,6 +324,36 @@ void MainWindow::writeTempToLog(int index, double min, double med, double max)
 {
     writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
 }
+/**
+ * @brief MainWindow::writeOffSetToLog
+ * @param index
+ * @param min
+ * @param med
+ * @param max
+ */
+void MainWindow::writeOffSetToLog(int index,int *offsets)
+{
+    writeLogFile("[LOG-OFFSET],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index));
+    for (int i=0;i<48;i++){
+        writeLogFile(", "+QString::number(offsets[i]));
+
+    }
+    writeLogFile("\n");
+}
+/**
+ * @brief MainWindow::recievedSaturated
+ * @param Cabezal
+ * @param Saturados
+ * @param modo
+ */
+void MainWindow::recievedSaturated(int Cabezal, double Saturados[48],bool modo){
+    writeLogFile("[LOG-SAT],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(Cabezal));
+    for (int i=0;i<48;i++){
+        writeLogFile(", "+QString::number(Saturados[i]));
+    }
+    writeLogFile("\n");
+}
+
 /**
  * @brief MainWindow::receivedElapsedTimeString
  * @param etime_string
@@ -389,7 +422,7 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
         if (pmt_selected_list.length()==1)
         {
             ui->label_title_output->setText("MCA Extended | PMT: " + pmt_selected_list.at(0));
-            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " | Modo Centroide: " + centroid_mode + " |" );
+            ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " | Modo Centroide: " + centroid_mode + " | "+"Offset : " +QString::number(arpet->getOffSetMCA()) );
         }
         else
         {
@@ -1682,7 +1715,7 @@ void MainWindow::setCalibrationTables(int head)
             if(debug)
             {
                 cout<<"========================================="<<endl;
-                cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+                cout<<" "<< QString::number(pmt+1).toStdString() <<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
                 cout<<"Valor de HV: "<< hv.toStdString() <<endl;
                 cout<<"========================================="<<endl;
@@ -1983,7 +2016,10 @@ QString MainWindow::getHeadMCA(QString head)
     catch(Exceptions & ex)
     {
         setButtonAdquireState(false);
-        if(debug) cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
+        if(debug) {
+            cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
+           // cout<<"PMT: "<<pmt<<" "<<"Saturados "<< pmt<<": " << QString::number(arpet->getHitsMCA()[255]).toStdString()<<endl;
+        }
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         Exceptions exception_timeout(ex.excdesc);
         throw exception_timeout;
@@ -2003,6 +2039,7 @@ QString MainWindow::getHeadMCA(QString head)
 QString MainWindow::getMultiMCA(QString head)
 {
     int size_pmt_selected = pmt_selected_list.length();
+    double SaturatedChannel;
     QString msg;
 
     if (pmt_selected_list.isEmpty())
@@ -2020,11 +2057,14 @@ QString MainWindow::getMultiMCA(QString head)
         {
             string pmt = pmt_selected_list.at(index).toStdString();
             msg = getMCA(head.toStdString(), arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
+            SaturatedChannel =arpet->getHitsMCA()[255];
+
             if(debug)
             {
-                cout<<"PMT: "<<pmt<<" "<<endl;
+                cout<<"PMT: "<<pmt<<" "<<"Saturados "<< pmt<<": " << QString::number(arpet->getHitsMCA()[255]).toStdString()<<endl;
                 showMCAEStreamDebugMode(msg.toStdString());
             }
+
             addGraph(arpet->getHitsMCA(),ui->specPMTs,CHANNELS_PMT, QString::fromStdString(pmt), qcp_pmt_parameters[index]);
         }
         if(debug) cout<<"Se obtuvieron las cuentas MCA de los PMTs seleccionados de forma satisfactoria."<<endl;
@@ -2979,6 +3019,7 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
         worker->setCheckedHeads(checkedHeads);
         if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
         if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
+        //TODO: aca poner el check del log de offset
         worker->setDebugMode(debug);
         worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
 
@@ -4196,8 +4237,6 @@ void MainWindow::selectionChangedPMT()
         ui->specPMTs->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
         ui->specPMTs->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
     }
-
-
     for (int i=0; i<ui->specPMTs->graphCount(); ++i)
     {
         QCPGraph *graph = ui->specPMTs->graph(i);
@@ -5547,8 +5586,8 @@ void MainWindow::on_pushButton_Log_clicked() {
         QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATE]");
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // Configuracion de la trama:
-        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
-        //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0
+        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX--OFFSET
+        //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0,         0
         /////////////////////////////////////////////////////////////////////////////////////////////////
         cout<<"---------------------------------";
         cout<<"fecha: "+lista.at(1).toStdString();
