@@ -1357,11 +1357,48 @@ vector<int> MCAE::parserRateStream(string stream)
 {
     QByteArray q_stream(stream.c_str(), stream.length());
     vector<int> rates(3);
+    //cout<<stream<<endl;
     rates.at(0)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 6).toStdString())); // Ventana baja
+    //cout<<QString::number(rates.at(0)).toStdString()<<endl;
     rates.at(1)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(11, 6).toStdString())); // Ventana media
+    //cout<<QString::number(rates.at(1)).toStdString()<<endl;
     rates.at(2)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(17, 6).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(2)).toStdString()<<endl;
+    ////// tres tasas de 6 bytes
     return rates;
 }
+
+/**
+ * @brief MCAE::parserRateStreamCoin
+ * @param stream
+ * @return
+ */
+vector<int> MCAE::parserRateStreamCoin(string stream)
+{
+    QByteArray q_stream(stream.c_str(), stream.length());
+    vector<int> rates(9);
+    //cout<<stream<<endl;
+    rates.at(0)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(5, 5).toStdString())); // Ventana baja
+    //cout<<QString::number(rates.at(0)).toStdString()<<endl;
+    rates.at(1)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(10, 5).toStdString())); // Ventana media
+    //cout<<QString::number(rates.at(1)).toStdString()<<endl;
+    rates.at(2)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(15, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(2)).toStdString()<<endl;
+    rates.at(3)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(20, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(3)).toStdString()<<endl;
+    rates.at(4)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(25, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(4)).toStdString()<<endl;
+    rates.at(5)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(30, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(5)).toStdString()<<endl;
+    rates.at(6)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(35, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(6)).toStdString()<<endl;
+    rates.at(7)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(40, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(7)).toStdString()<<endl;
+    rates.at(8)=convertHexToDec(convertFromMCAFormatStream(q_stream.mid(45, 5).toStdString())); // Ventana alta
+    //cout<<QString::number(rates.at(8)).toStdString()<<endl;
+    return rates;
+}
+
 /**
  * @brief MCAE::getRate
  *
@@ -1388,4 +1425,29 @@ vector<int> MCAE::getRate(string head, string port_name)
     msg = readString(delimeter, port_name);
 
     return parserRateStream(msg);
+}
+/**
+ * @brief MCAE::getRateCoin
+ * @param head
+ * @param port_name
+ * @return
+ */
+vector<int> MCAE::getRateCoin(string head, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+    string rate_stream = getMCAFormatStream(getRate_MCA());
+    int size_rate=(int)(rate_stream.size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+45));
+    string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
+    setTrama_MCAE(stream);
+
+    char delimeter='\r';
+    string msg;
+
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
+    cout<<msg<<endl;
+    //cout<<parserRateStreamCoin(msg)<<endl;
+    return parserRateStreamCoin(msg);
 }

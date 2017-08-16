@@ -32,7 +32,7 @@
 #include "SetPreferences.h"
 #include "SetPMTs.h"
 #include "apMCAE.hpp"
-#include "apAutoCalib.hpp"
+//#include "apAutoCalib.hpp"
 #include "apRecon.hpp"
 #include "apThread.hpp"
 #include "apAutoCalibThread.hpp"
@@ -84,6 +84,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     void checkCombosStatus();
     ~MainWindow();
+    void resetHitsValues();
 
     /* Area de prueba/testing */
 
@@ -117,8 +118,10 @@ private slots:
 
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
+    void writeRatesCoinToLog(int rate_uno_tres, int rate_uno_cuatro, int rate_uno_cinco,int rate_dos_cuatro,int rate_dos_cinco,int rate_dos_seis,int rate_tres_cinco,int rate_tres_seis,int rate_cuatro_seis);
     void writeTempToLog(int index, double min, double med, double max);
     void writeOffSetToLog(int index,int *offsets);
+    void recievedPicosLog(struct Pico_espectro Pico ,int index);
     void getLogErrorThread();
     void getCalibErrorThread();
     void getMCAErrorThread();
@@ -255,7 +258,6 @@ private slots:
 
     void on_checkBox_rate_log_toggled(bool checked);
 
-
     void on_pushButton_p_51_clicked();
 
 private:
@@ -280,6 +282,7 @@ private:
     QString getHead(string tab);
     string initHead(int head);
     string initSP3(int head);
+    struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
     void setCalibrationTables(int head);
     void setInitialConfigurations();
     void setPreferencesConfiguration();
@@ -319,7 +322,6 @@ private:
     int getPMT(QLineEdit *line_edit);
     QString getPSOCAlta(QLineEdit *line_edit);
     string getHVValue(QLineEdit *line_edit, int value=0);
-    void resetHitsValues();
     bool resetHeads();
     bool resetPMTs(bool centroide=false);
     void setQListElements();

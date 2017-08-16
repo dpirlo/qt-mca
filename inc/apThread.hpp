@@ -21,6 +21,7 @@
 #define APTHREAD_H
 
 #include "apMCAE.hpp"
+#include "apAutoCalib.hpp"
 #include <QTimer>
 #include <QMutex>
 #include <QEventLoop>
@@ -60,7 +61,6 @@ namespace ap {
       bool log_finished;
       QString etime;
 
-
   signals:
       /**
        * @brief logRequested
@@ -70,6 +70,21 @@ namespace ap {
        * @brief mcaRequest
        */
       void mcaRequested();
+      /**
+       * @brief sendRatesValuesCoin
+       * @param index
+       * @param rate_uno_tres
+       * @param rate_uno_cuatro
+       * @param rate_uno_cinco
+       * @param rate_dos_cuatro
+       * @param rate_dos_cinco
+       * @param rate_dos_seis
+       * @param rate_tres_cinco
+       * @param rate_tres_seis
+       * @param rate_cuatro_seis
+       */
+      void sendRatesValuesCoin( int rate_uno_tres, int rate_uno_cuatro, int rate_uno_cinco,int rate_dos_cuatro,int rate_dos_cinco,int rate_dos_seis,int rate_tres_cinco,int rate_tres_seis,int rate_cuatro_seis);
+
       /**
        * @brief sendRatesValues
        * @param index
@@ -141,6 +156,13 @@ namespace ap {
       void sendSaturated(int head, double *Saturados ,bool mode);
 
       /**
+       * @brief sendPicosLog
+       * @param Pico
+       * @param index
+       */
+      void sendPicosLog(struct Pico_espectro Pico,int index);
+
+      /**
        * @brief sendValuesMCA
        * @param time
        * @param hv_pmt
@@ -154,6 +176,7 @@ namespace ap {
        */
       void clearGraphsPMTs();
       void clearGraphsCalib();
+
       /**
        * @brief clearGraphsHeads
        */
@@ -208,6 +231,7 @@ namespace ap {
        * @param _sec
        */
       void setTimeBetweenLogs(int _sec) {time_sec = _sec;}
+
   };
 
 }

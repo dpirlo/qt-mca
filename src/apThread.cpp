@@ -100,12 +100,15 @@ void Thread::abort()
  * de una señal a MainWindow. Se finaliza con la variable _booleana_ _abort_.
  *
  */
-void Thread::getLogWork()
-{
+void Thread::getLogWork() {
 
     double CuentasTotales=0;
     double Saturados[48];
     string pmt_function;
+    double Hist_Double[CHANNELS];
+    QVector<double> aux_hits;
+    AutoCalib InitBuscaPico;
+    struct Pico_espectro aux;
 
     if(debug)
     {
@@ -129,7 +132,7 @@ void Thread::getLogWork()
 
     while(!_abort)
     {
-        vector<int> rates(3);
+        vector<int> rates(9);
         double tempe;
         int head_index;
         int offsets[48];
@@ -137,10 +140,11 @@ void Thread::getLogWork()
         mutex->lock();
 
 
-        for (int i=0;i<checkedHeads.length();i++)
-        {
+
             try
             {
+              for (int i=0;i<checkedHeads.length();i++)
+              {
                 head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
 
@@ -152,7 +156,7 @@ void Thread::getLogWork()
                 {
                     for(int pmt = 0; pmt < PMTs; pmt++)
                     {
-                        string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+                        string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt).toStdString(), port_name.toStdString());
                         if (debug) cout<<"PMT: "<<QString::number(pmt+1).toStdString()<<" | "<<msg<<" | "<<arpet->getTrama_MCAE()<<endl;
                         tempe = arpet->getPMTTemperature(msg);
                         if (tempe > MIN_TEMPERATURE) temp_vec.push_back(tempe);
@@ -181,42 +185,64 @@ void Thread::getLogWork()
                     emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
                     if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
                 }
+                // ///////////////////////////
+                ///// PICO //////////////////
 
-                // TASA////////////////////////
+                // Pido MCA a cabezal
+                arpet->getMCA(QString::number(head_index).toStdString(), arpet->getFunCHead(), QString::number(head_index).toStdString(), CHANNELS, port_name.toStdString());
+                aux_hits = arpet->getHitsMCA();
+
+                for (int j = 0 ; j < CHANNELS ; j++) {
+
+                    Hist_Double[j] = aux_hits[j];
+                }
+
+                aux = InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);
+
+                emit sendPicosLog(aux, head_index);
+
+                // FIN PICO //////////////////
+                //////////////////////////////
+                // TASA///////////////////////
                 for (int j=0;j<48;j++){
                     string msg = arpet->getMCA(QString::number(j).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                    cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
+                    if (debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
 //                          cout<<"PMT: "<<pmt<<" "<<endl;
 
                     for(int k=0;k<255;k++){
                         CuentasTotales+=arpet->getHitsMCA()[k];
                     }
                     Saturados[j]=(arpet->getHitsMCA()[255]/CuentasTotales)*100;
-                    cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
+                    if (debug) cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
 
                 }
                 emit sendSaturated(QString::number(head_index).toInt(), Saturados ,true);
                 //// FIN TASA
+                }
+              rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
 
-            }
-            catch (Exceptions &ex)
+              emit sendRatesValuesCoin( rates.at(0), rates.at(1), rates.at(2),rates.at(3),rates.at(4),rates.at(5),rates.at(6),rates.at(7),rates.at(8));
+              cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
+
+
+        }
+        catch (Exceptions &ex)
+        {
+            try_error_count++;
+            if (debug)
             {
-                try_error_count++;
+                cout<<"Imposible adquirir los valores de tasa y/o temperatura en el cabezal "<<head_index<<". Error: "<<ex.excdesc<<endl;
+                cout<<"Se continua con el proceso de logueo."<<endl;
+            }
+
+            if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
+            {
                 if (debug)
                 {
-                    cout<<"Imposible adquirir los valores de tasa y/o temperatura en el cabezal "<<head_index<<". Error: "<<ex.excdesc<<endl;
-                    cout<<"Se continua con el proceso de logueo."<<endl;
+                    cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
                 }
-
-                if(try_error_count>4) //Si supero los 4 reintentos de acceso envío una señal de error para abortar.
-                {
-                    if (debug)
-                    {
-                        cout<<"Se supera los "<<try_error_count<<" reintentos de adquisición. Se aborta el proceso de logueo."<<endl;
-                    }
-                    emit sendLogErrorCommand();
-                    setAbortBool(true);
-                }
+                emit sendLogErrorCommand();
+                setAbortBool(true);
             }
         }
 
@@ -291,7 +317,6 @@ void Thread::getMCA()
     string pmt_function;
     int timer_wait_milisec;
     double CuentasTotales=0;
-    double Saturados[48];
 
     if (_centroid)
     {

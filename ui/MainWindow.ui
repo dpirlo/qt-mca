@@ -3802,7 +3802,7 @@ calibrar</string>
         </rect>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>60</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_38">
@@ -7277,7 +7277,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>26</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

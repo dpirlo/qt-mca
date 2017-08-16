@@ -261,6 +261,8 @@ void MainWindow::connectSlots()
 {
     /* Threads signals/slots */
     connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
+    connect(worker, SIGNAL(sendRatesValuesCoin(int, int, int,int,int,int,int,int,int)), this, SLOT(writeRatesCoinToLog(  int, int, int,int,int,int,int,int,int)));
+
     connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
     connect(worker, SIGNAL(sendOffSetValues(int, int *)), this, SLOT(writeOffSetToLog(int,  int *)));
     connect(worker, SIGNAL(logRequested()), thread, SLOT(start()));
@@ -283,6 +285,7 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
     connect(worker, SIGNAL(sendSaturated(int , double * ,bool)),this, SLOT( recievedSaturated(int , double * ,bool)));
+    connect(worker, SIGNAL(sendPicosLog(struct Pico_espectro ,int)),this, SLOT( recievedPicosLog(struct Pico_espectro ,int)));
 
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
@@ -313,6 +316,24 @@ void MainWindow::writeRatesToLog(int index, int rate_low, int rate_med, int rate
 {
     writeLogFile("[LOG-RATE],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(rate_low)+","+QString::number(rate_med)+","+QString::number(rate_high)+"\n");
 }
+
+/**
+ * @brief MainWindow::writeRatesCoinToLog
+ * @param index
+ * @param rate_uno_tres
+ * @param rate_uno_cuatro
+ * @param rate_uno_cinco
+ * @param rate_dos_cuatro
+ * @param rate_dos_cinco
+ * @param rate_dos_seis
+ * @param rate_tres_cinco
+ * @param rate_tres_seis
+ * @param rate_cuatro_seis
+ */
+void MainWindow::writeRatesCoinToLog(int rate_uno_tres, int rate_uno_cuatro, int rate_uno_cinco,int rate_dos_cuatro,int rate_dos_cinco,int rate_dos_seis,int rate_tres_cinco,int rate_tres_seis,int rate_cuatro_seis)
+{
+    writeLogFile("[LOG-RATECOIN],"+ QString::fromStdString(getLocalDateAndTime()) +","+QString::number(rate_uno_tres)+","+QString::number(rate_uno_cuatro)+","+QString::number(rate_uno_cinco)+","+QString::number(rate_dos_cuatro)+","+QString::number(rate_dos_cinco)+","+QString::number(rate_dos_seis)+","+QString::number(rate_tres_cinco)+","+QString::number(rate_tres_seis)+","+QString::number(rate_cuatro_seis)+"\n");
+}
 /**
  * @brief MainWindow::writeTempToLog
  * @param index
@@ -324,6 +345,18 @@ void MainWindow::writeTempToLog(int index, double min, double med, double max)
 {
     writeLogFile("[LOG-TEMP],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(min)+","+QString::number(med)+","+QString::number(max)+"\n");
 }
+
+/**
+ * @brief MainWindow::recievedPicosLog
+ * @param Pico
+ * @param index
+ */
+void MainWindow::recievedPicosLog(struct Pico_espectro Pico,int index)
+{
+    writeLogFile("[LOG-PICO],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(Pico.canal_pico)+","+QString::number(Pico.FWHM*100)+"\n");
+    ui->pushButton_reset->clicked(true);
+}
+
 /**
  * @brief MainWindow::writeOffSetToLog
  * @param index

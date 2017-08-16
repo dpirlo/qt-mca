@@ -2633,10 +2633,8 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     Pico_calculado.limites_Pico[0] = 0;
     Pico_calculado.limites_Pico[1] = 0;
 
-
     // Copio los canales a una matriz
     vec Canales_mat(Canales,num_canales,1);
-
 
     // Busqueda de pico gruesa
     int 	picos[num_canales];
@@ -2644,8 +2642,6 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     int 	npicos;
     int 	npicos_abs;
     double	delta;
-
-
 
     // Calculo la fraccion del maximo que dara el salto que debe existir para considerar que hay pico
     delta = fract_maximo(Canales,num_canales,0.25);
@@ -2670,7 +2666,6 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     int limite_bajo = can_pico - dist;
     int limite_alto = can_pico + dist;
 
-
     // Fitteo la curva gausseana por newton-gauss by Juan
     int NP = 3;
     // Cantidad de canales a pasar a juan
@@ -2687,14 +2682,9 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         y[i] = Canales[aux];
     }
 
-
-
-
-
     // Defino los parametros
     // Una vez encontrado el pico de manera rudimentaria, le fiteo una gauss
     // y sale el armadillo
-
 
     // Me quedo solo con los canales que me interesan, los que estan dentro de las ventanas
     mat canales_peak(y,ndatos,1);
@@ -2740,10 +2730,6 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
             if(i && y[i]>tmp) tmp=y[i];
         }
     for(int i=0;i<ndatos;i++)  y[i]/=tmp;
-
-
-    
-
 
     double sseprev=0.0;
     for(int i=0,sseprev=0.0;i<len;i++)
@@ -2864,14 +2850,6 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         i++;
     }
     Pico_calculado.FWTM = (Pico_calculado.limites_FWTM[1]-Pico_calculado.limites_FWTM[0])/Pico_calculado.canal_pico;
-
-
-
-
-
-
-
-
 
     return Pico_calculado;
 

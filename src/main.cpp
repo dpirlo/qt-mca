@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     w.show();
     w.checkCombosStatus();
     qRegisterMetaType<QVector<double> >("QVector<double>");
+    qRegisterMetaType<Pico_espectro>("Pico_espectro");
 
     return a.exec();
 }

@@ -106,6 +106,7 @@ namespace ap {
     string setTime(string head, double time_value, string pmt, string port_name);
     string getTemp(string head, string pmt, string port_name);
     vector<int> getRate(string head, string port_name);
+    vector<int> getRateCoin(string head, string port_name);
     QVector<QString> parserPSOCStream(string stream);
     double getPMTTemperature(string temp_stream);
     bool isPortOpen();
@@ -148,6 +149,7 @@ namespace ap {
     string getCalibTableFormat(string function, QVector<double> table);
     int convertDoubleToInt(double value);
     vector<int> parserRateStream(string stream);
+    vector<int> parserRateStreamCoin(string stream);
     string convertToTwoComplement(double value, int two_complement_bits=10);
     string convertToTwoComplement(int value, int two_complement_bits=8);
     QByteArray getReverse(QByteArray seq);
