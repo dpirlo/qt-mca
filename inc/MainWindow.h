@@ -135,7 +135,7 @@ private slots:
     void clearSpecHeadsGraphs();
     void connectPortArpet();
     void OffButtonCalib();
-    void recievedSaturated(int Cabezal, double *Saturados,bool modo);
+    void recievedSaturated(int Cabezal, double *Saturados);
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -259,6 +259,18 @@ private slots:
     void on_checkBox_rate_log_toggled(bool checked);
 
     void on_pushButton_p_51_clicked();
+
+    void on_RATECAB1_clicked();
+
+    void on_RATECAB2_clicked();
+
+    void on_RATECAB3_clicked();
+
+    void on_RATECAB4_clicked();
+
+    void on_RATECAB5_clicked();
+
+    void on_RATECAB6_clicked();
 
 private:
     void connectSlots();

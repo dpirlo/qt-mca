@@ -151,9 +151,8 @@ namespace ap {
        * @brief sendSaturated
        * @param head
        * @param Saturados
-       * @param mode
        */
-      void sendSaturated(int head, double *Saturados ,bool mode);
+      void sendSaturated(int head, double *Saturados );
 
       /**
        * @brief sendPicosLog

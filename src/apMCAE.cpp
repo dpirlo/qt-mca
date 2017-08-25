@@ -1240,7 +1240,12 @@ string MCAE::setHV(string head, string pmt, string channel_dec, string port_name
 
     return msg;
 }
-
+/**
+ * @brief MCAE::InitSP3
+ * @param head
+ * @param port_name
+ * @return
+ */
 string MCAE::InitSP3(string head, string port_name)
 {
     setHeader_MCAE(getHead_MCAE() + head + getFunCSP3());
@@ -1292,12 +1297,51 @@ string MCAE::setCalibTable(string head, string calib_function, QVector<double> t
     setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
     setMCAEStream(calib_function, table);
     char delimeter='\r';
-    string msg;
+    QString msg;
 
     sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
-    msg = readString(delimeter, port_name);
+    msg = QString::fromStdString(readString(delimeter, port_name));
 
-    return msg;
+    if (!msg.contains("&10")){
+      Exceptions exception_CalibTableX("No se validó la carga de valores de Calibracion X" );
+      cout<<"ERROR EN CALIBRACION DE TABLAS"<<endl;
+      cout<<msg.toStdString()<<endl;
+      throw exception_CalibTableX;
+    }
+
+//    switch (calib_function.substr(3)){
+//      case arpet->getX_Calib_Table():{
+//        if(msg.find("&102")!=std::string::npos){
+//          Exceptions exception_CalibTableX("No se validó la carga de valores de Calibracion X" );
+//          throw exception_CalibTableX;
+//          }
+//        break;
+//      }
+//      case arpet->getY_Calib_Table():{
+//        if(msg.find("&103")!=std::string::npos){
+//          Exceptions exception_CalibTableY("No se validó la carga de valores de Calibracion Y" );
+//          throw exception_CalibTableY;
+//        }
+//        break;
+//      }
+//      case arpet->getEnergy_Calib_Table():{
+//        if(msg.find("&101")!=std::string::npos){
+//          Exceptions exception_CalibTableEnergy("No se validó la carga de valores de energias " );
+//          throw exception_CalibTableEnergy;
+//        }
+//        break;
+//      }
+//      case arpet->getWindow_Limits_Table():{
+//        if(msg.find("&104")!=std::string::npos){
+//          Exceptions exception_CalibTableWindow("No se validó la carga de triple ventana" );
+//          throw exception_CalibTableWindow;
+//        }
+//        break;
+//      }
+//      default: cout<<"funcion no implementada para verificacion"<<endl; break;
+//    }
+
+    return msg.toStdString();
 }
 /**
  * @brief MCAE::setTime

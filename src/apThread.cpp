@@ -133,49 +133,41 @@ void Thread::getLogWork() {
     while(!_abort)
     {
         vector<int> rates(9);
-        double tempe;
+        int tempe[48];
         int head_index;
         int offsets[48];
+        string msg_MCA;
 
         mutex->lock();
-
-
-
             try
             {
+
               for (int i=0;i<checkedHeads.length();i++)
               {
+                emit startElapsedTime();
                 head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
-
-                emit startElapsedTime();
-
                 QVector<double> temp_vec;
                 temp_vec.fill(0);
+
+
+                for (int j=0;j<48;j++){
+                    msg_MCA = arpet->getMCA(QString::number(j).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
+                    if (debug) cout<<"PMT OFFSET: "<<QString::number(j+1).toStdString()<<" | "<<QString::number(arpet->getOffSetMCA()).toStdString()<<" |s"<<endl;
+                    offsets[j]=arpet->getOffSetMCA();
+                    tempe[j]=arpet->getTempValueMCA();
+                    if (debug) cout<<"PMT: "<<QString::number(j+1).toStdString()<<" | "<<msg_MCA<<" | "<<arpet->getTrama_MCAE()<<endl;
+                    if (tempe[j] > MIN_TEMPERATURE) temp_vec.push_back(tempe[j]);
+                }
+
                 if(temp)
                 {
-                    for(int pmt = 0; pmt < PMTs; pmt++)
-                    {
-                        string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt).toStdString(), port_name.toStdString());
-                        if (debug) cout<<"PMT: "<<QString::number(pmt+1).toStdString()<<" | "<<msg<<" | "<<arpet->getTrama_MCAE()<<endl;
-                        tempe = arpet->getPMTTemperature(msg);
-                        if (tempe > MIN_TEMPERATURE) temp_vec.push_back(tempe);
-                    }
+
                     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
                     double t_max = *max_element(temp_vec.begin(),temp_vec.end());
                     double t_min = *min_element(temp_vec.begin(),temp_vec.end());
                     emit sendTempValues(head_index, t_min, mean, t_max);
                     if (debug) cout<<"Temperaturas | Mínima: "<<QString::number(t_min).toStdString()<<" | Media: "<<QString::number(mean).toStdString()<<" | Máxima: "<<QString::number(t_max).toStdString()<<endl;
-                }
-                if(temp)
-                {
-                    for(int pmt = 0; pmt < PMTs; pmt++)
-                    {
-                        string msg = arpet->getMCA(QString::number(pmt).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                        if (debug) cout<<"PMT OFFSET: "<<QString::number(pmt+1).toStdString()<<" | "<<QString::number(arpet->getOffSetMCA()).toStdString()<<" |s"<<endl;
-                        offsets[pmt]=arpet->getOffSetMCA();
-                    }
-
                     emit sendOffSetValues(head_index, offsets);
                     if (debug) cout<<"termino el volcado de offset"<<endl;
                 }
@@ -185,11 +177,11 @@ void Thread::getLogWork() {
                     emit sendRatesValues(head_index, rates.at(0), rates.at(1), rates.at(2));
                     if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
                 }
-                // ///////////////////////////
                 ///// PICO //////////////////
 
                 // Pido MCA a cabezal
                 arpet->getMCA(QString::number(head_index).toStdString(), arpet->getFunCHead(), QString::number(head_index).toStdString(), CHANNELS, port_name.toStdString());
+
                 aux_hits = arpet->getHitsMCA();
 
                 for (int j = 0 ; j < CHANNELS ; j++) {
@@ -205,9 +197,7 @@ void Thread::getLogWork() {
                 //////////////////////////////
                 // TASA///////////////////////
                 for (int j=0;j<48;j++){
-                    string msg = arpet->getMCA(QString::number(j).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
                     if (debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
-//                          cout<<"PMT: "<<pmt<<" "<<endl;
 
                     for(int k=0;k<255;k++){
                         CuentasTotales+=arpet->getHitsMCA()[k];
@@ -216,14 +206,13 @@ void Thread::getLogWork() {
                     if (debug) cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
 
                 }
-                emit sendSaturated(QString::number(head_index).toInt(), Saturados ,true);
+                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
                 //// FIN TASA
-                }
+              }
               rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
 
               emit sendRatesValuesCoin( rates.at(0), rates.at(1), rates.at(2),rates.at(3),rates.at(4),rates.at(5),rates.at(6),rates.at(7),rates.at(8));
-              cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
-
+              if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
 
         }
         catch (Exceptions &ex)
@@ -357,7 +346,7 @@ void Thread::getMCA()
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
-                timer_wait_milisec = (100 + size_pmt_selected*100);
+                timer_wait_milisec = (20 + size_pmt_selected*50);
             }
             else
             {
@@ -376,9 +365,7 @@ void Thread::getMCA()
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
 
-
-
-                timer_wait_milisec = (100 + checkedHeads.length()*50);
+                timer_wait_milisec = (20 + checkedHeads.length()*20);
             }
         }
         catch(Exceptions & ex)

@@ -284,7 +284,7 @@ void MainWindow::connectSlots()
     connect(this,   SIGNAL(sendAbortMCAECommand(bool)),mcae_wr,SLOT(setAbortBool(bool)));
     connect(mcae_wr, SIGNAL(sendMCAErrorCommand()),this,SLOT(getMCAErrorThread()));
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
-    connect(worker, SIGNAL(sendSaturated(int , double * ,bool)),this, SLOT( recievedSaturated(int , double * ,bool)));
+    connect(worker, SIGNAL(sendSaturated(int , double * )),this, SLOT( recievedSaturated(int , double *)));
     connect(worker, SIGNAL(sendPicosLog(struct Pico_espectro ,int)),this, SLOT( recievedPicosLog(struct Pico_espectro ,int)));
 
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
@@ -354,7 +354,7 @@ void MainWindow::writeTempToLog(int index, double min, double med, double max)
 void MainWindow::recievedPicosLog(struct Pico_espectro Pico,int index)
 {
     writeLogFile("[LOG-PICO],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(Pico.canal_pico)+","+QString::number(Pico.FWHM*100)+"\n");
-    ui->pushButton_reset->clicked(true);
+    //ui->pushButton_reset->clicked(true);
 }
 
 /**
@@ -366,12 +366,18 @@ void MainWindow::recievedPicosLog(struct Pico_espectro Pico,int index)
  */
 void MainWindow::writeOffSetToLog(int index,int *offsets)
 {
-    writeLogFile("[LOG-OFFSET],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index));
-    for (int i=0;i<48;i++){
-        writeLogFile(", "+QString::number(offsets[i]));
+    writeLogFile("[LOG-OFFSET],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+", "+QString::number(offsets[0])+", "+
+        QString::number(offsets[1])+", "+QString::number(offsets[2])+", "+QString::number(offsets[3])+", "+QString::number(offsets[4])+", "+QString::number(offsets[5])+", "+
+        QString::number(offsets[6])+", "+QString::number(offsets[7])+", "+QString::number(offsets[8])+", "+QString::number(offsets[9])+", "+QString::number(offsets[10])+", "+
+        QString::number(offsets[11])+", "+QString::number(offsets[12])+", "+QString::number(offsets[13])+", "+QString::number(offsets[14])+", "+QString::number(offsets[15])+", "
+        +QString::number(offsets[16])+", "+QString::number(offsets[17])+", "+QString::number(offsets[18])+", "+QString::number(offsets[19])+", "+QString::number(offsets[20])+", "+
+        QString::number(offsets[21])+", "+QString::number(offsets[22])+", "+QString::number(offsets[23])+", "+QString::number(offsets[24])+", "+QString::number(offsets[25])+", "+
+        QString::number(offsets[26])+", "+QString::number(offsets[27])+", "+QString::number(offsets[28])+", "+QString::number(offsets[29])+", "+QString::number(offsets[30])+", "+
+        QString::number(offsets[31])+", "+QString::number(offsets[32])+", "+QString::number(offsets[33])+", "+QString::number(offsets[34])+", "+QString::number(offsets[35])+", "+
+        QString::number(offsets[36])+", "+QString::number(offsets[37])+", "+QString::number(offsets[38])+", "+QString::number(offsets[39])+", "+QString::number(offsets[40])+", "+
+        QString::number(offsets[41])+", "+QString::number(offsets[42])+", "+QString::number(offsets[43])+", "+QString::number(offsets[44])+", "+QString::number(offsets[45])+", "+
+        QString::number(offsets[46])+", "+QString::number(offsets[47])+"\n");
 
-    }
-    writeLogFile("\n");
 }
 /**
  * @brief MainWindow::recievedSaturated
@@ -379,12 +385,19 @@ void MainWindow::writeOffSetToLog(int index,int *offsets)
  * @param Saturados
  * @param modo
  */
-void MainWindow::recievedSaturated(int Cabezal, double Saturados[48],bool modo){
-    writeLogFile("[LOG-SAT],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(Cabezal));
-    for (int i=0;i<48;i++){
-        writeLogFile(", "+QString::number(Saturados[i]));
-    }
-    writeLogFile("\n");
+void MainWindow::recievedSaturated(int Cabezal, double Saturados[48]){
+    writeLogFile("[LOG-SAT],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(Cabezal)+", "+
+                 QString::number(Saturados[0])+", "+
+        QString::number(Saturados[1])+", "+QString::number(Saturados[2])+", "+QString::number(Saturados[3])+", "+QString::number(Saturados[4])+", "+QString::number(Saturados[5])+", "+
+        QString::number(Saturados[6])+", "+QString::number(Saturados[7])+", "+QString::number(Saturados[8])+", "+QString::number(Saturados[9])+", "+QString::number(Saturados[10])+", "+
+        QString::number(Saturados[11])+", "+QString::number(Saturados[12])+", "+QString::number(Saturados[13])+", "+QString::number(Saturados[14])+", "+QString::number(Saturados[15])+", "
+        +QString::number(Saturados[16])+", "+QString::number(Saturados[17])+", "+QString::number(Saturados[18])+", "+QString::number(Saturados[19])+", "+QString::number(Saturados[20])+", "+
+        QString::number(Saturados[21])+", "+QString::number(Saturados[22])+", "+QString::number(Saturados[23])+", "+QString::number(Saturados[24])+", "+QString::number(Saturados[25])+", "+
+        QString::number(Saturados[26])+", "+QString::number(Saturados[27])+", "+QString::number(Saturados[28])+", "+QString::number(Saturados[29])+", "+QString::number(Saturados[30])+", "+
+        QString::number(Saturados[31])+", "+QString::number(Saturados[32])+", "+QString::number(Saturados[33])+", "+QString::number(Saturados[34])+", "+QString::number(Saturados[35])+", "+
+        QString::number(Saturados[36])+", "+QString::number(Saturados[37])+", "+QString::number(Saturados[38])+", "+QString::number(Saturados[39])+", "+QString::number(Saturados[40])+", "+
+        QString::number(Saturados[41])+", "+QString::number(Saturados[42])+", "+QString::number(Saturados[43])+", "+QString::number(Saturados[44])+", "+QString::number(Saturados[45])+", "+
+        QString::number(Saturados[46])+", "+QString::number(Saturados[47])+"\n");
 }
 
 /**
@@ -686,8 +699,12 @@ void MainWindow::writeLogFile(QString log_text, QString main)
         QString logFile = getPreferencesDir() + "/logs/" + getLogFileName(main);
         QFile logger( logFile );
         logger.open(QIODevice::WriteOnly | QIODevice::Append);
-        QTextStream out(&logger);
-        out << log_text;
+        //QTextStream out(&logger);
+        //out << log_text;
+        //for (int j; j<log_text.length();j++){
+            logger.write( log_text.toUtf8());
+
+        //  }
         logger.close();
     }
 }
@@ -1221,7 +1238,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         initHead(head_index);
 
         initSP3(head_index);
-
+        usleep(500);
         parseConfigurationFile(true, QString::number(head_index));
 
         /* Configuración de la Alta Tensión*/
@@ -1229,22 +1246,25 @@ void MainWindow::on_pushButton_initialize_clicked()
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
         QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
-
+        usleep(500);
         /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
         try
         {
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            usleep(500);
             msg = readString();
             setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-            cout<< "------------------------"<<endl;
-            cout<< "DEBUG"<<endl;
+            ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
+//            cout<< "------------------------"<<endl;
+//            cout<< "DEBUG"<<endl;
 
-            cout<<  arpet->getTrama_MCAE()<<endl;
-            cout<< "------------------------"<<endl;
+//            cout<<  arpet->getTrama_MCAE()<<endl;
+//            cout<< "------------------------"<<endl;
 
             if(debug) cout<< "Alta tensión encendida"<<endl;
+            usleep(500);
             //usleep(5000);
         }
         catch(Exceptions & ex)
@@ -1290,7 +1310,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
         resetPMTs(false);
-        resetPMTs(true);
+        //resetPMTs(true);
         if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
     catch(Exceptions & ex)
@@ -1657,8 +1677,8 @@ string MainWindow::initSP3(int head)
  *
  * @param head
  */
-void MainWindow::setCalibrationTables(int head)
-{
+void MainWindow::setCalibrationTables(int head) {
+
     coefenerg_values=getValuesFromFiles(coefenerg);
     hvtable_values=getValuesFromFiles(hvtable,true);
     coefx_values=getValuesFromFiles(coefx);
@@ -1666,7 +1686,6 @@ void MainWindow::setCalibrationTables(int head)
     coefT_values=getValuesFromFiles(coefT);
     coefTInter_values=getValuesFromFiles(coefTInter);
     coefest_values=getValuesFromFiles(coefest);
-
 
     bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true, set_time_INTER = true;
     QString q_msg;
@@ -2538,21 +2557,21 @@ bool MainWindow::resetPMTs(bool centroide)
 
         try
         {
-            if (centroide) setHV(QString::number(checkedHeads.at(0)).toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-            for(int pmt = 0; pmt < PMTs; pmt++)
-            {
-                QString hv=QString::number(hvtable_values[pmt]);
-                QString q_msg = setHV(QString::number(checkedHeads.at(0)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
-                if(debug)
-                {
-                    cout<<"========================================="<<endl;
-                    cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-                    showMCAEStreamDebugMode(q_msg.toStdString());
-                    cout<<"Valor de HV: "<< hv.toStdString() <<endl;
-                    cout<<"========================================="<<endl;
+            /*if (centroide)*/ setHV(QString::number(checkedHeads.at(0)).toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
+//            for(int pmt = 0; pmt < PMTs; pmt++)
+//            {
+//                QString hv=QString::number(hvtable_values[pmt]);
+//                QString q_msg = setHV(QString::number(checkedHeads.at(0)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
+//                if(debug)
+//                {
+//                    cout<<"========================================="<<endl;
+//                    cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
+//                    showMCAEStreamDebugMode(q_msg.toStdString());
+//                    cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+//                    cout<<"========================================="<<endl;
 
-                }
-            }
+//                }
+//            }
         }
         catch( Exceptions & ex )
         {
@@ -5741,4 +5760,53 @@ void MainWindow::on_pushButton_p_51_clicked()
         showMCAEStreamDebugMode(q_msg.toStdString());
         writeFooterAndHeaderDebug(false);
     }
+}
+
+void MainWindow::on_RATECAB1_clicked()
+{
+  vector<int> rates(3);
+
+  try{
+    rates = arpet->getRate(QString::number(1).toStdString(), port_name.toStdString());
+    ui->label_CAB1->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+  }
+  catch(Exceptions &ex){
+
+  }
+}
+
+void MainWindow::on_RATECAB2_clicked()
+{
+  vector<int> rates(3);
+  rates = arpet->getRate(QString::number(2).toStdString(), port_name.toStdString());
+  ui->label_CAB2->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+}
+
+
+void MainWindow::on_RATECAB3_clicked()
+{
+  vector<int> rates(3);
+  rates = arpet->getRate(QString::number(3).toStdString(), port_name.toStdString());
+  ui->label_CAB3->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+}
+
+void MainWindow::on_RATECAB4_clicked()
+{
+  vector<int> rates(3);
+  rates = arpet->getRate(QString::number(4).toStdString(), port_name.toStdString());
+  ui->label_CAB4->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+}
+
+void MainWindow::on_RATECAB5_clicked()
+{
+  vector<int> rates(3);
+  rates = arpet->getRate(QString::number(5).toStdString(), port_name.toStdString());
+  ui->label_CAB5->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+}
+
+void MainWindow::on_RATECAB6_clicked()
+{
+  vector<int> rates(3);
+  rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
+  ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
 }
