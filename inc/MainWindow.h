@@ -391,7 +391,10 @@ private:
     QVector<string> logTemp_values,logRate_values;
   //  QList<QPushButton*> pmt_button_table;
     int adquire_mode;
-    bool debug, init, log, stdout_mode;
+    bool debug;
+    bool init;
+    bool log;
+    bool stdout_mode;
     QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest, logTemp, logRate,root_log;
     QVector<double> hvtable_values, coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;

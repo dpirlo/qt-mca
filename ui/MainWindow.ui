@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3796,7 +3796,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>110</x>
-         <y>92</y>
+         <y>70</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -3808,10 +3808,10 @@ calibrar</string>
       <widget class="QLabel" name="label_38">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>90</y>
+         <x>0</x>
+         <y>70</y>
          <width>101</width>
-         <height>41</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -6817,7 +6817,7 @@ calibrar</string>
      <widget class="QPushButton" name="pushButton_send_terminal">
       <property name="geometry">
        <rect>
-        <x>650</x>
+        <x>530</x>
         <y>50</y>
         <width>95</width>
         <height>31</height>
@@ -6832,7 +6832,7 @@ calibrar</string>
        <rect>
         <x>60</x>
         <y>190</y>
-        <width>771</width>
+        <width>571</width>
         <height>61</height>
        </rect>
       </property>
@@ -6856,7 +6856,7 @@ calibrar</string>
      <widget class="QPushButton" name="pushButton_flush_terminal">
       <property name="geometry">
        <rect>
-        <x>650</x>
+        <x>530</x>
         <y>90</y>
         <width>95</width>
         <height>31</height>
@@ -6871,7 +6871,7 @@ calibrar</string>
        <rect>
         <x>60</x>
         <y>50</y>
-        <width>561</width>
+        <width>461</width>
         <height>33</height>
        </rect>
       </property>
@@ -6879,7 +6879,7 @@ calibrar</string>
      <widget class="QCheckBox" name="checkBox_end_terminal">
       <property name="geometry">
        <rect>
-        <x>770</x>
+        <x>640</x>
         <y>50</y>
         <width>95</width>
         <height>26</height>
@@ -7241,7 +7241,7 @@ calibrar</string>
      <widget class="QPushButton" name="pushButton_clear_terminal">
       <property name="geometry">
        <rect>
-        <x>650</x>
+        <x>530</x>
         <y>130</y>
         <width>95</width>
         <height>31</height>
@@ -7249,6 +7249,240 @@ calibrar</string>
       </property>
       <property name="text">
        <string>Clear</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB6">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>240</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB6</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_117">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>200</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB4</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB4">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>200</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB4</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_113">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>160</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB2</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB5">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>220</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB5</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_120">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>240</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB6</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB4">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>200</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB5">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>220</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB6">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>240</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB1">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>140</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB1</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB2">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>160</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB2</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="RATECAB3">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>180</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA CAB3</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_115">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>180</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB3</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB1">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>140</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_111">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>140</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB3">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>180</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_CAB2">
+      <property name="geometry">
+       <rect>
+        <x>678</x>
+        <y>160</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_119">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>220</y>
+        <width>59</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CAB5</string>
       </property>
      </widget>
     </widget>

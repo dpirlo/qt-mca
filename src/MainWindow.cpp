@@ -1236,58 +1236,74 @@ void MainWindow::on_pushButton_initialize_clicked()
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
         initHead(head_index);
-
         initSP3(head_index);
+        mMutex.lock();
         usleep(500);
         parseConfigurationFile(true, QString::number(head_index));
-
         /* Configuración de la Alta Tensión*/
         ui->lineEdit_alta->setText(QString::number(AT));
         ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         string msg;
-        QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+        QString psoc_alta = QString::number(AT);
         usleep(500);
+        mMutex.unlock();
+
         /* Encendido de HV */ /** @note: Responsabilidad de los hermanos macana: Scremin and Arbizu company */
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
         try
         {
-            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-            usleep(500);
-            msg = readString();
-            setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-            ui->label_psoc_estado_datos->setText(QString::fromStdString(msg));
-//            cout<< "------------------------"<<endl;
-//            cout<< "DEBUG"<<endl;
+          sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+          msg = readString();
+          setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+          if (debug){
+              cout<< "------------------------"<<endl;
+              cout<< "DEBUG"<<endl;
 
-//            cout<<  arpet->getTrama_MCAE()<<endl;
-//            cout<< "------------------------"<<endl;
+              cout<<  arpet->getTrama_MCAE()<<endl;
+              cout<< "------------------------"<<endl;
+          }
+          usleep(500);
 
-            if(debug) cout<< "Alta tensión encendida"<<endl;
+          if(debug) cout<< "Alta tensión encendida"<<endl;
+
+            ui->label_psoc_estado_datos->setText(QString::fromStdString(msg)); 
+
             usleep(500);
-            //usleep(5000);
+         
         }
         catch(Exceptions & ex)
         {
             if (debug) cout<<"No se puede prender Alta Tension Error: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+            mMutex.unlock();
             setLabelState(false, hv_status_table[head_index-1], true);
         }
-
+        mMutex.lock();
         setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+        mMutex.unlock();
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
         try
         {
             sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
             msg = readString(CHAR_LF);
+            mMutex.lock();
+            //usleep(500);
             hv_status_table[head_index-1]->setText(psoc_alta);
             if(debug) cout<< "Alta tensión configurada en: "<<psoc_alta.toStdString()<<endl;
+            mMutex.unlock();
+
         }
         catch(Exceptions & ex)
         {
             if (debug) cout<<"No se puede acceder a la placa de alta tensión. Revise la conexión al equipo. Error: "<<ex.excdesc<< arpet->getPSOC_SET()<< psoc_alta.toStdString()<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+            mMutex.unlock();
         }
         /* Configuración de las tablas de calibración */
         setCalibrationTables(head_index);
+        mMutex.lock();
+        ui->lineEdit_alta->setText(QString::number(AT));
+        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        mMutex.unlock();
 
     }
 
@@ -1301,8 +1317,10 @@ void MainWindow::on_pushButton_hv_set_clicked()
     writeFooterAndHeaderDebug(true);
     QList<int> checkedHeads = getCheckedHeads();
     string msg;
-    QString psoc_alta = getPSOCAlta(ui->lineEdit_alta);
+    mMutex.lock();
+    QString psoc_alta = (ui->lineEdit_alta->text());
     int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+    mMutex.unlock();
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1804,6 +1822,7 @@ void MainWindow::setCalibrationTables(int head) {
     catch( Exceptions & ex )
     {
         set_time = false;
+        set_time_INTER= false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Tiempos en el Cabezal. Error: "<<ex.excdesc<<endl;
     }
 
@@ -2245,6 +2264,8 @@ QString MainWindow::setCalibTable(string head, string function, QVector<double> 
 QString MainWindow::setTime(string head, double time_value, string pmt)
 {
     string msg;
+   // mMutex.lock();
+
     try
     {
         msg = arpet->setTime(head, time_value, pmt, port_name.toStdString());
@@ -2252,8 +2273,11 @@ QString MainWindow::setTime(string head, double time_value, string pmt)
     catch(Exceptions & ex)
     {
         Exceptions exception_time(ex.excdesc);
+      //  mMutex.unlock();
+
         throw exception_time;
     }
+   // mMutex.unlock();
 
     return QString::fromStdString(msg);
 }
@@ -2587,7 +2611,8 @@ bool MainWindow::resetPMTs(bool centroide)
  * @brief MainWindow::on_pushButton_adquirir_toggled
  * @param checked
  */
-void MainWindow::on_pushButton_adquirir_toggled(bool checked)
+/*void MainWindow::on_pushButton_adquirir_toggled(bool checked)
+ *
 {
     bool centroide = ui->checkBox_centroid->isChecked();
     if(checked)
@@ -2696,6 +2721,8 @@ void MainWindow::on_pushButton_adquirir_toggled(bool checked)
         }
     }
 }
+*/
+
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
  */
@@ -4979,7 +5006,6 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->resetBackprojection();
     }
 
-
     // Armo flago de reconstruccion
     if (recon_externa->getMLEM()  | recon_externa->getBackprojection()  )
     {
@@ -5010,7 +5036,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 
 
-    if (recon_externa->getReconstruir() == 0 & recon_externa->getParsear() == 0 & recon_externa->getMostrar() == 0 | (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
+    if ((recon_externa->getReconstruir() == 0 )& (recon_externa->getParsear() == 0) & (recon_externa->getMostrar() == 0 )| (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -5040,7 +5066,6 @@ void MainWindow::on_pushButton_5_clicked()
         }
 
         recon_externa->setServerIP(dir_IP);
-
 
     }
     if (!QDir(recon_externa->getPathINTERFILES()).exists() & recon_externa->getParsear() )
@@ -5075,13 +5100,13 @@ void MainWindow::on_pushButton_5_clicked()
         recon_externa->setNombre_archivo( recon_externa->getArchRecon().split('.').first().split('/').last() );
     }
 
-    if (recon_externa->getArchInicial() == "-" &  recon_externa->getReconstruir() )
+    if ((recon_externa->getArchInicial() == "-") &  recon_externa->getReconstruir() )
     {
         messageBox.critical(0,"Error","Archivo de imagen inicial no seleccionado.");
         messageBox.setFixedSize(500,200);
         return;
     }
-    if (recon_externa->getArchSensib() == "-"  & recon_externa->getReconstruir() )
+    if ((recon_externa->getArchSensib() == "-" ) & recon_externa->getReconstruir() )
     {
         recon_externa->resetPreSensibilidad();
         messageBox.warning(0,"Warning","Se recalculara la sensibilidad.");
@@ -5091,7 +5116,7 @@ void MainWindow::on_pushButton_5_clicked()
     {
         recon_externa->setPreSensibilidad();
     }
-    if (recon_externa->getArchCountSkimm() == "-"  & recon_externa->getReconstruir() )
+    if ((recon_externa->getArchCountSkimm() == "-" ) & recon_externa->getReconstruir() )
     {
         recon_externa->resetAplicarCountSkimming();
         messageBox.warning(0,"Warning","No se aplicara count skimming.");
@@ -5300,12 +5325,7 @@ void MainWindow::on_pushButton_5_clicked()
         //ui->plainTextEdit_Recon_console->appendPlainText("Mostrandocion finalizada.");
 
     }
-
-
-
     //m_logFile.write(text); // Logs to file
-
-
 
 }
 /**
@@ -5496,14 +5516,11 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     int ret = pmt_select_autocalib->exec();
     QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
 
-
-
     if(ret == QDialog::Accepted)
     {
         //setPMTSelectedList(qlist);
         setPMTSelectedListAutocalib(qlist);
     }
-
 
     if(debug)
     {
@@ -5518,7 +5535,6 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
     qSort(qlist);
     ui->listWidget_2->clear();
     ui->listWidget_2->addItems(qlist);
-
 
     writeFooterAndHeaderDebug(false);
 }
@@ -5810,3 +5826,114 @@ void MainWindow::on_RATECAB6_clicked()
   rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
   ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
 }
+
+
+void MainWindow::on_pushButton_adquirir_clicked()
+{
+  bool centroide = ui->checkBox_centroid->isChecked();
+  //if(checked)
+  bMutex.tryLock();
+  {
+      if(!arpet->isPortOpen())
+      {
+          writeFooterAndHeaderDebug(true);
+          setButtonAdquireState(false);
+          setIsAbortMCAEFlag(false);
+          QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+          if(debug)
+          {
+              cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+              writeFooterAndHeaderDebug(false);
+          }
+          setButtonAdquireState(true, true);
+          emit ToPushButtonAdquirir(false);
+          return;
+      }
+
+      QList<int> checkedHeads=getCheckedHeads();
+      mcae_wr->setCheckedHeads(checkedHeads);
+
+      switch (adquire_mode)
+      {
+      case PMT:
+          if (pmt_selected_list.isEmpty())
+          {
+              writeFooterAndHeaderDebug(true);
+              setButtonAdquireState(false);
+              setIsAbortMCAEFlag(false);
+              if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+              QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+              emit ToPushButtonAdquirir(false);
+              setButtonAdquireState(true, true);
+              writeFooterAndHeaderDebug(false);
+              return;
+          }
+          ui->specPMTs->clearGraphs();
+          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+          {
+              setButtonAdquireState(true);
+              mcae_wr->setPMTSelectedList(pmt_selected_list);
+              mcae_wr->setDebugMode(debug);
+              mcae_wr->setModeBool(true);
+              mcae_wr->setCentroidMode(centroide);
+              mcae_wr->abort();
+              mcae_th->wait();
+              mcae_wr->requestMCA();
+          }
+          else
+          {
+              writeFooterAndHeaderDebug(true);
+              setIsAbortMCAEFlag(false);
+              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+              writeFooterAndHeaderDebug(false);
+              emit ToPushButtonAdquirir(false);
+              return;
+          }
+          break;
+      case CABEZAL:
+          ui->specHead->clearGraphs();
+          setButtonAdquireState(true);
+          mcae_wr->setDebugMode(debug);
+          mcae_wr->setModeBool(false);
+          mcae_wr->abort();
+          mcae_th->wait();
+          mcae_wr->requestMCA();
+          break;
+      case TEMPERATURE:
+          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+          {
+              drawTemperatureBoard();
+          }
+          else
+          {
+              writeFooterAndHeaderDebug(true);
+              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+              writeFooterAndHeaderDebug(false);
+              emit ToPushButtonAdquirir(false);
+              return;
+          }
+          emit ToPushButtonAdquirir(false);
+          break;
+      default:
+          break;
+      }
+  }
+  switch (adquire_mode)
+  {
+  case PMT...CABEZAL:
+      setButtonAdquireState(true,true);
+      if (is_abort_mcae)
+      {
+          if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<mcae_th->currentThreadId()<<endl;
+          emit sendAbortMCAECommand(true);
+      }
+      setIsAbortMCAEFlag(true);
+      break;
+  case TEMPERATURE:
+      break;
+  default:
+      break;
+  }
+  bMutex.unlock();
+}
+
