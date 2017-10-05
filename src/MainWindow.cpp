@@ -5936,4 +5936,3 @@ void MainWindow::on_pushButton_adquirir_clicked()
   }
   bMutex.unlock();
 }
-

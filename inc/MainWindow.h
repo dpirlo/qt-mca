@@ -181,7 +181,7 @@ private slots:
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
     void on_pushButton_hv_estado_clicked();
-    void on_pushButton_adquirir_toggled(bool checked);
+    //void on_pushButton_adquirir_toggled(bool checked);
     void on_pushButton_select_pmt_clicked();
     void on_pushButton_hv_configure_clicked();
     void on_pushButton_l_5_clicked();
@@ -271,6 +271,8 @@ private slots:
     void on_RATECAB5_clicked();
 
     void on_RATECAB6_clicked();
+
+    void on_pushButton_adquirir_clicked();
 
 private:
     void connectSlots();
@@ -369,7 +371,7 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
-    QMutex mMutex;
+    QMutex mMutex, bMutex;
     QThread *thread;
     Thread *worker;
     QThread *etime_th;
