@@ -13716,7 +13716,6 @@ QCPLayer *QCustomPlot::layer(int index) const
     return 0;
   }
 }
-
 /*!
   Returns the layer that is set as current layer (see \ref setCurrentLayer).
 */
@@ -18170,6 +18169,7 @@ void QCPLegend::setSelectableParts(const SelectableParts &selectable)
     emit selectableChanged(mSelectableParts);
   }
 }
+
 
 /*!
   Sets the selected state of the respective legend parts described by \ref SelectablePart. When a part

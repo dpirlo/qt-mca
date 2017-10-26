@@ -56,7 +56,15 @@
 #define COIN_INTER_CABEZAL 5
 #define TIEMPOS_NULOS_PMTS 0
 #define CHAR_LF 0x0A
-
+#define Tab1 1
+#define Tab2 2
+#define Tab3 3
+#define Tab4 4
+#define Tab5 5
+#define Tab6 6
+#define Tab7 7
+#define Tab8 8
+#define Tab9 9
 #define WAIT_MICROSECONDS 1000000
 
 using namespace ap;
@@ -352,6 +360,7 @@ private:
     void setCalibrationMode(QString head);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
+    int  ogl_flag;
 
     /* Area de prueba/testing */
 

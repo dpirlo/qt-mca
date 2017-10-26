@@ -133,7 +133,7 @@ void Thread::getLogWork() {
     while(!_abort)
     {
         vector<int> rates(9);
-        int tempe[48];
+        double tempe;
         int head_index;
         int offsets[48];
         string msg_MCA;
@@ -151,25 +151,25 @@ void Thread::getLogWork() {
                 temp_vec.fill(0);
 
 
-                for (int j=0;j<48;j++){
-                    msg_MCA = arpet->getMCA(QString::number(j).toStdString(), pmt_function, QString::number(head_index).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                    if (debug) cout<<"PMT OFFSET: "<<QString::number(j+1).toStdString()<<" | "<<QString::number(arpet->getOffSetMCA()).toStdString()<<" |s"<<endl;
-                    offsets[j]=arpet->getOffSetMCA();
-                    tempe[j]=arpet->getTempValueMCA();
-                    if (debug) cout<<"PMT: "<<QString::number(j+1).toStdString()<<" | "<<msg_MCA<<" | "<<arpet->getTrama_MCAE()<<endl;
-                    if (tempe[j] > MIN_TEMPERATURE) temp_vec.push_back(tempe[j]);
-                }
+
 
                 if(temp)
                 {
+
+                    for (int pmt=0;pmt<48;pmt++){
+                        string msg = arpet->getTemp(QString::number(head_index).toStdString(), QString::number(pmt+1).toStdString(), port_name.toStdString());
+                        if (debug) cout<<"PMT: "<<QString::number(pmt+1).toStdString()<<" | "<<msg<<" | "<<arpet->getTrama_MCAE()<<endl;
+                        tempe = arpet->getPMTTemperature(msg);
+                        if (tempe > MIN_TEMPERATURE) temp_vec.push_back(tempe);
+                    }
 
                     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
                     double t_max = *max_element(temp_vec.begin(),temp_vec.end());
                     double t_min = *min_element(temp_vec.begin(),temp_vec.end());
                     emit sendTempValues(head_index, t_min, mean, t_max);
                     if (debug) cout<<"Temperaturas | Mínima: "<<QString::number(t_min).toStdString()<<" | Media: "<<QString::number(mean).toStdString()<<" | Máxima: "<<QString::number(t_max).toStdString()<<endl;
-                    emit sendOffSetValues(head_index, offsets);
-                    if (debug) cout<<"termino el volcado de offset"<<endl;
+//                    emit sendOffSetValues(head_index, offsets);
+//                    if (debug) cout<<"termino el volcado de offset"<<endl;
                 }
                 if(rate)
                 {
@@ -180,13 +180,14 @@ void Thread::getLogWork() {
                 ///// PICO //////////////////
 
                 // Pido MCA a cabezal
-                arpet->getMCA(QString::number(head_index).toStdString(), arpet->getFunCHead(), QString::number(head_index).toStdString(), CHANNELS, port_name.toStdString());
+                arpet->getMCA("0", arpet->getFunCHead(), QString::number(head_index).toStdString(), CHANNELS, port_name.toStdString());
 
                 aux_hits = arpet->getHitsMCA();
 
                 for (int j = 0 ; j < CHANNELS ; j++) {
 
                     Hist_Double[j] = aux_hits[j];
+                    //cout<<QString::number(aux_hits[j]).toStdString()<<endl;
                 }
 
                 aux = InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);
@@ -196,17 +197,17 @@ void Thread::getLogWork() {
                 // FIN PICO //////////////////
                 //////////////////////////////
                 // TASA///////////////////////
-                for (int j=0;j<48;j++){
-                    if (debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
+//                for (int j=0;j<48;j++){
+//                    if (debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
 
-                    for(int k=0;k<255;k++){
-                        CuentasTotales+=arpet->getHitsMCA()[k];
-                    }
-                    Saturados[j]=(arpet->getHitsMCA()[255]/CuentasTotales)*100;
-                    if (debug) cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
+//                    for(int k=0;k<255;k++){
+//                        CuentasTotales+=arpet->getHitsMCA()[k];
+//                    }
+//                    Saturados[j]=(arpet->getHitsMCA()[255]/CuentasTotales)*100;
+//                    if (debug) cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
 
-                }
-                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
+//                }
+//                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
                 //// FIN TASA
               }
               rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());

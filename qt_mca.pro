@@ -6,8 +6,10 @@
 #
 #-------------------------------------------------
 
+
 QT       += core gui
 QT       += printsupport
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = qt-arpet
@@ -47,7 +49,6 @@ FORMS += \
 INCLUDEPATH +=/opt/armadillo/include
 LIBS +=-llapack
 LIBS +=-lblas
-
 
 
 CONFIG(debug, debug|release) {

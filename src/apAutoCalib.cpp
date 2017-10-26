@@ -2657,6 +2657,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
             cout<<"No detecto picos!!"<<endl;
             return Pico_calculado;
     }
+    //cout<< "procesando pico"<< endl;
 
     // Si todo va bien, este es el pico
     int can_pico = picos[npicos-1];

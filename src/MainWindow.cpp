@@ -30,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     setPreferencesConfiguration();
     getPaths();
+    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -180,6 +184,7 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
     legendFont.setPointSize(10);
     graph->legend->setFont(legendFont);
     graph->legend->setSelectedFont(legendFont);
+    graph->setNoAntialiasingOnDrag(true);
     graph->legend->setSelectableParts(QCPLegend::spItems);
     graph->plotLayout()->insertRow(0);
 }
@@ -191,6 +196,7 @@ void MainWindow::SetQCustomPlotConfiguration(QCustomPlot *graph, int channels)
 void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str)
 {
     /* Slots para PMTs */
+
     QCPTextElement *title_pmt = new QCPTextElement(ui->specPMTs, title_pmt_str.c_str(), QFont("sans", 16, QFont::Bold));
     connect(ui->specPMTs, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedPMT()));
     connect(ui->specPMTs, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressPMT()));
@@ -1030,7 +1036,8 @@ void MainWindow::on_pushButton_arpet_off_clicked()
 void MainWindow::on_pushButton_triple_ventana_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_triple_ventana->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_triple_ventana->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_hv_clicked
@@ -1038,7 +1045,8 @@ void MainWindow::on_pushButton_triple_ventana_clicked()
 void MainWindow::on_pushButton_hv_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_hv->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_hv->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_energia_clicked
@@ -1046,7 +1054,8 @@ void MainWindow::on_pushButton_hv_clicked()
 void MainWindow::on_pushButton_energia_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_energia->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_energia->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_posicion_X_clicked
@@ -1054,7 +1063,8 @@ void MainWindow::on_pushButton_energia_clicked()
 void MainWindow::on_pushButton_posicion_X_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_posicion_X->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_posicion_X->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_posicion_Y_clicked
@@ -1062,7 +1072,8 @@ void MainWindow::on_pushButton_posicion_X_clicked()
 void MainWindow::on_pushButton_posicion_Y_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_posicion_Y->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_posicion_Y->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_tiempos_cabezal_clicked
@@ -1070,7 +1081,8 @@ void MainWindow::on_pushButton_posicion_Y_clicked()
 void MainWindow::on_pushButton_tiempos_cabezal_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_tiempos_cabezal->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_tiempos_cabezal->setText(fileName);
 }
 /**
  * @brief MainWindow::on_pushButton_obtener_ini_clicked
@@ -1093,15 +1105,19 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 void MainWindow::on_pushButton_init_configure_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    if(arpet->isPortOpen())
-    {
+    if(arpet->isPortOpen()) {
         setButtonConnectState(true);
         arpet->portDisconnect();
+
+        ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+        ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+        ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
         if(debug) cout<<"Puerto serie desconectado"<<endl;
     }
-    else
-    {
+    else {
         try{
+
+
             port_name=ui->comboBox_port->currentText();
             calibrador->setPort_Name(port_name);
             worker->setPortName(port_name);
@@ -1112,15 +1128,25 @@ void MainWindow::on_pushButton_init_configure_clicked()
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             getHeadStatus(getHead("config").toInt());
+            ui->tabWidget_general->setTabEnabled(Tab1,true); // Muestro pestaña MCA
+            ui->tabWidget_general->setTabEnabled(Tab4,true); // Muestro pestaña Autocalib
+            ui->tabWidget_general->setTabEnabled(Tab9,true); // Muestro pestaña Terminal
+
         }
         catch(boost::system::system_error e)
         {
             if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
             QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+            ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+            ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+            ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
         }
     }
     writeFooterAndHeaderDebug(false);
 }
+
+
+
 /**
  * @brief MainWindow::on_pushButton_configure_clicked
  */
@@ -1241,10 +1267,11 @@ void MainWindow::on_pushButton_initialize_clicked()
         usleep(500);
         parseConfigurationFile(true, QString::number(head_index));
         /* Configuración de la Alta Tensión*/
-        ui->lineEdit_alta->setText(QString::number(AT));
-        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        //ui->lineEdit_alta->setText(QString::number(AT));
+        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        LowLimit = ui->lineEdit_limiteinferior->text().toInt();
         string msg;
-        QString psoc_alta = QString::number(AT);
+        QString psoc_alta = ui->lineEdit_alta->text();
         usleep(500);
         mMutex.unlock();
 
@@ -1301,8 +1328,8 @@ void MainWindow::on_pushButton_initialize_clicked()
         /* Configuración de las tablas de calibración */
         setCalibrationTables(head_index);
         mMutex.lock();
-        ui->lineEdit_alta->setText(QString::number(AT));
-        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        //ui->lineEdit_alta->setText(QString::number(AT));
+        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         mMutex.unlock();
 
     }
@@ -2551,10 +2578,10 @@ bool MainWindow::resetHeads()
 
         try
         {
-            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit).toStdString());
+            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),ui->lineEdit_limiteinferior->text().toStdString());
             if(debug)
             {
-                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<LowLimit<<endl;
+                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<ui->lineEdit_limiteinferior->text().toStdString()<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
             }
         }
@@ -3972,15 +3999,16 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
     channels_ui = arpet->getChannels();
 
     graph->addGraph();
+    graph->graph()->setAdaptiveSampling(true);
     graph->graph()->setName(graph_legend);
-    graph->graph()->setData(channels_ui,hits);
+    graph->graph()->addData(channels_ui,hits);
     graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
     QPen graphPen;
     graphPen.setColor(QColor(param[0], param[1], param[2]));
     graphPen.setWidthF(param[5]);
     graph->graph()->setPen(graphPen);
     graph->legend->setVisible(true);
-    graph->legend->setWrap(4);
+    graph->legend->setWrap(8);
     graph->legend->setRowSpacing(1);
     graph->legend->setColumnSpacing(2);
     graph->rescaleAxes();
@@ -3992,9 +4020,19 @@ void MainWindow::addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int c
     channels_ui.resize(channels);
     channels_ui = calibrador->getChannels();
 
+//     *data = new graph->graph();
+//    size_t len = channels;
+//    auto xp = std::begin(channels);
+//    auto yp = std::begin(hits);
+//    while (len--){
+//        data->insertMulti(data->constEnd(), *xp, QCPData(*xp++, *yp++));
+//    }
+//graph->graph()
     graph->addGraph();
     graph->graph()->setName(graph_legend);
-    graph->graph()->setData(channels_ui,hits);
+//    graph->addData(data);
+    graph->graph()->setAdaptiveSampling(true);
+    graph->graph()->addData(channels_ui,hits);
     graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
     QPen graphPen;
     graphPen.setColor(QColor(param[0], param[1], param[2]));
@@ -4676,7 +4714,8 @@ void MainWindow::on_pushButton_triple_ventana_2_clicked()
     calibrador->setAdq_Cab_1(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_1->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_1->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_3_clicked
@@ -4690,7 +4729,8 @@ void MainWindow::on_pushButton_triple_ventana_3_clicked()
     calibrador->setAdq_Cab_2(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_2->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_2->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_4_clicked
@@ -4704,7 +4744,8 @@ void MainWindow::on_pushButton_triple_ventana_4_clicked()
     calibrador->setAdq_Cab_3(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_3->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_3->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_6_clicked
@@ -4718,7 +4759,8 @@ void MainWindow::on_pushButton_triple_ventana_6_clicked()
     calibrador->setAdq_Cab_4(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_4->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_4->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_7_clicked
@@ -4732,7 +4774,8 @@ void MainWindow::on_pushButton_triple_ventana_7_clicked()
     calibrador->setAdq_Cab_5(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_5->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_5->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_5_clicked
@@ -4746,7 +4789,8 @@ void MainWindow::on_pushButton_triple_ventana_5_clicked()
     calibrador->setAdq_Cab_6(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_6->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_6->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_8_clicked
@@ -4760,7 +4804,8 @@ void MainWindow::on_pushButton_triple_ventana_8_clicked()
     calibrador->setAdq_Coin(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_coin->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_coin->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_9_clicked
@@ -4777,7 +4822,8 @@ void MainWindow::on_pushButton_triple_ventana_9_clicked()
     calibrador->setPathSalida(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_salida->setText(filename);
+    if (filename!="")
+      ui->textBrowser_salida->setText(filename);
 }
 
 void MainWindow::on_parser_coincidencia_clicked()
@@ -4791,7 +4837,8 @@ void MainWindow::on_parser_coincidencia_clicked()
     calibrador->setPathPARSER(filename+"/");
     cout<<"Directorio parser: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_parser_coin->setText(filename);
+    if (filename!="")
+      ui->textBrowser_parser_coin->setText(filename);
 }
 
 
@@ -4858,7 +4905,8 @@ void MainWindow::on_pushButton_triple_ventana_13_clicked()
     calibrador->setAdq_Cab_1(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_8->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_8->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_10_clicked
@@ -4872,7 +4920,8 @@ void MainWindow::on_pushButton_triple_ventana_10_clicked()
     calibrador->setAdq_Cab_2(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_10->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_10->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_11_clicked
@@ -4886,7 +4935,8 @@ void MainWindow::on_pushButton_triple_ventana_11_clicked()
     calibrador->setAdq_Cab_3(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_7->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_7->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_16_clicked
@@ -4900,7 +4950,8 @@ void MainWindow::on_pushButton_triple_ventana_16_clicked()
     calibrador->setAdq_Cab_4(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_9->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_9->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_15_clicked
@@ -4914,7 +4965,8 @@ void MainWindow::on_pushButton_triple_ventana_15_clicked()
     calibrador->setAdq_Cab_5(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_12->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_12->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_12_clicked
@@ -4928,7 +4980,8 @@ void MainWindow::on_pushButton_triple_ventana_12_clicked()
     calibrador->setAdq_Cab_6(filename.toStdString());
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_adq_11->setText(filename);
+    if (filename!="")
+      ui->textBrowser_adq_11->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_14_clicked
@@ -4945,7 +4998,8 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
     calibrador->setPathEntrada(filename+"/");
     cout<<"Salida: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_entrada->setText(filename);
+    if (filename!="")
+      ui->textBrowser_entrada->setText(filename);
 }
 
 /* FPGA */
@@ -5345,7 +5399,8 @@ void MainWindow::on_pushButton_APIRL_PATH_clicked()
 
     cout<<"Directorio APIRL: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_entrada_2->setText(filename);
+    if (filename!="")
+      ui->textBrowser_entrada_2->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_INTERFILES_clicked
@@ -5364,7 +5419,8 @@ void MainWindow::on_pushButton_INTERFILES_clicked()
 
     cout<<"Directorio INTERFILES: "<<filename.toStdString()<<endl;
 
-    ui->textBrowser_entrada_3->setText(filename);
+    if (filename!="")
+      ui->textBrowser_entrada_3->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_arch_recon_clicked
@@ -5379,7 +5435,8 @@ void MainWindow::on_pushButton_arch_recon_clicked()
     recon_externa->setArchRecon(filename);
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_archivo_recon->setText(filename);
+    if (filename!="")
+      ui->textBrowser_archivo_recon->setText(filename);
 
 }
 /**
@@ -5395,7 +5452,8 @@ void MainWindow::on_pushButton_Est_ini_clicked()
     recon_externa->setArchInicial(filename);
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_estimacion_ini->setText(filename);
+    if (filename!="")
+      ui->textBrowser_estimacion_ini->setText(filename);
 
 }
 /**
@@ -5411,7 +5469,8 @@ void MainWindow::on_pushButton_Arch_sens_clicked()
     recon_externa->setArchSensib(filename);
     cout<<filename.toStdString()<<endl;
 
-    ui->textBrowser_Imagensensib->setText(filename);
+    if (filename!="")
+      ui->textBrowser_Imagensensib->setText(filename);
 
 
 }
@@ -5427,9 +5486,8 @@ void MainWindow::on_pushButton_Arch_count_skimming_clicked()
                                                     tr("Conut Skimming (*.csv)"));
     recon_externa->setArchCountSkimm(filename);
     cout<<filename.toStdString()<<endl;
-
-    ui->textBrowser_Conunt_skimming->setText(filename);
-
+    if (filename!="")
+      ui->textBrowser_Conunt_skimming->setText(filename);
 
 }
 /**
@@ -5448,8 +5506,8 @@ void MainWindow::on_pushButton_INTERFILES_2_clicked()
 
 
     cout<<"Directorio Salida: "<<filename.toStdString()<<endl;
-
-    ui->textBrowser_entrada_4->setText(filename);
+    if (filename!="")
+      ui->textBrowser_entrada_4->setText(filename);
 }
 /**
  * @brief MainWindow::on_pushButton_INTERFILES_3_clicked
@@ -5467,8 +5525,8 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
 
 
     cout<<"Directorio parser: "<<filename.toStdString()<<endl;
-
-    ui->textBrowser_entrada_5->setText(filename);
+    if (filename!="")
+      ui->textBrowser_entrada_5->setText(filename);
 }
 /**
  * @brief MainWindow::on_checkBox_MLEM_clicked
@@ -5544,7 +5602,8 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
 void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
 {
     QString fileName = openConfigurationFile();
-    ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
 }
 
 /**
@@ -5553,7 +5612,8 @@ void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
 void MainWindow::on_pushButton_log_filename_clicked()
 {
     QString fileName = openLogFile();
-    ui->textBrowser_log->setText(fileName);
+    if (fileName!="")
+      ui->textBrowser_log->setText(fileName);
     root_log = fileName;
 
 }
@@ -5624,21 +5684,54 @@ void MainWindow::on_pushButton_Log_clicked() {
 
         QDateTime FechaMedicionInterna;
         FechaMedicionInterna= QDateTime::fromString( lista.at(1),Qt::RFC2822Date);
-        cout<<"---------------------------------";
 
 
 
         // generate some data:
-        QVector<double> x(lista.length()/7);
-        QVector<double> y(lista.length()/7); // initialize with entries 0..100
-        for (int i=0; i<(lista.length()/7); i++)
-        {
-          x[i] = i; // x goes from -1 to 1
-          y[i] = QString(lista.at(5+i*7)).toDouble(); // let's plot a quadratic function
+        QVector<double> x;//(lista.length()/7);
+        QVector<double> ymed;//(lista.length()/7); // initialize with entries 0..100
+        QVector<double> ymin;//(lista.length()/7); // initialize with entries 0..100
+        QVector<double> ymax;//(lista.length()/7); // initialize with entries 0..100
+
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+        ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+        for (int i=0; i<(lista.length()/7); i++){
+            if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+              QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+              //cout << QString(lista.at(5+i*7)).toStdString()<<endl;
+              //cout<< QString(lista.at(1+i*7)).toStdString()<< endl;
+              //cout<< QString(tmp.toString()).toStdString()<< endl;
+              x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+              ymed.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
+              ymin.append(QString(lista.at(4+i*7)).toDouble()); // let's plot a quadratic function
+              ymax.append( QString(lista.at(6+i*7)).toDouble()); // let's plot a quadratic function
+              }
+
         }
+        cout<< "longitud de x: " << QString::number(x.length()).toStdString()<<endl;
+        for (int i=0; i<x.length();i++){
+            cout<<QString::number(x[i]).toStdString() <<"  "<< QString::number(i).toStdString()<<endl;
+            ymin[i]=ymed[i]-ymin[i];
+            ymax[i]=ymax[i]-ymed[i];
+          }
+        //ui->specPMTs_3->xAxis->setRange(x[0], x[x.length()-1]);
+
         // create graph and assign data to it:
+        ui->specPMTs_3->clearGraphs();
         ui->specPMTs_3->addGraph();
-        ui->specPMTs_3->graph(0)->setData(x, y);
+
+        ui->specPMTs_3->graph(0)->setData(x,ymed);
+        ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+        QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+        errorBars->removeFromLegend();
+        ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+        errorBars->setData(ymin,ymax);
+        errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
+//        ui->specPMTs_3->addGraph();
+//        //if (debug) cout<<"aca llega"<<endl;
+//        ui->specPMTs_3->graph(2)->setData(x,ymax);
         // give the axes some labels:
         ui->specPMTs_3->xAxis->setLabel("Tiempo");
         ui->specPMTs_3->yAxis->setLabel("ºC");
@@ -5646,7 +5739,11 @@ void MainWindow::on_pushButton_Log_clicked() {
         ui->specPMTs_3->replot();
         ui->specPMTs_3->rescaleAxes();
 
-
+        x.clear();
+        ymed.clear();
+        ymax.clear();
+        ymin.clear();
+        cout<< "longitud de x: " << QString::number(x.length()).toStdString()<<endl;
 
     }
     else if (ui->checkBox_rate_log->isChecked()) {
@@ -5936,3 +6033,4 @@ void MainWindow::on_pushButton_adquirir_clicked()
   }
   bMutex.unlock();
 }
+

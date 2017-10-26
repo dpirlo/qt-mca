@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -1417,7 +1417,7 @@
        <rect>
         <x>10</x>
         <y>278</y>
-        <width>981</width>
+        <width>801</width>
         <height>51</height>
        </rect>
       </property>
@@ -1466,13 +1466,13 @@ Tensión: </string>
         <rect>
          <x>461</x>
          <y>10</y>
-         <width>501</width>
+         <width>311</width>
          <height>31</height>
         </rect>
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -1555,7 +1555,7 @@ Tensión: </string>
        <rect>
         <x>530</x>
         <y>55</y>
-        <width>461</width>
+        <width>281</width>
         <height>221</height>
        </rect>
       </property>
@@ -1568,9 +1568,9 @@ Tensión: </string>
       <widget class="QLabel" name="label_40">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>50</x>
          <y>0</y>
-         <width>251</width>
+         <width>181</width>
          <height>31</height>
         </rect>
        </property>
@@ -1588,7 +1588,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_configure">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>40</x>
          <y>180</y>
          <width>201</width>
          <height>31</height>
@@ -1604,7 +1604,7 @@ Tensión: </string>
       <widget class="QComboBox" name="comboBox_adquire_mode_coin">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>40</x>
          <y>30</y>
          <width>141</width>
          <height>29</height>
@@ -1644,9 +1644,9 @@ Tensión: </string>
       <widget class="QFrame" name="frame_window_coin">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>30</x>
          <y>70</y>
-         <width>201</width>
+         <width>221</width>
          <height>101</height>
         </rect>
        </property>
@@ -1699,7 +1699,7 @@ Tensión: </string>
          <rect>
           <x>10</x>
           <y>35</y>
-          <width>31</width>
+          <width>21</width>
           <height>21</height>
          </rect>
         </property>
@@ -1757,13 +1757,149 @@ Tensión: </string>
         </property>
        </widget>
       </widget>
-      <widget class="QFrame" name="frame_adquire_advance_mode">
+      <widget class="QLabel" name="label_coincidencia_estado">
        <property name="geometry">
         <rect>
          <x>200</x>
+         <y>30</y>
+         <width>46</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_head_select_calib">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>100</y>
+         <width>51</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_calib">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>79</x>
+         <y>87</y>
+         <width>101</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Cabezal a
+calibrar</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <zorder>comboBox_adquire_mode_coin</zorder>
+      <zorder>label_40</zorder>
+      <zorder>pushButton_configure</zorder>
+      <zorder>frame_window_coin</zorder>
+      <zorder>label_coincidencia_estado</zorder>
+      <zorder>comboBox_head_select_calib</zorder>
+      <zorder>label_calib</zorder>
+     </widget>
+     <widget class="QLabel" name="label_title_output">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>590</y>
+        <width>211</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frame_2">
+      <property name="geometry">
+       <rect>
+        <x>810</x>
+        <y>50</y>
+        <width>181</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QFrame" name="frame_adquire_advance_mode">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
          <y>0</y>
-         <width>231</width>
-         <height>221</height>
+         <width>161</width>
+         <height>271</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -1775,7 +1911,7 @@ Tensión: </string>
        <widget class="QWidget" name="gridLayoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>70</x>
+          <x>0</x>
           <y>10</y>
           <width>161</width>
           <height>284</height>
@@ -2199,127 +2335,6 @@ Tensión: </string>
         </layout>
        </widget>
       </widget>
-      <widget class="QLabel" name="label_coincidencia_estado">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>30</y>
-         <width>46</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="comboBox_head_select_calib">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>100</y>
-         <width>51</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>3</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>4</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>6</string>
-        </property>
-       </item>
-      </widget>
-      <widget class="QLabel" name="label_calib">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>49</x>
-         <y>87</y>
-         <width>101</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Cabezal a
-calibrar</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-      <zorder>comboBox_adquire_mode_coin</zorder>
-      <zorder>frame_adquire_advance_mode</zorder>
-      <zorder>label_40</zorder>
-      <zorder>pushButton_configure</zorder>
-      <zorder>frame_window_coin</zorder>
-      <zorder>label_coincidencia_estado</zorder>
-      <zorder>comboBox_head_select_calib</zorder>
-      <zorder>label_calib</zorder>
-     </widget>
-     <widget class="QLabel" name="label_title_output">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>590</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="mca">
@@ -2351,7 +2366,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -7511,7 +7526,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
