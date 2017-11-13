@@ -282,6 +282,8 @@ private slots:
 
     void on_pushButton_adquirir_clicked();
 
+    void on_dateTimeEdit_editingFinished();
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -390,7 +392,7 @@ private:
     AutoCalibThread *calib_wr;
     QThread *calib_th;
     bool is_abort_mcae, is_abort_log, is_abort_calib;
-    QString initfile, root_config_path, root_calib_path, preferencesdir, preferencesfile;
+    QString initfile, root_config_path, root_calib_path,root_log_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;
     QList<QLabel*> head_status_table;

@@ -4138,9 +4138,9 @@ calibrar</string>
      <widget class="QCheckBox" name="checkBox_temp_log">
       <property name="geometry">
        <rect>
-        <x>890</x>
+        <x>930</x>
         <y>20</y>
-        <width>92</width>
+        <width>61</width>
         <height>31</height>
        </rect>
       </property>
@@ -4151,9 +4151,9 @@ calibrar</string>
      <widget class="QCheckBox" name="checkBox_rate_log">
       <property name="geometry">
        <rect>
-        <x>890</x>
+        <x>930</x>
         <y>60</y>
-        <width>92</width>
+        <width>61</width>
         <height>31</height>
        </rect>
       </property>
@@ -4258,6 +4258,32 @@ calibrar</string>
       </property>
       <property name="text">
        <string>Fin del log</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="ChechBox_Pico">
+      <property name="geometry">
+       <rect>
+        <x>820</x>
+        <y>60</y>
+        <width>51</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Pico</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_Rate_Coin">
+      <property name="geometry">
+       <rect>
+        <x>820</x>
+        <y>19</y>
+        <width>85</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>RATE COIN</string>
       </property>
      </widget>
     </widget>
@@ -7526,7 +7552,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>26</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

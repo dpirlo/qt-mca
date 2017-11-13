@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
+    root_log_path("/home/ar-pet/.qt-mca/logs"),
     preferencesdir(QDir::homePath() + "/.qt-mca"),
     preferencesfile("qt-mca.conf"),
     ui(new Ui::MainWindow)
@@ -3274,7 +3275,7 @@ QString MainWindow::openConfigurationFile()
 QString MainWindow::openLogFile()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Abrir archivo de log"),
-                                                    root_config_path,
+                                                    root_log_path,
                                                     tr("Log (*.log)"));
     initfile = filename;
     return filename;
@@ -4991,6 +4992,7 @@ void MainWindow::on_pushButton_triple_ventana_14_clicked()
     QString root="Salidas/";
 
     QFileDialog dialog;
+
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     QString filename = dialog.getExistingDirectory(this, tr("Abrir directorio de entrada"),
                                                    root);
@@ -5667,122 +5669,6 @@ void MainWindow::setTabLog(int index) {
 }
 
 /**
- * @brief MainWindow::on_pushButton_Log_clicked
- */
-void MainWindow::on_pushButton_Log_clicked() {
-
-    if (ui->checkBox_temp_log->isChecked()) {
-
-        QRegExp rx("[,]");
-        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-TEMP]");
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        // Configuracion de la trama:
-        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
-        //    [LOG-TEMP],Tue May 30 06:55:25 2017,Cabezal,  4,          27.375,    35.1393,   44.5625
-        //              "ddd MMM dd HH:mm:ss yyyy"
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-
-        QDateTime FechaMedicionInterna;
-        FechaMedicionInterna= QDateTime::fromString( lista.at(1),Qt::RFC2822Date);
-
-
-
-        // generate some data:
-        QVector<double> x;//(lista.length()/7);
-        QVector<double> ymed;//(lista.length()/7); // initialize with entries 0..100
-        QVector<double> ymin;//(lista.length()/7); // initialize with entries 0..100
-        QVector<double> ymax;//(lista.length()/7); // initialize with entries 0..100
-
-        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
-        dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
-        ui->specPMTs_3->xAxis->setTicker(dateTicker);
-
-        for (int i=0; i<(lista.length()/7); i++){
-            if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
-              QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
-              //cout << QString(lista.at(5+i*7)).toStdString()<<endl;
-              //cout<< QString(lista.at(1+i*7)).toStdString()<< endl;
-              //cout<< QString(tmp.toString()).toStdString()<< endl;
-              x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
-              ymed.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
-              ymin.append(QString(lista.at(4+i*7)).toDouble()); // let's plot a quadratic function
-              ymax.append( QString(lista.at(6+i*7)).toDouble()); // let's plot a quadratic function
-              }
-
-        }
-        cout<< "longitud de x: " << QString::number(x.length()).toStdString()<<endl;
-        for (int i=0; i<x.length();i++){
-            cout<<QString::number(x[i]).toStdString() <<"  "<< QString::number(i).toStdString()<<endl;
-            ymin[i]=ymed[i]-ymin[i];
-            ymax[i]=ymax[i]-ymed[i];
-          }
-        //ui->specPMTs_3->xAxis->setRange(x[0], x[x.length()-1]);
-
-        // create graph and assign data to it:
-        ui->specPMTs_3->clearGraphs();
-        ui->specPMTs_3->addGraph();
-
-        ui->specPMTs_3->graph(0)->setData(x,ymed);
-        ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
-        QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
-        errorBars->removeFromLegend();
-        ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
-        errorBars->setData(ymin,ymax);
-        errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
-//        ui->specPMTs_3->addGraph();
-//        //if (debug) cout<<"aca llega"<<endl;
-//        ui->specPMTs_3->graph(2)->setData(x,ymax);
-        // give the axes some labels:
-        ui->specPMTs_3->xAxis->setLabel("Tiempo");
-        ui->specPMTs_3->yAxis->setLabel("ºC");
-        // set axes ranges, so we see all data:
-        ui->specPMTs_3->replot();
-        ui->specPMTs_3->rescaleAxes();
-
-        x.clear();
-        ymed.clear();
-        ymax.clear();
-        ymin.clear();
-        cout<< "longitud de x: " << QString::number(x.length()).toStdString()<<endl;
-
-    }
-    else if (ui->checkBox_rate_log->isChecked()) {
-        QRegExp rx("[,]");
-        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATE]");
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        // Configuracion de la trama:
-        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX--OFFSET
-        //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0,         0
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        cout<<"---------------------------------";
-        cout<<"fecha: "+lista.at(1).toStdString();
-        cout<<"---------------------------------";
-
-
-        // generate some data:
-        QVector<double> x(lista.length()/7);
-        QVector<double> y(lista.length()/7); // initialize with entries 0..100
-        for (int i=0; i<(lista.length()/7); i++)
-        {
-          x[i] = i; // x goes from -1 to 1
-          y[i] = QString(lista.at(5+i*7)).toDouble(); // let's plot a quadratic function
-        }
-        // create graph and assign data to it:
-        ui->specPMTs_3->addGraph();
-        ui->specPMTs_3->graph(0)->setData(x, y);
-        // give the axes some labels:
-        ui->specPMTs_3->xAxis->setLabel("Tiempo");
-        ui->specPMTs_3->yAxis->setLabel("Tasa");
-        // set axes ranges, so we see all data:
-        ui->specPMTs_3->replot();
-        ui->specPMTs_3->rescaleAxes();
-    }
-    else {
-        QMessageBox::critical(this,tr("Error"),tr("seleccione una opcion "));
-    }
-}
-
-/**
  * @brief MainWindow::on_checkBox_temp_log_toggled
  * @param checked
  */
@@ -6033,4 +5919,499 @@ void MainWindow::on_pushButton_adquirir_clicked()
   }
   bMutex.unlock();
 }
+
+
+void MainWindow::on_dateTimeEdit_editingFinished()
+{
+
+  ui->specPMTs_3->setInteraction(QCP::iRangeDrag, true);
+  QDateTime nombreunivoco=ui->dateTimeEdit->dateTime();
+
+  initfile =ui->dateTimeEdit->dateTime().toString("yyyyMMddhh");
+  initfile= root_log_path+"/"+"LOG"+initfile+".log";
+
+  cout<< QString(initfile).toStdString()<< endl;
+
+  try{
+
+    QRegExp rx("[,]");
+    int graph=0;
+    QStringList lista,listaRate;
+    ui->specPMTs_3->clearGraphs();
+
+
+    if (ui->checkBox_temp_log->isChecked()) {
+      lista = getLogFromFiles(initfile,rx, "[LOG-TEMP]");
+
+      if (lista.length()!=0){
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Configuracion de la trama:
+        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
+        //    [LOG-TEMP],Tue May 30 06:55:25 2017,Cabezal,  4,          27.375,    35.1393,   44.5625
+        //              "ddd MMM dd HH:mm:ss yyyy"
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        QDateTime FechaMedicionInterna;
+        FechaMedicionInterna= QDateTime::fromString( lista.at(1),Qt::RFC2822Date);
+
+        // generate some data:
+        QVector<double> x;//(lista.length()/7);
+        QVector<double> ymed;//(lista.length()/7); // initialize with entries 0..100
+        QVector<double> ymin;//(lista.length()/7); // initialize with entries 0..100
+        QVector<double> ymax;//(lista.length()/7); // initialize with entries 0..100
+
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+        ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+        for (int i=0; i<(lista.length()/7); i++){
+            if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                cout<<QString(lista.at(1+i*7)).toStdString()<<endl;
+                x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                ymed.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
+                ymin.append(QString(lista.at(4+i*7)).toDouble()); // let's plot a quadratic function
+                ymax.append( QString(lista.at(6+i*7)).toDouble()); // let's plot a quadratic function
+              }
+          }
+
+        for (int i=0; i<x.length();i++){
+            //cout<<QString::number(x[i]).toStdString() <<"  "<< QString::number(i).toStdString()<<endl;
+            ymin[i]=ymed[i]-ymin[i];
+            ymax[i]=ymax[i]-ymed[i];
+          }
+
+        // create graph and assign data to it:
+        ui->specPMTs_3->addGraph();
+
+        ui->specPMTs_3->graph(graph)->setData(x,ymed);
+        ui->specPMTs_3->graph(graph)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+        QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+        errorBars->removeFromLegend();
+        ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+        errorBars->setData(ymin,ymax);
+        errorBars->setDataPlottable(ui->specPMTs_3->graph(graph));
+
+        ui->specPMTs_3->xAxis->setLabel("Tiempo");
+        ui->specPMTs_3->yAxis->setLabel("ºC");
+        // set axes ranges, so we see all data:
+        ui->specPMTs_3->rescaleAxes();
+        ui->specPMTs_3->replot();
+
+        x.clear();
+        ymed.clear();
+        ymax.clear();
+        ymin.clear();
+        graph++;
+      }
+        else {
+            QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+        }
+      }
+
+    if (ui->checkBox_rate_log->isChecked()) {
+        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATE]");
+
+        if (lista.length()!=0){
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          // Configuracion de la trama:
+          ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX--OFFSET
+          //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0,         0
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          cout<<"---------------------------------";
+          cout<<"fecha: "+lista.at(1).toStdString();
+          cout<<"---------------------------------";
+
+          QVector<double>x ,y;
+          QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+          dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+          ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+          for (int i=0; i<(lista.length()/7); i++){
+              if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                y.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
+                }
+          }
+
+          ui->specPMTs_3->addGraph();
+
+          ui->specPMTs_3->graph(graph)->setData(x, y);
+
+          if (ui->ChechBox_Pico->isChecked()) {
+              QRegExp rx("[,]");
+              QStringList lista = getLogFromFiles(initfile,rx, "[LOG-PICO]");
+              /////////////////////////////////////////////////////////////////////////////////////////////////
+              // Configuracion de la trama:
+              ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--Pico------FWHM
+              //    [LOG-PICO],Fri Oct 27 16:12:18 2017,Cabezal,  4,          124.978,  13.6024
+              /////////////////////////////////////////////////////////////////////////////////////////////////
+              cout<<"---------------------------------";
+              cout<<"fecha: "+lista.at(1).toStdString();
+              cout<<"---------------------------------";
+
+              QVector<double>x ,y,fwhm;
+              QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+              dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+              ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+              for (int i=0; i<(lista.length()/7); i++){
+                  if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                    QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                    x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                    y.append( QString(lista.at(4+i*7)).toDouble()*70);
+                    fwhm.append(QString(lista.at(5+i*7)).toDouble()*10000);
+                    }
+              }
+              ui->specPMTs_3->addGraph();
+              ui->specPMTs_3->graph(1)->setData(x, y);
+              ui->specPMTs_3->yAxis2->setLabel("Pico");
+              // make ticks on right axis go inward and outward:
+              ui->specPMTs_3->yAxis2->setVisible(true);
+
+          }
+          ui->specPMTs_3->yAxis->setTickLength(3, 3);
+          ui->specPMTs_3->yAxis->setSubTickLength(1, 1);
+          // give the axes some labels:
+          ui->specPMTs_3->xAxis->setLabel("Tiempo");
+          ui->specPMTs_3->yAxis->setLabel("Tasa");
+          // set axes ranges, so we see all data:
+          ui->specPMTs_3->rescaleAxes();
+          ui->specPMTs_3->replot();
+          x.clear();
+        }
+        else {
+             QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+        }
+      }
+
+    if (ui->checkBox_Rate_Coin->isChecked()){
+        QRegExp rx("[,]");
+        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATECOIN]");
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Configuracion de la trama:
+        ///   ENCABEZADO-----FECHA--------------------MAQUINAS
+        //    [LOG-RATECOIN],Thu Oct 26 12:59:45 2017,0,0,0,0,0,0,0,0,0
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        cout<<"---------------------------------";
+        cout<<"fecha: "+lista.at(1).toStdString();
+        cout<<"---------------------------------";
+
+        QVector<double>x ,y,fwhm;
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+        ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+        for (int i=0; i<(lista.length()/7); i++){
+            if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+              QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+              x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+              y.append( QString(lista.at(4+i*7)).toDouble());
+              fwhm.append(QString(lista.at(5+i*7)).toDouble());
+              }
+        }
+//        // create graph and assign data to it:
+        ui->specPMTs_3->clearGraphs();
+        ui->specPMTs_3->addGraph();
+
+        ui->specPMTs_3->graph(0)->setData(x, y);
+        ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+        QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+        errorBars->removeFromLegend();
+        ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+        errorBars->setData(fwhm,fwhm);
+        errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
+        // give the axes some labels:
+        ui->specPMTs_3->xAxis->setLabel("Tiempo");
+        ui->specPMTs_3->yAxis->setLabel("Tasa");
+        // set axes ranges, so we see all data:
+        ui->specPMTs_3->rescaleAxes();
+        ui->specPMTs_3->replot();
+      }
+
+    if (ui->ChechBox_Pico->isChecked()){
+        QRegExp rx("[,]");
+        QStringList lista = getLogFromFiles(initfile,rx, "[LOG-PICO]");
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Configuracion de la trama:
+        ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--Pico------FWHM
+        //    [LOG-PICO],Fri Oct 27 16:12:18 2017,Cabezal,  4,          124.978,  13.6024
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        cout<<"---------------------------------";
+        cout<<"fecha: "+lista.at(1).toStdString();
+        cout<<"---------------------------------";
+
+        QVector<double>x ,y,fwhm;
+        QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+        dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+        ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+        for (int i=0; i<(lista.length()/7); i++){
+            if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+              QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+              x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+              y.append( QString(lista.at(4+i*7)).toDouble());
+              fwhm.append(QString(lista.at(5+i*7)).toDouble());
+              }
+        }
+
+//        // create graph and assign data to it:
+        ui->specPMTs_3->addGraph();
+
+        ui->specPMTs_3->graph(graph)->setData(x, y);
+        ui->specPMTs_3->graph(graph)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+        QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+        errorBars->removeFromLegend();
+        ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+        errorBars->setData(fwhm,fwhm);
+        errorBars->setDataPlottable(ui->specPMTs_3->graph(graph));
+        // give the axes some labels:
+        ui->specPMTs_3->yAxis2->setLabel("Tasa");
+        // set axes ranges, so we see all data:
+        ui->specPMTs_3->rescaleAxes();
+        ui->specPMTs_3->replot();
+        graph++;
+      }
+
+
+
+  }
+  catch(Exceptions ex){
+    cout<< QString(initfile).toStdString()<< endl;
+    QMessageBox::critical(this,tr("Atención"),tr((string("No se puede abrir el archivo:" +QString(initfile).toStdString()+"Error: ")+string(ex.excdesc)).c_str()));
+  }
+}
+
+  /**
+   * @brief MainWindow::on_pushButton_Log_clicked
+   */
+
+  void MainWindow::on_pushButton_Log_clicked() {
+
+      ui->specPMTs_3->setInteraction(QCP::iRangeDrag, true);
+      QDateTime nombreunivoco=ui->dateTimeEdit->dateTime();
+
+      initfile =ui->dateTimeEdit->dateTime().toString("yyyyMMddhh");
+      initfile= root_log_path+"/"+"LOG"+initfile+".log";
+
+      cout<< QString(initfile).toStdString()<< endl;
+
+      if (ui->checkBox_temp_log->isChecked()) {
+
+          QRegExp rx("[,]");
+          QStringList lista;
+          try{
+            lista = getLogFromFiles(initfile,rx, "[LOG-TEMP]");
+            cout<< "ACA LLEGA"<< endl;
+
+            if (lista.length()!=0){
+
+              /////////////////////////////////////////////////////////////////////////////////////////////////
+              // Configuracion de la trama:
+              ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX//
+              //    [LOG-TEMP],Tue May 30 06:55:25 2017,Cabezal,  4,          27.375,    35.1393,   44.5625
+              //              "ddd MMM dd HH:mm:ss yyyy"
+              /////////////////////////////////////////////////////////////////////////////////////////////////
+
+              QDateTime FechaMedicionInterna;
+              FechaMedicionInterna= QDateTime::fromString( lista.at(1),Qt::RFC2822Date);
+
+              // generate some data:
+              QVector<double> x;//(lista.length()/7);
+              QVector<double> ymed;//(lista.length()/7); // initialize with entries 0..100
+              QVector<double> ymin;//(lista.length()/7); // initialize with entries 0..100
+              QVector<double> ymax;//(lista.length()/7); // initialize with entries 0..100
+
+              QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+              dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+              ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+              for (int i=0; i<(lista.length()/7); i++){
+                  if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                      QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                      x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                      ymed.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
+                      ymin.append(QString(lista.at(4+i*7)).toDouble()); // let's plot a quadratic function
+                      ymax.append( QString(lista.at(6+i*7)).toDouble()); // let's plot a quadratic function
+                    }
+                }
+
+              for (int i=0; i<x.length();i++){
+                  //cout<<QString::number(x[i]).toStdString() <<"  "<< QString::number(i).toStdString()<<endl;
+                  ymin[i]=ymed[i]-ymin[i];
+                  ymax[i]=ymax[i]-ymed[i];
+                }
+
+              // create graph and assign data to it:
+              ui->specPMTs_3->clearGraphs();
+              ui->specPMTs_3->addGraph();
+
+              ui->specPMTs_3->graph(0)->setData(x,ymed);
+              ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+              QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+              errorBars->removeFromLegend();
+              ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+              errorBars->setData(ymin,ymax);
+              errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
+
+              ui->specPMTs_3->xAxis->setLabel("Tiempo");
+              ui->specPMTs_3->yAxis->setLabel("ºC");
+              // set axes ranges, so we see all data:
+              ui->specPMTs_3->rescaleAxes();
+              ui->specPMTs_3->replot();
+
+              x.clear();
+              ymed.clear();
+              ymax.clear();
+              ymin.clear();
+            }
+            else {
+                QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+            }
+
+
+          }
+          catch(Exceptions ex){
+            cout<< QString(initfile).toStdString()<< endl;
+
+            QMessageBox::critical(this,tr("Atención"),tr((string("No se puede abrir el archivo:" +QString(initfile).toStdString()+"Error: ")+string(ex.excdesc)).c_str()));
+
+          }
+
+
+      }
+      else if (ui->checkBox_rate_log->isChecked()) {
+          QRegExp rx("[,]");
+          QStringList lista = getLogFromFiles(initfile,rx, "[LOG-RATE]");
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          // Configuracion de la trama:
+          ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--VALOR_MIN--VALOR_MED--VALOR_MAX--OFFSET
+          //    [LOG-RATE],Tue May 30 06:55:25 2017,Cabezal,  4,          0,         168,       0,         0
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          cout<<"---------------------------------";
+          cout<<"fecha: "+lista.at(1).toStdString();
+          cout<<"---------------------------------";
+
+          QVector<double>x ,y;
+          QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+          dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+          ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+          for (int i=0; i<(lista.length()/7); i++){
+              if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                y.append( QString(lista.at(5+i*7)).toDouble()); // let's plot a quadratic function
+                }
+          }
+
+
+          ui->specPMTs_3->clearGraphs();
+          ui->specPMTs_3->addGraph();
+
+  //        ui->specPMTs_3->graph(0)->setData(x,ymed);
+
+          ui->specPMTs_3->graph(0)->setData(x, y);
+
+          ui->specPMTs_3->yAxis->setTickLength(3, 3);
+          ui->specPMTs_3->yAxis->setSubTickLength(1, 1);
+          // give the axes some labels:
+          ui->specPMTs_3->xAxis->setLabel("Tiempo");
+          ui->specPMTs_3->yAxis->setLabel("Tasa");
+          // set axes ranges, so we see all data:
+          ui->specPMTs_3->rescaleAxes();
+          ui->specPMTs_3->replot();
+
+      }
+      else if (ui->ChechBox_Pico->isChecked()){
+          QRegExp rx("[,]");
+          QStringList lista = getLogFromFiles(initfile,rx, "[LOG-PICO]");
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          // Configuracion de la trama:
+          ///   ENCABEZADO-FECHA--------------------CABEZAL---NUMCABEZAL--Pico------FWHM
+          //    [LOG-PICO],Fri Oct 27 16:12:18 2017,Cabezal,  4,          124.978,  13.6024
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          cout<<"---------------------------------";
+          cout<<"fecha: "+lista.at(1).toStdString();
+          cout<<"---------------------------------";
+
+          QVector<double>x ,y,fwhm;
+          QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+          dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+          ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+          for (int i=0; i<(lista.length()/7); i++){
+              if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                y.append( QString(lista.at(4+i*7)).toDouble());
+                fwhm.append(QString(lista.at(5+i*7)).toDouble());
+                }
+          }
+
+  //        // create graph and assign data to it:
+          ui->specPMTs_3->clearGraphs();
+          ui->specPMTs_3->addGraph();
+
+          ui->specPMTs_3->graph(0)->setData(x, y);
+          ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+          QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+          errorBars->removeFromLegend();
+          ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+          errorBars->setData(fwhm,fwhm);
+          errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
+          // give the axes some labels:
+          ui->specPMTs_3->yAxis2->setLabel("Tasa");
+          // set axes ranges, so we see all data:
+          ui->specPMTs_3->rescaleAxes();
+          ui->specPMTs_3->replot();
+        }
+      else if (ui->checkBox_Rate_Coin->isChecked()){
+          QRegExp rx("[,]");
+          QStringList lista = getLogFromFiles(initfile,rx, "[LOG-PICO]");
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          // Configuracion de la trama:
+          ///   ENCABEZADO-----FECHA--------------------MAQUINAS
+          //    [LOG-RATECOIN],Thu Oct 26 12:59:45 2017,0,0,0,0,0,0,0,0,0
+          /////////////////////////////////////////////////////////////////////////////////////////////////
+          cout<<"---------------------------------";
+          cout<<"fecha: "+lista.at(1).toStdString();
+          cout<<"---------------------------------";
+
+          QVector<double>x ,y,fwhm;
+          QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+          dateTicker->setDateTimeFormat("ddd MMM dd HH:mm:ss yyyy");
+          ui->specPMTs_3->xAxis->setTicker(dateTicker);
+
+          for (int i=0; i<(lista.length()/7); i++){
+              if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM dd HH:mm:ss yyyy");
+                x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
+                y.append( QString(lista.at(4+i*7)).toDouble());
+                fwhm.append(QString(lista.at(5+i*7)).toDouble());
+                }
+          }
+  //        // create graph and assign data to it:
+          ui->specPMTs_3->clearGraphs();
+          ui->specPMTs_3->addGraph();
+
+          ui->specPMTs_3->graph(0)->setData(x, y);
+          ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
+          QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
+          errorBars->removeFromLegend();
+          ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
+          errorBars->setData(fwhm,fwhm);
+          errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
+          // give the axes some labels:
+          ui->specPMTs_3->xAxis->setLabel("Tiempo");
+          ui->specPMTs_3->yAxis->setLabel("Tasa");
+          // set axes ranges, so we see all data:
+          ui->specPMTs_3->rescaleAxes();
+          ui->specPMTs_3->replot();
+        }
+      else {
+          QMessageBox::critical(this,tr("Error"),tr("seleccione una opcion "));
+      }
+  }
 
