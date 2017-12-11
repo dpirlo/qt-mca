@@ -256,11 +256,7 @@ private slots:
 
     void on_pushButton_tiempos_cabezal_2_clicked();
 
-    void on_pushButton_log_filename_clicked();
-
     void on_comboBox_head_mode_select_graph_2_currentIndexChanged(int index);
-
-    void on_pushButton_Log_clicked();
 
     void on_checkBox_temp_log_toggled(bool checked);
 
@@ -282,7 +278,11 @@ private slots:
 
     void on_pushButton_adquirir_clicked();
 
-    void on_dateTimeEdit_editingFinished();
+    void on_calendarWidget_selectionChanged();
+
+    void on_ChechBox_Pico_toggled(bool checked);
+
+    void on_checkBox_Rate_Coin_toggled(bool checked);
 
 private:
     void connectSlots();
@@ -344,6 +344,7 @@ private:
     QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
     QString setTime(string head, double time_value, string pmt);
     int getPMT(QLineEdit *line_edit);
+    bool fileExists(QString path);
     QString getPSOCAlta(QLineEdit *line_edit);
     string getHVValue(QLineEdit *line_edit, int value=0);
     bool resetHeads();
