@@ -33,9 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     setPreferencesConfiguration();
     getPaths();
-    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+//    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+//    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+//    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
 
     ui->comboBox_port->installEventFilter(this);
 }
@@ -260,7 +260,14 @@ void MainWindow::checkCombosStatus()
     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
     connect(ui->comboBox_head_mode_select_graph_2 ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabLog(int)));
-    //connect(ui->comboBox_port,SIGNAL( ),this,SLOT(comboBox_port_Popup()));
+
+//    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
+
+//    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+
+//    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
+//    connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+
 
 }
 /**
@@ -1105,45 +1112,45 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
 /**
  * @brief MainWindow::on_pushButton_init_configure_clicked
  */
-void MainWindow::on_pushButton_init_configure_clicked()
-{
-    writeFooterAndHeaderDebug(true);
-    if(arpet->isPortOpen()) {
-        //setButtonConnectState(true);
-        arpet->portDisconnect();
+//void MainWindow::on_pushButton_init_configure_clicked()           en principio obsoleta, se encargaba de que cuando presionabas el boton conectar puerto, abra el puerto o lo cierre, y si
+//{
+//    writeFooterAndHeaderDebug(true);
+//    if(arpet->isPortOpen()) {
+//        //setButtonConnectState(true);
+//        arpet->portDisconnect();
 
-        if(debug) cout<<"Puerto serie desconectado"<<endl;
-    }
-    else {
-        try{
+//        if(debug) cout<<"Puerto serie desconectado"<<endl;
+//    }
+//    else {
+//        try{
 
 
-            port_name=ui->comboBox_port->currentText();
-            calibrador->setPort_Name(port_name);
-            worker->setPortName(port_name);
-            arpet->portConnect(port_name.toStdString().c_str());
-            //QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
-            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-            //setButtonConnectState(false);
-            writeFooterAndHeaderDebug(false);
-            getARPETStatus();
-            getHeadStatus(getHead("config").toInt());
-            ui->tabWidget_general->setTabEnabled(Tab1,true); // Muestro pestaña MCA
-            ui->tabWidget_general->setTabEnabled(Tab4,true); // Muestro pestaña Autocalib
-            ui->tabWidget_general->setTabEnabled(Tab9,true); // Muestro pestaña Terminal
+//            port_name=ui->comboBox_port->currentText();
+//            calibrador->setPort_Name(port_name);
+//            worker->setPortName(port_name);
+//            arpet->portConnect(port_name.toStdString().c_str());
+//            //QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
+//            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+//            //setButtonConnectState(false);
+//            writeFooterAndHeaderDebug(false);
+//            getARPETStatus();
+//            getHeadStatus(getHead("config").toInt());
+////            ui->tabWidget_general->setTabEnabled(Tab1,true); // Muestro pestaña MCA
+////            ui->tabWidget_general->setTabEnabled(Tab4,true); // Muestro pestaña Autocalib
+////            ui->tabWidget_general->setTabEnabled(Tab9,true); // Muestro pestaña Terminal
 
-        }
-        catch(boost::system::system_error e)
-        {
-            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
-            ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-            ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-            ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-        }
-    }
-    writeFooterAndHeaderDebug(false);
-}
+//        }
+//        catch(boost::system::system_error e)
+//        {
+//            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+//            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+////            ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+////            ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+////            ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+//        }
+//    }
+//    writeFooterAndHeaderDebug(false);
+//}
 
 
 
@@ -3153,20 +3160,45 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 QList<int> MainWindow::getCheckedHeads()
 {
     QList<int> checkedHeads;
-    if (ui->comboBox_port->currentIndex()==MULTIHEAD || ui->comboBox_port->currentIndex()==ALLHEADS)
-    {
-        for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
-        {
-            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
-            if(q->checkState() == Qt::Checked)
-            {
-                checkedHeads.append(i+1);
-            }
-        }
+//    if (ui->comboBox_port->currentIndex()==MULTIHEAD || ui->comboBox_port->currentIndex()==ALLHEADS)
+//    {
+//        for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
+//        {
+//            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
+//            if(q->checkState() == Qt::Checked)
+//            {
+//                checkedHeads.append(i+1);
+//            }
+//        }
+//    }
+//    else
+//    {
+//        checkedHeads.append(getHead("config").toInt());
+//    }
+
+//    if(checkedHeads.length() == 0)
+//    {
+//        QMessageBox::critical(this,tr("Atención"),tr("No se ha seleccionado ningún cabezal"));
+//        return checkedHeads;
+//    }
+
+    if (ui->checkBox_c_1->isChecked()){
+        checkedHeads.append(1);
     }
-    else
-    {
-        checkedHeads.append(getHead("config").toInt());
+    if (ui->checkBox_c_2->isChecked()){
+        checkedHeads.append(2);
+    }
+    if (ui->checkBox_c_3->isChecked()){
+        checkedHeads.append(3);
+    }
+    if (ui->checkBox_c_4->isChecked()){
+        checkedHeads.append(4);
+    }
+    if (ui->checkBox_c_5->isChecked()){
+        checkedHeads.append(5);
+    }
+    if (ui->checkBox_c_6->isChecked()){
+        checkedHeads.append(6);
     }
 
     if(checkedHeads.length() == 0)
@@ -3241,16 +3273,16 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
 
     QString root = settings.value("Paths/root", "US").toString();
     /* Parameters */
-    AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
-    LowLimit = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
-    Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
-    coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
-    hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
-    coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
-    coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
-    coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
-    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
-    coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
+    AT = settings.value("cabezal"+head+"/AT", "US").toInt();
+    LowLimit = settings.value("cabezal"+head+"/LowLimit", "US").toInt();
+    Target = settings.value("cabezal"+head+"/Target", "US").toInt();
+    coefenerg = root+settings.value("cabezal"+head+"/coefenerg", "US").toString();
+    hvtable = root+settings.value("cabezal"+head+"/hvtable", "US").toString();
+    coefx = root+settings.value("cabezal"+head+"/coefx", "US").toString();
+    coefy = root+settings.value("cabezal"+head+"/coefy", "US").toString();
+    coefest = root+settings.value("cabezal"+head+"/coefest", "US").toString();
+    coefT = root+settings.value("cabezal"+head+"/coefT", "US").toString();
+    coefTInter = root+settings.value("cabezal"+head+"/coefTInter", "US").toString();
 
     return MCAE::OK;
 }
@@ -3562,10 +3594,13 @@ QString MainWindow::getHead(string tab)
     }
     else if (tab=="config")
     {
-        if (ui->comboBox_port->currentIndex()==MONOHEAD)
-        {
-            head=ui->comboBox_port->currentText();
+        QString cabezal = ui->comboBox_port->currentText();
+        for (int i=1;i<=6;i++){
+            if (cabezal.contains(QString::number(i))) head=QString::number(i);
+
         }
+
+
     }
     else if (tab=="terminal")
     {
@@ -6302,30 +6337,205 @@ void MainWindow::on_comboBox_port_currentIndexChanged(const QString &arg1)
 
 void MainWindow::on_checkBox_c_1_toggled(bool checked)
 {
+        writeFooterAndHeaderDebug(true);
+            try{
+                port_name="/dev/UART_Cab1";//ui->comboBox_port->currentText();
 
+                if(arpet->isPortOpen()) {
+                    //setButtonConnectState(true);
+                    arpet->portDisconnect();
+
+                    if(debug) cout<<"Puerto serie desconectado"<<endl;
+                }else{
+                    arpet->portConnect(port_name.toStdString().c_str());
+
+                    calibrador->setPort_Name(port_name);
+                    worker->setPortName(port_name);
+
+                    getHeadStatus(1);
+
+                    if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                    writeFooterAndHeaderDebug(false);
+                }
+
+            }
+            catch(boost::system::system_error e)
+            {
+                if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+                QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+            }
+
+        writeFooterAndHeaderDebug(false);
 }
 
 void MainWindow::on_checkBox_c_2_toggled(bool checked)
 {
+    writeFooterAndHeaderDebug(true);
+        try{
+            port_name="/dev/UART_Cab2";//ui->comboBox_port->currentText();
+
+            if(arpet->isPortOpen()) {
+                //setButtonConnectState(true);
+                arpet->portDisconnect();
+
+                if(debug) cout<<"Puerto serie desconectado"<<endl;
+            }else{
+                arpet->portConnect(port_name.toStdString().c_str());
+
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+
+                getHeadStatus(2);
+
+                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+
+        }
+        catch(boost::system::system_error e)
+        {
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+        }
+
+    writeFooterAndHeaderDebug(false);
 
 }
 
 void MainWindow::on_checkBox_c_3_toggled(bool checked)
 {
 
+
+    writeFooterAndHeaderDebug(true);
+        try{
+            port_name="/dev/UART_Cab3";
+
+            if(arpet->isPortOpen()) {
+                //setButtonConnectState(true);
+                arpet->portDisconnect();
+
+                if(debug) cout<<"Puerto serie desconectado"<<endl;
+            }else{
+                arpet->portConnect(port_name.toStdString().c_str());
+
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+
+                getHeadStatus(3);
+
+                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+
+
+
+        }
+        catch(boost::system::system_error e)
+        {
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+        }
+
+    writeFooterAndHeaderDebug(false);
 }
 
 void MainWindow::on_checkBox_c_4_toggled(bool checked)
 {
+    writeFooterAndHeaderDebug(true);
+        try{
+            port_name="/dev/UART_Cab4";//ui->comboBox_port->currentText();
+            if(arpet->isPortOpen()) {
+                //setButtonConnectState(true);
+                arpet->portDisconnect();
 
+                if(debug) cout<<"Puerto serie desconectado"<<endl;
+            }else{
+                arpet->portConnect(port_name.toStdString().c_str());
+
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+
+                getHeadStatus(4);
+
+                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+
+        }
+        catch(boost::system::system_error e)
+        {
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+        }
+
+    writeFooterAndHeaderDebug(false);
 }
 
 void MainWindow::on_checkBox_c_5_toggled(bool checked)
 {
+    writeFooterAndHeaderDebug(true);
+        try{
+            port_name="/dev/UART_Cab5";//ui->comboBox_port->currentText();
+            if(arpet->isPortOpen()) {
+                //setButtonConnectState(true);
+                arpet->portDisconnect();
 
+                if(debug) cout<<"Puerto serie desconectado"<<endl;
+            }else{
+                arpet->portConnect(port_name.toStdString().c_str());
+
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+
+                getHeadStatus(5);
+
+                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+
+        }
+        catch(boost::system::system_error e)
+        {
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+        }
+
+    writeFooterAndHeaderDebug(false);
 }
 
 void MainWindow::on_checkBox_c_6_toggled(bool checked)
 {
+    writeFooterAndHeaderDebug(true);
+        try{
+            port_name="/dev/UART_Cab6";//ui->comboBox_port->currentText();
 
+            if(arpet->isPortOpen()) {
+                //setButtonConnectState(true);
+                arpet->portDisconnect();
+
+                if(debug) cout<<"Puerto serie desconectado"<<endl;
+            }else{
+                arpet->portConnect(port_name.toStdString().c_str());
+
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+
+                getHeadStatus(6);
+
+                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+                writeFooterAndHeaderDebug(false);
+            }
+        }
+        catch(boost::system::system_error e)
+        {
+            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
+
+            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
+        }
+
+    writeFooterAndHeaderDebug(false);
 }

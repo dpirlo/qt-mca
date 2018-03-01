@@ -181,7 +181,7 @@ private slots:
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /* Buttons */
-    void on_pushButton_init_configure_clicked();
+    //void on_pushButton_init_configure_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
