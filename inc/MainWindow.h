@@ -39,6 +39,7 @@
 #include <QThread>
 #include <cstdio>
 #include <QString>
+#include <QComboBox>
 
 #define MONOHEAD 0
 #define MULTIHEAD 1
@@ -66,6 +67,12 @@
 #define Tab8 8
 #define Tab9 9
 #define WAIT_MICROSECONDS 1000000
+#define CAB_1 1
+#define CAB_2 2
+#define CAB_3 3
+#define CAB_4 4
+#define CAB_5 5
+#define CAB_6 6
 
 using namespace ap;
 
@@ -147,7 +154,6 @@ private slots:
 
 
     /* Slots de sincronización en el entorno gráfico */
-    void setHeadMode(int index, string tab);
     void setAdvanceCoinMode(int index);
     void setHeadModeConfig(int index);
     void setHeadModeGraph(int index);
@@ -199,8 +205,6 @@ private slots:
     void on_pushButton_p_10_clicked();
     void on_pushButton_p_50_clicked();
     void on_pushButton_reset_clicked();
-    void on_pushButton_arpet_on_clicked();
-    void on_pushButton_arpet_off_clicked();
     void on_actionPreferencias_triggered();
     void on_pushButton_send_terminal_clicked();
     void on_pushButton_flush_terminal_clicked();
@@ -284,6 +288,20 @@ private slots:
 
     void on_checkBox_Rate_Coin_toggled(bool checked);
 
+    void on_comboBox_port_currentIndexChanged(const QString &arg1);
+
+    void on_checkBox_c_1_toggled(bool checked);
+
+    void on_checkBox_c_2_toggled(bool checked);
+
+    void on_checkBox_c_3_toggled(bool checked);
+
+    void on_checkBox_c_4_toggled(bool checked);
+
+    void on_checkBox_c_5_toggled(bool checked);
+
+    void on_checkBox_c_6_toggled(bool checked);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -363,6 +381,8 @@ private:
     void setCalibrationMode(QString head);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
+    bool eventFilter(QObject *f_object, QEvent *f_event);
+
     int  ogl_flag;
 
     /* Area de prueba/testing */

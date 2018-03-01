@@ -96,9 +96,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>104</y>
-        <width>511</width>
-        <height>171</height>
+        <y>50</y>
+        <width>521</width>
+        <height>221</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -122,8 +122,8 @@
       <widget class="QLabel" name="label_14">
        <property name="geometry">
         <rect>
-         <x>39</x>
-         <y>82</y>
+         <x>50</x>
+         <y>97</y>
          <width>66</width>
          <height>21</height>
         </rect>
@@ -135,8 +135,8 @@
       <widget class="QLabel" name="label_15">
        <property name="geometry">
         <rect>
-         <x>39</x>
-         <y>106</y>
+         <x>50</x>
+         <y>121</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -150,7 +150,7 @@
         <rect>
          <x>17</x>
          <y>8</y>
-         <width>111</width>
+         <width>161</width>
          <height>41</height>
         </rect>
        </property>
@@ -162,15 +162,14 @@
         </font>
        </property>
        <property name="text">
-        <string>Estado del
- equipo</string>
+        <string>Estado del equipo</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_18">
        <property name="geometry">
         <rect>
-         <x>39</x>
-         <y>55</y>
+         <x>50</x>
+         <y>70</y>
          <width>66</width>
          <height>21</height>
         </rect>
@@ -305,8 +304,8 @@
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>160</x>
-         <y>50</y>
+         <x>171</x>
+         <y>65</y>
          <width>318</width>
          <height>105</height>
         </rect>
@@ -671,8 +670,8 @@
       <widget class="QLabel" name="label_39">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>132</y>
+         <x>51</x>
+         <y>147</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -694,7 +693,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>981</width>
+        <width>801</width>
         <height>41</height>
        </rect>
       </property>
@@ -725,11 +724,14 @@
       <widget class="QComboBox" name="comboBox_port">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>110</x>
          <y>7</y>
          <width>151</width>
          <height>29</height>
         </rect>
+       </property>
+       <property name="maxVisibleItems">
+        <number>10</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_6">
@@ -749,142 +751,16 @@
         </font>
        </property>
        <property name="text">
-        <string>Puerto</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_init_configure">
-       <property name="geometry">
-        <rect>
-         <x>250</x>
-         <y>8</y>
-         <width>121</width>
-         <height>27</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Configurar</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_29">
-       <property name="geometry">
-        <rect>
-         <x>440</x>
-         <y>4</y>
-         <width>111</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Alimentación</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_arpet_on">
-       <property name="geometry">
-        <rect>
-         <x>558</x>
-         <y>5</y>
-         <width>95</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Encendido</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_arpet_off">
-       <property name="geometry">
-        <rect>
-         <x>660</x>
-         <y>5</y>
-         <width>95</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Apagado</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_power_management">
-       <property name="geometry">
-        <rect>
-         <x>770</x>
-         <y>6</y>
-         <width>201</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QFrame" name="frame_heads">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>52</y>
-        <width>511</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QLabel" name="label_23">
-       <property name="geometry">
-        <rect>
-         <x>13</x>
-         <y>9</y>
-         <width>101</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
         <string>Cabezales</string>
        </property>
       </widget>
       <widget class="QFrame" name="frame_multihead_config">
        <property name="geometry">
         <rect>
-         <x>244</x>
-         <y>11</y>
-         <width>241</width>
-         <height>31</height>
+         <x>270</x>
+         <y>0</y>
+         <width>251</width>
+         <height>41</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -899,10 +775,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>7</x>
-          <y>1</y>
-          <width>39</width>
-          <height>26</height>
+          <x>10</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
@@ -915,30 +791,14 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>45</x>
-          <y>2</y>
-          <width>39</width>
-          <height>26</height>
+          <x>50</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
          <string>2</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_c_5">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>84</x>
-          <y>3</y>
-          <width>39</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>3</string>
         </property>
        </widget>
        <widget class="QCheckBox" name="checkBox_c_3">
@@ -947,14 +807,14 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>123</x>
-          <y>3</y>
-          <width>39</width>
-          <height>26</height>
+          <x>90</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
-         <string>4</string>
+         <string>3</string>
         </property>
        </widget>
        <widget class="QCheckBox" name="checkBox_c_4">
@@ -963,10 +823,26 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>162</x>
-          <y>3</y>
-          <width>39</width>
-          <height>26</height>
+          <x>130</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_c_5">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
@@ -982,10 +858,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>200</x>
-          <y>3</y>
-          <width>39</width>
-          <height>26</height>
+          <x>210</x>
+          <y>0</y>
+          <width>41</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
@@ -993,85 +869,14 @@
         </property>
        </widget>
       </widget>
-      <widget class="QComboBox" name="comboBox_head_mode_select_config">
-       <property name="geometry">
-        <rect>
-         <x>121</x>
-         <y>11</y>
-         <width>111</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <item>
-        <property name="text">
-         <string>Cabezal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Multicabezal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Todos</string>
-        </property>
-       </item>
-      </widget>
-      <widget class="QComboBox" name="comboBox_head_select_config">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>244</x>
-         <y>11</y>
-         <width>51</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>3</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>4</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>6</string>
-        </property>
-       </item>
-      </widget>
      </widget>
      <widget class="QFrame" name="frame_calib_tables">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>331</y>
+        <y>321</y>
         <width>981</width>
-        <height>251</height>
+        <height>261</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1096,9 +901,9 @@
       <widget class="QLabel" name="label_2">
        <property name="geometry">
         <rect>
-         <x>18</x>
-         <y>43</y>
-         <width>101</width>
+         <x>10</x>
+         <y>40</y>
+         <width>111</width>
          <height>21</height>
         </rect>
        </property>
@@ -1125,7 +930,7 @@
          <x>10</x>
          <y>220</y>
          <width>221</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -1188,8 +993,8 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>159</y>
-         <width>121</width>
+         <y>160</y>
+         <width>111</width>
          <height>21</height>
         </rect>
        </property>
@@ -1200,15 +1005,14 @@
       <widget class="QLabel" name="label">
        <property name="geometry">
         <rect>
-         <x>27</x>
-         <y>2</y>
-         <width>81</width>
+         <x>10</x>
+         <y>0</y>
+         <width>101</width>
          <height>41</height>
         </rect>
        </property>
        <property name="text">
-        <string>Tabla triple
-  ventana:</string>
+        <string>Triple ventana:</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="textBrowser_triple_ventana">
@@ -1261,8 +1065,8 @@
       <widget class="QLabel" name="label_4">
        <property name="geometry">
         <rect>
-         <x>14</x>
-         <y>103</y>
+         <x>10</x>
+         <y>100</y>
          <width>111</width>
          <height>21</height>
         </rect>
@@ -1290,7 +1094,7 @@
          <x>240</x>
          <y>220</y>
          <width>81</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
       </widget>
@@ -1336,7 +1140,7 @@
       <widget class="QLabel" name="label_8">
        <property name="geometry">
         <rect>
-         <x>14</x>
+         <x>10</x>
          <y>130</y>
          <width>111</width>
          <height>21</height>
@@ -1349,8 +1153,8 @@
       <widget class="QLabel" name="label_3">
        <property name="geometry">
         <rect>
-         <x>18</x>
-         <y>73</y>
+         <x>10</x>
+         <y>70</y>
          <width>101</width>
          <height>21</height>
         </rect>
@@ -1365,7 +1169,7 @@
          <x>330</x>
          <y>220</y>
          <width>161</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -1416,7 +1220,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>278</y>
+        <y>270</y>
         <width>801</width>
         <height>51</height>
        </rect>
@@ -1554,7 +1358,7 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>530</x>
-        <y>55</y>
+        <y>50</y>
         <width>281</width>
         <height>221</height>
        </rect>
@@ -1882,9 +1686,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>810</x>
-        <y>50</y>
+        <y>10</y>
         <width>181</width>
-        <height>281</height>
+        <height>311</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1899,7 +1703,7 @@ calibrar</string>
          <x>10</x>
          <y>0</y>
          <width>161</width>
-         <height>271</height>
+         <height>311</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -1914,7 +1718,7 @@ calibrar</string>
           <x>0</x>
           <y>10</y>
           <width>161</width>
-          <height>284</height>
+          <height>291</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_adquire_advance_mode">
@@ -7440,7 +7244,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

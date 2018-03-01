@@ -1,7 +1,7 @@
 #include "inc/MainWindow.h"
 #include "ui_MainWindow.h"
 #include <QFileInfo>
-
+#include <QComboBox>
 
 /**
  * @brief MainWindow::MainWindow
@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
     ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
 
+    ui->comboBox_port->installEventFilter(this);
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -137,7 +138,7 @@ void MainWindow::setInitialConfigurations()
     ui->comboBox_head_select_calib->hide();
     ui->label_calib->hide();
 
-    setButtonConnectState(true);
+    //setButtonConnectState(true);
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
@@ -148,7 +149,7 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
-    ui->comboBox_port->addItems(availablePortsName());
+    //ui->comboBox_port->addItems(availablePortsName());
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
@@ -237,12 +238,12 @@ void MainWindow::checkCombosStatus()
 {
     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
+    connect(ui->comboBox_port,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
+    connect(ui->comboBox_port ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
     connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
     connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
-    connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
+    connect(ui->comboBox_port ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
+    connect(ui->comboBox_port ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
     connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
     connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
     connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
@@ -259,6 +260,7 @@ void MainWindow::checkCombosStatus()
     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
     connect(ui->comboBox_head_mode_select_graph_2 ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabLog(int)));
+    //connect(ui->comboBox_port,SIGNAL( ),this,SLOT(comboBox_port_Popup()));
 
 }
 /**
@@ -904,12 +906,12 @@ void MainWindow::getARPETStatus()
         msg = readString();
         if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
         {
-            setButtonState(true,ui->pushButton_arpet_on);
-            setButtonState(true,ui->pushButton_arpet_off, true);
-        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
-        {
-            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+//            setButtonState(true,ui->pushButton_arpet_on);
+//            setButtonState(true,ui->pushButton_arpet_off, true);
+//        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))    //OBSOLETO????
+//        {
+//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
         }
     }
     catch(Exceptions & ex)
@@ -918,8 +920,8 @@ void MainWindow::getARPETStatus()
         {
             cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
             writeFooterAndHeaderDebug(false);
-            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
-            ui->label_power_management->setText("Error de conexión");
+//            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
+//            ui->label_power_management->setText("Error de conexión");
         }
     }
     writeFooterAndHeaderDebug(false);
@@ -979,58 +981,58 @@ void MainWindow::getHeadStatus(int head_index)
  * Encendido del ARPET
  *
  */
-void MainWindow::on_pushButton_arpet_on_clicked()
-{
-    writeFooterAndHeaderDebug(true);
+//void MainWindow::on_pushButton_arpet_on_clicked()
+//{
+//    writeFooterAndHeaderDebug(true);
 
-    string msg;
-    try
-    {
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        sleep(1);
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        sleep(1);
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        msg = readString();
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
-        if(debug) cout<<"AR-PET ENCENDIDO"<<endl;
+//    string msg;
+//    try
+//    {
+//        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+//        sleep(1);
+//        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+//        sleep(1);
+//        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
+//        msg = readString();
+//        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
+//        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
+//        if(debug) cout<<"AR-PET ENCENDIDO"<<endl;
 
-    }
-    catch(Exceptions & ex)
-    {
-        if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
-    }
-    writeFooterAndHeaderDebug(false);
-}
+//    }
+//    catch(Exceptions & ex)
+//    {
+//        if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+//        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+//        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
+//    }
+//    writeFooterAndHeaderDebug(false);
+//}
 /**
  * @brief MainWindow::on_pushButton_arpet_off_clicked
  *
  * Apagado del ARPET
  *
  */
-void MainWindow::on_pushButton_arpet_off_clicked()
-{
-    writeFooterAndHeaderDebug(true);
-    string msg;
-    try
-    {
-        sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
-        msg = readString();
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-        if(debug) cout<<"AR-PET APAGADO"<<endl;
-    }
-    catch(Exceptions & ex)
-    {
-        if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
-    }
-    writeFooterAndHeaderDebug(false);
-}
+//void MainWindow::on_pushButton_arpet_off_clicked()
+//{
+//    writeFooterAndHeaderDebug(true);
+//    string msg;
+//    try
+//    {
+//        sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
+//        msg = readString();
+//        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+//        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+//        if(debug) cout<<"AR-PET APAGADO"<<endl;
+//    }
+//    catch(Exceptions & ex)
+//    {
+//        if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+//        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
+//        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
+//    }
+//    writeFooterAndHeaderDebug(false);
+//}
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_clicked
  */
@@ -1107,12 +1109,9 @@ void MainWindow::on_pushButton_init_configure_clicked()
 {
     writeFooterAndHeaderDebug(true);
     if(arpet->isPortOpen()) {
-        setButtonConnectState(true);
+        //setButtonConnectState(true);
         arpet->portDisconnect();
 
-        ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-        ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-        ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
         if(debug) cout<<"Puerto serie desconectado"<<endl;
     }
     else {
@@ -1125,7 +1124,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             arpet->portConnect(port_name.toStdString().c_str());
             //QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-            setButtonConnectState(false);
+            //setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             getHeadStatus(getHead("config").toInt());
@@ -1646,7 +1645,7 @@ void MainWindow::setCoincidenceModeWindowTime()
  */
 void MainWindow::setHeadModeConfig(int index)
 {
-    setHeadMode(index,"config");
+    //setHeadMode(index,"config");
 }
 /**
  * @brief MainWindow::initHead
@@ -2019,7 +2018,7 @@ void MainWindow::setTabHead(int index)
  */
 void MainWindow::setHeadModeGraph(int index)
 {
-    setHeadMode(index,"mca");
+    //setHeadMode(index,"mca");
 }
 /**
  * @brief MainWindow::setAdquireMode
@@ -3154,7 +3153,7 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 QList<int> MainWindow::getCheckedHeads()
 {
     QList<int> checkedHeads;
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD || ui->comboBox_head_mode_select_config->currentIndex()==ALLHEADS)
+    if (ui->comboBox_port->currentIndex()==MULTIHEAD || ui->comboBox_port->currentIndex()==ALLHEADS)
     {
         for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
         {
@@ -3295,7 +3294,7 @@ QString MainWindow::openDirectory()
  */
 void MainWindow::getPaths()
 {
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+    if (ui->comboBox_port->currentIndex()==MONOHEAD)
     {
         parseConfigurationFile(false);
         ui->textBrowser_triple_ventana->setText(coefest);
@@ -3445,28 +3444,28 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
  * @param state
  * @param disable
  */
-void MainWindow::setButtonConnectState(bool state, bool disable)
-{
-    QString qt_text;
+//void MainWindow::setButtonConnectState(bool state, bool disable)
+//{
+//    QString qt_text;
 
-    if (state && !disable)
-    {
-        qt_text="Conectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    else if (!state && !disable)
-    {
-        qt_text="Desconectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    else
-    {
-        qt_text="Conectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    ui->pushButton_init_configure->setText(qt_text);
-    ui->pushButton_init_configure->update();
-}
+//    if (state && !disable)
+//    {
+//        qt_text="Conectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    else if (!state && !disable)
+//    {
+//        qt_text="Desconectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    else
+//    {
+//        qt_text="Conectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    ui->pushButton_init_configure->setText(qt_text);
+//    ui->pushButton_init_configure->update();
+//}
 void MainWindow::setButtonLoggerState(bool state, bool disable)
 {
     QString qt_text;
@@ -3502,17 +3501,47 @@ QStringList MainWindow::availablePortsName()
     QStringList portsName;
 
     QDir dir("/dev/");
+    QString qtchoto;
     QStringList filters;
 
-    filters << "ttyUSB*";
+    filters << "UART_Cab*";
     dir.setNameFilters(filters);
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
+    int CabPrendidos=0;
 
     for (int i=0; i< list.size(); i++)
     {
-        portsName.append(list.at(i).canonicalFilePath ());
+        portsName.append(list.at(i).absoluteFilePath());
+        qtchoto= list.at(i).absoluteFilePath();
+        for (int j=1;j<=6;j++){
+            if ((qtchoto==QString::fromStdString("/dev/UART_Cab")+QString::number(j))){
+           // if (strcmp(qtchoto.toStdString().c_str(),"pepe")){//strcat("/dev/UART_Cab",QString::number(j).toStdString().c_str()))){
+
+                CabPrendidos+=1<<j-1;
+
+
+            }
+        }
     }
+    if (CabPrendidos&1){
+        ui->checkBox_c_1->setEnabled(true);
+    }else ui->checkBox_c_1->setEnabled(false);
+    if (CabPrendidos&1<<1){
+        ui->checkBox_c_2->setEnabled(true);
+    }else ui->checkBox_c_2->setEnabled(false);
+    if (CabPrendidos&1<<2){
+        ui->checkBox_c_3->setEnabled(true);
+    }else ui->checkBox_c_3->setEnabled(false);
+    if (CabPrendidos&1<<3){
+        ui->checkBox_c_4->setEnabled(true);
+    }else ui->checkBox_c_4->setEnabled(false);
+    if (CabPrendidos&1<<4){
+        ui->checkBox_c_5->setEnabled(true);
+    }else ui->checkBox_c_5->setEnabled(false);
+    if (CabPrendidos&1<<5){
+        ui->checkBox_c_6->setEnabled(true);
+    }else ui->checkBox_c_6->setEnabled(false);
 
     return portsName;
 }
@@ -3533,9 +3562,9 @@ QString MainWindow::getHead(string tab)
     }
     else if (tab=="config")
     {
-        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+        if (ui->comboBox_port->currentIndex()==MONOHEAD)
         {
-            head=ui->comboBox_head_select_config->currentText();
+            head=ui->comboBox_port->currentText();
         }
     }
     else if (tab=="terminal")
@@ -3634,12 +3663,7 @@ size_t MainWindow::sendString(string msg, string end)
  */
 void MainWindow::manageHeadCheckBox(string tab, bool show)
 {
-    if (tab=="config")
-    {
-        if (show) ui->frame_multihead_config->show();
-        else ui->frame_multihead_config->hide();
-    }
-    else if(tab=="mca")
+    if(tab=="mca")
     {
         if (show) ui->frame_multihead_graph->show();
         else ui->frame_multihead_graph->hide();
@@ -3651,42 +3675,42 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
  * @param tab
  * @param show
  */
-void MainWindow::manageHeadComboBox(string tab, bool show)
-{
-    if (tab=="config"){
-        if (show) ui->comboBox_head_select_config->show();
-        else ui->comboBox_head_select_config->hide();
-    }
-    else if(tab=="mca")
-    {
-        if (show) ui->comboBox_head_select_graph->show();
-        else ui->comboBox_head_select_graph->hide();
-    }
-    else return;
-}
+//void MainWindow::manageHeadComboBox(string tab, bool show)
+//{
+//    if (tab=="config"){
+//        if (show) ui->comboBox_port->show();
+//        else ui->comboBox_head_select_config->hide();
+//    }
+//    else if(tab=="mca")
+//    {
+//        if (show) ui->comboBox_head_select_graph->show();
+//        else ui->comboBox_head_select_graph->hide();
+//    }
+//    else return;
+//}
 /**
  * @brief MainWindow::setHeadMode
  * @param index
  * @param tab
  */
-void MainWindow::setHeadMode(int index, string tab)
-{
-    switch (index) {
-    case MONOHEAD:
-        manageHeadComboBox(tab, true);
-        manageHeadCheckBox(tab, false);
-        break;
-    case MULTIHEAD:
-        manageHeadComboBox(tab, false);
-        manageHeadCheckBox(tab, true);
-        break;
-    case ALLHEADS:
-        manageHeadComboBox(tab, false);
-        manageHeadCheckBox(tab, true);
-    default:
-        break;
-    }
-}
+//void MainWindow::setHeadMode(int index, string tab)
+//{
+//    switch (index) {
+//    case MONOHEAD:
+//        manageHeadComboBox(tab, true);
+//        manageHeadCheckBox(tab, false);
+//        break;
+//    case MULTIHEAD:
+//        manageHeadComboBox(tab, false);
+//        manageHeadCheckBox(tab, true);
+//        break;
+//    case ALLHEADS:
+//        manageHeadComboBox(tab, false);
+//        manageHeadCheckBox(tab, true);
+//    default:
+//        break;
+//    }
+//}
 /**
  * @brief MainWindow::syncHeadModeComboBoxToConfig
  * @param index
@@ -3694,7 +3718,7 @@ void MainWindow::setHeadMode(int index, string tab)
 void MainWindow::syncHeadModeComboBoxToConfig(int index)
 {
     getPaths();
-    ui->comboBox_head_mode_select_config->setCurrentIndex(index);
+    ui->comboBox_port->setCurrentIndex(index);
 }
 /**
  * @brief MainWindow::syncHeadComboBoxToConfig
@@ -3704,7 +3728,7 @@ void MainWindow::syncHeadComboBoxToConfig(int index)
 {
     getPaths();
     setHeadCustomPlotEnvironment();
-    ui->comboBox_head_select_config->setCurrentIndex(index);
+    ui->comboBox_port->setCurrentIndex(index);
 }
 /**
  * @brief MainWindow::syncHeadModeComboBoxToMCA
@@ -5871,7 +5895,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
               return;
           }
           ui->specPMTs->clearGraphs();
-          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+          if (ui->comboBox_port->currentIndex()==MONOHEAD)
           {
               setButtonAdquireState(true);
               mcae_wr->setPMTSelectedList(pmt_selected_list);
@@ -5902,7 +5926,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
           mcae_wr->requestMCA();
           break;
       case TEMPERATURE:
-          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+          if (ui->comboBox_port->currentIndex()==MONOHEAD)
           {
               drawTemperatureBoard();
           }
@@ -6214,7 +6238,11 @@ void MainWindow::on_calendarWidget_selectionChanged()
   }
 
 }
-
+/**
+ * @brief MainWindow::fileExists
+ * @param path
+ * @return
+ */
 bool MainWindow::fileExists(QString path) {
     QFileInfo check_file(path);
     // check if file exists and if yes: Is it really a file and no directory?
@@ -6223,4 +6251,81 @@ bool MainWindow::fileExists(QString path) {
     } else {
         return false;
     }
+}
+
+
+
+
+bool MainWindow::eventFilter(QObject *f_object, QEvent *f_event){
+    if(f_object == ui->comboBox_port){
+        if(f_event->type() == QEvent::MouseButtonPress){
+            ui->comboBox_port->clear();
+
+            ui->comboBox_port->addItems(availablePortsName());             // try to clear before fill to avoid repetitions
+
+        }
+        return false;
+    }
+    return false;
+}
+
+void MainWindow::on_comboBox_port_currentIndexChanged(const QString &arg1)
+{
+    QString //valor =  ui->comboBox_port->itemData(ui->comboBox_port->()).toString();
+    valor =  ui->comboBox_port->currentText();
+    int val = valor.right(1).toInt();
+    switch (val) {
+    case CAB_1:
+        ui->checkBox_c_1->click();
+        break;
+    case CAB_2:
+        ui->checkBox_c_2->click();
+        break;
+    case CAB_3:
+        ui->checkBox_c_3->click();
+        break;
+    case CAB_4:
+        ui->checkBox_c_4->click();
+        break;
+    case CAB_5:
+        ui->checkBox_c_5->click();
+        break;
+    case CAB_6:
+        ui->checkBox_c_6->click();
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+void MainWindow::on_checkBox_c_1_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_checkBox_c_2_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_checkBox_c_3_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_checkBox_c_4_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_checkBox_c_5_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_checkBox_c_6_toggled(bool checked)
+{
+
 }
