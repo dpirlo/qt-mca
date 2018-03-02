@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
     ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
     ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-
+    ui->comboBox_head_select_config->hide();
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -148,7 +148,11 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
+
+    bool oldState = ui->comboBox_port->blockSignals(true);
     ui->comboBox_port->addItems(availablePortsName());
+    ui->comboBox_port->blockSignals(oldState);
+
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
@@ -3500,19 +3504,31 @@ QStringList MainWindow::availablePortsName()
 {
 
     QStringList portsName;
-
+    int portavailable;
     QDir dir("/dev/");
     QStringList filters;
 
-    filters << "ttyUSB*";
+    filters << "UART*";
     dir.setNameFilters(filters);
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
 
     for (int i=0; i< list.size(); i++)
     {
-        portsName.append(list.at(i).canonicalFilePath ());
+        portsName.append(list.at(i).absoluteFilePath());
+
     }
+
+    for (int i=0;i<6;i++){
+        if (list.at(0).absoluteFilePath().contains(QString::number(1+i))) {
+            portavailable=i; break;
+        }
+    }
+
+    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
+    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
+    ui->comboBox_head_select_config->blockSignals(oldState);
+
 
     return portsName;
 }
@@ -3653,11 +3669,11 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
  */
 void MainWindow::manageHeadComboBox(string tab, bool show)
 {
-    if (tab=="config"){
+/*    if (tab=="config"){
         if (show) ui->comboBox_head_select_config->show();
         else ui->comboBox_head_select_config->hide();
     }
-    else if(tab=="mca")
+    else*/ if(tab=="mca")
     {
         if (show) ui->comboBox_head_select_graph->show();
         else ui->comboBox_head_select_graph->hide();
@@ -6223,4 +6239,31 @@ bool MainWindow::fileExists(QString path) {
     } else {
         return false;
     }
+}
+
+void MainWindow::on_comboBox_port_currentIndexChanged(int index)
+{
+    QString nombrepuerto = ui->comboBox_port->itemData(index).toString();
+
+    int portavailable;
+    writeFooterAndHeaderDebug(true);
+    setButtonConnectState(true);
+    arpet->portDisconnect();
+
+    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+    writeFooterAndHeaderDebug(false);
+
+    if(debug) cout<<"Puerto serie desconectado"<<endl;
+
+    for (int i=0;i<6;i++){
+        if (nombrepuerto.contains(QString::number(i))) portavailable=i;
+    }
+
+
+    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
+    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
+    ui->comboBox_head_select_config->blockSignals(oldState);
+
 }

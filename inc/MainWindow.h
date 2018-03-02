@@ -284,6 +284,8 @@ private slots:
 
     void on_checkBox_Rate_Coin_toggled(bool checked);
 
+    void on_comboBox_port_currentIndexChanged(int index);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
