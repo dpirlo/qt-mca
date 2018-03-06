@@ -37,6 +37,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
     ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
     ui->comboBox_head_select_config->hide();
+    ui->comboBox_head_mode_select_config->hide();
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
+    timer->start(5000);
+
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -1132,7 +1138,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
-            getHeadStatus(getHead("config").toInt());
+            //getHeadStatus(getHead("config").toInt());
             ui->tabWidget_general->setTabEnabled(Tab1,true); // Muestro pestaña MCA
             ui->tabWidget_general->setTabEnabled(Tab4,true); // Muestro pestaña Autocalib
             ui->tabWidget_general->setTabEnabled(Tab9,true); // Muestro pestaña Terminal
@@ -1266,6 +1272,43 @@ void MainWindow::on_pushButton_initialize_clicked()
     {
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
+
+        switch (head_index) {
+        case 1:
+            calibrador->setPort_Name(QString::fromStdString(Cab1));
+            worker->setPortName(QString::fromStdString(Cab1));
+            arpet->portConnect(QString::fromStdString(Cab1).toStdString().c_str());
+            break;
+        case 2:
+            calibrador->setPort_Name(QString::fromStdString(Cab2));
+            worker->setPortName(QString::fromStdString(Cab2));
+            arpet->portConnect(QString::fromStdString(Cab2).toStdString().c_str());
+            break;
+        case 3:
+            calibrador->setPort_Name(QString::fromStdString(Cab3));
+            worker->setPortName(QString::fromStdString(Cab3));
+            arpet->portConnect(QString::fromStdString(Cab3).toStdString().c_str());
+            break;
+        case 4:
+            calibrador->setPort_Name(QString::fromStdString(Cab4));
+            worker->setPortName(QString::fromStdString(Cab4));
+            arpet->portConnect(QString::fromStdString(Cab4).toStdString().c_str());
+            break;
+        case 5:
+            calibrador->setPort_Name(QString::fromStdString(Cab5));
+            worker->setPortName(QString::fromStdString(Cab5));
+            arpet->portConnect(QString::fromStdString(Cab5).toStdString().c_str());
+            break;
+        case 6:
+            calibrador->setPort_Name(QString::fromStdString(Cab6));
+            worker->setPortName(QString::fromStdString(Cab6));
+            arpet->portConnect(QString::fromStdString(Cab6).toStdString().c_str());
+            break;
+        default:
+            break;
+        }
+
+
         initHead(head_index);
         initSP3(head_index);
         usleep(500);
@@ -3652,8 +3695,8 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
 {
     if (tab=="config")
     {
-        if (show) ui->frame_multihead_config->show();
-        else ui->frame_multihead_config->hide();
+//        if (show) ui->frame_multihead_config->show();
+//        else ui->frame_multihead_config->hide();
     }
     else if(tab=="mca")
     {
@@ -6258,7 +6301,7 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
     if(debug) cout<<"Puerto serie desconectado"<<endl;
 
     for (int i=0;i<6;i++){
-        if (nombrepuerto.contains(QString::number(i))) portavailable=i;
+        if (nombrepuerto.contains(QString::number(i))) portavailable=i-1;
     }
 
 
@@ -6266,4 +6309,107 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
     ui->comboBox_head_select_config->setCurrentIndex(portavailable);
     ui->comboBox_head_select_config->blockSignals(oldState);
 
+}
+
+
+void MainWindow::updateCaption(){
+
+    QDir dir("/dev/");
+    QString numerocabezal;
+    QStringList filters;
+    QRegExp  RegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
+    filters << "UART*";
+    dir.setNameFilters(filters);
+    dir.setFilter(QDir::Files | QDir::System);
+    QFileInfoList list = dir.entryInfoList();
+
+    ui->checkBox_c_1->setEnabled(false);
+    ui->checkBox_c_2->setEnabled(false);
+    ui->checkBox_c_3->setEnabled(false);
+    ui->checkBox_c_4->setEnabled(false);
+    ui->checkBox_c_5->setEnabled(false);
+    ui->checkBox_c_6->setEnabled(false);
+
+
+    for (int i=0;i<list.length();i++){
+
+        RegExp.indexIn(list.at(i).absoluteFilePath());
+        numerocabezal=RegExp.capturedTexts().at(0);
+
+        switch (numerocabezal.toInt()) {
+        case 1:
+            ui->checkBox_c_1->setEnabled(true);
+
+            break;
+        case 2:
+            ui->checkBox_c_2->setEnabled(true);
+
+            break;
+        case 3:
+            ui->checkBox_c_3->setEnabled(true);
+
+
+            break;
+        case 4:
+            ui->checkBox_c_4->setEnabled(true);
+
+
+            break;
+        case 5:
+            ui->checkBox_c_5->setEnabled(true);
+
+
+            break;
+        case 6:
+            ui->checkBox_c_6->setEnabled(true);
+
+
+            break;
+        default:
+            break;
+        }
+
+    }
+}
+
+void MainWindow::on_checkBox_c_3_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(3,"config");
+    }
+}
+
+void MainWindow::on_checkBox_c_6_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(6,"config");
+    }
+}
+
+void MainWindow::on_checkBox_c_5_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(5,"config");
+    }
+}
+
+void MainWindow::on_checkBox_c_4_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(4,"config");
+    }
+}
+
+void MainWindow::on_checkBox_c_2_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(2,"config");
+    }
+}
+
+void MainWindow::on_checkBox_c_1_toggled(bool checked)
+{
+    if (checked){
+        setHeadMode(1,"config");
+    }
 }

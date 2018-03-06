@@ -66,6 +66,15 @@
 #define Tab8 8
 #define Tab9 9
 #define WAIT_MICROSECONDS 1000000
+#define Cab1 "/dev/UART_Cab1"
+#define Cab2 "/dev/UART_Cab2"
+#define Cab3 "/dev/UART_Cab3"
+#define Cab4 "/dev/UART_Cab4"
+#define Cab5 "/dev/UART_Cab5"
+#define Cab6 "/dev/UART_Cab6"
+
+
+
 
 using namespace ap;
 
@@ -285,6 +294,20 @@ private slots:
     void on_checkBox_Rate_Coin_toggled(bool checked);
 
     void on_comboBox_port_currentIndexChanged(int index);
+
+    void updateCaption();
+
+    void on_checkBox_c_3_toggled(bool checked);
+
+    void on_checkBox_c_6_toggled(bool checked);
+
+    void on_checkBox_c_5_toggled(bool checked);
+
+    void on_checkBox_c_4_toggled(bool checked);
+
+    void on_checkBox_c_2_toggled(bool checked);
+
+    void on_checkBox_c_1_toggled(bool checked);
 
 private:
     void connectSlots();

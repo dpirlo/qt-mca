@@ -915,7 +915,7 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>45</x>
+          <x>50</x>
           <y>2</y>
           <width>39</width>
           <height>26</height>
@@ -925,7 +925,7 @@
          <string>2</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_c_5">
+       <widget class="QCheckBox" name="checkBox_c_3">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -941,7 +941,7 @@
          <string>3</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_c_3">
+       <widget class="QCheckBox" name="checkBox_c_4">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -957,7 +957,7 @@
          <string>4</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_c_4">
+       <widget class="QCheckBox" name="checkBox_c_5">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -1001,6 +1001,12 @@
          <width>111</width>
          <height>29</height>
         </rect>
+       </property>
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <property name="modelColumn">
+        <number>0</number>
        </property>
        <item>
         <property name="text">
@@ -7440,7 +7446,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
