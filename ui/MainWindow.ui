@@ -1299,6 +1299,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="text">
+        <string>0</string>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_posicion_Y">
        <property name="geometry">
@@ -3252,7 +3255,7 @@ calibrar</string>
         <string>2</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mca_5">
+      <widget class="QCheckBox" name="checkBox_mca_3">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -3268,7 +3271,7 @@ calibrar</string>
         <string>3</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mca_3">
+      <widget class="QCheckBox" name="checkBox_mca_4">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -3284,7 +3287,7 @@ calibrar</string>
         <string>4</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mca_4">
+      <widget class="QCheckBox" name="checkBox_mca_5">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -7446,7 +7449,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

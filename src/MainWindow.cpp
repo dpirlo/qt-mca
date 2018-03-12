@@ -1254,55 +1254,100 @@ void MainWindow::on_pushButton_initialize_clicked()
 {
     /** @todo: Verificar la inicialización y configuración de la alta tensión */
     writeFooterAndHeaderDebug(true);
-    if(!arpet->isPortOpen())
-    {
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-        if(debug)
-        {
-            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-            writeFooterAndHeaderDebug(false);
-        }
-        return;
-    }
+//    if(!arpet->isPortOpen())
+//    {
+//        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+//        if(debug)
+//        {
+//            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+//            writeFooterAndHeaderDebug(false);
+//        }
+//        return;
+//    }
 
     QList<int> checkedHeads=getCheckedHeads();
 
 
     for (int i=0;i<checkedHeads.length();i++)
     {
+        QString port;
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
 
         switch (head_index) {
         case 1:
-            calibrador->setPort_Name(QString::fromStdString(Cab1));
-            worker->setPortName(QString::fromStdString(Cab1));
-            arpet->portConnect(QString::fromStdString(Cab1).toStdString().c_str());
+            port=Cab1;
+            port_name=Cab1;
+            writeFooterAndHeaderDebug(true);
+
+            calibrador->setPort_Name((port));
+            worker->setPortName((port));
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         case 2:
-            calibrador->setPort_Name(QString::fromStdString(Cab2));
-            worker->setPortName(QString::fromStdString(Cab2));
-            arpet->portConnect(QString::fromStdString(Cab2).toStdString().c_str());
+            port=Cab2;
+            writeFooterAndHeaderDebug(true);
+            port_name=Cab2;
+
+            calibrador->setPort_Name((port));
+            worker->setPortName((port));
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         case 3:
-            calibrador->setPort_Name(QString::fromStdString(Cab3));
-            worker->setPortName(QString::fromStdString(Cab3));
-            arpet->portConnect(QString::fromStdString(Cab3).toStdString().c_str());
+            port=Cab3;
+            writeFooterAndHeaderDebug(true);
+            port_name=Cab3;
+            calibrador->setPort_Name((port));
+            worker->setPortName((port));
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         case 4:
-            calibrador->setPort_Name(QString::fromStdString(Cab4));
-            worker->setPortName(QString::fromStdString(Cab4));
-            arpet->portConnect(QString::fromStdString(Cab4).toStdString().c_str());
+            port=Cab4;
+            writeFooterAndHeaderDebug(true);
+            port_name=Cab4;
+            calibrador->setPort_Name((port));
+            worker->setPortName((port));
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         case 5:
-            calibrador->setPort_Name(QString::fromStdString(Cab5));
-            worker->setPortName(QString::fromStdString(Cab5));
-            arpet->portConnect(QString::fromStdString(Cab5).toStdString().c_str());
+            port=Cab5;
+            writeFooterAndHeaderDebug(true);
+            port_name=Cab5;
+            calibrador->setPort_Name((port));
+            worker->setPortName(port);
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         case 6:
-            calibrador->setPort_Name(QString::fromStdString(Cab6));
-            worker->setPortName(QString::fromStdString(Cab6));
-            arpet->portConnect(QString::fromStdString(Cab6).toStdString().c_str());
+            port=Cab6;
+            writeFooterAndHeaderDebug(true);
+            port_name=Cab6;
+            calibrador->setPort_Name(port);
+            worker->setPortName(port);
+            arpet->portConnect(port.toStdString().c_str());
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            setButtonConnectState(false);
+            writeFooterAndHeaderDebug(false);
+            getARPETStatus();
             break;
         default:
             break;
@@ -1378,6 +1423,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         hv_status_table[head_index-1]->setText(QString::number(AT));
 
+        arpet->portDisconnect();
     }
 
     //resetHeads();
@@ -5930,8 +5976,8 @@ void MainWindow::on_pushButton_adquirir_clicked()
               return;
           }
           ui->specPMTs->clearGraphs();
-          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-          {
+//          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+//          {
               setButtonAdquireState(true);
               mcae_wr->setPMTSelectedList(pmt_selected_list);
               mcae_wr->setDebugMode(debug);
@@ -5940,16 +5986,16 @@ void MainWindow::on_pushButton_adquirir_clicked()
               mcae_wr->abort();
               mcae_th->wait();
               mcae_wr->requestMCA();
-          }
-          else
-          {
-              writeFooterAndHeaderDebug(true);
-              setIsAbortMCAEFlag(false);
-              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-              writeFooterAndHeaderDebug(false);
-              emit ToPushButtonAdquirir(false);
-              return;
-          }
+          //}
+//          else
+//          {
+//              writeFooterAndHeaderDebug(true);
+//              setIsAbortMCAEFlag(false);
+//              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+//              writeFooterAndHeaderDebug(false);
+//              emit ToPushButtonAdquirir(false);
+//              return;
+//          }
           break;
       case CABEZAL:
           ui->specHead->clearGraphs();
@@ -5961,18 +6007,18 @@ void MainWindow::on_pushButton_adquirir_clicked()
           mcae_wr->requestMCA();
           break;
       case TEMPERATURE:
-          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-          {
+//          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+//          {
               drawTemperatureBoard();
-          }
-          else
-          {
-              writeFooterAndHeaderDebug(true);
-              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-              writeFooterAndHeaderDebug(false);
-              emit ToPushButtonAdquirir(false);
-              return;
-          }
+//          }
+//          else
+//          {
+//              writeFooterAndHeaderDebug(true);
+//              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
+//              writeFooterAndHeaderDebug(false);
+//              emit ToPushButtonAdquirir(false);
+//              return;
+//          }
           emit ToPushButtonAdquirir(false);
           break;
       default:
@@ -6286,7 +6332,7 @@ bool MainWindow::fileExists(QString path) {
 
 void MainWindow::on_comboBox_port_currentIndexChanged(int index)
 {
-    QString nombrepuerto = ui->comboBox_port->itemData(index).toString();
+    QString nombrepuerto = ui->comboBox_port->currentText();
 
     int portavailable;
     writeFooterAndHeaderDebug(true);
@@ -6300,8 +6346,11 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
 
     if(debug) cout<<"Puerto serie desconectado"<<endl;
 
-    for (int i=0;i<6;i++){
-        if (nombrepuerto.contains(QString::number(i))) portavailable=i-1;
+    for (int i=1;i<=6;i++){
+        if (nombrepuerto.contains(QString::number(i))){
+        portavailable=i-1;
+        break;
+        }
     }
 
 
