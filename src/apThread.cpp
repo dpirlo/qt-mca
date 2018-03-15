@@ -137,10 +137,10 @@ void Thread::getLogWork() {
         int head_index;
         int offsets[48];
         string msg_MCA;
-
         mutex->lock();
             try
             {
+              arpet->portDisconnect();
 
               for (int i=0;i<checkedHeads.length();i++)
               {
@@ -148,9 +148,10 @@ void Thread::getLogWork() {
                 head_index=checkedHeads.at(i);
                 if (debug) cout<<"Cabezal: "<<head_index<<endl;
                 QVector<double> temp_vec;
+                port_name="/dev/UART_Cab"+QString::number(checkedHeads.at(i));
                 temp_vec.fill(0);
 
-
+                arpet->portConnect(port_name.toStdString().c_str());
 
 
                 if(temp)
@@ -209,11 +210,16 @@ void Thread::getLogWork() {
 //                }
 //                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
                 //// FIN TASA
-              }
-              rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
+                arpet->portDisconnect();
 
+              }
+              port_name="/dev/UART_Coin";
+              arpet->portConnect(port_name.toStdString().c_str());
+              if (debug) cout<<"Aca llega"<<endl;
+
+              rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
               emit sendRatesValuesCoin( rates.at(0), rates.at(1), rates.at(2),rates.at(3),rates.at(4),rates.at(5),rates.at(6),rates.at(7),rates.at(8));
-              if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
+              if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
 
         }
         catch (Exceptions &ex)
@@ -330,6 +336,9 @@ void Thread::getMCA()
                 int size_pmt_selected = pmt_selected_list.length();
                 for (int index=0;index<size_pmt_selected;index++)
                 {
+                    arpet->portDisconnect();
+                    QString Cabezal_conectado="/dev/UART_Cab"+ QString::number( checkedHeads.at(0));
+                    arpet->portConnect(Cabezal_conectado.toStdString().c_str());
                     string pmt = pmt_selected_list.at(index).toStdString();
                     string msg = arpet->getMCA(pmt, pmt_function, QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
                     if(debug)
@@ -354,6 +363,11 @@ void Thread::getMCA()
                 emit clearGraphsHeads();
                 for (int index=0;index<checkedHeads.length();index++)
                 {
+                    arpet->portDisconnect();
+                    QString Cabezal_conectado="/dev/UART_Cab"+ QString::number( checkedHeads.at(index));
+                    error_code error_code=arpet->portConnect(Cabezal_conectado.toStdString().c_str());
+                    if(debug) cout<<"error code serie: "<<error_code<<endl;
+
                     string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
                     {
@@ -396,6 +410,6 @@ void Thread::getMCA()
         cout<<"La adquisición MCA ha sido finalizada."<<endl;
         cout<<"[END-LOG-DBG-THR] =================================================="<<endl;
     }
-
+    arpet->portDisconnect();
     emit finished();
 }

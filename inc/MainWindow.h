@@ -72,7 +72,7 @@
 #define Cab4 "/dev/UART_Cab4"
 #define Cab5 "/dev/UART_Cab5"
 #define Cab6 "/dev/UART_Cab6"
-
+#define Cab "/dev/UART_Cab"
 
 
 
@@ -308,6 +308,20 @@ private slots:
     void on_checkBox_c_2_toggled(bool checked);
 
     void on_checkBox_c_1_toggled(bool checked);
+
+    void on_comboBox_head_select_graph_currentIndexChanged(int index);
+
+    void on_checkBox_mca_1_toggled(bool checked);
+
+    void on_checkBox_mca_2_toggled(bool checked);
+
+    void on_checkBox_mca_3_toggled(bool checked);
+
+    void on_checkBox_mca_4_toggled(bool checked);
+
+    void on_checkBox_mca_5_toggled(bool checked);
+
+    void on_checkBox_mca_6_toggled(bool checked);
 
 private:
     void connectSlots();

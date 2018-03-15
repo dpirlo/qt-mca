@@ -33,12 +33,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setInitialConfigurations();
     setPreferencesConfiguration();
     getPaths();
-    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-    ui->comboBox_head_select_config->hide();
+//    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+//    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+//    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+//    ui->comboBox_head_select_config->hide();
     ui->comboBox_head_mode_select_config->hide();
-
+    ui->comboBox_head_select_graph->hide();
+    ui->frame_multihead_graph_2->show();
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
     timer->start(5000);
@@ -135,12 +136,13 @@ void MainWindow::setInitialConfigurations()
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
     recon_externa->setConsola(ui->plainTextEdit_Recon_console); // Conecto la consola de salida
     ui->textBrowser_entrada_2->setReadOnly(false);
-    ui->frame_multihead_graph_2->hide();
+    //ui->frame_multihead_graph_2->hide();
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
     setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->frame_adquire_advance_mode->hide();
     ui->comboBox_head_select_calib->hide();
+    ui->comboBox_head_mode_select_graph->hide();
     ui->label_calib->hide();
 
     setButtonConnectState(true);
@@ -517,12 +519,56 @@ void MainWindow::receivedValuesMCACalib(int umbral, int pico, int FWHM)
     ui->label_data_output->setText("                     | Umbral: "+QString::number(umbral)+" | Pico: "+QString::number(pico)+" | FWHM: "+QString::number(num,'g',4)+"%");
 }
 /**
- * @brief MainWindow::on_comboBox_head_select_config_currentIndexChanged
+ * @brief MainWindow::on_comboBox_head_select_config_currentIndexChangedº
  * @param arg1
  */
 void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
 {
-    getHeadStatus(arg1.toInt());
+    //getHeadStatus(arg1.toInt());
+
+    arpet->portDisconnect();
+
+    switch (arg1.toInt()) {
+    case 1:{
+        port_name=Cab1;
+      //  setHeadMode(1,"config");
+        break;
+    }
+    case 2:{
+        port_name=Cab2;
+       // setHeadMode(2,"config");
+
+        break;
+    }
+    case 3:{
+        port_name=Cab3;
+       // setHeadMode(3,"config");
+
+        break;
+    }
+    case 4:{
+        port_name=Cab4;
+       // setHeadMode(4,"config");
+        break;
+    }
+    case 5:{
+        port_name=Cab5;
+       // setHeadMode(5,"config");
+        break;
+    }
+    case 6:{
+        port_name=Cab6;
+      //  setHeadMode(6,"config");
+        break;
+    }
+    default:
+        break;
+    }
+    calibrador->setPort_Name((port_name));
+    worker->setPortName((port_name));
+    arpet->portConnect(port_name.toStdString().c_str());
+
+
 }
 /**
  * @brief MainWindow::getLogErrorThread
@@ -540,7 +586,7 @@ void MainWindow::getCalibErrorThread()
 }
 void MainWindow::getMCAErrorThread()
 {
-    setButtonAdquireState(false);
+    //setButtonAdquireState(false);
     setIsAbortMCAEFlag(false);
     QMessageBox::critical(this,tr("Error"),tr("Imposible adquirir los valores de MCA de los fotomultiplicadores/cabezales seleccionados."));
     emit ToPushButtonAdquirir(false);
@@ -1254,96 +1300,76 @@ void MainWindow::on_pushButton_initialize_clicked()
 {
     /** @todo: Verificar la inicialización y configuración de la alta tensión */
     writeFooterAndHeaderDebug(true);
-//    if(!arpet->isPortOpen())
-//    {
-//        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-//        if(debug)
-//        {
-//            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-//            writeFooterAndHeaderDebug(false);
-//        }
-//        return;
-//    }
 
     QList<int> checkedHeads=getCheckedHeads();
 
-
     for (int i=0;i<checkedHeads.length();i++)
     {
-        QString port;
         int head_index=checkedHeads.at(i);
         /* Inicialización del Cabezal */
 
         switch (head_index) {
         case 1:
-            port=Cab1;
             port_name=Cab1;
             writeFooterAndHeaderDebug(true);
-
-            calibrador->setPort_Name((port));
-            worker->setPortName((port));
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             break;
         case 2:
-            port=Cab2;
             writeFooterAndHeaderDebug(true);
             port_name=Cab2;
-
-            calibrador->setPort_Name((port));
-            worker->setPortName((port));
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             break;
         case 3:
-            port=Cab3;
             writeFooterAndHeaderDebug(true);
             port_name=Cab3;
-            calibrador->setPort_Name((port));
-            worker->setPortName((port));
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             break;
         case 4:
-            port=Cab4;
             writeFooterAndHeaderDebug(true);
             port_name=Cab4;
-            calibrador->setPort_Name((port));
-            worker->setPortName((port));
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             break;
         case 5:
-            port=Cab5;
             writeFooterAndHeaderDebug(true);
             port_name=Cab5;
-            calibrador->setPort_Name((port));
-            worker->setPortName(port);
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name((port_name));
+            worker->setPortName(port_name);
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             break;
         case 6:
-            port=Cab6;
             writeFooterAndHeaderDebug(true);
             port_name=Cab6;
-            calibrador->setPort_Name(port);
-            worker->setPortName(port);
-            arpet->portConnect(port.toStdString().c_str());
+            calibrador->setPort_Name(port_name);
+            worker->setPortName(port_name);
+            arpet->portConnect(port_name.toStdString().c_str());
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
@@ -1360,8 +1386,8 @@ void MainWindow::on_pushButton_initialize_clicked()
         parseConfigurationFile(true, QString::number(head_index));
         /* Configuración de la Alta Tensión*/
         //ui->lineEdit_alta->setText(QString::number(AT));
-        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-        LowLimit = ui->lineEdit_limiteinferior->text().toInt();
+        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        //LowLimit = ui->lineEdit_limiteinferior->text().toInt();
         string msg;
         QString psoc_alta = ui->lineEdit_alta->text();
         QString psoc_alta_Tabla = QString::number(AT);
@@ -1436,11 +1462,41 @@ void MainWindow::on_pushButton_initialize_clicked()
 void MainWindow::on_pushButton_hv_set_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    QList<int> checkedHeads = getCheckedHeads();
+    //QList<int> checkedHeads = getCheckedHeads();
+
+    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
+    arpet->portDisconnect();
+
+    switch (ui->comboBox_head_select_config->currentText().toInt()) {
+    case 1:
+        port_name=Cab1;
+        break;
+    case 2:
+        port_name=Cab2;
+        break;
+    case 3:
+        port_name=Cab3;
+        break;
+    case 4:
+        port_name=Cab4;
+        break;
+    case 5:
+        port_name=Cab5;
+        break;
+    case 6:
+        port_name=Cab6;
+        break;
+    default:
+        break;
+    }
+    calibrador->setPort_Name((port_name));
+    worker->setPortName((port_name));
+    arpet->portConnect(port_name.toStdString().c_str());
+
     string msg;
 //    mMutex.lock();
     QString psoc_alta = (ui->lineEdit_alta->text());
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
+    int head_index=setPSOCDataStream(ui->comboBox_head_select_config->currentText().toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
   //  mMutex.unlock();
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
@@ -1448,7 +1504,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
-        resetPMTs(false);
+        //resetPMTs(false);
         //resetPMTs(true);
         if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
@@ -1464,6 +1520,8 @@ void MainWindow::on_pushButton_hv_set_clicked()
         showMCAEStreamDebugMode(msg);
         writeFooterAndHeaderDebug(false);
     }
+    arpet->portDisconnect();
+
 }
 /**
  * @brief MainWindow::on_pushButton_hv_on_clicked
@@ -1471,9 +1529,39 @@ void MainWindow::on_pushButton_hv_set_clicked()
 void MainWindow::on_pushButton_hv_on_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    QList<int> checkedHeads = getCheckedHeads();
+    //QList<int> checkedHeads = getCheckedHeads();
+
+
+    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
+    arpet->portDisconnect();
+
+    switch (ui->comboBox_head_select_config->currentText().toInt()) {
+    case 1:
+        port_name=Cab1;
+        break;
+    case 2:
+        port_name=Cab2;
+        break;
+    case 3:
+        port_name=Cab3;
+        break;
+    case 4:
+        port_name=Cab4;
+        break;
+    case 5:
+        port_name=Cab5;
+        break;
+    case 6:
+        port_name=Cab6;
+        break;
+    default:
+        break;
+    }
+    calibrador->setPort_Name((port_name));
+    worker->setPortName((port_name));
+    arpet->portConnect(port_name.toStdString().c_str());
     string msg;
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+    int head_index=setPSOCDataStream(ui->comboBox_head_select_config->currentText().toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1494,6 +1582,8 @@ void MainWindow::on_pushButton_hv_on_clicked()
         showMCAEStreamDebugMode(msg);
         writeFooterAndHeaderDebug(false);
     }
+    arpet->portDisconnect();
+
 }
 /**
  * @brief MainWindow::on_pushButton_hv_off_clicked
@@ -1501,9 +1591,38 @@ void MainWindow::on_pushButton_hv_on_clicked()
 void MainWindow::on_pushButton_hv_off_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    QList<int> checkedHeads = getCheckedHeads();
+    //QList<int> checkedHeads = getCheckedHeads();
+    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
+    arpet->portDisconnect();
+
+    switch (ui->comboBox_head_select_config->currentText().toInt()) {
+    case 1:
+        port_name=Cab1;
+        break;
+    case 2:
+        port_name=Cab2;
+        break;
+    case 3:
+        port_name=Cab3;
+        break;
+    case 4:
+        port_name=Cab4;
+        break;
+    case 5:
+        port_name=Cab5;
+        break;
+    case 6:
+        port_name=Cab6;
+        break;
+    default:
+        break;
+    }
+    calibrador->setPort_Name((port_name));
+    worker->setPortName((port_name));
+    arpet->portConnect(port_name.toStdString().c_str());
+
     string msg;
-    int head_index=setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
+    int head_index=setPSOCDataStream(ui->comboBox_head_select_config->currentText().toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_OFF());
     if(debug) cout<<"Cabezal: "<<head_index<<endl;
     try
     {
@@ -1524,6 +1643,8 @@ void MainWindow::on_pushButton_hv_off_clicked()
         showMCAEStreamDebugMode(msg);
         writeFooterAndHeaderDebug(false);
     }
+    arpet->portDisconnect();
+
 }
 /**
  * @brief MainWindow::on_pushButton_hv_estado_clicked
@@ -1531,9 +1652,38 @@ void MainWindow::on_pushButton_hv_off_clicked()
 void MainWindow::on_pushButton_hv_estado_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    QList<int> checkedHeads = getCheckedHeads();
+    //QList<int> checkedHeads = getCheckedHeads();
+    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
+    //arpet->portDisconnect();
+
+    switch (ui->comboBox_head_select_config->currentText().toInt()) {
+    case 1:
+        port_name=Cab1;
+        break;
+    case 2:
+        port_name=Cab2;
+        break;
+    case 3:
+        port_name=Cab3;
+        break;
+    case 4:
+        port_name=Cab4;
+        break;
+    case 5:
+        port_name=Cab5;
+        break;
+    case 6:
+        port_name=Cab6;
+        break;
+    default:
+        break;
+    }
+    calibrador->setPort_Name((port_name));
+    worker->setPortName((port_name));
+    arpet->portConnect(port_name.toStdString().c_str());
+
     string msg;
-    setPSOCDataStream(QString::number(checkedHeads.at(0)).toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
+    setPSOCDataStream(ui->comboBox_head_select_config->currentText().toStdString(), arpet->getPSOC_SIZE_RECEIVED(), arpet->getPSOC_STA());
     if(debug) cout<<"Cabezal: "<<getHead("config").toStdString()<<endl;
     try
     {
@@ -1554,6 +1704,8 @@ void MainWindow::on_pushButton_hv_estado_clicked()
         showMCAEStreamDebugMode(msg);
         writeFooterAndHeaderDebug(false);
     }
+    arpet->portDisconnect();
+
 }
 /**
  * @brief MainWindow::getCoincidenceAdvanceModeDataStream
@@ -2029,7 +2181,7 @@ void MainWindow::drawTemperatureBoard()
 
     try
     {
-        setButtonAdquireState(true);
+       // setButtonAdquireState(true);
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
             {
@@ -2050,12 +2202,12 @@ void MainWindow::drawTemperatureBoard()
     }
     catch( Exceptions & ex )
     {
-        setButtonAdquireState(false);
+        //setButtonAdquireState(false);
         if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
 
-    setButtonAdquireState(true, true);
+    //setButtonAdquireState(true, true);
     double mean = std::accumulate(temp_vec.begin(), temp_vec.end(), .0) / temp_vec.size();
     double t_max = *max_element(temp_vec.begin(),temp_vec.end());
     double t_min = *min_element(temp_vec.begin(),temp_vec.end());
@@ -2201,13 +2353,13 @@ QString MainWindow::getHeadMCA(QString head)
     QString msg;
     try
     {
-        setButtonAdquireState(true);
+        //setButtonAdquireState(true);
         msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[head.toInt()-1]);
     }
     catch(Exceptions & ex)
     {
-        setButtonAdquireState(false);
+        //setButtonAdquireState(false);
         if(debug) {
             cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
            // cout<<"PMT: "<<pmt<<" "<<"Saturados "<< pmt<<": " << QString::number(arpet->getHitsMCA()[255]).toStdString()<<endl;
@@ -2216,7 +2368,7 @@ QString MainWindow::getHeadMCA(QString head)
         Exceptions exception_timeout(ex.excdesc);
         throw exception_timeout;
     }
-    setButtonAdquireState(true, true);
+    //setButtonAdquireState(true, true);
 
     return msg;
 }
@@ -2244,7 +2396,7 @@ QString MainWindow::getMultiMCA(QString head)
 
     try
     {
-        setButtonAdquireState(true);
+        //setButtonAdquireState(true);
         for (int index=0;index<size_pmt_selected;index++)
         {
             string pmt = pmt_selected_list.at(index).toStdString();
@@ -2263,11 +2415,11 @@ QString MainWindow::getMultiMCA(QString head)
     }
     catch(Exceptions & ex)
     {
-        setButtonAdquireState(false);
+        //setButtonAdquireState(false);
         if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    setButtonAdquireState(true, true);
+    //setButtonAdquireState(true, true);
 
     return msg;
 }
@@ -2668,6 +2820,9 @@ bool MainWindow::resetHeads()
 
     for (int i=0;i < checkedHeads.length();i++)
     {
+        arpet->portDisconnect();
+        port_name=Cab+QString::number(checkedHeads.at(i));
+        arpet->portConnect(port_name.toStdString().c_str());
         parseConfigurationFile(true, QString::number(checkedHeads.at(i)));
 
         try
@@ -2684,7 +2839,11 @@ bool MainWindow::resetHeads()
             if(debug) cout<<"No se puede reiniciar el cabezal "<<checkedHeads.at(i)<<". Error: "<<ex.excdesc<<endl;
             status = false;
             QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+            arpet->portDisconnect();
+
         }
+        arpet->portDisconnect();
+
     }
     return status;
 }
@@ -2729,10 +2888,10 @@ bool MainWindow::resetPMTs(bool centroide)
     return status;
 }
 /**
- * @brief MainWindow::on_pushButton_adquirir_toggled
+ * @brief MainWindow::on_pushButton_adqu1irir_toggled
  * @param checked
  */
-/*void MainWindow::on_pushButton_adquirir_toggled(bool checked)
+/*void MainWindow::on_pushButton_ad1quirir_toggled(bool checked)
  *
 {
     bool centroide = ui->checkBox_centroid->isChecked();
@@ -3196,25 +3355,25 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
+
     if(checked)
     {
-        if(!arpet->isPortOpen())
-        {
-            writeFooterAndHeaderDebug(true);
-            setButtonLoggerState(false);
-            setIsAbortLogFlag(false);
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-            if(debug)
-            {
-                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-                writeFooterAndHeaderDebug(false);
-            }
-            setButtonLoggerState(true, true);
-            emit ToPushButtonLogger(false);
-            return;
-        }
+//        if(!arpet->isPortOpen())
+//        {
+//            writeFooterAndHeaderDebug(true);
+//            setButtonLoggerState(false);
+//            setIsAbortLogFlag(false);
+//            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+//            if(debug)
+//            {
+//                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+//                writeFooterAndHeaderDebug(false);
+//            }
+//            setButtonLoggerState(true, true);
+//            emit ToPushButtonLogger(false);
+//            return;
+//        }
 
-        setButtonLoggerState(true);
         QList<int> checkedHeads=getCheckedHeads();
         worker->setCheckedHeads(checkedHeads);
         if (ui->checkBox_temp->isChecked()) worker->setTempBool(true); //Logueo temperatura
@@ -3229,14 +3388,16 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
     }
     else
     {
-        setButtonLoggerState(true,true);
+        //setButtonLoggerState(true,true);
         if (is_abort_log)
         {
             if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<thread->currentThreadId()<<endl;
-            emit sendAbortCommand(true);
+            //emit sendAbortCommand(true);
         }
-        setIsAbortLogFlag(true);
     }
+    setButtonLoggerState(checked);
+    //setIsAbortLogFlag(~checked);
+    //emit sendAbortCommand(~checked);
 }
 
 /* Métodos generales del entorno gráfico */
@@ -3488,28 +3649,28 @@ void MainWindow::setButtonState(bool state, QPushButton * button, bool disable)
  * @param state
  * @param disable
  */
-void MainWindow::setButtonAdquireState(bool state, bool disable)
-{
-    QString qt_text;
+//void MainWindow::setButtonAdquireState(bool state, bool disable)
+//{
+//    QString qt_text;
 
-    if (state && !disable)
-    {
-        qt_text="Adquiriendo";
-        setButtonState(state,ui->pushButton_adquirir,disable);
-    }
-    else if (!state && !disable)
-    {
-        qt_text="Error";
-        setButtonState(state,ui->pushButton_adquirir,disable);
-    }
-    else
-    {
-        qt_text="Adquirir";
-        setButtonState(state,ui->pushButton_adquirir,disable);
-    }
-    ui->pushButton_adquirir->setText(qt_text);
-    ui->pushButton_adquirir->update();
-}
+//    if (state && !disable)
+//    {
+//        qt_text="Adquiriendo";
+//        setButtonState(state,ui->pushButton1_adquirir,disable);
+//    }
+//    else if (!state && !disable)
+//    {
+//        qt_text="Error";
+//        setButtonState(state,ui->pushButton_adqui1rir,disable);
+//    }
+//    else
+//    {
+//        qt_text="Adquirir";
+//        setButtonState(state,ui->pushButt1on_adquirir,disable);
+//    }
+//    ui->pushButt1on_adquirir->setText(qt_text);
+//    ui->pushButt1on_adquirir->update();
+//}
 
 void MainWindow::setButtonCalibState(bool state, bool disable)
 {
@@ -3747,7 +3908,7 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
     else if(tab=="mca")
     {
         if (show) ui->frame_multihead_graph->show();
-        else ui->frame_multihead_graph->hide();
+        //else ui->frame_multihead_graph->hide();
     }
     else return;
 }
@@ -3764,8 +3925,8 @@ void MainWindow::manageHeadComboBox(string tab, bool show)
     }
     else*/ if(tab=="mca")
     {
-        if (show) ui->comboBox_head_select_graph->show();
-        else ui->comboBox_head_select_graph->hide();
+        //if (show) ui->comboBox_head_select_graph->show();
+       /* else*/ ui->comboBox_head_select_graph->hide();
     }
     else return;
 }
@@ -5724,7 +5885,7 @@ void MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged(int in
     switch (index) {
     case 0:
         ui->comboBox_head_select_graph_3->show();
-        ui->frame_multihead_graph_2->hide();
+       // ui->frame_multihead_graph_2->hide();
         break;
     case 1:
         ui->comboBox_head_select_graph_3->hide();
@@ -5759,7 +5920,7 @@ void MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged(int in
 void MainWindow::setTabLog(int index) {
     if(index==0) {
         ui->comboBox_head_select_graph_3->show();
-        ui->frame_multihead_graph_2->hide();
+       // ui->frame_multihead_graph_2->hide();
     }
 }
 
@@ -5889,9 +6050,13 @@ void MainWindow::on_RATECAB1_clicked()
 {
   vector<int> rates(3);
 
-  try{
-    rates = arpet->getRate(QString::number(1).toStdString(), port_name.toStdString());
-    ui->label_CAB1->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+    try{
+        arpet->portDisconnect();
+        port_name=Cab1;
+        arpet->portConnect(port_name.toStdString().c_str());
+        rates = arpet->getRate(QString::number(1).toStdString(), port_name.toStdString());
+        ui->label_CAB1->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+        arpet->portDisconnect();
   }
   catch(Exceptions &ex){
 
@@ -5900,148 +6065,184 @@ void MainWindow::on_RATECAB1_clicked()
 
 void MainWindow::on_RATECAB2_clicked()
 {
-  vector<int> rates(3);
-  rates = arpet->getRate(QString::number(2).toStdString(), port_name.toStdString());
-  ui->label_CAB2->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+    vector<int> rates(3);
+    try{
+        arpet->portDisconnect();
+        port_name=Cab2;
+        arpet->portConnect(port_name.toStdString().c_str());
+        rates = arpet->getRate(QString::number(2).toStdString(), port_name.toStdString());
+        ui->label_CAB2->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+        arpet->portDisconnect();
+    }
+    catch(Exceptions &ex){
+
+    }
 }
 
 
 void MainWindow::on_RATECAB3_clicked()
 {
   vector<int> rates(3);
-  rates = arpet->getRate(QString::number(3).toStdString(), port_name.toStdString());
-  ui->label_CAB3->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+  try{
+      arpet->portDisconnect();
+      port_name=Cab3;
+      arpet->portConnect(port_name.toStdString().c_str());
+      rates = arpet->getRate(QString::number(3).toStdString(), port_name.toStdString());
+      ui->label_CAB3->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+      arpet->portDisconnect();
+  }
+  catch(Exceptions &ex){
+
+  }
 }
 
 void MainWindow::on_RATECAB4_clicked()
 {
   vector<int> rates(3);
-  rates = arpet->getRate(QString::number(4).toStdString(), port_name.toStdString());
-  ui->label_CAB4->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+
+  try{
+      arpet->portDisconnect();
+      port_name=Cab4;
+      arpet->portConnect(port_name.toStdString().c_str());
+      rates = arpet->getRate(QString::number(4).toStdString(), port_name.toStdString());
+      ui->label_CAB4->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+      arpet->portDisconnect();
+  }
+  catch(Exceptions &ex){
+
+  }
 }
 
 void MainWindow::on_RATECAB5_clicked()
 {
   vector<int> rates(3);
-  rates = arpet->getRate(QString::number(5).toStdString(), port_name.toStdString());
-  ui->label_CAB5->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+  try{
+      arpet->portDisconnect();
+      port_name=Cab5;
+      arpet->portConnect(port_name.toStdString().c_str());
+      rates = arpet->getRate(QString::number(5).toStdString(), port_name.toStdString());
+      ui->label_CAB5->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+      arpet->portDisconnect();
+    }
+    catch(Exceptions &ex){
+
+    }
 }
 
 void MainWindow::on_RATECAB6_clicked()
 {
   vector<int> rates(3);
-  rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
-  ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+  try{
+      arpet->portDisconnect();
+      port_name=Cab6;
+      arpet->portConnect(port_name.toStdString().c_str());
+      rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
+      ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
+      arpet->portDisconnect();
+    }
+    catch(Exceptions &ex){
+
+    }
 }
 
 
 void MainWindow::on_pushButton_adquirir_clicked()
 {
   bool centroide = ui->checkBox_centroid->isChecked();
-  //if(checked)
-  bMutex.tryLock();
-  {
-      if(!arpet->isPortOpen())
-      {
-          writeFooterAndHeaderDebug(true);
-          setButtonAdquireState(false);
-          setIsAbortMCAEFlag(false);
-          QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-          if(debug)
-          {
-              cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-              writeFooterAndHeaderDebug(false);
-          }
-          setButtonAdquireState(true, true);
-          emit ToPushButtonAdquirir(false);
-          return;
-      }
 
-      QList<int> checkedHeads=getCheckedHeads();
-      mcae_wr->setCheckedHeads(checkedHeads);
+  QList<int> checkedHeads= getCheckedHeads();
+  QString Cabezal_conectado;
+  mcae_wr->setCheckedHeads(checkedHeads);
 
-      switch (adquire_mode)
+    {
+
+     bMutex.tryLock();
       {
-      case PMT:
-          if (pmt_selected_list.isEmpty())
+
+          switch (adquire_mode)
           {
-              writeFooterAndHeaderDebug(true);
-              setButtonAdquireState(false);
-              setIsAbortMCAEFlag(false);
-              if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
-              QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-              emit ToPushButtonAdquirir(false);
-              setButtonAdquireState(true, true);
-              writeFooterAndHeaderDebug(false);
-              return;
-          }
-          ui->specPMTs->clearGraphs();
-//          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-//          {
-              setButtonAdquireState(true);
+          case PMT:
+              if (pmt_selected_list.isEmpty())
+              {
+
+                  writeFooterAndHeaderDebug(true);
+                  //setButtonAdquireState(false);
+                  setIsAbortMCAEFlag(false);
+                  if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
+                  QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
+                  emit ToPushButtonAdquirir(false);
+                  mcae_wr->abort();
+                  //setButtonAdquireState(true, true);
+                  writeFooterAndHeaderDebug(false);
+                  //bMutex.unlock();
+                  break;
+              }
+
+
+              ui->specPMTs->clearGraphs();
               mcae_wr->setPMTSelectedList(pmt_selected_list);
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(true);
               mcae_wr->setCentroidMode(centroide);
-              mcae_wr->abort();
+              //mcae_wr->abort();
               mcae_th->wait();
               mcae_wr->requestMCA();
-          //}
-//          else
-//          {
-//              writeFooterAndHeaderDebug(true);
-//              setIsAbortMCAEFlag(false);
-//              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-//              writeFooterAndHeaderDebug(false);
-//              emit ToPushButtonAdquirir(false);
-//              return;
-//          }
-          break;
-      case CABEZAL:
-          ui->specHead->clearGraphs();
-          setButtonAdquireState(true);
-          mcae_wr->setDebugMode(debug);
-          mcae_wr->setModeBool(false);
-          mcae_wr->abort();
-          mcae_th->wait();
-          mcae_wr->requestMCA();
+
+              break;
+          case CABEZAL:
+              ui->specHead->clearGraphs();
+              //setButtonAdquireState(true);
+
+              if(debug) cout<<"Pasa  ui->specHead->clearGraphs();"<<endl;
+
+              mcae_wr->setDebugMode(debug);
+              mcae_wr->setModeBool(false);
+              if(debug) cout<<"Pasa mcae_wr->setModeBool(false); "<<endl;
+
+              mcae_wr->abort();
+              if(debug) cout<<"Pasa  mcae_wr->abort();"<<endl;
+
+              mcae_th->wait();
+              if(debug) cout<<"pasa  mcae_th->wait();"<<endl;
+
+              mcae_wr->requestMCA();
+
+
+              setIsAbortMCAEFlag(true);
+
+              if(debug) cout<<"Pasa  requestMCA"<<endl;
+
+              break;
+          case TEMPERATURE:
+              drawTemperatureBoard();
+              emit ToPushButtonAdquirir(false);
+              break;
+          default:
+              break;
+          }
+
+      }
+      switch (adquire_mode)
+      {
+      case PMT...CABEZAL:
+          //setButtonAdquireState(true,true);
+          if (is_abort_mcae)
+          {
+              if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<mcae_th->currentThreadId()<<endl;
+              emit sendAbortMCAECommand(true);
+          }
+          setIsAbortMCAEFlag(true);
           break;
       case TEMPERATURE:
-//          if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-//          {
-              drawTemperatureBoard();
-//          }
-//          else
-//          {
-//              writeFooterAndHeaderDebug(true);
-//              QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-//              writeFooterAndHeaderDebug(false);
-//              emit ToPushButtonAdquirir(false);
-//              return;
-//          }
-          emit ToPushButtonAdquirir(false);
           break;
       default:
           break;
       }
-  }
-  switch (adquire_mode)
-  {
-  case PMT...CABEZAL:
-      setButtonAdquireState(true,true);
-      if (is_abort_mcae)
-      {
-          if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<mcae_th->currentThreadId()<<endl;
-          emit sendAbortMCAECommand(true);
-      }
-      setIsAbortMCAEFlag(true);
-      break;
-  case TEMPERATURE:
-      break;
-  default:
-      break;
-  }
-  bMutex.unlock();
+
+      emit ToPushButtonAdquirir(false);
+      bMutex.unlock();
+      cout<<"fin del handler del boton"<<endl;
+ }
 }
 
 
@@ -6354,9 +6555,9 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
     }
 
 
-    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
-    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
-    ui->comboBox_head_select_config->blockSignals(oldState);
+//    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
+//    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
+//    ui->comboBox_head_select_config->blockSignals(oldState);
 
 }
 
@@ -6424,41 +6625,88 @@ void MainWindow::updateCaption(){
 void MainWindow::on_checkBox_c_3_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(3,"config");
+       // setHeadMode(3,"config");
     }
 }
 
 void MainWindow::on_checkBox_c_6_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(6,"config");
+       // setHeadMode(6,"config");
     }
 }
 
 void MainWindow::on_checkBox_c_5_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(5,"config");
+       // setHeadMode(5,"config");
     }
 }
 
 void MainWindow::on_checkBox_c_4_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(4,"config");
+      //  setHeadMode(4,"config");
     }
 }
 
 void MainWindow::on_checkBox_c_2_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(2,"config");
+       // setHeadMode(2,"config");
     }
 }
 
 void MainWindow::on_checkBox_c_1_toggled(bool checked)
 {
     if (checked){
-        setHeadMode(1,"config");
+       // setHeadMode(1,"config");
     }
+}
+
+void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
+{
+
+}
+
+void MainWindow::on_checkBox_mca_1_toggled(bool checked)
+{
+    if (checked){
+        //setHeadMode(1,"mca");
+    }
+}
+
+void MainWindow::on_checkBox_mca_2_toggled(bool checked)
+{
+//    if (checked){
+//        setHeadMode(2,"mca");
+//    }
+}
+
+void MainWindow::on_checkBox_mca_3_toggled(bool checked)
+{
+//    if (checked){
+//        setHeadMode(3,"mca");
+//    }
+}
+
+void MainWindow::on_checkBox_mca_4_toggled(bool checked)
+{
+//    if (checked){
+//        setHeadMode(4,"mca");
+//    }
+}
+
+void MainWindow::on_checkBox_mca_5_toggled(bool checked)
+{
+//    if (checked){
+//        setHeadMode(5,"mca");
+//    }
+}
+
+void MainWindow::on_checkBox_mca_6_toggled(bool checked)
+{
+//    if (checked){
+//        setHeadMode(6,"mca");
+//    }
 }

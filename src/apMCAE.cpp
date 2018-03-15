@@ -1209,8 +1209,12 @@ string MCAE::getMCA(string pmt, string function, string head, int channels, stri
     char delimeter='\r';
     string msg, msg_data;
 
+    cout<<"Voy a transmitir: "<< getTrama_MCAE()<<endl;
     sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    cout<<"Ya transmiti: "<<endl;
+
     msg = readString(delimeter, port_name);
+    cout<<"recibi: "<<msg<<endl;
     msg_data = readBufferString(channels*6+16, port_name);
 
     getMCASplitData(msg_data, channels);
