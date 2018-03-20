@@ -101,7 +101,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     void checkCombosStatus();
     ~MainWindow();
-    void resetHitsValues();
+    void resetHitsValues(QString head);
 
     /* Area de prueba/testing */
 
@@ -323,6 +323,8 @@ private slots:
 
     void on_checkBox_mca_6_toggled(bool checked);
 
+    void on_tabWidget_mca_currentChanged(int index);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -387,6 +389,7 @@ private:
     QString getPSOCAlta(QLineEdit *line_edit);
     string getHVValue(QLineEdit *line_edit, int value=0);
     bool resetHeads();
+    bool resetHead(QString Cabezal);
     bool resetPMTs(bool centroide=false);
     void setQListElements();
     void drawTemperatureBoard();
@@ -402,6 +405,7 @@ private:
     void setCalibrationMode(QString head);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
+    void LoadHVPMT(int head);
     int  ogl_flag;
 
     /* Area de prueba/testing */
@@ -449,9 +453,10 @@ private:
     bool log;
     bool stdout_mode;
     QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest, logTemp, logRate,root_log;
-    QVector<double> hvtable_values, coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
+    QVector<double> coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
+    QVector< QVector<double> > hvtable_values;
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
-    int  AT, LowLimit, Target;
+    int  AT, LowLimit[6], Target;
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
     int headIndex;
@@ -552,11 +557,11 @@ public:
     int getAT() const {return AT;}
     /**
      * @brief getLowLimit
-     *
      * Obtiene el límite de ventana inferior para el cabezal seleccionado
-     *
+     * @param head
+     * @return
      */
-    int getLowLimit() const {return LowLimit;}
+    int getLowLimit(int head) const {return LowLimit[head-1];}
     /**
      * @brief getTarget
      *

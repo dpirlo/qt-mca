@@ -40,9 +40,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_head_mode_select_config->hide();
     ui->comboBox_head_select_graph->hide();
     ui->frame_multihead_graph_2->show();
+    ui->tabWidget_mca->setCurrentIndex(1);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
-    timer->start(5000);
+    timer->start(1000);
 
 }
 /**
@@ -165,7 +166,9 @@ void MainWindow::setInitialConfigurations()
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
     SetQCustomPlotSlots("Cuentas por PMT", "Cuentas en el Cabezal");
-    resetHitsValues();
+    arpet->resetHitsMCA();
+    setHitsInit(true);
+    setAdquireMode(CABEZAL);
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -1211,16 +1214,16 @@ void MainWindow::on_pushButton_configure_clicked()
 {
     /* Inicialización del modo Coincidencia */
 
-    if(!arpet->isPortOpen())
-    {
-        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-        if(debug)
-        {
-            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-            writeFooterAndHeaderDebug(false);
-        }
-        return;
-    }
+//    if(!arpet->isPortOpen())
+//    {
+//        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
+//        if(debug)
+//        {
+//            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
+//            writeFooterAndHeaderDebug(false);
+//        }
+//        return;
+//    }
 
     QString head;
     QString ignore;
@@ -1303,6 +1306,7 @@ void MainWindow::on_pushButton_initialize_clicked()
 
     QList<int> checkedHeads=getCheckedHeads();
 
+    arpet->portDisconnect();
     for (int i=0;i<checkedHeads.length();i++)
     {
         int head_index=checkedHeads.at(i);
@@ -1383,11 +1387,21 @@ void MainWindow::on_pushButton_initialize_clicked()
         initHead(head_index);
         initSP3(head_index);
         usleep(500);
+
+
         parseConfigurationFile(true, QString::number(head_index));
         /* Configuración de la Alta Tensión*/
         //ui->lineEdit_alta->setText(QString::number(AT));
-        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         //LowLimit = ui->lineEdit_limiteinferior->text().toInt();
+
+        QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+        if(debug)
+        {
+            cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<QString::number(LowLimit[head_index-1]).toStdString()<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+        }
+
         string msg;
         QString psoc_alta = ui->lineEdit_alta->text();
         QString psoc_alta_Tabla = QString::number(AT);
@@ -1766,12 +1780,19 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
  */
 void MainWindow::initCoincidenceMode()
 {
+    arpet->portDisconnect();
+
     /* Inicializo nuevamente todos los cabezales */
     for ( int i = 0; i < HEADS; i++ )
     {
+        port_name=Cab+QString::number(i+1);
+        arpet->portConnect(port_name.toStdString().c_str());
         initHead(i+1);
-    }
+        arpet->portDisconnect();
 
+    }
+    port_name="/dev/UART_Coin";
+    arpet->portConnect(port_name.toStdString().c_str());
     /* Inicialización de modo coincidencia */
     setMCAEDataStream(arpet->getInit_Coin(),"","",false);
     string msg_ans;
@@ -1795,6 +1816,7 @@ void MainWindow::initCoincidenceMode()
         cout<<"Inicialización del modo coincidencia: "<<endl;
         showMCAEStreamDebugMode(msg_ans);
     }
+    //arpet->portDisconnect();
 }
 /**
  * @brief MainWindow::setCalibrationMode
@@ -1802,8 +1824,39 @@ void MainWindow::initCoincidenceMode()
  */
 void MainWindow::setCalibrationMode(QString head)
 {
-    setMCAEDataStream(head.toStdString());
+
     string msg_ans;
+
+    /* Ahora le avisamos al kit de coincidencia qué cabezal está en modo coincidencia*/
+
+    setMCAEDataStream(head.toStdString(), true);
+
+    try
+    {
+        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
+        msg_ans = readString();
+    }
+    catch(Exceptions & ex)
+    {
+        Exceptions exception_coincidence_kit_failure((string("Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
+        if(debug)
+        {
+            cout<<"Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
+            showMCAEStreamDebugMode(msg_ans);
+        }
+        throw exception_coincidence_kit_failure;
+    }
+    if(debug)
+    {
+        cout<<"El kit coincidencia ha respondido correctamente. A comenzar adquirir ya!!"<<endl;
+        showMCAEStreamDebugMode(msg_ans);
+    }
+
+
+
+
+    setMCAEDataStream(head.toStdString());
+    cout<<"Configuro el Cabezal"<<endl;
     try
     {
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
@@ -1825,29 +1878,7 @@ void MainWindow::setCalibrationMode(QString head)
         showMCAEStreamDebugMode(msg_ans);
     }
 
-    /* Ahora le avisamos al kit de coincidencia qué cabezal está en modo coincidencia*/
 
-    setMCAEDataStream(head.toStdString(), true);
-    try
-    {
-        sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
-        msg_ans = readString();
-    }
-    catch(Exceptions & ex)
-    {
-        Exceptions exception_coincidence_kit_failure((string("Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str());
-        if(debug)
-        {
-            cout<<"Imposible conectarse al kit de coincidencia. Revise la conexión al equipo. Error: "<<ex.excdesc<<endl;
-            showMCAEStreamDebugMode(msg_ans);
-        }
-        throw exception_coincidence_kit_failure;
-    }
-    if(debug)
-    {
-        cout<<"El kit coincidencia ha respondido correctamente. A comenzar adquirir ya!!"<<endl;
-        showMCAEStreamDebugMode(msg_ans);
-    }
 }
 /**
  * @brief MainWindow::setCoincidenceModeWindowTime
@@ -1971,7 +2002,19 @@ string MainWindow::initSP3(int head)
 void MainWindow::setCalibrationTables(int head) {
 
     coefenerg_values=getValuesFromFiles(coefenerg);
-    hvtable_values=getValuesFromFiles(hvtable,true);
+    QVector <double> Cabezal;
+    Cabezal.append(getValuesFromFiles(hvtable,true));
+    //hvtable_values.reserve(6);
+    if (hvtable_values.empty()){
+        for (int i=0;i<6;i++){
+            hvtable_values.push_back(Cabezal);
+        }
+    }
+
+    hvtable_values.replace(head-1,Cabezal);
+
+
+    cout<<"termina de cargar los valores en el vector"<<endl;
     coefx_values=getValuesFromFiles(coefx);
     coefy_values=getValuesFromFiles(coefy);
     coefT_values=getValuesFromFiles(coefT);
@@ -2051,20 +2094,7 @@ void MainWindow::setCalibrationTables(int head) {
 
     try
     {
-        for(int pmt = 0; pmt < PMTs; pmt++)
-        {
-            QString hv=QString::number(hvtable_values[pmt]);
-            q_msg = setHV(QString::number(head).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
-            if(debug)
-            {
-                cout<<"========================================="<<endl;
-                cout<<" "<< QString::number(pmt+1).toStdString() <<endl;
-                showMCAEStreamDebugMode(q_msg.toStdString());
-                cout<<"Valor de HV: "<< hv.toStdString() <<endl;
-                cout<<"========================================="<<endl;
-
-            }
-        }
+        LoadHVPMT(head);
     }
     catch( Exceptions & ex )
     {
@@ -2109,6 +2139,34 @@ void MainWindow::setCalibrationTables(int head) {
     setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && set_time_INTER && lowlimit, calib_status_table[head-1]);
 
 }
+/**
+ * @brief MainWindow::LoadHVPMT
+ * @param head
+ */
+void MainWindow::LoadHVPMT(int head){
+    QString q_msg;
+    for(int pmt = 0; pmt < PMTs; pmt++)
+    {
+        QString hv=QString::number(hvtable_values[head-1][pmt]);
+        //if(debug) cout<<"hv: "<<hv.toStdString()<<endl;
+        q_msg = setHV(QString::number(head).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
+        cout<<"termina de cargar el valor de hv del pmt: "<<pmt<<endl;
+
+        if(debug)
+        {
+            cout<<"========================================="<<endl;
+            cout<<" "<< QString::number(pmt+1).toStdString() <<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
+            cout<<"Valor de HV: "<< hv.toStdString() <<endl;
+            cout<<"========================================="<<endl;
+
+        }
+    }
+    return;
+}
+
+
+
 
 /* Pestaña: "MCA" */
 /**
@@ -2179,8 +2237,20 @@ void MainWindow::drawTemperatureBoard()
 
     mMutex.lock();
 
+    //QList<int> checkedHeads= getCheckedHeads();
+    arpet->portDisconnect();
     try
     {
+        //QString Cabezal = QString::number(checkedHeads.at(0));
+        port_name=Cab+getHead("mca");
+        arpet->portConnect(port_name.toStdString().c_str());
+        if(debug) cout<<"Conecto puerto sp3"<<endl;
+
+        arpet->InitSP3(getHead("mca").toStdString(),port_name.toStdString());
+        //sleep(500);
+        if(debug) cout<<"Pasa init mca sp3: "<<endl;
+
+
        // setButtonAdquireState(true);
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
@@ -2199,12 +2269,14 @@ void MainWindow::drawTemperatureBoard()
                 setTemperatureBoard(temp,pmt_label_table[pmt],pmt+1);
             }
         }
+        arpet->portDisconnect();
     }
     catch( Exceptions & ex )
     {
         //setButtonAdquireState(false);
         if(debug) cout<<"Imposible obtener los valores de temperatura. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("Imposible obtener los valores de temperatura. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+        arpet->portDisconnect();
     }
 
     //setButtonAdquireState(true, true);
@@ -2572,15 +2644,18 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
 
     try
     {
+       // if (debug) cout<<"Envio: "<<endl<<"Cabezal: "<<head<<" - "<<"PMT: "<<pmt<<endl<<"HV: "<<hv_value<<endl<<port_name.toStdString();
         msg = arpet->setHV(head, pmt, hv_value, port_name.toStdString());
     }
     catch(Exceptions & ex)
     {
+        cout<<"No se pudo hacer el SetHV"<<endl;
         Exceptions exception_hv(ex.excdesc);
         mMutex.unlock();
         throw exception_hv;
     }
-    resetHitsValues();
+//    arpet->resetHitsMCA();
+//    setHitsInit(true);
 
     mMutex.unlock();
 
@@ -2611,7 +2686,8 @@ QString MainWindow::setHV(string head, string hv_value)
         mMutex.unlock();
         throw exception_hv;
     }
-    resetHitsValues();
+    arpet->resetHitsMCA();
+    setHitsInit(true);
 
     mMutex.unlock();
 
@@ -2773,15 +2849,25 @@ void MainWindow::setMCAEDataStream(string coin_function, string data_one, string
  */
 void MainWindow::setMCAEDataStream(string head, bool coin)
 {
+    arpet->portDisconnect();
     if (!coin)
     {
+        port_name=Cab+QString::fromStdString(head);
+        cout<<port_name.toStdString()<<endl;
+
+        arpet->portConnect(port_name.toStdString().c_str());
+        //cout<<port_name.toStdString()<<endl;
         arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + arpet->getFunCHead());
         arpet->setMCAEStream("0",0,arpet->getCalib_Mode());
     }
     else
     {
+        port_name="/dev/UART_Coin";
+        arpet->portConnect(port_name.toStdString().c_str());
+        cout<<"assdgsdfd"<<endl;
         arpet->setHeader_MCAE(arpet->getHead_MCAE() + arpet->getHead_Coin() + arpet->getFunCHead());
         arpet->setMCAEStream("0",0,arpet->getInit_Calib_MCAE()+head+"1");
+
     }
 
 }
@@ -2805,10 +2891,18 @@ int MainWindow::setPSOCDataStream(string head, string size_received, string func
 /**
  * @brief MainWindow::resetHitsValues
  */
-void MainWindow::resetHitsValues()
+void MainWindow::resetHitsValues(QString head)
 {
+    QString Cabezal = Cab +head;
     arpet->resetHitsMCA();
     setHitsInit(true);
+    //asdf
+    if (debug) cout<<"Reinicio los graficos"<<endl;
+    arpet->portDisconnect();
+    arpet->portConnect(Cabezal.toStdString().c_str());
+    LoadHVPMT(head.toInt());
+    arpet->portDisconnect();
+
 }
 /**
  * @brief MainWindow::resetHeads
@@ -2827,16 +2921,51 @@ bool MainWindow::resetHeads()
 
         try
         {
-            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),ui->lineEdit_limiteinferior->text().toStdString());
+            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit[checkedHeads.at(i)-1]).toStdString());
             if(debug)
             {
-                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<ui->lineEdit_limiteinferior->text().toStdString()<<endl;
+                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<QString::number(LowLimit[checkedHeads.at(i)-1]).toStdString()<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
             }
         }
         catch (Exceptions ex)
         {
             if(debug) cout<<"No se puede reiniciar el cabezal "<<checkedHeads.at(i)<<". Error: "<<ex.excdesc<<endl;
+            status = false;
+            QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
+            arpet->portDisconnect();
+
+        }
+        arpet->portDisconnect();
+
+    }
+    return status;
+}
+
+
+bool MainWindow::resetHead(QString Cabezal)
+{
+    bool status = true;
+
+    //for (int i=0;i < checkedHeads.length();i++)
+    {
+        arpet->portDisconnect();
+        port_name=Cab+Cabezal;
+        arpet->portConnect(port_name.toStdString().c_str());
+        parseConfigurationFile(true, Cabezal);
+
+        try
+        {
+            QString q_msg = setHV(Cabezal.toStdString(),QString::number(LowLimit[Cabezal.toInt()-1]).toStdString());
+            if(debug)
+            {
+                cout<<"Reinicio del Cabezal "<<Cabezal.toStdString()<<" en la ventana: "<<QString::number(LowLimit[Cabezal.toInt()-1]).toStdString()<<endl;
+                showMCAEStreamDebugMode(q_msg.toStdString());
+            }
+        }
+        catch (Exceptions ex)
+        {
+            if(debug) cout<<"No se puede reiniciar el cabezal "<<Cabezal.toStdString()<<". Error: "<<ex.excdesc<<endl;
             status = false;
             QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
             arpet->portDisconnect();
@@ -3015,7 +3144,8 @@ void MainWindow::on_pushButton_reset_clicked()
     switch (adquire_mode) {
     case PMT:
         if(debug) cout<<"Se reiniciaron los valores de los PMTs"<<endl;
-        resetHitsValues();
+        resetHead(getHead("mca"));
+        resetHitsValues(getHead("mca"));
         setPMTCustomPlotEnvironment(pmt_selected_list);
         resetPMTs(ui->checkBox_centroid->isChecked());
         removeAllGraphsPMT();
@@ -3023,7 +3153,8 @@ void MainWindow::on_pushButton_reset_clicked()
     case CABEZAL:
         if(debug) cout<<"Se reiniciaron los valores del cabezal"<<endl;
         resetHeads();
-        resetHitsValues();
+        arpet->resetHitsMCA();
+        setHitsInit(true);
         setHeadCustomPlotEnvironment();
         removeAllGraphsHead();
         break;
@@ -3043,7 +3174,8 @@ void MainWindow::on_pushButton_select_pmt_clicked()
 {
 
     writeFooterAndHeaderDebug(true);
-    resetHitsValues();
+    arpet->resetHitsMCA();
+    setHitsInit(true);
     removeAllGraphsPMT();
 
     int ret = pmt_select->exec();
@@ -3454,6 +3586,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
         if(hv)
         {
             while (!in.atEnd())
+            for(int i=0;i<PMTs;i++)
             {
                 QString line = in.readLine();
                 QStringList fields = line.split(rx);
@@ -3467,6 +3600,7 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
             {
                 QString line = in.readLine();
                 values.push_back(line.toDouble());
+
             }
         }
         inputFile.close();
@@ -3474,6 +3608,8 @@ QVector<double> MainWindow::getValuesFromFiles(QString filename, bool hv)
 
     return values;
 }
+
+
 /**
  * @brief MainWindow::parseConfigurationFile
  *
@@ -3497,7 +3633,7 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
     QString root = settings.value("Paths/root", "US").toString();
     /* Parameters */
     AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
-    LowLimit = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
+    LowLimit[head.toInt()-1] = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
     Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
     coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
     hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
@@ -3560,7 +3696,7 @@ void MainWindow::getPaths()
         ui->textBrowser_tiempos_cabezal->setText(coefT);
         ui->textBrowser_tiempos_Inter_cabezal->setText(coefTInter);
         ui->lineEdit_alta->setText(QString::number(AT));
-        ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
     }
     else
     {
@@ -3792,7 +3928,7 @@ QString MainWindow::getHead(string tab)
     QString head;
     if (tab=="mca")
     {
-        if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
+        //if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
         {
             head=ui->comboBox_head_select_graph->currentText();
         }
@@ -5836,7 +5972,8 @@ void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
 void MainWindow::on_pushButton_select_pmt_2_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    resetHitsValues();
+    arpet->resetHitsMCA();
+    setHitsInit(true);
     removeAllGraphsPMT();
 
     int ret = pmt_select_autocalib->exec();
@@ -6150,9 +6287,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
 {
   bool centroide = ui->checkBox_centroid->isChecked();
 
-  QList<int> checkedHeads= getCheckedHeads();
-  QString Cabezal_conectado;
-  mcae_wr->setCheckedHeads(checkedHeads);
+  QList<int> checkedHeads;
 
     {
 
@@ -6164,6 +6299,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
           case PMT:
               if (pmt_selected_list.isEmpty())
               {
+
 
                   writeFooterAndHeaderDebug(true);
                   //setButtonAdquireState(false);
@@ -6178,6 +6314,12 @@ void MainWindow::on_pushButton_adquirir_clicked()
                   break;
               }
 
+              checkedHeads.clear();
+              checkedHeads.append(ui->comboBox_head_select_graph->currentText().toInt());
+              if(debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
+              if(debug) cout<<"iteracion: "<<checkedHeads.length()<<endl;
+              mcae_wr->setCheckedHeads(checkedHeads);
+
 
               ui->specPMTs->clearGraphs();
               mcae_wr->setPMTSelectedList(pmt_selected_list);
@@ -6190,6 +6332,11 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
               break;
           case CABEZAL:
+
+              checkedHeads= getCheckedHeads();
+
+              mcae_wr->setCheckedHeads(checkedHeads);
+
               ui->specHead->clearGraphs();
               //setButtonAdquireState(true);
 
@@ -6214,6 +6361,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
               break;
           case TEMPERATURE:
+
               drawTemperatureBoard();
               emit ToPushButtonAdquirir(false);
               break;
@@ -6561,7 +6709,10 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
 
 }
 
-
+/**
+ * @brief MainWindow::updateCaption Este es un timer que actualiza la lista de cabezales disponible y habilita o deshabilita los checkbox de cabezales
+ *
+ */
 void MainWindow::updateCaption(){
 
     QDir dir("/dev/");
@@ -6580,6 +6731,13 @@ void MainWindow::updateCaption(){
     ui->checkBox_c_5->setEnabled(false);
     ui->checkBox_c_6->setEnabled(false);
 
+    ui->checkBox_mca_1->setEnabled(false);
+    ui->checkBox_mca_2->setEnabled(false);
+    ui->checkBox_mca_3->setEnabled(false);
+    ui->checkBox_mca_4->setEnabled(false);
+    ui->checkBox_mca_5->setEnabled(false);
+    ui->checkBox_mca_6->setEnabled(false);
+
 
     for (int i=0;i<list.length();i++){
 
@@ -6589,31 +6747,28 @@ void MainWindow::updateCaption(){
         switch (numerocabezal.toInt()) {
         case 1:
             ui->checkBox_c_1->setEnabled(true);
+            ui->checkBox_mca_1->setEnabled(true);
 
             break;
         case 2:
             ui->checkBox_c_2->setEnabled(true);
-
+            ui->checkBox_mca_2->setEnabled(true);
             break;
         case 3:
             ui->checkBox_c_3->setEnabled(true);
-
-
+            ui->checkBox_mca_3->setEnabled(true);
             break;
         case 4:
             ui->checkBox_c_4->setEnabled(true);
-
-
+            ui->checkBox_mca_4->setEnabled(true);
             break;
         case 5:
             ui->checkBox_c_5->setEnabled(true);
-
-
+            ui->checkBox_mca_5->setEnabled(true);
             break;
         case 6:
             ui->checkBox_c_6->setEnabled(true);
-
-
+            ui->checkBox_mca_6->setEnabled(true);
             break;
         default:
             break;
@@ -6666,47 +6821,51 @@ void MainWindow::on_checkBox_c_1_toggled(bool checked)
 
 void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
 {
-
+    
 }
 
 void MainWindow::on_checkBox_mca_1_toggled(bool checked)
 {
-    if (checked){
-        //setHeadMode(1,"mca");
-    }
+
+
 }
 
 void MainWindow::on_checkBox_mca_2_toggled(bool checked)
 {
-//    if (checked){
-//        setHeadMode(2,"mca");
-//    }
+
 }
 
 void MainWindow::on_checkBox_mca_3_toggled(bool checked)
 {
-//    if (checked){
-//        setHeadMode(3,"mca");
-//    }
 }
 
 void MainWindow::on_checkBox_mca_4_toggled(bool checked)
 {
-//    if (checked){
-//        setHeadMode(4,"mca");
-//    }
+
 }
 
 void MainWindow::on_checkBox_mca_5_toggled(bool checked)
 {
-//    if (checked){
-//        setHeadMode(5,"mca");
-//    }
+
 }
 
 void MainWindow::on_checkBox_mca_6_toggled(bool checked)
 {
-//    if (checked){
-//        setHeadMode(6,"mca");
-//    }
+
+}
+
+void MainWindow::on_tabWidget_mca_currentChanged(int index)
+{
+    if (index==1){
+        ui->comboBox_head_select_graph->hide();
+        ui->frame_multihead_graph->show();
+    }else if (index==0){
+        setAdquireMode(PMT);
+
+        ui->comboBox_head_select_graph->show();
+        ui->frame_multihead_graph->hide();
+    }else{
+        ui->comboBox_head_select_graph->show();
+        ui->frame_multihead_graph->hide();
+    }
 }

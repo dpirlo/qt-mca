@@ -293,8 +293,9 @@ bool MCAE::portReadOneChar(char& val)
 
     port->get_io_service().run();
 
-    if (!read_error)
+    if (!read_error){
         val = c;
+    }
 
     return !read_error;
 }
@@ -313,10 +314,12 @@ void MCAE::portReadString(string *msg, char delimeter, const char *tty_port_name
     while (portReadOneChar(c) && c != delimeter)
     {
         msg->push_back(c);
+
     }
 
     if (c != delimeter)
     {
+
         Exceptions exception_timeout("Error de tiempo de lectura. TimeOut!");
         throw exception_timeout;
     }
@@ -1239,7 +1242,10 @@ string MCAE::setHV(string head, string pmt, string channel_dec, string port_name
     char delimeter='\r';
     string msg;
 
+    //cout<<"Mensaje: "<<getTrama_MCAE()<<"   Caracter de fin: "<<getEnd_MCA()<<"     Puerto: "<<port_name<<endl;
     sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    //cout<<"asd"<<endl;
+
     msg = readString(delimeter, port_name);
 
     return msg;
