@@ -26,6 +26,7 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     _mca(false),
     _abort(false),
     _centroid(false),
+    _CabCalib(false),
     temp(false),
     rate(false),
     debug(false),
@@ -304,19 +305,27 @@ void Thread::getElapsedTime()
  */
 void Thread::getMCA()
 {
+
+
     if(debug)
     {
         cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
         cout<<"Comienza la adquisición MCA."<<endl;
     }
 
+    string pmt;
     string pmt_function;
     int timer_wait_milisec;
     double CuentasTotales=0;
+    double Hist_Double[CHANNELS];
+    QVector<double> aux_hits;
+    AutoCalib InitBuscaPico;
+    struct Pico_espectro aux;
 
     if (_centroid)
     {
-        pmt_function = arpet->getFunCHead();
+
+           pmt_function = arpet->getFunCHead();
     }
     else
     {
@@ -339,7 +348,7 @@ void Thread::getMCA()
                     arpet->portDisconnect();
                     QString Cabezal_conectado="/dev/UART_Cab"+ QString::number( checkedHeads.at(0));
                     arpet->portConnect(Cabezal_conectado.toStdString().c_str());
-                    string pmt = pmt_selected_list.at(index).toStdString();
+                    pmt = pmt_selected_list.at(index).toStdString();
                     string msg = arpet->getMCA(pmt, pmt_function, QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
                     if(debug)
                     {
@@ -356,7 +365,7 @@ void Thread::getMCA()
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS_PMT, QString::fromStdString(pmt), index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }
-                timer_wait_milisec = (20 + size_pmt_selected*50);
+                timer_wait_milisec = (20 + size_pmt_selected*5);
             }
             else
             {
@@ -368,7 +377,9 @@ void Thread::getMCA()
                     error_code error_code=arpet->portConnect(Cabezal_conectado.toStdString().c_str());
                     if(debug) cout<<"error code serie: "<<error_code<<endl;
 
-                    string msg = arpet->getMCA("0", arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
+                    pmt = _CabCalib==true ? "49" : "0";
+
+                    string msg = arpet->getMCA(pmt, arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
                     {
 
@@ -376,6 +387,19 @@ void Thread::getMCA()
                         cout<< "Trama recibida: "<< msg << " | Trama enviada: "<< arpet->getTrama_MCAE() <<endl;
                     }
 
+                    aux_hits = arpet->getHitsMCA();
+                    if (checkedHeads.length()==1){
+
+                        for (int j = 0 ; j < CHANNELS ; j++) {
+
+                            Hist_Double[j] = aux_hits[j];
+                            //cout<<QString::number(aux_hits[j]).toStdString()<<endl;
+                        }
+
+                        aux = InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);
+
+                        emit sendPicosMCA(aux, checkedHeads.at(0));
+                    }
                     emit sendHitsMCA(arpet->getHitsMCA(), CHANNELS, QString::number(checkedHeads.at(index)),index, _mode);
                     emit sendValuesMCA(arpet->getTimeMCA(), arpet->getHVMCA(), arpet->getOffSetMCA(), arpet->getVarMCA(), _mode);
                 }

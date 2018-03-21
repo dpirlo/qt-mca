@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->comboBox_head_select_config->hide();
     ui->comboBox_head_mode_select_config->hide();
     ui->comboBox_head_select_graph->hide();
+    ui->comboBox_adquire_mode->hide();
+
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
     QTimer *timer = new QTimer(this);
@@ -308,6 +310,7 @@ void MainWindow::connectSlots()
     connect(mcae_wr, SIGNAL(sendHitsMCA(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsMCA(QVector<double>, int, QString, int, bool)));
     connect(worker, SIGNAL(sendSaturated(int , double * )),this, SLOT( recievedSaturated(int , double *)));
     connect(worker, SIGNAL(sendPicosLog(struct Pico_espectro ,int)),this, SLOT( recievedPicosLog(struct Pico_espectro ,int)));
+    connect(mcae_wr, SIGNAL(sendPicosMCA(struct Pico_espectro ,int)),this, SLOT( recievedPicosMCA(struct Pico_espectro ,int)));
 
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
@@ -378,6 +381,19 @@ void MainWindow::recievedPicosLog(struct Pico_espectro Pico,int index)
     writeLogFile("[LOG-PICO],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(Pico.canal_pico)+","+QString::number(Pico.FWHM*100)+"\n");
     //ui->pushButton_reset->clicked(true);
 }
+/**
+ * @brief MainWindow::recievedPicosMCA
+ * @param Pico
+ * @param index
+ */
+void MainWindow::recievedPicosMCA(struct Pico_espectro Pico,int index)
+{
+   // writeLogFile("[LOG-PICO],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(Pico.canal_pico)+","+QString::number(Pico.FWHM*100)+"\n");
+    //ui->pushButton_reset->clicked(true);
+
+    ui->label_data_output->setText(/*ui->label_data_output->text()+*/" | Pico: "+QString::number(Pico.canal_pico)+" | FWHM: "+QString::number(Pico.FWHM*100)+" |");
+}
+
 
 /**
  * @brief MainWindow::writeOffSetToLog
@@ -504,7 +520,7 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
         if (getCheckedHeads().length()==1)
         {
             ui->label_title_output->setText("MCA Extended | Cabezal: " + QString::number(getCheckedHeads().at(0)));
-            ui->label_data_output->setText("| Umbral: "+ QString::number(hv_pmt) + " |");
+            //ui->label_data_output->setText("| Umbral: "+ QString::number(hv_pmt) + " |");
         }
         else
         {
@@ -1227,6 +1243,11 @@ void MainWindow::on_pushButton_configure_clicked()
 
     QString head;
     QString ignore;
+
+    coefTInter_values=getValuesFromFiles(coefTInter);
+    coefest_values=getValuesFromFiles(coefest);
+    coefT_values=getValuesFromFiles(coefT);
+
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
     try
@@ -1240,6 +1261,10 @@ void MainWindow::on_pushButton_configure_clicked()
             setCoincidenceModeWindowTime();
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            usleep(5000);
+//            for(int pmt = 0; pmt < PMTs; pmt++){
+//                ignore=setTime(head.toStdString(), coefT_values[pmt] + coefTInter_values[head.toInt()], QString::number(pmt+1).toStdString());
+//            }
             break;
         case COIN_AUTOCOINCIDENCE:
             if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
@@ -1266,12 +1291,13 @@ void MainWindow::on_pushButton_configure_clicked()
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
             usleep(5000);
-            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString()); }
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString());}
             break;
         case COIN_VERIF:
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt] + coefTInter_values[head.toInt()], QString::number(pmt+1).toStdString());  }
             break;
         case COIN_INTER_CABEZAL:
             if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
@@ -1281,7 +1307,6 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-            coefT_values=getValuesFromFiles(coefT);
             for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
             break;
         default:
@@ -2991,20 +3016,6 @@ bool MainWindow::resetPMTs(bool centroide)
         try
         {
             /*if (centroide)*/ setHV(QString::number(checkedHeads.at(0)).toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-//            for(int pmt = 0; pmt < PMTs; pmt++)
-//            {
-//                QString hv=QString::number(hvtable_values[pmt]);
-//                QString q_msg = setHV(QString::number(checkedHeads.at(0)).toStdString() ,hv.toStdString(), QString::number(pmt+1).toStdString());
-//                if(debug)
-//                {
-//                    cout<<"========================================="<<endl;
-//                    cout<<"PMT: "<< QString::number(pmt+1).toStdString() <<endl;
-//                    showMCAEStreamDebugMode(q_msg.toStdString());
-//                    cout<<"Valor de HV: "<< hv.toStdString() <<endl;
-//                    cout<<"========================================="<<endl;
-
-//                }
-//            }
         }
         catch( Exceptions & ex )
         {
@@ -3016,121 +3027,6 @@ bool MainWindow::resetPMTs(bool centroide)
 
     return status;
 }
-/**
- * @brief MainWindow::on_pushButton_adqu1irir_toggled
- * @param checked
- */
-/*void MainWindow::on_pushButton_ad1quirir_toggled(bool checked)
- *
-{
-    bool centroide = ui->checkBox_centroid->isChecked();
-    if(checked)
-    {
-        if(!arpet->isPortOpen())
-        {
-            writeFooterAndHeaderDebug(true);
-            setButtonAdquireState(false);
-            setIsAbortMCAEFlag(false);
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-            if(debug)
-            {
-                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-                writeFooterAndHeaderDebug(false);
-            }
-            setButtonAdquireState(true, true);
-            emit ToPushButtonAdquirir(false);
-            return;
-        }
-
-        QList<int> checkedHeads=getCheckedHeads();
-        mcae_wr->setCheckedHeads(checkedHeads);
-
-        switch (adquire_mode)
-        {
-        case PMT:
-            if (pmt_selected_list.isEmpty())
-            {
-                writeFooterAndHeaderDebug(true);
-                setButtonAdquireState(false);
-                setIsAbortMCAEFlag(false);
-                if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
-                QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
-                emit ToPushButtonAdquirir(false);
-                setButtonAdquireState(true, true);
-                writeFooterAndHeaderDebug(false);
-                return;
-            }
-            ui->specPMTs->clearGraphs();
-            if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-            {
-                setButtonAdquireState(true);
-                mcae_wr->setPMTSelectedList(pmt_selected_list);
-                mcae_wr->setDebugMode(debug);
-                mcae_wr->setModeBool(true);
-                mcae_wr->setCentroidMode(centroide);
-                mcae_wr->abort();
-                mcae_th->wait();
-                mcae_wr->requestMCA();
-            }
-            else
-            {
-                writeFooterAndHeaderDebug(true);
-                setIsAbortMCAEFlag(false);
-                QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-                writeFooterAndHeaderDebug(false);
-                emit ToPushButtonAdquirir(false);
-                return;
-            }
-            break;
-        case CABEZAL:
-            ui->specHead->clearGraphs();
-            setButtonAdquireState(true);
-            mcae_wr->setDebugMode(debug);
-            mcae_wr->setModeBool(false);
-            mcae_wr->abort();
-            mcae_th->wait();
-            mcae_wr->requestMCA();
-            break;
-        case TEMPERATURE:
-            if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-            {
-                drawTemperatureBoard();
-            }
-            else
-            {
-                writeFooterAndHeaderDebug(true);
-                QMessageBox::critical(this,tr("Atención"),tr("Esta función se encuentra habilitada solo para un cabezal seleccionado"));
-                writeFooterAndHeaderDebug(false);
-                emit ToPushButtonAdquirir(false);
-                return;
-            }
-            emit ToPushButtonAdquirir(false);
-            break;
-        default:
-            break;
-        }
-    }
-    else
-    {
-        switch (adquire_mode)
-        {
-        case PMT...CABEZAL:
-            setButtonAdquireState(true,true);
-            if (is_abort_mcae)
-            {
-                if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<mcae_th->currentThreadId()<<endl;
-                emit sendAbortMCAECommand(true);
-            }
-            setIsAbortMCAEFlag(true);
-            break;
-        case TEMPERATURE:
-            break;
-        default:
-            break;
-        }
-    }
-}
-*/
 
 /**
  * @brief MainWindow::on_pushButton_reset_clicked
@@ -4234,7 +4130,14 @@ void MainWindow::on_pushButton_send_terminal_clicked()
     size_t bytes=0;
     string msg;
     string end_stream=arpet->getEnd_MCA();
+    QString Cabezal=ui->comboBox_head_select_terminal->currentText();
 
+    port_name=Cab+Cabezal;
+
+    arpet->portDisconnect();
+
+
+    arpet->portConnect(port_name.toStdString().c_str());
     if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
 
     try
@@ -4251,6 +4154,9 @@ void MainWindow::on_pushButton_send_terminal_clicked()
     QString q_bytes=QString::number(bytes);
     ui->label_size_terminal->setText(q_bytes);
     ui->label_received_terminal->setText(q_msg);
+
+
+    arpet->portDisconnect();
 }
 /**
  * @brief MainWindow::on_pushButton_flush_terminal_clicked
@@ -4694,8 +4600,8 @@ void MainWindow::mouseWheelPMT()
  */
 void MainWindow::mouseWheelHead()
 {
-    if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        ui->specHead->axisRect()->setRangeZoom(ui->specHead->xAxis->orientation());
+    if (ui->specHead->xAxis->selectedParts().testFlag(QCPAxis::spAxis));
+        //ui->specHead->axisRect()->setRangeZoom(ui->specHead->xAxis->orientation());
     else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
         ui->specHead->axisRect()->setRangeZoom(ui->specHead->yAxis->orientation());
     else
@@ -4874,22 +4780,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
 
         setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
-        // Recupero el canal objetivo
-/*        QString Canal_obj = ui->Canal_objetivo->text();
-        if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
-        {
-            messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
-            messageBox.setFixedSize(500,200);
-            setButtonCalibState(false);
-            setIsAbortCalibFlag(false);
-            setButtonCalibState(true,true);
-            emit ToPushButtonCalib(false);
-            return;
-        }
-        calibrador->setCanal_Obj(Canal_obj.toInt());
-
-        cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;*/
-
         // Recupero el tiempo de adquisicion
         QString Tiempo_adq = ui->Tiempo_adq_box->text();
         if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
@@ -4903,27 +4793,6 @@ void MainWindow::on_pushButton_toggled(bool checked)
             return;
         }
         calibrador->setTiempo_adq(Tiempo_adq.toInt());
-
-        // Recupero los cabezales
-//        for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
-//        {
-//            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
-
-//            if(q->checkState() == Qt::Checked)
-//            {
-//                checked_Cab.append(i+1);
-//            }
-//        }
-//        if(checked_Cab == null)
-//        {
-//            messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
-//            messageBox.setFixedSize(500,200);
-//            setButtonCalibState(false);
-//            setIsAbortCalibFlag(false);
-//            setButtonCalibState(true,true);
-//            emit ToPushButtonCalib(false);
-//            return;
-//        }
         checked_Cab[0]=ui->comboBox_head_select_graph_2->currentIndex()+1;
         calibrador->setCab_List(checked_Cab);
 
@@ -4957,116 +4826,6 @@ void MainWindow::OffButtonCalib()
 {
     setButtonCalibState(true,true);
 }
-
-/**
- * @brief MainWindow::on_pushButton_clicked
- */
-//void MainWindow::on_pushButton_clicked()
-//{
-//    mMutex.lock();
-//    QList<int> checked_PMTs, checked_Cab;
-//    QMessageBox messageBox;
-
-//    cout<<"Autocalibrando"<<endl;
-
-//    if (ui->checkBox_Cab_Completo->isChecked())
-//    {
-//        for(int i = 0;  i< PMTs ; i++ )
-//        {
-//            checked_PMTs.append(i+1);
-//        }
-//    }
-//    else
-//    {
-//        // Recupero los PMT checkeados
-//        for(int i = 0;  i< PMTs ; i++ )
-//        {
-//            if (pmt_button_table[i]->isChecked())
-//            {
-//                checked_PMTs.append(i+1);
-//            }
-//        }
-//        if(checked_PMTs.length() == 0)
-//        {
-//            messageBox.critical(0,"Error","No se ha seleccionado ningún PMT.");
-//            messageBox.setFixedSize(500,200);
-//            mMutex.unlock();
-//            return;
-//        }
-//        calibrador->setPMT_List(checked_PMTs);
-//    }
-
-
-
-//    // Recupero el canal objetivo
-//    QString Canal_obj = ui->Canal_objetivo->text();
-//    if(Canal_obj.toFloat() < 50 || Canal_obj.toFloat() > 250)
-//    {
-//        messageBox.critical(0,"Error","Canal fuera de los limites fijados.");
-//        messageBox.setFixedSize(500,200);
-//        mMutex.unlock();
-//        return;
-//    }
-//    calibrador->setCanal_Obj(Canal_obj.toInt());
-
-//    cout<<"Canal objetivo : "<<Canal_obj.toStdString()<<endl;
-
-//    // Recupero el tiempo de adquisicion
-//    QString Tiempo_adq = ui->Tiempo_adq_box->text();
-//    if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
-//    {
-//        messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
-//        messageBox.setFixedSize(500,200);
-//        mMutex.unlock();
-//        return;
-//    }
-//    calibrador->setTiempo_adq(Tiempo_adq.toInt());
-
-
-
-//    // Recupero los cabezales
-//    for(int i = 0; i < ui->frame_multihead_graph_2->children().size(); i++)
-//    {
-//        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_graph_2->children().at(i));
-
-//        if(q->checkState() == Qt::Checked)
-//        {
-//            checked_Cab.append(i+1);
-//        }
-//    }
-//    if(checked_Cab.length() == 0)
-//    {
-//        messageBox.critical(0,"Error","No se ha seleccionado ningún cabezal.");
-//        messageBox.setFixedSize(500,200);
-//        mMutex.unlock();
-//        return;
-//    }
-//    calibrador->setCab_List(checked_Cab);
-
-//    // Debug
-//    //for(int i=0; i<checked_PMTs.length();i++) { cout<<checked_PMTs[i]<<endl; }
-//    //cout<<"Canal Objetivo:"<<Canal_obj.toStdString()<<endl;
-
-//    /*
-//    double canales_locos[1024] = {0,0,0,0,35,21,7,9,20,24,20,18,18,20,29,38,478,445,426,393,434,555,683,667,713,690,744,738,736,690,731,656,698,656,656,613,640,656,643,649,653,701,747,711,791,824,803,923,830,900,881,880,868,973,926,976,1037,962,1077,997,980,1041,973,1053,992,976,973,879,974,927,974,971,940,949,972,918,977,944,939,906,921,902,935,906,831,836,765,741,632,548,578,468,447,399,362,350,311,228,231,203,186,190,140,138,143,108,119,116,114,108,116,119,106,122,83,115,88,104,96,108,91,93,88,94,96,107,96,99,106,96,83,89,104,93,81,85,87,91,95,97,101,75,105,84,101,98,91,104,87,105,105,102,90,98,112,97,110,100,114,125,123,123,115,128,115,117,131,129,127,122,134,125,153,121,137,141,139,142,127,155,136,143,150,153,138,137,146,152,113,131,135,157,131,135,120,129,123,143,118,113,116,115,103,122,106,123,104,98,112,115,139,102,128,98,95,102,113,95,103,106,103,83,91,90,92,122,88,109,109,109,99,124,131,104,117,107,98,119,127,129,101,114,117,119,129,116,100,103,81,108,103,90,91,94,93,68,78,75,73,67,63,59,65,55,51,36,44,57,40,27,39,33,41,28,24,22,16,19,18,20,20,15,21,12,17,10,12,7,17,12,9,20,14,14,8,12,14,5,7,15,13,5,6,6,6,6,1,9,6,7,4,9,5,8,7,6,4,4,4,3,4,2,6,1,5,8,5,6,6,3,6,6,1,3,7,5,3,3,5,4,2,0,4,4,4,1,6,3,2,1,0,4,4,4,1,5,1,6,3,1,3,1,1,2,4,2,1,2,1,1,3,0,2,2,4,0,0,3,1,2,1,1,0,3,1,2,0,1,1,3,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,2,1,0,0,0,0,0,0,0,1,0,0,3,2,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//    double lala = calibrador->Buscar_Pico(canales_locos, 1024);
-//    cout<<lala<<endl;
-//*/
-
-
-//    // Cierro el serie de arpet
-//    //cout<<"Soltando puerto serie de arpet..."<<endl;
-//    arpet->portDisconnect();
-
-//    // Calibro
-//    //cout<<"Calibrador..."<<endl;
-//    calibrador->calibrar_simple(ui->specPMTs_2);
-
-//    // Devuelvo serial a arpet
-//    //cout<<"Devolviendo puerto serie de arpet..."<<endl;
-//    arpet->portConnect(port_name.toStdString().c_str());
-//    mMutex.unlock();
-//}
 
 
 /* Calibracion Fina */
@@ -6286,6 +6045,7 @@ void MainWindow::on_RATECAB6_clicked()
 void MainWindow::on_pushButton_adquirir_clicked()
 {
   bool centroide = ui->checkBox_centroid->isChecked();
+  bool espectro_calib = ui->checkBox_espectro_calibrado->isChecked();
 
   QList<int> checkedHeads;
 
@@ -6339,25 +6099,14 @@ void MainWindow::on_pushButton_adquirir_clicked()
 
               ui->specHead->clearGraphs();
               //setButtonAdquireState(true);
-
-              if(debug) cout<<"Pasa  ui->specHead->clearGraphs();"<<endl;
-
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(false);
-              if(debug) cout<<"Pasa mcae_wr->setModeBool(false); "<<endl;
-
+              //double lala = calibrador->Buscar_Pico(, 256);
+              mcae_wr->setModeCabCalib(espectro_calib);
               mcae_wr->abort();
-              if(debug) cout<<"Pasa  mcae_wr->abort();"<<endl;
-
               mcae_th->wait();
-              if(debug) cout<<"pasa  mcae_th->wait();"<<endl;
-
               mcae_wr->requestMCA();
-
-
               setIsAbortMCAEFlag(true);
-
-              if(debug) cout<<"Pasa  requestMCA"<<endl;
 
               break;
           case TEMPERATURE:
@@ -6859,13 +6608,15 @@ void MainWindow::on_tabWidget_mca_currentChanged(int index)
     if (index==1){
         ui->comboBox_head_select_graph->hide();
         ui->frame_multihead_graph->show();
+        ui->checkBox_espectro_calibrado->show();
     }else if (index==0){
         setAdquireMode(PMT);
-
+        ui->checkBox_espectro_calibrado->hide();
         ui->comboBox_head_select_graph->show();
         ui->frame_multihead_graph->hide();
     }else{
         ui->comboBox_head_select_graph->show();
+        ui->checkBox_espectro_calibrado->hide();
         ui->frame_multihead_graph->hide();
     }
 }

@@ -139,12 +139,14 @@ private slots:
     void writeTempToLog(int index, double min, double med, double max);
     void writeOffSetToLog(int index,int *offsets);
     void recievedPicosLog(struct Pico_espectro Pico ,int index);
+    void recievedPicosMCA(struct Pico_espectro Pico ,int index);
     void getLogErrorThread();
     void getCalibErrorThread();
     void getMCAErrorThread();
     void receivedElapsedTimeString(QString etime_string);
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
     void receivedValuesMCACalib(int umbral, int pico, int FWHM);
     void clearSpecPMTsGraphs();

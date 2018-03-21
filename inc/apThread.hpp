@@ -52,6 +52,7 @@ namespace ap {
       bool _mode;
       bool _mca;
       bool _centroid;
+      bool _CabCalib;
       QMutex* mutex;
       QString port_name;
       bool temp;
@@ -162,6 +163,13 @@ namespace ap {
       void sendPicosLog(struct Pico_espectro Pico,int index);
 
       /**
+       * @brief sendPicosMCA
+       * @param Pico
+       * @param index
+       */
+      void sendPicosMCA(struct Pico_espectro Pico,int index);
+
+      /**
        * @brief sendValuesMCA
        * @param time
        * @param hv_pmt
@@ -185,6 +193,7 @@ namespace ap {
       void getLogWork();
       void setAbortBool(bool abort);
       void setModeBool(bool mode) { _mode = mode; }
+      void setModeCabCalib(bool cabcalib) {_CabCalib=cabcalib;}
       void setCentroidMode(bool mode) { _centroid = mode; }
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }

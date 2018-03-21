@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -2375,7 +2375,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -3549,11 +3549,14 @@ calibrar</string>
       </widget>
      </widget>
      <widget class="QComboBox" name="comboBox_adquire_mode">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>740</x>
         <y>10</y>
-        <width>160</width>
+        <width>71</width>
         <height>29</height>
        </rect>
       </property>
@@ -3660,6 +3663,9 @@ calibrar</string>
       </property>
       <property name="currentIndex">
        <number>1</number>
+      </property>
+      <property name="minimumContentsLength">
+       <number>0</number>
       </property>
       <item>
        <property name="text">
@@ -3882,6 +3888,19 @@ calibrar</string>
       </property>
       <property name="text">
        <string>Reiniciar</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_espectro_calibrado">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>10</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PMT 49</string>
       </property>
      </widget>
     </widget>
