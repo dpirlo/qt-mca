@@ -171,6 +171,7 @@ void MainWindow::setInitialConfigurations()
     arpet->resetHitsMCA();
     setHitsInit(true);
     setAdquireMode(CABEZAL);
+    Estado_Cabezales.reserve(6);
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -1185,9 +1186,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
         setButtonConnectState(true);
         arpet->portDisconnect();
 
-        ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-        ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-        ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+
         if(debug) cout<<"Puerto serie desconectado"<<endl;
     }
     else {
@@ -1204,9 +1203,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             writeFooterAndHeaderDebug(false);
             getARPETStatus();
             //getHeadStatus(getHead("config").toInt());
-            ui->tabWidget_general->setTabEnabled(Tab1,true); // Muestro pestaña MCA
-            ui->tabWidget_general->setTabEnabled(Tab4,true); // Muestro pestaña Autocalib
-            ui->tabWidget_general->setTabEnabled(Tab9,true); // Muestro pestaña Terminal
+
 
         }
         catch(boost::system::system_error e)
@@ -1244,9 +1241,7 @@ void MainWindow::on_pushButton_configure_clicked()
     QString head;
     QString ignore;
 
-    coefTInter_values=getValuesFromFiles(coefTInter);
-    coefest_values=getValuesFromFiles(coefest);
-    coefT_values=getValuesFromFiles(coefT);
+
 
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
@@ -1262,9 +1257,7 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-//            for(int pmt = 0; pmt < PMTs; pmt++){
-//                ignore=setTime(head.toStdString(), coefT_values[pmt] + coefTInter_values[head.toInt()], QString::number(pmt+1).toStdString());
-//            }
+            setTimeModeCoin(COIN_NORMAL);
             break;
         case COIN_AUTOCOINCIDENCE:
             if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
@@ -1273,31 +1266,32 @@ void MainWindow::on_pushButton_configure_clicked()
             setCoincidenceModeWindowTime();
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
+            usleep(5000);
+            setTimeModeCoin(COIN_AUTOCOINCIDENCE);
             break;
         case COIN_AVANCED:
-            if(debug)
-            {
-                cout<<"Modo Coincidencia: Avanzado"<<endl;
-                cout<<"Trama utilizada para la configuración avanzada: "<<getCoincidenceAdvanceModeDataStream()<<endl;
-            }
+            if(debug) cout<<"Modo Coincidencia: Avanzado"<<endl;
             initCoincidenceMode();
             usleep(5000);
             setCoincidenceModeWindowTime();
             usleep(5000);
             setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
+            usleep(5000);
+            setTimeModeCoin(COIN_AVANCED);
             break;
         case COIN_CALIB:
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
             usleep(5000);
-            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString());}
+            setTimeModeCoin(COIN_CALIB, head);
             break;
         case COIN_VERIF:
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
+
             setCalibrationMode(head);
-            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt] + coefTInter_values[head.toInt()], QString::number(pmt+1).toStdString());  }
+            setTimeModeCoin(COIN_VERIF, head);
             break;
         case COIN_INTER_CABEZAL:
             if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
@@ -1307,7 +1301,7 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
+            setTimeModeCoin(COIN_INTER_CABEZAL);
             break;
         default:
             break;
@@ -1321,6 +1315,82 @@ void MainWindow::on_pushButton_configure_clicked()
     }
     writeFooterAndHeaderDebug(false);
 }
+
+
+void MainWindow::setTimeModeCoin(int modo, QString head){
+    coefTInter_values=getValuesFromFiles(coefTInter);
+    coefest_values=getValuesFromFiles(coefest);
+    coefT_values=getValuesFromFiles(coefT);
+    arpet->portDisconnect();
+    QString ignore;
+    QString Cabezal;
+    try{
+        switch (modo) {
+        case COIN_NORMAL:
+            for ( int i = 0; i < Estado_Cabezales.length(); i++ )
+            {
+                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                arpet->portConnect(port_name.toStdString().c_str());
+                for(int pmt = 0; pmt < PMTs; pmt++){
+                    Cabezal=QString::number(Estado_Cabezales.at(i));
+                    ignore=setTime(Cabezal.toStdString(), coefT_values[pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());
+                }
+                arpet->portDisconnect();
+            }
+            break;
+        case COIN_AUTOCOINCIDENCE:
+            for ( int i = 0; i < Estado_Cabezales.length(); i++ )
+            {
+                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                arpet->portConnect(port_name.toStdString().c_str());
+                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), coefT_values[pmt] , QString::number(pmt+1).toStdString());  }
+                arpet->portDisconnect();
+            }
+            break;
+        case COIN_AVANCED:
+            for ( int i = 0; i < Estado_Cabezales.length(); i++ )
+            {
+                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                arpet->portConnect(port_name.toStdString().c_str());
+                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), coefT_values[pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());  }
+                arpet->portDisconnect();
+            }
+            break;
+        case COIN_CALIB:
+            port_name=Cab+QString::number(head.toInt());
+            arpet->portConnect(port_name.toStdString().c_str());
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(),TIEMPOS_NULOS_PMTS, QString::number(pmt+1).toStdString());}
+            arpet->portDisconnect();
+            break;
+        case COIN_VERIF:
+            port_name=Cab+QString::number(head.toInt());
+            arpet->portConnect(port_name.toStdString().c_str());
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt] , QString::number(pmt+1).toStdString());  }
+            arpet->portDisconnect();
+            break;
+        case COIN_INTER_CABEZAL:
+            for ( int i = 0; i < Estado_Cabezales.length(); i++ )
+            {
+                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                arpet->portConnect(port_name.toStdString().c_str());
+                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
+                arpet->portDisconnect();
+            }
+            break;
+
+        default:
+            break;
+        }
+
+    }
+
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
+        setLabelState(false,ui->label_coincidencia_estado);
+    }
+}
+
 /**
  * @brief MainWindow::on_pushButton_initialize_clicked
  */
@@ -1776,8 +1846,11 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
 {
     setMCAEDataStream(arpet->getSelect_Mode_Coin(),stream,"",false);
     string msg_ans;
+    arpet->portDisconnect();
+
     try
     {
+        arpet->portConnect("/dev/UART_Coin");
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg_ans = readString();
     }
@@ -1806,13 +1879,14 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
 void MainWindow::initCoincidenceMode()
 {
     arpet->portDisconnect();
+    //QList<int> checkedHeads= getCheckedHeads();
 
     /* Inicializo nuevamente todos los cabezales */
-    for ( int i = 0; i < HEADS; i++ )
+    for ( int i = 0; i < Estado_Cabezales.length(); i++ )
     {
-        port_name=Cab+QString::number(i+1);
+        port_name=Cab+QString::number(Estado_Cabezales.at(i));
         arpet->portConnect(port_name.toStdString().c_str());
-        initHead(i+1);
+        initHead(Estado_Cabezales.at(i));
         arpet->portDisconnect();
 
     }
@@ -1917,9 +1991,12 @@ void MainWindow::setCoincidenceModeWindowTime()
     string vp=ui->lineEdit_WP->text().toStdString();
     setMCAEDataStream(arpet->getWindow_Time_Coin(),vn,vp,true);
     string msg_ans;
+    arpet->portDisconnect();
+
 
     try
     {
+        arpet->portConnect("/dev/UART_Coin");
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg_ans = readString();
         QString q_label_text="<span style='font-weight:600; color: blue'>"+QString::fromStdString("[" + vn + "," + vp + "]" )+"<br></span>";
@@ -3662,11 +3739,11 @@ void MainWindow::setButtonState(bool state, QPushButton * button, bool disable)
 
     if (state && !disable)
     {
-        color="background-color: green";
+        color="background-color: #2196F3";
     }
     else if (!state && !disable)
     {
-        color="background-color: red";
+        color="background-color: #EF5350";
     }
     else
     {
@@ -4132,7 +4209,11 @@ void MainWindow::on_pushButton_send_terminal_clicked()
     string end_stream=arpet->getEnd_MCA();
     QString Cabezal=ui->comboBox_head_select_terminal->currentText();
 
-    port_name=Cab+Cabezal;
+    if (Cabezal == "Coin")
+    {
+        port_name="/dev/UART_Coin";
+    }else
+        port_name=Cab+Cabezal;
 
     arpet->portDisconnect();
 
@@ -4593,7 +4674,7 @@ void MainWindow::mouseWheelPMT()
     else if (ui->specPMTs->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
         ui->specPMTs->axisRect()->setRangeZoom(ui->specPMTs->yAxis->orientation());
     else
-        ui->specPMTs->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+        ui->specPMTs->axisRect()->setRangeZoom(/*Qt::Horizontal|*/Qt::Vertical);
 }
 /**
  * @brief MainWindow::mouseWheelHead
@@ -4605,7 +4686,7 @@ void MainWindow::mouseWheelHead()
     else if (ui->specHead->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
         ui->specHead->axisRect()->setRangeZoom(ui->specHead->yAxis->orientation());
     else
-        ui->specHead->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+        ui->specHead->axisRect()->setRangeZoom(/*Qt::Horizontal|*/Qt::Vertical);
 }
 /**
  * @brief MainWindow::removeSelectedGraphPMT
@@ -6451,11 +6532,6 @@ void MainWindow::on_comboBox_port_currentIndexChanged(int index)
         }
     }
 
-
-//    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
-//    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
-//    ui->comboBox_head_select_config->blockSignals(oldState);
-
 }
 
 /**
@@ -6467,6 +6543,8 @@ void MainWindow::updateCaption(){
     QDir dir("/dev/");
     QString numerocabezal;
     QStringList filters;
+    static int inicio=1;
+    static QVector<int> Estado_Aux_Cabezales;
     QRegExp  RegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
     filters << "UART*";
     dir.setNameFilters(filters);
@@ -6480,12 +6558,36 @@ void MainWindow::updateCaption(){
     ui->checkBox_c_5->setEnabled(false);
     ui->checkBox_c_6->setEnabled(false);
 
+
     ui->checkBox_mca_1->setEnabled(false);
     ui->checkBox_mca_2->setEnabled(false);
     ui->checkBox_mca_3->setEnabled(false);
     ui->checkBox_mca_4->setEnabled(false);
     ui->checkBox_mca_5->setEnabled(false);
     ui->checkBox_mca_6->setEnabled(false);
+//    setButtonState(true,ui->pushButton_Encendido_1,true);
+//    setButtonState(true,ui->pushButton_Encendido_2,true);
+//    setButtonState(true,ui->pushButton_Encendido_3,true);
+//    setButtonState(true,ui->pushButton_Encendido_4,true);
+//    setButtonState(true,ui->pushButton_Encendido_5,true);
+//    setButtonState(true,ui->pushButton_Encendido_6,true);
+
+    Estado_Aux_Cabezales.clear();
+    for (int i=0;i<list.length();i++){
+        RegExp.indexIn(list.at(i).absoluteFilePath());
+        numerocabezal=RegExp.capturedTexts().at(0);
+
+        if( numerocabezal!="" ){
+            Estado_Aux_Cabezales.push_back(numerocabezal.toInt());
+        }
+        //if (Estado_Cabezales!=Estado_Aux_Cabezales)
+
+
+
+
+    }
+    Estado_Cabezales=Estado_Aux_Cabezales;
+
 
 
     for (int i=0;i<list.length();i++){
@@ -6497,27 +6599,38 @@ void MainWindow::updateCaption(){
         case 1:
             ui->checkBox_c_1->setEnabled(true);
             ui->checkBox_mca_1->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_1,false);
 
             break;
         case 2:
             ui->checkBox_c_2->setEnabled(true);
             ui->checkBox_mca_2->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_2,false);
+
             break;
         case 3:
             ui->checkBox_c_3->setEnabled(true);
             ui->checkBox_mca_3->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_3,false);
+
             break;
         case 4:
             ui->checkBox_c_4->setEnabled(true);
             ui->checkBox_mca_4->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_4,false);
+
             break;
         case 5:
             ui->checkBox_c_5->setEnabled(true);
             ui->checkBox_mca_5->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_5,false);
+
             break;
         case 6:
             ui->checkBox_c_6->setEnabled(true);
             ui->checkBox_mca_6->setEnabled(true);
+            setButtonState(true,ui->pushButton_Encendido_6,false);
+
             break;
         default:
             break;

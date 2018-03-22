@@ -408,6 +408,8 @@ private:
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
     void LoadHVPMT(int head);
+    void setTimeModeCoin(int mode,QString head="");
+
     int  ogl_flag;
 
     /* Area de prueba/testing */
@@ -454,6 +456,7 @@ private:
     bool init;
     bool log;
     bool stdout_mode;
+    QVector<int> Estado_Cabezales;
     QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest, logTemp, logRate,root_log;
     QVector<double> coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
     QVector< QVector<double> > hvtable_values;
