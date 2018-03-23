@@ -89,7 +89,11 @@ MCAE::MCAE(size_t timeout)
       SetHVMCA_MCA("67"),
       Temp_MCA("74000"),
       Set_Time_MCA("80"),
-      Rate_MCA("0060")
+      Rate_MCA("0060"),
+
+      /* ENCABEZADO DE ENCENDIDO Y APAGADO DE CABEZALES*/
+      Cab_On_Off("#C701090009$CAB")
+
 {
     /* Testing */
 }
@@ -402,7 +406,7 @@ size_t MCAE::sendString(string msg, string end, string port_name)
 {
     portFlush();
     size_t bytes_transfered = 0;
-
+    cout<<msg<<endl;
     try{
         string sended= msg + end;
         bytes_transfered = portWrite(&sended, port_name.c_str());

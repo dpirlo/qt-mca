@@ -201,7 +201,7 @@ namespace ap {
     string AnsMultiInit, AnsHeadInit;
     string AnsEnergy_Calib_Table, AnsX_Calib_Table, AnsY_Calib_Table, AnsWindow_Limits_Table;
     string AP_ON, AP_OFF, AP_STATUS;
-    string AnsAP_ON, AnsAP_OFF;
+    string AnsAP_ON, AnsAP_OFF,Cab_On_Off;
     size_t timeout;
     /** @todo: Verificar esta propiedad si no es _deprecated_*/
     char * data;
@@ -576,6 +576,10 @@ namespace ap {
          * @brief resetHitsMCA
          */
     void resetHitsMCA() { hits_mca.clear(); }
+
+    string getInit_on_off() const { return Cab_On_Off; }
+
+
   };
 
 }

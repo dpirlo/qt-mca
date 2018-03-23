@@ -437,3 +437,6 @@ void Thread::getMCA()
     arpet->portDisconnect();
     emit finished();
 }
+
+//void Thread::get()
+

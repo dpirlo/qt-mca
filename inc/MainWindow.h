@@ -327,6 +327,20 @@ private slots:
 
     void on_tabWidget_mca_currentChanged(int index);
 
+    void on_pushButton_Encendido_1_toggled(bool checked);
+
+    void on_pushButton_Encendido_2_toggled(bool checked);
+
+    void on_pushButton_Encendido_3_toggled(bool checked);
+
+    void on_pushButton_Encendido_4_toggled(bool checked);
+
+    void on_pushButton_Encendido_5_toggled(bool checked);
+
+    void on_pushButton_Encendido_6_toggled(bool checked);
+
+    void on_pushButton_On_Off_Cabs_toggled(bool checked);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -409,6 +423,8 @@ private:
     void showMCAEStreamDebugMode(string msg);
     void LoadHVPMT(int head);
     void setTimeModeCoin(int mode,QString head="");
+    void Cabezal_On_Off(int Cabezal, bool estado);
+    void Cabezales_On_Off(bool estado);
 
     int  ogl_flag;
 

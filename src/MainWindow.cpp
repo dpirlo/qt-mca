@@ -972,33 +972,33 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
-    writeFooterAndHeaderDebug(true);
-    string msg;
-    try
-    {
-        sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
-        msg = readString();
-        if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
-        {
-            setButtonState(true,ui->pushButton_arpet_on);
-            setButtonState(true,ui->pushButton_arpet_off, true);
-        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
-        {
-            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-        }
-    }
-    catch(Exceptions & ex)
-    {
-        if(debug)
-        {
-            cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-            writeFooterAndHeaderDebug(false);
-            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
-            ui->label_power_management->setText("Error de conexión");
-        }
-    }
-    writeFooterAndHeaderDebug(false);
+//    writeFooterAndHeaderDebug(true);         // OBSOLETO PROXIMAMENTE BORRADO
+//    string msg;
+//    try
+//    {
+//        sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
+//        msg = readString();
+//        if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
+//        {
+//            setButtonState(true,ui->pushButton_arpet_on);
+//            setButtonState(true,ui->pushButton_arpet_off, true);
+//        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
+//        {
+//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
+//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
+//        }
+//    }
+//    catch(Exceptions & ex)
+//    {
+//        if(debug)
+//        {
+//            cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
+//            writeFooterAndHeaderDebug(false);
+//            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
+//            ui->label_power_management->setText("Error de conexión");
+//        }
+//    }
+//    writeFooterAndHeaderDebug(false);
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -1201,7 +1201,7 @@ void MainWindow::on_pushButton_init_configure_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             //getHeadStatus(getHead("config").toInt());
 
 
@@ -1417,7 +1417,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         case 2:
             writeFooterAndHeaderDebug(true);
@@ -1428,7 +1428,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         case 3:
             writeFooterAndHeaderDebug(true);
@@ -1439,7 +1439,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         case 4:
             writeFooterAndHeaderDebug(true);
@@ -1450,7 +1450,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         case 5:
             writeFooterAndHeaderDebug(true);
@@ -1461,7 +1461,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         case 6:
             writeFooterAndHeaderDebug(true);
@@ -1472,7 +1472,7 @@ void MainWindow::on_pushButton_initialize_clicked()
             if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
             setButtonConnectState(false);
             writeFooterAndHeaderDebug(false);
-            getARPETStatus();
+            //getARPETStatus();
             break;
         default:
             break;
@@ -6511,26 +6511,26 @@ bool MainWindow::fileExists(QString path) {
 
 void MainWindow::on_comboBox_port_currentIndexChanged(int index)
 {
-    QString nombrepuerto = ui->comboBox_port->currentText();
+//    QString nombrepuerto = ui->comboBox_port->currentText();
 
-    int portavailable;
-    writeFooterAndHeaderDebug(true);
-    setButtonConnectState(true);
-    arpet->portDisconnect();
+//    int portavailable;
+//    writeFooterAndHeaderDebug(true);
+//    setButtonConnectState(true);
+//    arpet->portDisconnect();
 
-    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-    writeFooterAndHeaderDebug(false);
+//    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
+//    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
+//    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
+//    writeFooterAndHeaderDebug(false);
 
-    if(debug) cout<<"Puerto serie desconectado"<<endl;
+//    if(debug) cout<<"Puerto serie desconectado"<<endl;
 
-    for (int i=1;i<=6;i++){
-        if (nombrepuerto.contains(QString::number(i))){
-        portavailable=i-1;
-        break;
-        }
-    }
+//    for (int i=1;i<=6;i++){
+//        if (nombrepuerto.contains(QString::number(i))){
+//        portavailable=i-1;
+//        break;
+//        }
+//    }
 
 }
 
@@ -6551,91 +6551,75 @@ void MainWindow::updateCaption(){
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
 
-    ui->checkBox_c_1->setEnabled(false);
-    ui->checkBox_c_2->setEnabled(false);
-    ui->checkBox_c_3->setEnabled(false);
-    ui->checkBox_c_4->setEnabled(false);
-    ui->checkBox_c_5->setEnabled(false);
-    ui->checkBox_c_6->setEnabled(false);
-
-
-    ui->checkBox_mca_1->setEnabled(false);
-    ui->checkBox_mca_2->setEnabled(false);
-    ui->checkBox_mca_3->setEnabled(false);
-    ui->checkBox_mca_4->setEnabled(false);
-    ui->checkBox_mca_5->setEnabled(false);
-    ui->checkBox_mca_6->setEnabled(false);
-//    setButtonState(true,ui->pushButton_Encendido_1,true);
-//    setButtonState(true,ui->pushButton_Encendido_2,true);
-//    setButtonState(true,ui->pushButton_Encendido_3,true);
-//    setButtonState(true,ui->pushButton_Encendido_4,true);
-//    setButtonState(true,ui->pushButton_Encendido_5,true);
-//    setButtonState(true,ui->pushButton_Encendido_6,true);
-
     Estado_Aux_Cabezales.clear();
     for (int i=0;i<list.length();i++){
         RegExp.indexIn(list.at(i).absoluteFilePath());
         numerocabezal=RegExp.capturedTexts().at(0);
-
         if( numerocabezal!="" ){
             Estado_Aux_Cabezales.push_back(numerocabezal.toInt());
         }
-        //if (Estado_Cabezales!=Estado_Aux_Cabezales)
-
-
-
-
     }
     Estado_Cabezales=Estado_Aux_Cabezales;
 
-
-
-    for (int i=0;i<list.length();i++){
-
-        RegExp.indexIn(list.at(i).absoluteFilePath());
-        numerocabezal=RegExp.capturedTexts().at(0);
-
-        switch (numerocabezal.toInt()) {
-        case 1:
-            ui->checkBox_c_1->setEnabled(true);
-            ui->checkBox_mca_1->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_1,false);
-
-            break;
-        case 2:
-            ui->checkBox_c_2->setEnabled(true);
-            ui->checkBox_mca_2->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_2,false);
-
-            break;
-        case 3:
-            ui->checkBox_c_3->setEnabled(true);
-            ui->checkBox_mca_3->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_3,false);
-
-            break;
-        case 4:
-            ui->checkBox_c_4->setEnabled(true);
-            ui->checkBox_mca_4->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_4,false);
-
-            break;
-        case 5:
-            ui->checkBox_c_5->setEnabled(true);
-            ui->checkBox_mca_5->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_5,false);
-
-            break;
-        case 6:
-            ui->checkBox_c_6->setEnabled(true);
-            ui->checkBox_mca_6->setEnabled(true);
-            setButtonState(true,ui->pushButton_Encendido_6,false);
-
-            break;
-        default:
-            break;
-        }
-
+    if (Estado_Cabezales.contains(1)){
+        ui->checkBox_c_1->setEnabled(true);
+        ui->checkBox_mca_1->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_1,false);
+    }else{
+        ui->checkBox_c_1->setEnabled(false);
+        ui->checkBox_mca_1->setEnabled(false);
+        ui->checkBox_c_1->setChecked(false);
+       // setButtonState(false,ui->pushButton_Encendido_1,false);
+    }
+    if (Estado_Cabezales.contains(2)){
+        ui->checkBox_c_2->setEnabled(true);
+        ui->checkBox_mca_2->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_2,false);
+    }else{
+        ui->checkBox_c_2->setEnabled(false);
+        ui->checkBox_mca_2->setEnabled(false);
+        ui->checkBox_c_2->setChecked(false);
+        //setButtonState(false,ui->pushButton_Encendido_2,false);
+    }
+    if (Estado_Cabezales.contains(3)){
+        ui->checkBox_c_3->setEnabled(true);
+        ui->checkBox_mca_3->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_3,false);
+    }else{
+        ui->checkBox_c_3->setEnabled(false);
+        ui->checkBox_mca_3->setEnabled(false);
+        ui->checkBox_c_3->setChecked(false);
+       // setButtonState(false,ui->pushButton_Encendido_3,false);
+    }
+    if (Estado_Cabezales.contains(4)){
+        ui->checkBox_c_4->setEnabled(true);
+        ui->checkBox_mca_4->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_4,false);
+    }else{
+        ui->checkBox_c_4->setEnabled(false);
+        ui->checkBox_mca_4->setEnabled(false);
+        ui->checkBox_c_4->setChecked(false);
+       // setButtonState(false,ui->pushButton_Encendido_4,false);
+    }
+    if (Estado_Cabezales.contains(5)){
+        ui->checkBox_c_5->setEnabled(true);
+        ui->checkBox_mca_5->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_5,false);
+    }else{
+        ui->checkBox_c_5->setEnabled(false);
+        ui->checkBox_mca_5->setEnabled(false);
+        ui->checkBox_c_5->setChecked(false);
+        //setButtonState(false,ui->pushButton_Encendido_5,false);
+    }
+    if (Estado_Cabezales.contains(6)){
+        ui->checkBox_c_6->setEnabled(true);
+        ui->checkBox_mca_6->setEnabled(true);
+        //setButtonState(true,ui->pushButton_Encendido_6,false);
+    }else{
+        ui->checkBox_c_6->setEnabled(false);
+        ui->checkBox_mca_6->setEnabled(false);
+        ui->checkBox_c_6->setChecked(false);
+        //setButtonState(false,ui->pushButton_Encendido_6,false);
     }
 }
 
@@ -6732,4 +6716,112 @@ void MainWindow::on_tabWidget_mca_currentChanged(int index)
         ui->checkBox_espectro_calibrado->hide();
         ui->frame_multihead_graph->hide();
     }
+}
+
+void MainWindow::on_pushButton_Encendido_1_toggled(bool checked)
+{
+    Cabezal_On_Off(1,checked);
+}
+
+void MainWindow::on_pushButton_Encendido_2_toggled(bool checked)
+{
+    Cabezal_On_Off(2,checked);
+}
+
+void MainWindow::on_pushButton_Encendido_3_toggled(bool checked)
+{
+    Cabezal_On_Off(3,checked);
+}
+
+void MainWindow::on_pushButton_Encendido_4_toggled(bool checked)
+{
+    Cabezal_On_Off(4,checked);
+}
+
+void MainWindow::on_pushButton_Encendido_5_toggled(bool checked)
+{
+    Cabezal_On_Off(5,checked);
+}
+
+void MainWindow::on_pushButton_Encendido_6_toggled(bool checked)
+{
+    Cabezal_On_Off(6,checked);
+}
+
+
+void MainWindow::Cabezal_On_Off(int Cabezal, bool estado){
+
+    QVector<string> Cabezales;
+    char checksum;
+    for (int i=0;i<6;i++){Cabezales.push_back("0");}
+    try{
+        arpet->portDisconnect();
+        port_name="/dev/UART_Coin";
+        arpet->portConnect(port_name.toStdString().c_str());
+        if (estado){
+            checksum=1;
+            //Estado_Cabezales.replace(0,1);
+            for (int i=1;i<=6;i++){
+                if (Estado_Cabezales.contains(i)){
+                    Cabezales.replace(i-1,"1");
+                    checksum++;
+                }
+            }
+            Cabezales.replace(Cabezal-1,"1");
+            checksum+=48+6;
+            sendString(arpet->getInit_on_off()
+                       +Cabezales.at(0)+Cabezales.at(1)+Cabezales.at(2)
+                       +Cabezales.at(3)+Cabezales.at(4)+Cabezales.at(5)+"0"+checksum,arpet->getEnd_MCA());
+        }
+        else{
+            checksum=0;
+            for (int i=1;i<=6;i++){
+                if (Estado_Cabezales.contains(i)){
+                    Cabezales.replace(i-1,"1");
+                    checksum++;
+                }
+            }
+            Cabezales.replace(Cabezal-1,"0");
+            checksum+=48+6-1;
+            sendString(arpet->getInit_on_off()
+                       +Cabezales.at(0)+Cabezales.at(1)+Cabezales.at(2)
+                       +Cabezales.at(3)+Cabezales.at(4)+Cabezales.at(5)+"0"+checksum,arpet->getEnd_MCA());
+        }
+        arpet->portDisconnect();
+    }
+
+    catch(Exceptions &ex){
+
+    }
+
+
+}
+
+void MainWindow::Cabezales_On_Off(bool estado){
+    try{
+        arpet->portDisconnect();
+        port_name="/dev/UART_Coin";
+        arpet->portConnect(port_name.toStdString().c_str());
+        if (estado){
+            sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
+            usleep(50000);
+            sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
+
+        }else{
+            sendString(arpet->getInit_on_off()+"00000006",arpet->getEnd_MCA());
+        }
+
+        arpet->portDisconnect();
+    }
+
+    catch(Exceptions &ex){
+
+    }
+}
+
+
+void MainWindow::on_pushButton_On_Off_Cabs_toggled(bool checked)
+{
+    Cabezales_On_Off(checked);
+
 }
