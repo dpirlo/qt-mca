@@ -46,6 +46,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
     timer->start(1000);
+    //parseConfigurationFile(true, "0");
+
+    for (int i=1;i<=6;i++){
+        loadCalibrationTables(QString::number(i));
+    }
+
 
 }
 /**
@@ -160,9 +166,9 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
 
-    bool oldState = ui->comboBox_port->blockSignals(true);
-    ui->comboBox_port->addItems(availablePortsName());
-    ui->comboBox_port->blockSignals(oldState);
+    //bool oldState = ui->comboBox_port->blockSignals(true);
+    //ui->comboBox_port->addItems(availablePortsName());
+    //ui->comboBox_port->blockSignals(oldState);
 
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
@@ -1227,21 +1233,8 @@ void MainWindow::on_pushButton_configure_clicked()
 {
     /* Inicialización del modo Coincidencia */
 
-//    if(!arpet->isPortOpen())
-//    {
-//        QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-//        if(debug)
-//        {
-//            cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-//            writeFooterAndHeaderDebug(false);
-//        }
-//        return;
-//    }
-
     QString head;
     QString ignore;
-
-
 
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
@@ -1318,9 +1311,7 @@ void MainWindow::on_pushButton_configure_clicked()
 
 
 void MainWindow::setTimeModeCoin(int modo, QString head){
-    coefTInter_values=getValuesFromFiles(coefTInter);
-    coefest_values=getValuesFromFiles(coefest);
-    coefT_values=getValuesFromFiles(coefT);
+
     arpet->portDisconnect();
     QString ignore;
     QString Cabezal;
@@ -1333,7 +1324,7 @@ void MainWindow::setTimeModeCoin(int modo, QString head){
                 arpet->portConnect(port_name.toStdString().c_str());
                 for(int pmt = 0; pmt < PMTs; pmt++){
                     Cabezal=QString::number(Estado_Cabezales.at(i));
-                    ignore=setTime(Cabezal.toStdString(), coefT_values[pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());
+                    ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());
                 }
                 arpet->portDisconnect();
             }
@@ -1352,7 +1343,7 @@ void MainWindow::setTimeModeCoin(int modo, QString head){
             {
                 port_name=Cab+QString::number(Estado_Cabezales.at(i));
                 arpet->portConnect(port_name.toStdString().c_str());
-                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), coefT_values[pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());  }
+                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());  }
                 arpet->portDisconnect();
             }
             break;
@@ -1365,7 +1356,7 @@ void MainWindow::setTimeModeCoin(int modo, QString head){
         case COIN_VERIF:
             port_name=Cab+QString::number(head.toInt());
             arpet->portConnect(port_name.toStdString().c_str());
-            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), coefT_values[pmt] , QString::number(pmt+1).toStdString());  }
+            for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(head.toStdString(), Matrix_coefT_values[head.toInt()-1][pmt] , QString::number(pmt+1).toStdString());  }
             arpet->portDisconnect();
             break;
         case COIN_INTER_CABEZAL:
@@ -1373,7 +1364,7 @@ void MainWindow::setTimeModeCoin(int modo, QString head){
             {
                 port_name=Cab+QString::number(Estado_Cabezales.at(i));
                 arpet->portConnect(port_name.toStdString().c_str());
-                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), coefT_values[pmt], QString::number(pmt+1).toStdString());  }
+                for(int pmt = 0; pmt < PMTs; pmt++){ ignore=setTime(QString::number(Estado_Cabezales.at(i)).toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt], QString::number(pmt+1).toStdString());  }
                 arpet->portDisconnect();
             }
             break;
@@ -2103,25 +2094,8 @@ string MainWindow::initSP3(int head)
  */
 void MainWindow::setCalibrationTables(int head) {
 
-    coefenerg_values=getValuesFromFiles(coefenerg);
-    QVector <double> Cabezal;
-    Cabezal.append(getValuesFromFiles(hvtable,true));
-    //hvtable_values.reserve(6);
-    if (hvtable_values.empty()){
-        for (int i=0;i<6;i++){
-            hvtable_values.push_back(Cabezal);
-        }
-    }
 
-    hvtable_values.replace(head-1,Cabezal);
-
-
-    cout<<"termina de cargar los valores en el vector"<<endl;
-    coefx_values=getValuesFromFiles(coefx);
-    coefy_values=getValuesFromFiles(coefy);
-    coefT_values=getValuesFromFiles(coefT);
-    coefTInter_values=getValuesFromFiles(coefTInter);
-    coefest_values=getValuesFromFiles(coefest);
+    loadCalibrationTables(QString::number(head));
 
     bool x_calib = true, y_calib = true, energy_calib = true, windows_limits = true, set_hv = true, set_time = true, lowlimit = true, set_time_INTER = true;
     QString q_msg;
@@ -2130,12 +2104,13 @@ void MainWindow::setCalibrationTables(int head) {
 
     try
     {
-        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getX_Calib_Table(), coefx_values, arpet->getAnsX_Calib_Table());
+        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getX_Calib_Table(), Matrix_coefx_values[head-1], arpet->getAnsX_Calib_Table());
         if(debug)
         {
             cout<<"Configuración en posición X: "<<endl;
             showMCAEStreamDebugMode(q_msg.toStdString());
         }
+
     }
     catch( Exceptions & ex )
     {
@@ -2146,7 +2121,7 @@ void MainWindow::setCalibrationTables(int head) {
 
     try
     {
-        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getY_Calib_Table(), coefy_values, arpet->getAnsY_Calib_Table());
+        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getY_Calib_Table(), Matrix_coefy_values[head-1], arpet->getAnsY_Calib_Table());
         if(debug)
         {
             cout<<"Configuración en posición Y: "<<endl;
@@ -2162,7 +2137,7 @@ void MainWindow::setCalibrationTables(int head) {
 
     try
     {
-        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getEnergy_Calib_Table(), coefenerg_values, arpet->getAnsEnergy_Calib_Table());
+        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getEnergy_Calib_Table(), Matrix_coefenerg_values[head-1], arpet->getAnsEnergy_Calib_Table());
         if(debug)
         {
             cout<<"Configuración en energía: "<<endl;
@@ -2178,7 +2153,7 @@ void MainWindow::setCalibrationTables(int head) {
 
     try
     {
-        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getWindow_Limits_Table(),coefest_values, arpet->getAnsWindow_Limits_Table());
+        q_msg = setCalibTable(QString::number(head).toStdString(), arpet->getWindow_Limits_Table(),Matrix_coefest_values[head-1], arpet->getAnsWindow_Limits_Table());
         if(debug)
         {
             cout<<"Configuración de Triple Ventana: "<<endl;
@@ -2211,12 +2186,12 @@ void MainWindow::setCalibrationTables(int head) {
     {
         for(int pmt = 0; pmt < PMTs; pmt++)
         {
-            q_msg = setTime(QString::number(head).toStdString(), coefT_values[pmt]+coefTInter_values[head-1], QString::number(pmt+1).toStdString());
+            q_msg = setTime(QString::number(head).toStdString(), Matrix_coefT_values[head-1][pmt]+coefTInter_values[head-1], QString::number(pmt+1).toStdString());
             if(debug)
             {
                 cout<<"========================================="<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
-                cout<<"Valor de tiempo Intracabezal: "<< QString::number(coefT_values[pmt]).toStdString() <<endl;
+                cout<<"Valor de tiempo Intracabezal: "<< QString::number(Matrix_coefT_values[head-1][pmt]).toStdString() <<endl;
                 cout<<"Valor de tiempo Intercabezal: "<< QString::number(coefTInter_values[head-1]).toStdString() <<endl;
 
                 cout<<"========================================="<<endl;
@@ -3866,28 +3841,37 @@ QStringList MainWindow::availablePortsName()
     int portavailable;
     QDir dir("/dev/");
     QStringList filters;
+    try {
+        filters << "UART*";
+        dir.setNameFilters(filters);
+        dir.setFilter(QDir::Files | QDir::System);
+        QFileInfoList list = dir.entryInfoList();
 
-    filters << "UART*";
-    dir.setNameFilters(filters);
-    dir.setFilter(QDir::Files | QDir::System);
-    QFileInfoList list = dir.entryInfoList();
+        for (int i=0; i< list.size(); i++)
+        {
+            portsName.append(list.at(i).absoluteFilePath());
 
-    for (int i=0; i< list.size(); i++)
-    {
-        portsName.append(list.at(i).absoluteFilePath());
-
-    }
-
-    for (int i=0;i<6;i++){
-        if (list.at(0).absoluteFilePath().contains(QString::number(1+i))) {
-            portavailable=i; break;
         }
+
+        if (list.empty()) {
+            Exceptions exception_Cabezal_Apagado("Está coincidencia y los cabezales apagados! Revise las conexiones");
+            throw exception_Cabezal_Apagado;
+        }
+        for (int i=0;i<6;i++){
+            if (list.at(0).absoluteFilePath().contains(QString::number(1+i))) {
+                portavailable=i; break;
+            }
+        }
+
+        bool oldState =ui->comboBox_head_select_config->blockSignals(true);
+        ui->comboBox_head_select_config->setCurrentIndex(portavailable);
+        ui->comboBox_head_select_config->blockSignals(oldState);
     }
-
-    bool oldState =ui->comboBox_head_select_config->blockSignals(true);
-    ui->comboBox_head_select_config->setCurrentIndex(portavailable);
-    ui->comboBox_head_select_config->blockSignals(oldState);
-
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        arpet->portDisconnect();
+    }
 
     return portsName;
 }
@@ -4209,35 +4193,41 @@ void MainWindow::on_pushButton_send_terminal_clicked()
     string end_stream=arpet->getEnd_MCA();
     QString Cabezal=ui->comboBox_head_select_terminal->currentText();
 
-    if (Cabezal == "Coin")
-    {
-        port_name="/dev/UART_Coin";
-    }else
-        port_name=Cab+Cabezal;
-
-    arpet->portDisconnect();
-
-
-    arpet->portConnect(port_name.toStdString().c_str());
-    if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
-
     try
     {
-        bytes = sendString(sended.toStdString(),end_stream);
-        msg = readString();
+        if (Estado_Cabezales.contains(Cabezal.toInt())){
+
+            if (Cabezal == "Coin")
+            {
+                port_name="/dev/UART_Coin";
+            }else
+                port_name=Cab+Cabezal;
+
+            arpet->portDisconnect();
+            arpet->portConnect(port_name.toStdString().c_str());
+
+            if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
+
+            bytes = sendString(sended.toStdString(),end_stream);
+            msg = readString();
+
+            QString q_msg=QString::fromStdString(msg);
+            QString q_bytes=QString::number(bytes);
+
+            ui->label_size_terminal->setText(q_bytes);
+            ui->label_received_terminal->setText(q_msg);
+            arpet->portDisconnect();
+
+        }else{
+            Exceptions exception_Cabezal_Apagado("El cabezal está apagado, seleccione otro");
+            throw exception_Cabezal_Apagado;
+        }
     }
     catch(Exceptions & ex)
     {
         QMessageBox::critical(this,tr("Atención"),tr(ex.excdesc));
+        arpet->portDisconnect();
     }
-
-    QString q_msg=QString::fromStdString(msg);
-    QString q_bytes=QString::number(bytes);
-    ui->label_size_terminal->setText(q_bytes);
-    ui->label_received_terminal->setText(q_msg);
-
-
-    arpet->portDisconnect();
 }
 /**
  * @brief MainWindow::on_pushButton_flush_terminal_clicked
@@ -6160,8 +6150,6 @@ void MainWindow::on_pushButton_adquirir_clicked()
               if(debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
               if(debug) cout<<"iteracion: "<<checkedHeads.length()<<endl;
               mcae_wr->setCheckedHeads(checkedHeads);
-
-
               ui->specPMTs->clearGraphs();
               mcae_wr->setPMTSelectedList(pmt_selected_list);
               mcae_wr->setDebugMode(debug);
@@ -6564,61 +6552,84 @@ void MainWindow::updateCaption(){
     if (Estado_Cabezales.contains(1)){
         ui->checkBox_c_1->setEnabled(true);
         ui->checkBox_mca_1->setEnabled(true);
-        //setButtonState(true,ui->pushButton_Encendido_1,false);
+        ui->pushButton_Encendido_1->setChecked(true);
+
+
     }else{
         ui->checkBox_c_1->setEnabled(false);
         ui->checkBox_mca_1->setEnabled(false);
         ui->checkBox_c_1->setChecked(false);
+        ui->pushButton_Encendido_1->setChecked(false);
+
        // setButtonState(false,ui->pushButton_Encendido_1,false);
     }
     if (Estado_Cabezales.contains(2)){
         ui->checkBox_c_2->setEnabled(true);
         ui->checkBox_mca_2->setEnabled(true);
+        ui->pushButton_Encendido_2->setChecked(true);
+
         //setButtonState(true,ui->pushButton_Encendido_2,false);
     }else{
         ui->checkBox_c_2->setEnabled(false);
         ui->checkBox_mca_2->setEnabled(false);
         ui->checkBox_c_2->setChecked(false);
+        ui->pushButton_Encendido_2->setChecked(false);
+
         //setButtonState(false,ui->pushButton_Encendido_2,false);
     }
     if (Estado_Cabezales.contains(3)){
         ui->checkBox_c_3->setEnabled(true);
         ui->checkBox_mca_3->setEnabled(true);
+        ui->pushButton_Encendido_3->setChecked(true);
+
         //setButtonState(true,ui->pushButton_Encendido_3,false);
     }else{
         ui->checkBox_c_3->setEnabled(false);
         ui->checkBox_mca_3->setEnabled(false);
         ui->checkBox_c_3->setChecked(false);
        // setButtonState(false,ui->pushButton_Encendido_3,false);
+        ui->pushButton_Encendido_3->setChecked(false);
+
     }
     if (Estado_Cabezales.contains(4)){
         ui->checkBox_c_4->setEnabled(true);
         ui->checkBox_mca_4->setEnabled(true);
+        ui->pushButton_Encendido_4->setChecked(true);
+
         //setButtonState(true,ui->pushButton_Encendido_4,false);
     }else{
         ui->checkBox_c_4->setEnabled(false);
         ui->checkBox_mca_4->setEnabled(false);
         ui->checkBox_c_4->setChecked(false);
+        ui->pushButton_Encendido_4->setChecked(false);
+
        // setButtonState(false,ui->pushButton_Encendido_4,false);
     }
     if (Estado_Cabezales.contains(5)){
         ui->checkBox_c_5->setEnabled(true);
         ui->checkBox_mca_5->setEnabled(true);
         //setButtonState(true,ui->pushButton_Encendido_5,false);
+        ui->pushButton_Encendido_5->setChecked(true);
     }else{
         ui->checkBox_c_5->setEnabled(false);
         ui->checkBox_mca_5->setEnabled(false);
         ui->checkBox_c_5->setChecked(false);
         //setButtonState(false,ui->pushButton_Encendido_5,false);
+        ui->pushButton_Encendido_5->setChecked(false);
+
     }
     if (Estado_Cabezales.contains(6)){
         ui->checkBox_c_6->setEnabled(true);
         ui->checkBox_mca_6->setEnabled(true);
         //setButtonState(true,ui->pushButton_Encendido_6,false);
+        ui->pushButton_Encendido_6->setChecked(true);
+
     }else{
         ui->checkBox_c_6->setEnabled(false);
         ui->checkBox_mca_6->setEnabled(false);
         ui->checkBox_c_6->setChecked(false);
+        ui->pushButton_Encendido_6->setChecked(false);
+
         //setButtonState(false,ui->pushButton_Encendido_6,false);
     }
 }
@@ -6673,7 +6684,6 @@ void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
 void MainWindow::on_checkBox_mca_1_toggled(bool checked)
 {
 
-
 }
 
 void MainWindow::on_checkBox_mca_2_toggled(bool checked)
@@ -6683,6 +6693,7 @@ void MainWindow::on_checkBox_mca_2_toggled(bool checked)
 
 void MainWindow::on_checkBox_mca_3_toggled(bool checked)
 {
+
 }
 
 void MainWindow::on_checkBox_mca_4_toggled(bool checked)
@@ -6750,14 +6761,14 @@ void MainWindow::on_pushButton_Encendido_6_toggled(bool checked)
 
 
 void MainWindow::Cabezal_On_Off(int Cabezal, bool estado){
-
+    error_code error_code;
     QVector<string> Cabezales;
     char checksum;
     for (int i=0;i<6;i++){Cabezales.push_back("0");}
     try{
         arpet->portDisconnect();
         port_name="/dev/UART_Coin";
-        arpet->portConnect(port_name.toStdString().c_str());
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (estado){
             checksum=1;
             //Estado_Cabezales.replace(0,1);
@@ -6798,22 +6809,20 @@ void MainWindow::Cabezal_On_Off(int Cabezal, bool estado){
 }
 
 void MainWindow::Cabezales_On_Off(bool estado){
+    error_code error_code;
     try{
         arpet->portDisconnect();
         port_name="/dev/UART_Coin";
-        arpet->portConnect(port_name.toStdString().c_str());
+        error_code =arpet->portConnect(port_name.toStdString().c_str());
         if (estado){
             sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
             usleep(50000);
             sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
-
         }else{
             sendString(arpet->getInit_on_off()+"00000006",arpet->getEnd_MCA());
         }
-
         arpet->portDisconnect();
     }
-
     catch(Exceptions &ex){
 
     }
@@ -6823,5 +6832,87 @@ void MainWindow::Cabezales_On_Off(bool estado){
 void MainWindow::on_pushButton_On_Off_Cabs_toggled(bool checked)
 {
     Cabezales_On_Off(checked);
+}
+
+
+void MainWindow::loadCalibrationTables(QString head){
+
+    getPreferencesSettingsFile();
+    QSettings settings(initfile, QSettings::IniFormat);
+
+    /* Paths to the configuration files */
+
+    QString root = settings.value("Paths/root", "US").toString();
+
+    AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
+    LowLimit[head.toInt()-1] = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
+    Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
+    coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
+    hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
+    coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
+    coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
+    coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
+    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
+    coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
+
+    coefTInter_values=getValuesFromFiles(coefTInter);
+
+    QVector <double> Cabezal;
+
+
+    Cabezal.append(getValuesFromFiles(hvtable,true));
+    if (hvtable_values.empty()){
+        for (int i=0;i<6;i++){
+            hvtable_values.push_back(Cabezal);
+        }
+    }
+    hvtable_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
+
+    Cabezal.append(getValuesFromFiles(coefenerg));
+    if (Matrix_coefenerg_values.empty()){
+        for (int i=0;i<6;i++){
+            Matrix_coefenerg_values.push_back(Cabezal);
+        }
+    }
+    Matrix_coefenerg_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
+
+
+    Cabezal.append(getValuesFromFiles(coefx));
+    if (Matrix_coefx_values.empty()){
+        for (int i=0;i<6;i++){
+            Matrix_coefx_values.push_back(Cabezal);
+        }
+    }
+    Matrix_coefx_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
+
+    Cabezal.append(getValuesFromFiles(coefy));
+    if (Matrix_coefy_values.empty()){
+        for (int i=0;i<6;i++){
+            Matrix_coefy_values.push_back(Cabezal);
+        }
+    }
+    Matrix_coefy_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
+
+    Cabezal.append(getValuesFromFiles(coefT));
+    if (Matrix_coefT_values.empty()){
+        for (int i=0;i<6;i++){
+            Matrix_coefT_values.push_back(Cabezal);
+        }
+    }
+    Matrix_coefT_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
+
+    Cabezal.append(getValuesFromFiles(coefest));
+    if (Matrix_coefest_values.empty()){
+        for (int i=0;i<6;i++){
+            Matrix_coefest_values.push_back(Cabezal);
+        }
+    }
+    Matrix_coefest_values.replace(head.toInt()-1,Cabezal);
+    Cabezal.clear();
 
 }

@@ -155,6 +155,7 @@ private slots:
     void connectPortArpet();
     void OffButtonCalib();
     void recievedSaturated(int Cabezal, double *Saturados);
+    void loadCalibrationTables(QString head);
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -341,6 +342,7 @@ private slots:
 
     void on_pushButton_On_Off_Cabs_toggled(bool checked);
 
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -475,7 +477,15 @@ private:
     QVector<int> Estado_Cabezales;
     QString coefenerg, coefT,coefTInter, hvtable, coefx, coefy, coefest, logTemp, logRate,root_log;
     QVector<double> coefenerg_values, coefT_values,coefTInter_values, coefx_values, coefy_values, coefest_values;
+    QVector< QVector<double> > Matrix_coefenerg_values;
     QVector< QVector<double> > hvtable_values;
+    QVector< QVector<double> > Matrix_coefx_values;
+    QVector< QVector<double> > Matrix_coefy_values;
+    QVector< QVector<double> > Matrix_coefT_values;
+    QVector< QVector<double> > Matrix_coefest_values;
+
+
+
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;
     QVector<double> channels_ui;
