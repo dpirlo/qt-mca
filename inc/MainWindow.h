@@ -56,6 +56,7 @@
 #define COIN_INTER_CABEZAL 5
 #define TIEMPOS_NULOS_PMTS 0
 #define CHAR_LF 0x0A
+#define Tab0 1
 #define Tab1 1
 #define Tab2 2
 #define Tab3 3
@@ -155,7 +156,7 @@ private slots:
     void connectPortArpet();
     void OffButtonCalib();
     void recievedSaturated(int Cabezal, double *Saturados);
-    void loadCalibrationTables(QString head);
+    int loadCalibrationTables(QString head);
 
 
     /* Slots de sincronización en el entorno gráfico */

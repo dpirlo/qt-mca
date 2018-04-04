@@ -127,7 +127,8 @@ error_code MCAE::portConnect(const char *tty_port_name)
 {
     error_code error_code;
     port->open(tty_port_name, error_code);
-    port->set_option(serial_port_base::baud_rate(PortBaudRate));
+    if (error_code.value()==0)
+        port->set_option(serial_port_base::baud_rate(PortBaudRate));
 
     return error_code;
 }
