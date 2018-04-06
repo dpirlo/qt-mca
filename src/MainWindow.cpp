@@ -3654,7 +3654,7 @@ void MainWindow::setTextBrowserState(bool state, QTextBrowser *tbro)
 {
     if (state)
     {
-        tbro->setStyleSheet("background-color: green;");;
+        tbro->setStyleSheet("background-color: #3daee9;");;
     }
     else
     {
@@ -6768,9 +6768,16 @@ void MainWindow::Cabezales_On_Off(bool estado){
             throw exception_Cabezal_Apagado;
         }
         if (estado){
-            sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
+//            sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
+//            usleep(50000);
+//            sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
+        if (Estado_Cabezales.length()>2)    {
+            sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
+        }else{
+            sendString(arpet->getInit_on_off()+"111"+getEstadoCabezal(4)+getEstadoCabezal(5)+getEstadoCabezal(6)+"0"+(char)(0x39+Estado_Cabezales.length()-(int)Estado_Cabezales.contains(1)-(int)Estado_Cabezales.contains(2)-(int)Estado_Cabezales.contains(3)),arpet->getEnd_MCA());
             usleep(50000);
             sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
+        }
         }else{
             sendString(arpet->getInit_on_off()+"00000006",arpet->getEnd_MCA());
         }
@@ -6782,6 +6789,9 @@ void MainWindow::Cabezales_On_Off(bool estado){
     }
 }
 
+string MainWindow::getEstadoCabezal(int head){
+    return Estado_Cabezales.contains(head) ? "1" : "0";
+}
 
 void MainWindow::on_pushButton_On_Off_Cabs_toggled(bool checked)
 {
@@ -6890,5 +6900,102 @@ void MainWindow::CargoTemaOscuro(){
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
         qApp->setStyleSheet(ts.readAll());
+    }
+}
+
+void MainWindow::on_pbAdquirir_toggled(bool checked)
+{
+    error_code error_code;
+    //QList<int> checkedHeads=getCheckedHeads();
+    string msg;
+    QString psoc_alta;
+    QString psoc_alta_Tabla;
+    arpet->portDisconnect();
+
+
+
+  //  Cabezales_On_Off(checked);
+
+    if (checked){
+        /////////////// CONFIGURACION Y CARGA DE TABLAS
+        for (int i=0;i<Estado_Cabezales.length();i++)
+        {
+            int head_index=Estado_Cabezales.at(i);
+            /* Inicialización del Cabezal */
+            try
+            {
+                port_name=Cab+QString::number(head_index);
+                calibrador->setPort_Name((port_name));
+                worker->setPortName((port_name));
+                error_code= arpet->portConnect(port_name.toStdString().c_str());
+                if (error_code.value()!=0){
+                    arpet->portDisconnect();
+                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                    throw exception_Cabezal_Apagado;
+                }
+
+                if (initHead(head_index).length()==0){
+                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
+                    return;
+                }
+                if(initSP3(head_index).length()==0){
+                    ui->label_data_output->setText("PMTs no responden");
+                    return;
+                }
+                parseConfigurationFile(true, QString::number(head_index));
+
+                usleep(500);
+                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+
+                psoc_alta_Tabla = QString::number(AT);
+
+                usleep(500);
+
+                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+                usleep(500);
+                msg = readString();
+                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+                usleep(500);
+
+                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+                if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+                msg = readString(CHAR_LF);
+
+                usleep(500);
+                //hv_status_table[head_index-1]->setText(psoc_alta);
+
+                setCalibrationTables(head_index);
+                //ui->lineEdit_alta->setText(QString::number(AT));
+                //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
+                //hv_status_table[head_index-1]->setText(QString::number(AT));
+
+                initCoincidenceMode();
+                usleep(5000);
+                setCoincidenceModeWindowTime();
+                usleep(5000);
+                setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+                usleep(5000);
+
+                arpet->portDisconnect();
+
+
+            }
+            catch(Exceptions & ex)
+            {
+                QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+                if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+                setLabelState(false, hv_status_table[head_index-1], true);
+            }
+        }
+        ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
+    }
+    else{
+
     }
 }

@@ -342,6 +342,8 @@ private slots:
     void on_pushButton_On_Off_Cabs_toggled(bool checked);
 
 
+    void on_pbAdquirir_toggled(bool checked);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -426,7 +428,7 @@ private:
     void setTimeModeCoin(int mode,QString head="");
     void Cabezal_On_Off(int Cabezal, bool estado);
     void Cabezales_On_Off(bool estado);
-
+    string getEstadoCabezal(int head);
     int  ogl_flag;
 
     /* Area de prueba/testing */

@@ -396,7 +396,7 @@ void Thread::getMCA()
                             //cout<<QString::number(aux_hits[j]).toStdString()<<endl;
                         }
 
-                        aux = InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);
+                        aux=InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);
 
                         emit sendPicosMCA(aux, checkedHeads.at(0));
                     }
