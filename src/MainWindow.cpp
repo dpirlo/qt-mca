@@ -45,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget_mca->setCurrentIndex(1);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
+
+    CargoTemaOscuro();
+
     timer->start(1000);
     //parseConfigurationFile(true, "0");
 
@@ -156,7 +159,6 @@ void MainWindow::setInitialConfigurations()
     ui->comboBox_head_mode_select_graph->hide();
     ui->label_calib->hide();
 
-    setButtonConnectState(true);
 
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
@@ -167,10 +169,6 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
-
-    //bool oldState = ui->comboBox_port->blockSignals(true);
-    //ui->comboBox_port->addItems(availablePortsName());
-    //ui->comboBox_port->blockSignals(oldState);
 
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
@@ -982,33 +980,7 @@ void MainWindow::showMCAEStreamDebugMode(string msg)
  */
 void MainWindow::getARPETStatus()
 {
-//    writeFooterAndHeaderDebug(true);         // OBSOLETO PROXIMAMENTE BORRADO
-//    string msg;
-//    try
-//    {
-//        sendString(arpet->getAP_STATUS(),arpet->getEnd_MCA());
-//        msg = readString();
-//        if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()))
-//        {
-//            setButtonState(true,ui->pushButton_arpet_on);
-//            setButtonState(true,ui->pushButton_arpet_off, true);
-//        } else if(arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()))
-//        {
-//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-//            setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-//        }
-//    }
-//    catch(Exceptions & ex)
-//    {
-//        if(debug)
-//        {
-//            cout<<"Hubo un inconveniente al intentar acceder al estado del equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-//            writeFooterAndHeaderDebug(false);
-//            ui->label_power_management->setStyleSheet("font-weight: bold; color: red");
-//            ui->label_power_management->setText("Error de conexión");
-//        }
-//    }
-//    writeFooterAndHeaderDebug(false);
+
 }
 /**
  * @brief MainWindow::getHeadStatus
@@ -1059,64 +1031,8 @@ void MainWindow::getHeadStatus(int head_index)
     writeFooterAndHeaderDebug(false);
 
 }
-/**
- * @brief MainWindow::on_pushButton_arpet_on_clicked
- *
- * Encendido del ARPET
- *
- */
-void MainWindow::on_pushButton_arpet_on_clicked()
-{
-    writeFooterAndHeaderDebug(true);
 
-    string msg;
-    try
-    {
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        sleep(1);
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        sleep(1);
-        sendString(arpet->getAP_ON(),arpet->getEnd_MCA());
-        msg = readString();
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on);
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_off, true);
-        if(debug) cout<<"AR-PET ENCENDIDO"<<endl;
 
-    }
-    catch(Exceptions & ex)
-    {
-        if(debug) cout<<"Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar encender el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        setButtonState(arpet->verifyMCAEStream(msg,arpet->getAnsAP_ON()),ui->pushButton_arpet_on, true);
-    }
-    writeFooterAndHeaderDebug(false);
-}
-/**
- * @brief MainWindow::on_pushButton_arpet_off_clicked
- *
- * Apagado del ARPET
- *
- */
-void MainWindow::on_pushButton_arpet_off_clicked()
-{
-    writeFooterAndHeaderDebug(true);
-    string msg;
-    try
-    {
-        sendString(arpet->getAP_OFF(),arpet->getEnd_MCA());
-        msg = readString();
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off);
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_on, true);
-        if(debug) cout<<"AR-PET APAGADO"<<endl;
-    }
-    catch(Exceptions & ex)
-    {
-        if(debug) cout<<"Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: "<<ex.excdesc<<endl;
-        QMessageBox::critical(this,tr("Atención"),tr((string("Hubo un inconveniente al intentar apagar el equipo. Revise la conexión. Error: ")+string(ex.excdesc)).c_str()));
-        setButtonState(!arpet->verifyMCAEStream(msg,arpet->getAnsAP_OFF()),ui->pushButton_arpet_off, true);
-    }
-    writeFooterAndHeaderDebug(false);
-}
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_clicked
  */
@@ -1186,54 +1102,6 @@ void MainWindow::on_pushButton_obtener_ini_clicked()
     }
 
 }
-/**
- * @brief MainWindow::on_pushButton_init_configure_clicked
- */
-void MainWindow::on_pushButton_init_configure_clicked()
-{
-    error_code error_code;
-    writeFooterAndHeaderDebug(true);
-    if(arpet->isPortOpen()) {
-        setButtonConnectState(true);
-        arpet->portDisconnect();
-
-
-        if(debug) cout<<"Puerto serie desconectado"<<endl;
-    }
-    else {
-        try{
-
-
-            port_name=ui->comboBox_port->currentText();
-            calibrador->setPort_Name(port_name);
-            worker->setPortName(port_name);
-            error_code= arpet->portConnect(port_name.toStdString().c_str());
-            if (error_code.value()!=0){
-                arpet->portDisconnect();
-                Exceptions exception_Cabezal_Apagado("Está coincidencia y los cabezales apagados! Revise las conexiones");
-                throw exception_Cabezal_Apagado;
-            }
-            //QMessageBox::information(this,tr("Información"),tr("Conectado al puerto: ") + port_name);
-            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-            setButtonConnectState(false);
-            writeFooterAndHeaderDebug(false);
-            //getARPETStatus();
-            //getHeadStatus(getHead("config").toInt());
-
-
-        }
-        catch(boost::system::system_error e)
-        {
-            if(debug) cout<<"No se puede acceder al puerto serie. Revise la conexión USB. Error: "<<e.what()<<endl;
-            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB. Error: ")+tr(e.what()));
-            ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-            ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-            ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-        }
-    }
-    writeFooterAndHeaderDebug(false);
-}
-
 
 
 /**
@@ -1245,7 +1113,7 @@ void MainWindow::on_pushButton_configure_clicked()
 
     QString head;
     QString ignore;
-
+    arpet->portDisconnect();
     writeFooterAndHeaderDebug(true);
     int index=ui->comboBox_adquire_mode_coin->currentIndex();
     try
@@ -1313,7 +1181,7 @@ void MainWindow::on_pushButton_configure_clicked()
     }
     catch(Exceptions & ex)
     {
-        QMessageBox::critical(this,tr("Atención"),tr(string(ex.excdesc).c_str()));
+        ui->label_data_output->setText("No se pudo realizar la Operación, verifique la comunicación");
         setLabelState(false,ui->label_coincidencia_estado);
     }
     writeFooterAndHeaderDebug(false);
@@ -1453,7 +1321,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1469,7 +1336,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1485,7 +1351,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1501,7 +1366,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1517,7 +1381,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1533,7 +1396,6 @@ void MainWindow::on_pushButton_initialize_clicked()
                     throw exception_Cabezal_Apagado;
                 }
                 if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                setButtonConnectState(false);
                 writeFooterAndHeaderDebug(false);
                 //getARPETStatus();
                 break;
@@ -1541,11 +1403,15 @@ void MainWindow::on_pushButton_initialize_clicked()
                 break;
             }
 
-
-            initHead(head_index);
-            initSP3(head_index);
+            if (initHead(head_index).length()==0){
+                ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
+                return;
+            }
+            if(initSP3(head_index).length()==0){
+                ui->label_data_output->setText("PMTs no responden");
+                return;
+            }
             usleep(500);
-
 
             parseConfigurationFile(true, QString::number(head_index));
             /* Configuración de la Alta Tensión*/
@@ -2160,7 +2026,6 @@ string MainWindow::initSP3(int head)
  */
 void MainWindow::setCalibrationTables(int head) {
 
-
     if (loadCalibrationTables(QString::number(head))){
         return;
     }
@@ -2275,8 +2140,6 @@ void MainWindow::setCalibrationTables(int head) {
     }
 
     mMutex.unlock();
-
-    //lowlimit =
 
     setTextBrowserState(set_time_INTER, ui->textBrowser_tiempos_Inter_cabezal);
     setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
@@ -3870,25 +3733,25 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
  */
 void MainWindow::setButtonConnectState(bool state, bool disable)
 {
-    QString qt_text;
+//    QString qt_text;
 
-    if (state && !disable)
-    {
-        qt_text="Conectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    else if (!state && !disable)
-    {
-        qt_text="Desconectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    else
-    {
-        qt_text="Conectar";
-        setButtonState(state,ui->pushButton_init_configure,disable);
-    }
-    ui->pushButton_init_configure->setText(qt_text);
-    ui->pushButton_init_configure->update();
+//    if (state && !disable)
+//    {
+//        qt_text="Conectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    else if (!state && !disable)
+//    {
+//        qt_text="Desconectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    else
+//    {
+//        qt_text="Conectar";
+//        setButtonState(state,ui->pushButton_init_configure,disable);
+//    }
+//    ui->pushButton_init_configure->setText(qt_text);
+//    ui->pushButton_init_configure->update();
 }
 void MainWindow::setButtonLoggerState(bool state, bool disable)
 {
@@ -4281,36 +4144,38 @@ void MainWindow::on_pushButton_send_terminal_clicked()
     string msg;
     string end_stream=arpet->getEnd_MCA();
     QString Cabezal=ui->comboBox_head_select_terminal->currentText();
+    arpet->portDisconnect();
 
     try
     {
-        if (Estado_Cabezales.contains(Cabezal.toInt())){
 
-            if (Cabezal == "Coin")
-            {
-                port_name="/dev/UART_Coin";
-            }else
+        if (Cabezal == "Coin")
+        {
+            port_name="/dev/UART_Coin";
+        }else{
+
+            if (Estado_Cabezales.contains(Cabezal.toInt())){
                 port_name=Cab+Cabezal;
 
-            arpet->portDisconnect();
-            arpet->portConnect(port_name.toStdString().c_str());
-
-            if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
-
-            bytes = sendString(sended.toStdString(),end_stream);
-            msg = readString();
-
-            QString q_msg=QString::fromStdString(msg);
-            QString q_bytes=QString::number(bytes);
-
-            ui->label_size_terminal->setText(q_bytes);
-            ui->label_received_terminal->setText(q_msg);
-            arpet->portDisconnect();
-
-        }else{
-            Exceptions exception_Cabezal_Apagado("El cabezal está apagado, seleccione otro");
-            throw exception_Cabezal_Apagado;
+            }
+            else{
+                Exceptions exception_Cabezal_Apagado("El cabezal está apagado, seleccione otro");
+                throw exception_Cabezal_Apagado;
+            }
         }
+        arpet->portConnect(port_name.toStdString().c_str());
+
+        if(ui->checkBox_end_terminal->isChecked()) end_stream=arpet->getEnd_PSOC();
+
+        bytes = sendString(sended.toStdString(),end_stream);
+        msg = readString();
+
+        QString q_msg=QString::fromStdString(msg);
+        QString q_bytes=QString::number(bytes);
+
+        ui->label_size_terminal->setText(q_bytes);
+        ui->label_received_terminal->setText(q_msg);
+        arpet->portDisconnect();
     }
     catch(Exceptions & ex)
     {
@@ -6586,30 +6451,7 @@ bool MainWindow::fileExists(QString path) {
     }
 }
 
-void MainWindow::on_comboBox_port_currentIndexChanged(int index)
-{
-//    QString nombrepuerto = ui->comboBox_port->currentText();
 
-//    int portavailable;
-//    writeFooterAndHeaderDebug(true);
-//    setButtonConnectState(true);
-//    arpet->portDisconnect();
-
-//    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-//    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-//    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-//    writeFooterAndHeaderDebug(false);
-
-//    if(debug) cout<<"Puerto serie desconectado"<<endl;
-
-//    for (int i=1;i<=6;i++){
-//        if (nombrepuerto.contains(QString::number(i))){
-//        portavailable=i-1;
-//        break;
-//        }
-//    }
-
-}
 
 /**
  * @brief MainWindow::updateCaption Este es un timer que actualiza la lista de cabezales disponible y habilita o deshabilita los checkbox de cabezales
@@ -7023,4 +6865,19 @@ int MainWindow::loadCalibrationTables(QString head){
     }
 
 
+}
+
+void MainWindow::CargoTemaOscuro(){
+
+    /*QFile f(":qdarkstyle/style.qss");
+    if (!f.exists())
+    {
+        printf("Unable to set stylesheet, file not found\n");
+    }
+    else
+    {
+        f.open(QFile::ReadOnly | QFile::Text);
+        QTextStream ts(&f);
+        qApp->setStyleSheet(ts.readAll());
+    }*/
 }

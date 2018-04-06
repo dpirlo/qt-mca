@@ -41,6 +41,11 @@ HEADERS  += \
 
 LIBS += -lboost_system
 
+STYLES += qdarkstyle/style.qrc \
+        qdarkstyle/style.qss
+        qdarkstyle/rc/
+
+
 FORMS += \
         ui/SetPreferences.ui \
         ui/MainWindow.ui \
@@ -49,6 +54,9 @@ FORMS += \
 INCLUDEPATH +=/opt/armadillo/include
 LIBS +=-llapack
 LIBS +=-lblas
+
+RESOURCES     = qdarkstyle/style.qrc
+
 
 
 CONFIG(debug, debug|release) {

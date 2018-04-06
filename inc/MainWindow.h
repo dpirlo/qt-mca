@@ -157,6 +157,7 @@ private slots:
     void OffButtonCalib();
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
+    void CargoTemaOscuro();
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -188,7 +189,6 @@ private slots:
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /* Buttons */
-    void on_pushButton_init_configure_clicked();
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
     void on_pushButton_energia_clicked();
@@ -212,8 +212,6 @@ private slots:
     void on_pushButton_p_10_clicked();
     void on_pushButton_p_50_clicked();
     void on_pushButton_reset_clicked();
-    void on_pushButton_arpet_on_clicked();
-    void on_pushButton_arpet_off_clicked();
     void on_actionPreferencias_triggered();
     void on_pushButton_send_terminal_clicked();
     void on_pushButton_flush_terminal_clicked();
@@ -221,6 +219,8 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
     void on_pushButton_logguer_toggled(bool checked);
+
+
 
     /* AutoCalib */
 //    void on_pushButton_clicked();
@@ -296,8 +296,6 @@ private slots:
     void on_ChechBox_Pico_toggled(bool checked);
 
     void on_checkBox_Rate_Coin_toggled(bool checked);
-
-    void on_comboBox_port_currentIndexChanged(int index);
 
     void updateCaption();
 

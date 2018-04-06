@@ -58,7 +58,7 @@
       <x>11</x>
       <y>0</y>
       <width>1011</width>
-      <height>621</height>
+      <height>631</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -96,9 +96,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>104</y>
+        <y>70</y>
         <width>511</width>
-        <height>171</height>
+        <height>201</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -216,6 +216,9 @@
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_cabezal_estado_1">
+          <property name="toolTip">
+           <string notr="true"/>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -543,6 +546,30 @@
          </widget>
         </item>
        </layout>
+       <zorder>label_pmt_estado_1</zorder>
+       <zorder>label_cabezal_estado_4</zorder>
+       <zorder>label_hv_estado_4</zorder>
+       <zorder>label_cabezal_estado_3</zorder>
+       <zorder>label_hv_estado_5</zorder>
+       <zorder>label_hv_estado_2</zorder>
+       <zorder>label_pmt_estado_3</zorder>
+       <zorder>label_pmt_estado_6</zorder>
+       <zorder>label_pmt_estado_5</zorder>
+       <zorder>label_hv_estado_6</zorder>
+       <zorder>label_hv_estado_1</zorder>
+       <zorder>label_cabezal_estado_5</zorder>
+       <zorder>label_hv_estado_3</zorder>
+       <zorder>label_pmt_estado_4</zorder>
+       <zorder>label_pmt_estado_2</zorder>
+       <zorder>label_cabezal_estado_6</zorder>
+       <zorder>label_table_1</zorder>
+       <zorder>label_table_2</zorder>
+       <zorder>label_table_3</zorder>
+       <zorder>label_table_4</zorder>
+       <zorder>label_table_5</zorder>
+       <zorder>label_table_6</zorder>
+       <zorder>label_cabezal_estado_2</zorder>
+       <zorder>label_cabezal_estado_1</zorder>
       </widget>
       <widget class="QLabel" name="label_39">
        <property name="geometry">
@@ -716,165 +743,11 @@
       <zorder>pushButton_Encendido_6</zorder>
       <zorder>pushButton_On_Off_Cabs</zorder>
      </widget>
-     <widget class="QFrame" name="frame_hv_com_head">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>801</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>791</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>1122</width>
-        <height>923</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QComboBox" name="comboBox_port">
-       <property name="geometry">
-        <rect>
-         <x>90</x>
-         <y>7</y>
-         <width>151</width>
-         <height>29</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_6">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>6</y>
-         <width>81</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Puerto</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_init_configure">
-       <property name="geometry">
-        <rect>
-         <x>250</x>
-         <y>8</y>
-         <width>121</width>
-         <height>27</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Configurar</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_29">
-       <property name="geometry">
-        <rect>
-         <x>440</x>
-         <y>4</y>
-         <width>111</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Alimentación</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_arpet_on">
-       <property name="geometry">
-        <rect>
-         <x>558</x>
-         <y>5</y>
-         <width>95</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Encendido</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_arpet_off">
-       <property name="geometry">
-        <rect>
-         <x>660</x>
-         <y>5</y>
-         <width>95</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Apagado</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_power_management">
-       <property name="geometry">
-        <rect>
-         <x>770</x>
-         <y>6</y>
-         <width>201</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </widget>
      <widget class="QFrame" name="frame_heads">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>52</y>
+        <y>10</y>
         <width>511</width>
         <height>51</height>
        </rect>
@@ -908,9 +781,9 @@
       <widget class="QFrame" name="frame_multihead_config">
        <property name="geometry">
         <rect>
-         <x>244</x>
-         <y>11</y>
-         <width>241</width>
+         <x>240</x>
+         <y>10</y>
+         <width>251</width>
          <height>31</height>
         </rect>
        </property>
@@ -926,10 +799,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>7</x>
-          <y>1</y>
+          <x>10</x>
+          <y>6</y>
           <width>39</width>
-          <height>26</height>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -943,9 +816,9 @@
         <property name="geometry">
          <rect>
           <x>50</x>
-          <y>2</y>
-          <width>39</width>
-          <height>26</height>
+          <y>6</y>
+          <width>41</width>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -958,10 +831,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>84</x>
-          <y>3</y>
+          <x>90</x>
+          <y>6</y>
           <width>39</width>
-          <height>26</height>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -974,10 +847,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>123</x>
-          <y>3</y>
+          <x>130</x>
+          <y>6</y>
           <width>39</width>
-          <height>26</height>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -990,10 +863,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>162</x>
-          <y>3</y>
+          <x>170</x>
+          <y>6</y>
           <width>39</width>
-          <height>26</height>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -1009,10 +882,10 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>200</x>
-          <y>3</y>
+          <x>210</x>
+          <y>6</y>
           <width>39</width>
-          <height>26</height>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -1023,7 +896,7 @@
       <widget class="QComboBox" name="comboBox_head_mode_select_config">
        <property name="geometry">
         <rect>
-         <x>121</x>
+         <x>110</x>
          <y>11</y>
          <width>111</width>
          <height>29</height>
@@ -1056,7 +929,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>331</y>
+        <y>340</y>
         <width>981</width>
         <height>251</height>
        </rect>
@@ -1406,7 +1279,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>278</y>
+        <y>280</y>
         <width>801</width>
         <height>51</height>
        </rect>
@@ -1590,9 +1463,9 @@ Tensión: </string>
       <property name="geometry">
        <rect>
         <x>530</x>
-        <y>55</y>
+        <y>10</y>
         <width>281</width>
-        <height>221</height>
+        <height>261</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1605,9 +1478,9 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>50</x>
-         <y>0</y>
+         <y>10</y>
          <width>181</width>
-         <height>31</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
@@ -1625,7 +1498,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>180</y>
+         <y>210</y>
          <width>201</width>
          <height>31</height>
         </rect>
@@ -1641,7 +1514,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>30</y>
+         <y>40</y>
          <width>141</width>
          <height>29</height>
         </rect>
@@ -1681,9 +1554,9 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>70</y>
+         <y>80</y>
          <width>221</width>
-         <height>101</height>
+         <height>121</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -1695,7 +1568,7 @@ Tensión: </string>
        <widget class="QLineEdit" name="lineEdit_WN">
         <property name="geometry">
          <rect>
-          <x>40</x>
+          <x>50</x>
           <y>30</y>
           <width>51</width>
           <height>33</height>
@@ -1717,7 +1590,7 @@ Tensión: </string>
        <widget class="QLineEdit" name="lineEdit_WP">
         <property name="geometry">
          <rect>
-          <x>130</x>
+          <x>140</x>
           <y>30</y>
           <width>51</width>
           <height>31</height>
@@ -1735,7 +1608,7 @@ Tensión: </string>
          <rect>
           <x>10</x>
           <y>35</y>
-          <width>21</width>
+          <width>31</width>
           <height>21</height>
          </rect>
         </property>
@@ -1746,7 +1619,7 @@ Tensión: </string>
        <widget class="QLabel" name="label_51">
         <property name="geometry">
          <rect>
-          <x>100</x>
+          <x>110</x>
           <y>35</y>
           <width>31</width>
           <height>21</height>
@@ -1760,9 +1633,9 @@ Tensión: </string>
         <property name="geometry">
          <rect>
           <x>24</x>
-          <y>0</y>
-          <width>161</width>
-          <height>31</height>
+          <y>10</y>
+          <width>171</width>
+          <height>21</height>
          </rect>
         </property>
         <property name="text">
@@ -1797,7 +1670,7 @@ Tensión: </string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>30</y>
+         <y>40</y>
          <width>46</width>
          <height>31</height>
         </rect>
@@ -1818,8 +1691,8 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>100</y>
+         <x>170</x>
+         <y>120</y>
          <width>51</width>
          <height>29</height>
         </rect>
@@ -1864,8 +1737,8 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>79</x>
-         <y>87</y>
+         <x>60</x>
+         <y>110</y>
          <width>101</width>
          <height>51</height>
         </rect>
@@ -1920,7 +1793,7 @@ calibrar</string>
         <x>820</x>
         <y>10</y>
         <width>171</width>
-        <height>311</height>
+        <height>321</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1933,9 +1806,9 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>0</y>
+         <y>10</y>
          <width>161</width>
-         <height>311</height>
+         <height>301</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -2374,7 +2247,6 @@ calibrar</string>
      </widget>
      <zorder>frame_2</zorder>
      <zorder>frame_status</zorder>
-     <zorder>frame_hv_com_head</zorder>
      <zorder>frame_heads</zorder>
      <zorder>frame_calib_tables</zorder>
      <zorder>frame_hv</zorder>
@@ -7491,9 +7363,9 @@ calibrar</string>
     <property name="geometry">
      <rect>
       <x>250</x>
-      <y>620</y>
+      <y>630</y>
       <width>751</width>
-      <height>31</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="frameShape">
