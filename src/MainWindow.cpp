@@ -2210,19 +2210,24 @@ void MainWindow::setTemperatureBoard(double temp, QLabel *label_pmt, int pmt)
 
     switch (getTemperatureCode(temp)) {
     case ERROR:
-        palette_temperature.setColor(QPalette::Background,Qt::lightGray);
+       // palette_temperature.setColor(QPalette::Background,Qt::lightGray);
+        label_pmt->setStyleSheet("QLabel { background-color : black; }");
         break;
     case NORMAL:
-        palette_temperature.setColor(QPalette::Background,Qt::green);
+       // palette_temperature.setColor(QPalette::Background,Qt::green);
+        label_pmt->setStyleSheet("QLabel { background-color : green; }");
         break;
     case WARM:
-        palette_temperature.setColor(QPalette::Background,Qt::yellow);
+        //palette_temperature.setColor(QPalette::Background,Qt::yellow);
+        label_pmt->setStyleSheet("QLabel { background-color : yellow; }");
         break;
     case HOT:
-        palette_temperature.setColor(QPalette::Background,QColor::fromRgb(255,140,0)); // Naranja en RGB = 255,140,0
+        //palette_temperature.setColor(QPalette::Background,QColor::fromRgb(255,140,0)); // Naranja en RGB = 255,140,0
+        label_pmt->setStyleSheet("QLabel { background-color : orange; }");
         break;
     case TOO_HOT:
-        palette_temperature.setColor(QPalette::Background,Qt::red);
+        //palette_temperature.setColor(QPalette::Background,Qt::red);
+        label_pmt->setStyleSheet("QLabel { background-color : red;  }");
         break;
     default:
         break;
@@ -3618,20 +3623,26 @@ void MainWindow::setLabelState(bool state, QLabel *label, bool error)
 
     if (state)
     {
-        palette.setColor(QPalette::Background,Qt::green);
-        label->setPalette(palette);
+        //palette.setColor(QPalette::Background,Qt::green);
+        label->setStyleSheet("QLabel { background-color : #3daee9; }");
+
+        //label->setPalette(palette);
     }
     else
     {
-        palette.setColor(QPalette::Background,Qt::red);
-        label->setPalette(palette);
+        //palette.setColor(QPalette::Background,Qt::red);
+       // QLabel* pLabel = new QLabel;
+        label->setStyleSheet("QLabel { background-color : red;  }");
+        //label->setPalette(palette);
+
     }
 
     if(!state && error)
     {
-        palette.setColor(QPalette::Background,Qt::gray);
-        label->setPalette(palette);
-        label->setText("Error");
+
+
+        label->setStyleSheet("QLabel { background-color : grey;  }");
+
     }
 }
 /**
@@ -6869,7 +6880,7 @@ int MainWindow::loadCalibrationTables(QString head){
 
 void MainWindow::CargoTemaOscuro(){
 
-    /*QFile f(":qdarkstyle/style.qss");
+    QFile f(":qdarkstyle/style.qss");
     if (!f.exists())
     {
         printf("Unable to set stylesheet, file not found\n");
@@ -6879,5 +6890,5 @@ void MainWindow::CargoTemaOscuro(){
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
         qApp->setStyleSheet(ts.readAll());
-    }*/
+    }
 }

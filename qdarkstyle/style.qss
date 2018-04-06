@@ -11,9 +11,9 @@ QWidget {
     background-color: #31363b;
     selection-background-color: #3daee9;
     selection-color: #eff0f1;
-    background-clip: border;
-    border-image: none;
-    border: 0px transparent black;
+    /*background-clip: border;*/
+    /*border-image: none;*/
+    border: 1px black;
     outline: 0;
 }
 
@@ -246,7 +246,7 @@ QMenu::right-arrow {
 
 QWidget:disabled {
     color: #454545;
-    background-color: #31363b;
+    /*background-color: #31363b;*/
 }
 
 QAbstractItemView {
@@ -258,7 +258,7 @@ QAbstractItemView {
 
 QWidget:focus,
 QMenuBar:focus {
-    border: 1px solid #3daee9;
+    /*border: 1px solid #3daee9;*/
 }
 
 QTabWidget:focus,
@@ -299,6 +299,12 @@ QAbstractScrollArea {
     border-radius: 2px;
     border: 1px solid #76797C;
     background-color: transparent;
+}
+
+QLabel {
+    border-radius: 2px;
+    border: 1px solid #232629;
+    /*background-color: transparent;*/
 }
 
 QScrollBar:horizontal {
@@ -1037,7 +1043,7 @@ QPushButton::menu-indicator {
 }
 
 QTableView {
-    border: 1px solid #76797C;
+    border: 1px solid #31363b;
     gridline-color: #31363b;
     background-color: #232629;
 }
@@ -1073,8 +1079,8 @@ QHeaderView::section {
     background-color: #31363b;
     color: #eff0f1;
     padding: 5px;
-    border: 1px solid #76797C;
-    border-radius: 0px;
+   /* border: 1px solid #76797C;*/
+    border-radius: 1px;
     text-align: center;
 }
 

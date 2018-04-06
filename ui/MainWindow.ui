@@ -188,8 +188,23 @@
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item row="2" column="0">
          <widget class="QLabel" name="label_pmt_estado_1">
+          <property name="toolTip">
+           <string notr="true"/>
+          </property>
           <property name="autoFillBackground">
            <bool>true</bool>
           </property>
@@ -227,6 +242,9 @@
           </property>
           <property name="text">
            <string/>
+          </property>
+          <property name="margin">
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -2282,7 +2300,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
