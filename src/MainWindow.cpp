@@ -1301,10 +1301,13 @@ void MainWindow::on_pushButton_initialize_clicked()
     QString psoc_alta;
     QString psoc_alta_Tabla;
 
+    UncheckHeads();
+
     arpet->portDisconnect();
     for (int i=0;i<checkedHeads.length();i++)
     {
         int head_index=checkedHeads.at(i);
+
         /* Inicialización del Cabezal */
         try
         {
@@ -1402,6 +1405,9 @@ void MainWindow::on_pushButton_initialize_clicked()
             default:
                 break;
             }
+
+
+
 
             if (initHead(head_index).length()==0){
                 ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
@@ -3722,20 +3728,20 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     if (state && !disable)
     {
         qt_text="Adquiriendo";
-        setButtonState(state,ui->pushButton,disable);
+        setButtonState(state,ui->pb_Autocalib,disable);///qwerty
     }
     else if (!state && !disable)
     {
         qt_text="Error";
-        setButtonState(state,ui->pushButton,disable);
+        setButtonState(state,ui->pb_Autocalib,disable);
     }
     else
     {
         qt_text="Adquirir";
-        setButtonState(state,ui->pushButton,disable);
+        setButtonState(state,ui->pb_Autocalib,disable);
     }
-    ui->pushButton->setText(qt_text);
-    ui->pushButton->update();
+    ui->pb_Autocalib->setText(qt_text);
+    ui->pb_Autocalib->update();
 }
 /**
  * @brief MainWindow::setButtonConnectState
@@ -4771,9 +4777,28 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 }
 
 /* Autocalib */
-void MainWindow::on_pushButton_toggled(bool checked)
+void MainWindow::on_pb_Autocalib_toggled(bool checked)
 {
     QList<QString> qlist = pmt_select_autocalib->GetPMTSelectedList();
+    int head_index;
+    error_code error_code;
+    arpet->portDisconnect();
+
+    head_index=ui->comboBox_head_select_graph_2->currentText().toInt();
+
+    port_name=Cab+QString::number(head_index);
+
+    if(debug) cout<<"Cabezal: "<< QString::number(head_index).toStdString()<<endl;
+    try{
+    error_code= arpet->portConnect(port_name.toStdString().c_str());
+    if (error_code.value()!=0){
+        arpet->portDisconnect();
+        Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+        throw exception_Cabezal_Apagado;
+    }
+
+    calibrador->setPort_Name(port_name);
+    worker->setPortName(port_name);
 
     if (checked)
     {
@@ -4829,7 +4854,7 @@ void MainWindow::on_pushButton_toggled(bool checked)
             return;
         }
         calibrador->setTiempo_adq(Tiempo_adq.toInt());
-        checked_Cab[0]=ui->comboBox_head_select_graph_2->currentIndex()+1;
+        checked_Cab.append(ui->comboBox_head_select_graph_2->currentIndex()+1);
         calibrador->setCab_List(checked_Cab);
 
         arpet->portDisconnect();
@@ -4848,6 +4873,15 @@ void MainWindow::on_pushButton_toggled(bool checked)
             emit sendCalibAbortCommand(true);
         }
         setIsAbortCalibFlag(true);
+    }
+
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+        if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        setLabelState(false, hv_status_table[head_index-1], true);
     }
 }
 
@@ -6997,5 +7031,22 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     }
     else{
 
+    }
+}
+
+
+void MainWindow::UncheckHeads(){
+
+    QList<int> checkedHeads=getCheckedHeads();
+
+
+    for (int i=0;i<checkedHeads.length();i++)
+    {
+        int head_index=checkedHeads.at(i);
+
+        setLabelState(false, hv_status_table[head_index-1], true);
+        setLabelState(false, pmt_status_table[head_index-1], true);
+        setLabelState(false, head_status_table[head_index-1], true);
+        setLabelState(false, calib_status_table[head_index-1], true);
     }
 }

@@ -224,7 +224,7 @@ private slots:
 
     /* AutoCalib */
 //    void on_pushButton_clicked();
-    void on_pushButton_toggled(bool checked);
+    void on_pb_Autocalib_toggled(bool checked);
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
     void on_pushButton_triple_ventana_4_clicked();
@@ -429,6 +429,7 @@ private:
     void Cabezal_On_Off(int Cabezal, bool estado);
     void Cabezales_On_Off(bool estado);
     string getEstadoCabezal(int head);
+    void UncheckHeads(void);
     int  ogl_flag;
 
     /* Area de prueba/testing */

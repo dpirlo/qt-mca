@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -4289,36 +4289,6 @@ calibrar</string>
        <string>Cabezal:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_54">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>10</y>
-        <width>121</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>11</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Canal Objetivo</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="Canal_objetivo">
-      <property name="geometry">
-       <rect>
-        <x>350</x>
-        <y>10</y>
-        <width>81</width>
-        <height>33</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QCustomPlot" name="specPMTs_2" native="true">
       <property name="geometry">
        <rect>
@@ -4332,7 +4302,7 @@ calibrar</string>
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pb_Autocalib">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -4356,6 +4326,9 @@ calibrar</string>
         <width>81</width>
         <height>33</height>
        </rect>
+      </property>
+      <property name="text">
+       <string>20</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_55">
