@@ -2692,12 +2692,16 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
     // Maximo de la gausseana
     uword max_idx, std_idx;
-    double Gauss_max = canales_peak.max(max_idx);
-    double Gauss_mean = max_idx;
+    double Gauss_max;
+    double Gauss_mean;
+    if (ndatos!=0) Gauss_max = canales_peak.max(max_idx);
+    else Gauss_max=0;
+    Gauss_mean = max_idx;
+
 
     // Busco el 68 % desde el lado de mas alta energia
     uvec mayores_std = find(canales_peak > 0.68*Gauss_max);
-    mayores_std.max(std_idx);
+    if (Gauss_max>0) mayores_std.max(std_idx);
     double Gauss_std = std_idx;
 
     double p[NP];
@@ -2795,13 +2799,11 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
 
 
 
-
-
     //double maximo_pico = canales_peak.max();
     double maximo_pico = Canales_mat(round(Pico_calculado.canal_pico));
     // Calculo el FWHM usando el espectro
     i = 0;
-    while (Pico_calculado.limites_FWHM[0] == 0 && i<255)
+    while (Pico_calculado.limites_FWHM[0] == 0 && i<255  && Pico_calculado.canal_pico!=1)
     {
         if (maximo_pico*0.5 >=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
         {
@@ -2810,7 +2812,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         i++;
     }
     i = 0;
-    while (Pico_calculado.limites_FWHM[1] == 0 && i<255 )
+    while (Pico_calculado.limites_FWHM[1] == 0 && i<255 && Pico_calculado.canal_pico!=1 )
     {
         if (maximo_pico*0.5 >=  Canales_mat(round(Pico_calculado.canal_pico + i))  )
         {
@@ -2823,7 +2825,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
     // Calculo el FWTM usando el espectro
     // Arranco desdel el FWHM
     i = Pico_calculado.canal_pico + 1 - Pico_calculado.limites_FWHM[0];
-    while (Pico_calculado.limites_FWTM[0] == 0 && i<255)
+    while (Pico_calculado.limites_FWTM[0] == 0 && i<255 && Pico_calculado.canal_pico!=1)
     {
         if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico - i))  )
         {
@@ -2840,7 +2842,7 @@ Pico_espectro AutoCalib::Buscar_Pico(double* Canales, int num_canales)
         i++;
     }
     i = Pico_calculado.limites_FWHM[1] - Pico_calculado.canal_pico + 1;
-    while (Pico_calculado.limites_FWTM[1] == 0 && i<255)
+    while (Pico_calculado.limites_FWTM[1] == 0 && i<255 && Pico_calculado.canal_pico!=1)
     {
         if (maximo_pico*0.1 >=  Canales_mat(round(Pico_calculado.canal_pico + i))  )
         {
