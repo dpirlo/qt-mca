@@ -691,15 +691,108 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
 
 
+    // Ahora filtro ruido de alta energia, este proceso es por PMT
+
+    stream<<endl;
+    stream<<" %---------------------- FILTRO ENERGIA POR PMT ------------------------------"<<endl;
+    stream<<endl;
+
+    urowvec indices_maximo_PMT;
+    mat Eventos_max_PMT;
+    rowvec Fila_max_PMT;
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    {
+
+        stream<<" %   PMT : "<<(index_PMT_cent+1)<<endl;
+
+
+        // Extraigo los eventos en los cuales el PMT fue maximo
+        indices_maximo_PMT = index_max( Energia_calib_FWHM, 0 );
+
+        uvec indices_aux_PMT = find(indices_maximo_PMT == index_PMT_cent);
+
+        Eventos_max_PMT =  Energia_calib_FWHM.cols(indices_aux_PMT);
+        Fila_max_PMT = Eventos_max_PMT.row(index_PMT_cent);
+
+        // Extraigo la suma y el histograma para este PMT
+        rowvec Suma_canales_PMT = sum(Eventos_max_PMT , 0);
+        centros_hist = linspace<vec>(0,8000,BinsHist);
+        espectro_suma_crudo = hist(Suma_canales_PMT, centros_hist);
+
+        // Saco la suma de los canales del evento
+
+
+        // Guardo el espectro inicial
+        vec_log = arma::conv_to<vec>::from(espectro_suma_crudo);
+        stream<<"       Eventos_maximo_Suma_Full_PMT_"<<index_PMT_cent+1<<"_Vec_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
+
+        // Busco el pico y el FWTM
+        struct Pico_espectro pico_PMT_sin_calib;
+        aux_espectro[BinsHist];
+        for (int i=0 ; i < BinsHist ; i++)
+        {
+            aux_espectro[i] = espectro_suma_crudo(i);
+        }
+        pico_PMT_sin_calib = Buscar_Pico(aux_espectro, BinsHist);
+
+        stream<<" %   Datos pico: "<<endl;
+        stream<<" %   FWHM: "<<pico_PMT_sin_calib.FWHM*100<<" % - "<<centros_hist(pico_PMT_sin_calib.limites_FWHM[0])<<" ; "<<centros_hist(pico_PMT_sin_calib.limites_FWHM[1])<<endl;
+        stream<<" %   FWTM: "<<pico_PMT_sin_calib.FWTM*100<<" % - "<<centros_hist(pico_PMT_sin_calib.limites_FWTM[0])<<" ; "<<centros_hist(pico_PMT_sin_calib.limites_FWTM[1])<<endl;
+        stream<<" %   Canal pico: "<<centros_hist(pico_PMT_sin_calib.canal_pico)<<endl;
+
+        // Color y marker random
+        param[0]=rand()%245+10;//R
+        param[1]=rand()%245+10;//G
+        param[2]=rand()%245+10;//B
+        param[3]=rand()%5+1; //LineStyle
+        param[4]=rand()%14+1;//ScatterShape
+        param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
+        // ----------------------- Ploteo
+        // Paso los vectores a Qvector para plotear
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
+        nombre_plot = QString::number(index_PMT_cent+1);
+        if (plotear)
+        {
+            plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
+            Espectro_PMT_emergente[cab_num_act].show();
+            Espectro_PMT_emergente[cab_num_act].resize(1000,500);
+        }
+        qApp->processEvents();
+
+
+        // Conservo solo los eventos dentro del FWTM
+        //mat Energia_calib_FWHM;                   indices_aux_PMT
+        //mat Tiempo_calib_FWHM;
+        //indices_aux = find(espectro_suma_crudo < centros_hist(pico_PMT_sin_calib.limites_FWTM[0]));
+        //stream<<10<<endl;
+        uvec indices_aux_low = find(espectro_suma_crudo < centros_hist(pico_PMT_sin_calib.limites_FWTM[0]));
+        //stream<<11<<endl;
+        //stream.flush();
+        uvec indices_aux_high = find(Suma_canales_PMT > centros_hist(pico_PMT_sin_calib.limites_FWTM[1]));
+        //stream<<0<<endl;
+        indices_aux = join_cols(indices_aux_low, indices_aux_high);
+        uvec indices_erase = indices_aux_PMT.rows(indices_aux);
+
+        Energia_calib_FWHM = erase_columns(&Energia_calib_FWHM, indices_erase);
+        Tiempo_calib_FWHM = erase_columns(&Tiempo_calib_FWHM, indices_erase);
+
+
+
+
+
+
+    }
+    // Borro los espectros completos para dar paso a los filtrados
+    Espectro_PMT_emergente[cab_num_act].clearGraphs();
+
 
 
     double canal_norm[CANTIDADdEpMTS];
 
 
-    urowvec indices_maximo_PMT;
-    mat Eventos_max_PMT;
+
     mat Tiempos_max_PMT;
-    rowvec Fila_max_PMT;
     double maximo_abs_PMT;
     double limite_actual;
     int eventos_centroide;
@@ -929,6 +1022,14 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     stream<<"               Ce_pre_cal_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
+
+
+
+
+    // Me quedo con la matriz filtrada
+    Energia_calib[cab_num_act] = Energia_calib_FWHM;
+    Tiempos_full_calib[cab_num_act] = Tiempo_calib_FWHM;
+
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------SALIDA DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
@@ -4078,6 +4179,26 @@ void AutoCalib::acotarparametros(double *p, double *pmax, double *pmin, int npar
         if(p[i]>pmax[i]) p[i]=pmax[i];
         if(p[i]<pmin[i]) p[i]=pmin[i];
     }
+}
+
+
+mat AutoCalib::erase_columns(mat *matriz, uvec erase_list)
+{
+    erase_list = sort(erase_list);
+    for (uint idx_erase = 0 ; idx_erase < erase_list.size() ; idx_erase++)
+    {
+        //matriz->shed_col(erase_list.at(idx_erase)-idx_erase);
+        matriz->at(0,erase_list.at(idx_erase)) = -1;
+    }
+
+    uvec indices_aux = find(matriz->row(0) >= 0);
+
+    mat matriz_cortada;
+
+    matriz_cortada = matriz->cols(indices_aux);
+
+    return matriz_cortada;
+
 }
 
 
