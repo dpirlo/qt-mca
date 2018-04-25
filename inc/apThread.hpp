@@ -60,7 +60,9 @@ namespace ap {
       bool debug;
       int time_sec;
       bool log_finished;
+      bool Timer_concluded=true;
       QString etime;
+
 
   signals:
       /**
@@ -189,6 +191,7 @@ namespace ap {
        */
       void clearGraphsHeads();
 
+
   public slots:
       void getLogWork();
       void setAbortBool(bool abort);
@@ -199,6 +202,10 @@ namespace ap {
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
       void getElapsedTime();
       void getMCA();
+      void TimerUpdate();
+
+
+
 
   public:
       /**

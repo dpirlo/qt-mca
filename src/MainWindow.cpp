@@ -43,12 +43,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
+    QTimer *timerw = new QTimer(this);
+    connect(timerw, SIGNAL(timeout()), this, SLOT(updateCaption()));
 
     CargoTemaOscuro();
 
-    timer->start(1000);
+    timerw->start(1000);
     //parseConfigurationFile(true, "0");
 
     for (int i=1;i<=6;i++){
@@ -178,6 +178,8 @@ void MainWindow::setInitialConfigurations()
     setHitsInit(true);
     setAdquireMode(CABEZAL);
     Estado_Cabezales.reserve(6);
+
+
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -3397,21 +3399,10 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 
     if(checked)
     {
-//        if(!arpet->isPortOpen())
-//        {
-//            writeFooterAndHeaderDebug(true);
-//            setButtonLoggerState(false);
-//            setIsAbortLogFlag(false);
-//            QMessageBox::critical(this,tr("Error"),tr("No se puede acceder al puerto serie. Revise la conexión USB."));
-//            if(debug)
-//            {
-//                cout<<"No se puede acceder al puerto serie. Revise la conexión USB."<<endl;
-//                writeFooterAndHeaderDebug(false);
-//            }
-//            setButtonLoggerState(true, true);
-//            emit ToPushButtonLogger(false);
-//            return;
-//        }
+
+        connect(timer, SIGNAL(timeout()), this, SLOT(TimerUpdate()));
+        timer->setInterval(ui->lineEdit_between_logs->text().toInt()*1000);
+        timer->start();
 
         QList<int> checkedHeads=getCheckedHeads();
         worker->setCheckedHeads(checkedHeads);
@@ -3419,7 +3410,7 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
         if (ui->checkBox_tasa->isChecked()) worker->setRateBool(true); //Logueo tasa
         //TODO: aca poner el check del log de offset
         worker->setDebugMode(debug);
-        worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
+        //worker->setTimeBetweenLogs(ui->lineEdit_between_logs->text().toInt());
 
         worker->abort();
         thread->wait();
@@ -3428,15 +3419,16 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
     else
     {
         //setButtonLoggerState(true,true);
+        worker->abort();
         if (is_abort_log)
         {
             if (debug) cout<<"Atención!! Se emitió una señal de aborto al thread: "<<thread->currentThreadId()<<endl;
-            //emit sendAbortCommand(true);
+
         }
     }
     setButtonLoggerState(checked);
-    //setIsAbortLogFlag(~checked);
-    //emit sendAbortCommand(~checked);
+    setIsAbortLogFlag(~checked);
+    emit sendAbortCommand(~checked);
 }
 
 /* Métodos generales del entorno gráfico */
@@ -3777,17 +3769,17 @@ void MainWindow::setButtonLoggerState(bool state, bool disable)
     if (state && !disable)
     {
         qt_text="Logueando";
-        setButtonState(state,ui->pushButton_logguer,disable);
+        //setButtonState(state,ui->pushButton_logguer,disable);
     }
     else if (!state && !disable)
     {
-        qt_text="Error";
-        setButtonState(state,ui->pushButton_logguer,disable);
+        qt_text="Cancelado";
+        //setButtonState(state,ui->pushButton_logguer,disable);
     }
     else
     {
         qt_text="Iniciar";
-        setButtonState(state,ui->pushButton_logguer,disable);
+        //setButtonState(state,ui->pushButton_logguer,disable);
     }
     ui->pushButton_logguer->setText(qt_text);
     ui->pushButton_logguer->update();
@@ -7050,3 +7042,8 @@ void MainWindow::UncheckHeads(){
         setLabelState(false, calib_status_table[head_index-1], true);
     }
 }
+
+void MainWindow::TimerUpdate(){
+    worker->TimerUpdate();
+}
+

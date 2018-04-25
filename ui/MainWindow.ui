@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -4123,10 +4123,10 @@ calibrar</string>
      <widget class="QCalendarWidget" name="calendarWidget">
       <property name="geometry">
        <rect>
-        <x>690</x>
+        <x>680</x>
         <y>10</y>
-        <width>311</width>
-        <height>149</height>
+        <width>321</width>
+        <height>151</height>
        </rect>
       </property>
      </widget>
@@ -7408,7 +7408,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

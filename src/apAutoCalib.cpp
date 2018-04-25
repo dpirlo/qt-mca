@@ -156,7 +156,7 @@ int AutoCalib::calibrar_simple()
             cout<<"; Cuentas Totales: "<<cuentas_Totales<<"; Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
         }
 
-        cout<<"PMTs calibrados: "<<PMTsEnPico<<endl;
+        //cout<<"PMTs calibrados: "<<PMTsEnPico<<endl;
 
         int Pico_Obj_Max = 0;
         int PMT_Pico_Max;
@@ -171,7 +171,7 @@ int AutoCalib::calibrar_simple()
         cout<<"PMT_Max= "<<PMT_Pico_Max<<"; Diff_Pico_Max = "<<diff_Pico_Max<<endl;
 
         //if(PMTsEnPico < PMTs_List.length())
-        if(diff_Pico_Max > 2)
+        if(diff_Pico_Max > 20)
         {
             // Comparo la posición actual con la objetivo
             // usando armadillo
@@ -391,8 +391,9 @@ int AutoCalib::calibrar_simple()
             iter_actual++;
         }
         else
-            for (int i = 0 ; i < PMTs_List.length(); i++)
-                cout<<PMTs_List[i]<<'\t'<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
+            PMTsEnPico = PMTs_List.length();
+//            for (int i = 0 ; i < PMTs_List.length(); i++)
+//                cout<<PMTs_List[i]<<'\t'<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
     }
 
     catch (Exceptions ex)
