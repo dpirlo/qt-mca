@@ -353,6 +353,9 @@ namespace ap {
             // Flag de RAM
             bool IsLowRAM;
 
+            // Borrar lista de elementos de matriz
+            mat erase_columns(mat *matriz, uvec erase_list);
+
 
             // Busqueda pico chino
             int detect_peak(const double* data, int data_count, int* emi_peaks, int* num_emi_peaks, int max_emi_peaks, int* absop_peaks, int* num_absop_peaks, int max_absop_peaks, double delta, int emi_first);
