@@ -62,9 +62,18 @@ namespace ap {
       bool log_finished;
       bool Timer_concluded=true;
       QString etime;
+      QStringList commands;
+
+  private:    //funciones privadas
+      bool Grabar_FPGA();
 
 
   signals:
+      /**
+       * @brief GrabarFPGArequested
+       */
+      void GrabarFPGArequested();
+
       /**
        * @brief logRequested
        */
@@ -184,6 +193,10 @@ namespace ap {
        * @brief clearGraphsPMTs
        */
       void clearGraphsPMTs();
+
+      /**
+       * @brief clearGraphsCalib
+       */
       void clearGraphsCalib();
 
       /**
@@ -191,6 +204,15 @@ namespace ap {
        */
       void clearGraphsHeads();
 
+      /**
+       * @brief StatusFinishFPGA
+       * @param status
+       */
+      void StatusFinishFPGA(bool status);
+
+      /**
+       * @brief requestGrabarFPGA
+       */
 
   public slots:
       void getLogWork();
@@ -200,9 +222,13 @@ namespace ap {
       void setCentroidMode(bool mode) { _centroid = mode; }
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
+      void setCommands(QStringList Command){commands=(Command);}
       void getElapsedTime();
       void getMCA();
       void TimerUpdate();
+      void GrabarFPGA( );
+      void requestGrabarFPGA();
+
 
 
 
@@ -215,7 +241,7 @@ namespace ap {
       /**
        * @brief cancelLogging
        */
-      void setCheckedHeads(QList<int> list) {checkedHeads = list;}
+      void setCheckedHeads(QList<int> list) {checkedHeads = list; }
       /**
        * @brief setPMTSelectedList
        * @param list

@@ -137,6 +137,7 @@ private slots:
     void resetGraphZoomPMT();
     void resetGraphZoomHead();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
+    void checkStatusFPGA(bool status);
 
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
@@ -446,11 +447,8 @@ private:
     void Cabezales_On_Off(bool estado);
     string getEstadoCabezal(int head);
     void UncheckHeads(void);
-    QTimer *timer = new QTimer(0);
-    int  ogl_flag;
-    bool Grabar_FPGA(void);
-    QList<QString> array_PMT;
-    int offset_MEM  = 0;
+
+
 
 
 
@@ -473,9 +471,11 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
-    QMutex mMutex, bMutex;
+    QMutex mMutex, bMutex, Mutex_fpga;
     QThread *thread;
     Thread *worker;
+    QThread *thread_fpga;
+    Thread *worker_fpga;
     QThread *etime_th;
     Thread *etime_wr;
     QThread *mcae_th;
@@ -529,6 +529,14 @@ private:
     QVector<double> channels_ui;
     int pmt_ui_current, pmt_ui_previous;
     int headIndex;
+
+    QTimer *timer = new QTimer(0);
+    int  ogl_flag;
+    QStringList Mensaje_Grabar_FPGA(void);
+    QList<QString> array_PMT;
+    int offset_MEM  = 0;
+
+    QMovie *movie_cargando = new QMovie("/home/ar-pet/Downloads/cargando2.gif");
 
     /* Area de prueba/testing */
 
