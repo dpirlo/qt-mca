@@ -79,6 +79,8 @@ void AutoCalibThread::getCalib()
 
             calibrador->calibrar_simple();
 
+            cout<<"PMT calibrados: "<<calibrador->PMTsEnPico<<endl;
+
             if(calibrador->PMTsEnPico == calibrador->PMTs_List.length())
             {
                 cout<<"Lista calibrada para copiar a archivo:"<<endl;

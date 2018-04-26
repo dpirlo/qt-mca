@@ -162,6 +162,7 @@ private slots:
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();
+    void TimerUpdate();
 
 
     /* Slots de sincronización en el entorno gráfico */
@@ -445,6 +446,7 @@ private:
     void Cabezales_On_Off(bool estado);
     string getEstadoCabezal(int head);
     void UncheckHeads(void);
+    QTimer *timer = new QTimer(0);
     int  ogl_flag;
     bool Grabar_FPGA(void);
     QList<QString> array_PMT;
