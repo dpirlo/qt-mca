@@ -75,6 +75,10 @@
 #define Cab6 "/dev/UART_Cab6"
 #define Cab "/dev/UART_Cab"
 
+#define CANTIDAD_ELEMENTOS_PLANAR 97
+#define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
+
+
 
 
 using namespace ap;
@@ -188,6 +192,10 @@ private slots:
     void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
+    /* FPGA */
+    void on_checkBox_FPGA_2_clicked(bool checked);
+    void on_pushButton_FPGA_4_clicked();
+
     /* Buttons */
     void on_pushButton_triple_ventana_clicked();
     void on_pushButton_hv_clicked();
@@ -242,6 +250,7 @@ private slots:
     void on_pushButton_triple_ventana_12_clicked();
     void on_pushButton_triple_ventana_14_clicked();
     void on_pushButton_3_clicked();
+
 
     /* Reconstrucción */
     void on_pushButton_5_clicked();
@@ -344,6 +353,12 @@ private slots:
 
     void on_pbAdquirir_toggled(bool checked);
 
+    void on_pushButton_FPGA_1_clicked();
+    void on_pushButton_FPGA_3_clicked();
+
+    void on_comboBox_FPGA_Cab_currentIndexChanged(int index);
+    void on_comboBox_FPGA_DISP_currentIndexChanged(int index);
+
 private:
     void connectSlots();
     QString openConfigurationFile();
@@ -431,6 +446,12 @@ private:
     string getEstadoCabezal(int head);
     void UncheckHeads(void);
     int  ogl_flag;
+    bool Grabar_FPGA(void);
+    QList<QString> array_PMT;
+    int offset_MEM  = 0;
+
+
+
 
     /* Area de prueba/testing */
 
@@ -486,7 +507,20 @@ private:
     QVector< QVector<double> > Matrix_coefT_values;
     QVector< QVector<double> > Matrix_coefest_values;
 
-
+    /* Programcion JTAG */
+    const QString PMT_posJTAG[48]= {"7","5","3","1","89","91","93","95","15","13","11","9","81","83","85","87","23","21","19","17","73","75","77","79","31","29","27","25","65","67","69","71","39","37","35","33","57","59","61","63","47","45","43","41","49","51","53","55"} ;
+    //PMT_posJTAG[48]= {4,3,2,1,45,46,47,48,8,7,6,5,41,42,43,44,12,11,10,9,37,38,39,40,16,15,14,13,33,34,35,36,20,19,18,17,29,30,31,32,24,23,22,21,25,26,27,28} ; //Posicion que ocupa cada PMT en base a conexion en la cadena JTAG
+    QString path_Planar_bit;
+    QString path_SP3_bit;
+    QString path_Coin_bit;
+    QString model_planar;
+    QString model_SP3;
+    QString model_SP3_MEM;
+    QString model_coin;
+    QString device_planar;
+    QString device_SP3;
+    QString device_SP3_MEM;
+    QString device_coin;
 
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;

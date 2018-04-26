@@ -7238,10 +7238,6 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
     ui->label_gif_2->setScaledContents( true );
     ui->label_gif_2->show();
     return;
-
-
-
-
 }
 
 bool MainWindow::Grabar_FPGA(void)
@@ -7323,9 +7319,6 @@ bool MainWindow::Grabar_FPGA(void)
 
             file.close();
 
-
-
-
         // Identifico los dispositivos conectados y los listo
 
             QProcess read_device;
@@ -7355,10 +7348,7 @@ bool MainWindow::Grabar_FPGA(void)
 
             read_device.close();
 
-
-
         // Grabado de dispositivos
-
 
                 if (device == device_SP3 || device == device_SP3_MEM)
                 {
@@ -7449,8 +7439,6 @@ bool MainWindow::Grabar_FPGA(void)
                         cout << "No coincide el dispositivo: 0 con el device de FPGA" << device.toStdString() << endl;
                         return false;
                     }
-
-
 
                return true;
 
