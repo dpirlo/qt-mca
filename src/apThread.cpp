@@ -576,8 +576,9 @@ bool Thread::Adquirir()
                 qDebug()<<"Directory could not be created";
             }
 
-            QProcess Adquisidor_copia;
             Adquisidor->waitForStarted();
+            QProcess Adquisidor_copia;
+
             input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+".raw";
             cout << input.toStdString() << endl;
             Adquisidor->start(input);
@@ -586,19 +587,19 @@ bool Thread::Adquirir()
             if(!output.isEmpty()) return false;
             input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
             cout << input.toStdString() << endl;
-            Adquisidor->start(input);
-            Adquisidor->waitForFinished(-1);
-            output=(Adquisidor->readAllStandardError());
+            Adquisidor_copia.start(input);
+            Adquisidor_copia.waitForFinished(-1);
+            output=(Adquisidor_copia.readAllStandardError());
             if(!output.isEmpty()) return false;
-
+            input= "mv " +commands.at(3) + " " + mpath;
+            cout << input.toStdString() << endl;
+            Adquisidor_copia.start(input);
+            Adquisidor_copia.waitForFinished(-1);
+            output=(Adquisidor_copia.readAllStandardError());
+            if(!output.isEmpty()) return false;
             Adquisidor->close();
+            Adquisidor_copia.close();
 
-            cout<<output.toStdString()<<endl;
-
-            if(output.isEmpty())
-                return true;
-            else
-                return false;
         }
         else return false;
     return true;
@@ -617,3 +618,26 @@ void Thread::prtstdoutput(){
 void Thread::prtstderror(){
    // cout<<Adquisidor.readAllStandardError().toStdString()<<endl;
 }
+
+
+/*
+void Thread::MoveToServer(){
+    QProcess Adquisidor_copia;
+    QString input,output;
+  //  if(){
+        input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
+        cout << input.toStdString() << endl;
+        Adquisidor_copia->start(input);
+        Adquisidor_copia->waitForFinished(-1);
+        output=(Adquisidor_copia->readAllStandardError());
+        if(!output.isEmpty()) return false;
+        input= "mv " +commands.at(3) + " " + mpath;
+        cout << input.toStdString() << endl;
+        Adquisidor_copia->start(input);
+        Adquisidor_copia->waitForFinished(-1);
+        output=(Adquisidor_copia->readAllStandardError());
+        if(!output.isEmpty()) return false;
+//}
+    Adquisidor_copia->close();
+
+}*/

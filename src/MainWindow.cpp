@@ -1773,7 +1773,7 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
         error_code=arpet->portConnect("/dev/UART_Coin");
         if (error_code.value()!=0){
             arpet->portDisconnect();
-            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            Exceptions exception_Cabezal_Apagado("Está Coincidencia apagado");
             throw exception_Cabezal_Apagado;
         }
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
@@ -7109,6 +7109,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     QString psoc_alta_Tabla;
     QStringList commands;
     QString NombredeArchivo;
+    QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
     arpet->portDisconnect();
 
 
@@ -7176,11 +7177,24 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         //                          3er valor Nombre de Archivo
         ///////////////////////////////////////////////////////////////////////////////////////
 
-        worker_adq->setCommands(commands);
-        worker_adq->requestAdquirir();
-        adq_running = true;
 
-        return;
+
+
+        QString logFileAdq = "./LOG_Adquisicion_"+time+".txt";
+        QFile logger( logFileAdq );
+        QString log;
+        logger.open(QIODevice::WriteOnly | QIODevice::Append);
+
+        log.append(ui->lineEdit_Titulo_Medicion->text()+"\n");
+        log.append(ui->Comentarios_Adquisicion->toPlainText()+"\n");
+
+
+
+
+
+
+
+        //return;
 
         /////////////////////////Fin de verificacion previa antes de configurar y adquirir//////////////////////////
 
@@ -7188,10 +7202,41 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         /////////////// CONFIGURACION Y CARGA DE TABLAS
         for (int i=0;i<Estado_Cabezales.length();i++)
         {
+
             int head_index=Estado_Cabezales.at(i);
             /* Inicialización del Cabezal */
             try
             {
+
+
+                log.append("[CAB-"+QString::number(head_index)+"]\t");
+                log.append("[PMT-HVTABLE]\t");
+                log.append("[PMT-ENERGIA]\t");
+                log.append("[PMT-XPOS]\t");
+                log.append("[PMT-YPOS]\t");
+                log.append("[PMT-TIEMPO]\t");
+                log.append("\n");
+
+                for (int i=0;i<PMTs;i++){
+                    log.append(QString::number(i)+"\t");
+                    log.append(QString::number(hvtable_values[0][i])+"\t");
+                    log.append(QString::number(Matrix_coefenerg_values[0][i])+"\t");
+                    log.append(QString::number(Matrix_coefx_values[0][i])+"\t");
+                    log.append(QString::number(Matrix_coefy_values[0][i])+"\t");
+                    log.append(QString::number(Matrix_coefT_values[0][i])+"\t");
+                    log.append("\n");
+
+                }
+
+                log.append("[LOW-LIMIT], "+ QString::number(LowLimit[1-1])+"\n");
+
+                log.append("[PMT-EST], ");
+                log.append(QString::number(Matrix_coefest_values[0][0])+", ");
+                log.append("\n");
+                log.append("[PMT-TINTER], ");
+                log.append(QString::number(coefTInter_values[0])+"\n");
+
+
                 port_name=Cab+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
                 worker->setPortName((port_name));
@@ -7238,19 +7283,8 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 //hv_status_table[head_index-1]->setText(psoc_alta);
 
                 setCalibrationTables(head_index);
-                //ui->lineEdit_alta->setText(QString::number(AT));
-                //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-                //hv_status_table[head_index-1]->setText(QString::number(AT));
-
-                initCoincidenceMode();
-                usleep(5000);
-                setCoincidenceModeWindowTime();
-                usleep(5000);
-                setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-                usleep(5000);
 
                 arpet->portDisconnect();
-
 
             }
             catch(Exceptions & ex)
@@ -7261,6 +7295,33 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 setLabelState(false, hv_status_table[head_index-1], true);
             }
         }
+
+
+        //head = ui->comboBox_head_select_calib->currentText();
+
+
+        if(ui->comboBox_aqd_mode->currentIndex()==1){
+            if(debug) cout<<"Modo Calibración en el cabezal: "<<ui->cb_Calib_Cab->currentText().toStdString()<<endl;
+            setCalibrationMode(ui->cb_Calib_Cab->currentText());
+            usleep(5000);
+            setTimeModeCoin(COIN_CALIB, ui->cb_Calib_Cab->currentText());
+        }else{
+            if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            usleep(5000);
+            setTimeModeCoin(COIN_NORMAL);
+        }
+
+        logger.write( log.toUtf8());
+        logger.close();
+        commands.append(logFileAdq);
+        worker_adq->setCommands(commands);
+        worker_adq->requestAdquirir();
+        adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else{
@@ -7664,14 +7725,10 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 }
 
 
-
-
-
 void MainWindow::on_comboBox_FPGA_DISP_currentIndexChanged(int index)
 {
 
 }
-
 
 void MainWindow::on_checkBox_FPGA_2_clicked(bool checked)
 {

@@ -4376,7 +4376,7 @@ calibrar</string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QTextEdit" name="textEdit">
+      <widget class="QTextEdit" name="Comentarios_Adquisicion">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -8004,7 +8004,7 @@ calibrar</string>
   <tabstop>cb_Path_alternativo_adq</tabstop>
   <tabstop>lineEdit_aqd_path_file</tabstop>
   <tabstop>pushButton_aqd_file_open</tabstop>
-  <tabstop>textEdit</tabstop>
+  <tabstop>Comentarios_Adquisicion</tabstop>
   <tabstop>pbAdquirir</tabstop>
   <tabstop>comboBox_head_select_graph_2</tabstop>
   <tabstop>Tiempo_adq_box</tabstop>
