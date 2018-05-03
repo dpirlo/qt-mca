@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_aqd_path_file->hide();
     ui->pushButton_aqd_file_open->hide();
     ui->cb_Calib_Cab->hide();
+    ui->lineEdit_aqd_file_size->clear();
 
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
@@ -6642,15 +6643,22 @@ void MainWindow::updateCaption(){
 
     if(adq_running){
         QString mensaje;
+        QString input, output;
 
-        QFile myFile(nombre_archivo_adq);
-        if (myFile.open(QIODevice::ReadOnly)){
-            size = myFile.size();  //when file does open.
-            myFile.close();
-        }
+        QProcess size_of_adq;
+        size_of_adq.waitForStarted();
+        input= "du -h -m "+nombre_archivo_adq+".raw";
+        //cout << input.toStdString() << endl;
+        size_of_adq.start(input);
+        size_of_adq.waitForFinished(10000);
 
-        mensaje = "Nombre del archivo: " + nombre_archivo_adq + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + QString::number(size) + "Mb";
-        cout<< mensaje.toStdString() <<endl;
+        output=(size_of_adq.readAllStandardOutput());
+        output=output.left(output.indexOf("\t"));
+        mensaje = "Nombre del archivo: " + nombre_archivo_adq+".raw" + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + output + " MB";
+        if (debug)cout<< mensaje.toStdString() <<endl;
+        size_of_adq.close();
+        ui->progressBar->setValue(output.toInt());
+
     }
 
 
@@ -7131,32 +7139,33 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 return;
             }else{
                 commands.append(ui->lineEdit_aqd_path_file->text());
-                nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
+                //nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
                 if(ui->comboBox_aqd_mode->currentIndex()==1){
-                    NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
+                    NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
                 }else{
-                    NombredeArchivo="acquire_coin.raw";
+                    NombredeArchivo="acquire_coin";
                 }
             }
         }else{
             if(ui->comboBox_aqd_mode->currentIndex()==1){
                 commands.append(path_adq_Calib);
-                nombre_archivo_adq = path_adq_Calib;
-                NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
+                //nombre_archivo_adq = path_adq_Calib;
+                NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
 
             }else{
                 commands.append(path_adq_Coin);
-                nombre_archivo_adq = path_adq_Coin;
-                NombredeArchivo="acquire_coin.raw";
+                //nombre_archivo_adq = path_adq_Coin;
+                NombredeArchivo="acquire_coin";
             }
 
         }
 
 
 
+        ui->progressBar->setRange(0,size_archivo_adq.toInt());
 
         commands.append(NombredeArchivo);
-        nombre_archivo_adq = nombre_archivo_adq + "/" + NombredeArchivo ;
+        nombre_archivo_adq =  NombredeArchivo ;
         worker_adq->abort();
         thread_adq->exit(0);
         usleep(500);

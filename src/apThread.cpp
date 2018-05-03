@@ -542,35 +542,55 @@ bool Thread::Adquirir()
         QString input,output;
         //cout << commands[i].toStdString() << endl;
         QProcess *Adquisidor=new QProcess(this);
+        QString date =QDate::currentDate().toString("yyyy-MM-dd");
+        QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
 
         Adquisidor->waitForStarted();
-        input=  "recvRawEth -s " + commands.at(0); //"echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
-        //Adquisidor->setReadChannel(QProcess::StandardError);
+        input=  "recvRawEth -q -s " + commands.at(0); /// "echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
+
         Adquisidor->start(input );
 
-        //cout<<Adquisidor.readAllStandardError().toStdString()<<endl;
-//        while(Adquisidor.waitForReadyRead(3000000)){
-//          //
-//            if (Adquisidor.readAllStandardError().isEmpty()) cout<<Adquisidor.readAllStandardError().toStdString()+ " "+Adquisidor.readAllStandardOutput().toStdString()<<endl;
-
-//        }
-        //while(!Adquisidor->exitStatus()) ;
         Adquisidor->waitForFinished(-1);
-        output=Adquisidor->readAllStandardOutput();
+        output=Adquisidor->readAllStandardError();
 
 
         //Adquisidor.close();
         if(output.contains("timeout"))
             return false;
-        else
-        {
+        else if(output.contains("FIN")) {
+
+            QDir mDir;
+            QString mpath=commands.at(1)+"/"+date;
+            if (!mDir.exists(mpath))
+            {
+                mDir.mkpath(mpath);
+                qDebug() <<"Created";
+            }
+            else if (mDir.exists(mpath))
+            {
+                qDebug() <<"Already existed";
+            }
+            else
+            {
+                return false;
+                qDebug()<<"Directory could not be created";
+            }
+
             QProcess Adquisidor_copia;
             Adquisidor->waitForStarted();
-            input= "cp /home/ar-pet/GIT/Receptor_Ethernet/" + commands.at(2) + " " + commands.at(1);
+            input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+".raw";
             cout << input.toStdString() << endl;
             Adquisidor->start(input);
-            Adquisidor->waitForFinished(10);
+            Adquisidor->waitForFinished(10000);
             output=(Adquisidor->readAllStandardError());
+            if(!output.isEmpty()) return false;
+            input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
+            cout << input.toStdString() << endl;
+            Adquisidor->start(input);
+            Adquisidor->waitForFinished(-1);
+            output=(Adquisidor->readAllStandardError());
+            if(!output.isEmpty()) return false;
+
             Adquisidor->close();
 
             cout<<output.toStdString()<<endl;
@@ -580,6 +600,7 @@ bool Thread::Adquirir()
             else
                 return false;
         }
+        else return false;
     return true;
 }
 
