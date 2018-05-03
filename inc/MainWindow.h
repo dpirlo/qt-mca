@@ -138,6 +138,8 @@ private slots:
     void resetGraphZoomHead();
     void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
     void checkStatusFPGA(bool status);
+    void checkStatusAdq(bool status);
+    void recieveresetheads();
 
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
@@ -253,7 +255,6 @@ private slots:
     void on_pushButton_triple_ventana_14_clicked();
     void on_pushButton_3_clicked();
 
-
     /* Reconstrucción */
     void on_pushButton_5_clicked();
     void on_pushButton_APIRL_PATH_clicked();
@@ -270,7 +271,7 @@ private slots:
     void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* CUIPET */
-    void on_pushButton_cuipet_aqd_file_open_clicked();
+    void on_pushButton_aqd_file_open_clicked();
 
     /* Buttons de prueba/testing */
 
@@ -352,14 +353,20 @@ private slots:
 
     void on_pushButton_On_Off_Cabs_toggled(bool checked);
 
-
     void on_pbAdquirir_toggled(bool checked);
 
     void on_pushButton_FPGA_1_clicked();
+
     void on_pushButton_FPGA_3_clicked();
 
     void on_comboBox_FPGA_Cab_currentIndexChanged(int index);
+
     void on_comboBox_FPGA_DISP_currentIndexChanged(int index);
+
+    void on_cb_Path_alternativo_adq_toggled(bool checked);
+
+    void on_comboBox_cuipet_aqd_mode_currentIndexChanged(const QString &arg1);
+
 
 private:
     void connectSlots();
@@ -471,11 +478,13 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
-    QMutex mMutex, bMutex, Mutex_fpga;
+    QMutex mMutex, bMutex, Mutex_fpga,Mutex_adq;
     QThread *thread;
     Thread *worker;
     QThread *thread_fpga;
     Thread *worker_fpga;
+    QThread *thread_adq;
+    Thread *worker_adq;
     QThread *etime_th;
     Thread *etime_wr;
     QThread *mcae_th;
@@ -515,6 +524,8 @@ private:
     QString path_Planar_bit;
     QString path_SP3_bit;
     QString path_Coin_bit;
+    QString path_adq_Calib;
+    QString path_adq_Coin;
     QString model_planar;
     QString model_SP3;
     QString model_SP3_MEM;
@@ -537,6 +548,9 @@ private:
     int offset_MEM  = 0;
 
     QMovie *movie_cargando = new QMovie("/home/ar-pet/Downloads/cargando2.gif");
+    QString nombre_archivo_adq;
+    QString size_archivo_adq;
+    bool adq_running = false;
 
     /* Area de prueba/testing */
 

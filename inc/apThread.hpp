@@ -43,6 +43,8 @@ namespace ap {
       void abort();
       string getLocalDateAndTime();
 
+
+
   private:
       shared_ptr<MCAE> arpet;
       QList<int> checkedHeads;
@@ -64,8 +66,12 @@ namespace ap {
       QString etime;
       QStringList commands;
 
+
+      bool running;
+
   private:    //funciones privadas
       bool Grabar_FPGA();
+      bool Adquirir();
 
 
   signals:
@@ -73,6 +79,12 @@ namespace ap {
        * @brief GrabarFPGArequested
        */
       void GrabarFPGArequested();
+
+      /**
+       * @brief AdquisicionRequested
+       */
+      void AdquisicionRequested();
+
 
       /**
        * @brief logRequested
@@ -211,8 +223,13 @@ namespace ap {
       void StatusFinishFPGA(bool status);
 
       /**
-       * @brief requestGrabarFPGA
+       * @brief StatusFinishAdq
        */
+      void StatusFinishAdq(bool status);
+
+      void sendresetHeads();
+
+
 
   public slots:
       void getLogWork();
@@ -222,12 +239,17 @@ namespace ap {
       void setCentroidMode(bool mode) { _centroid = mode; }
       void cancelLogging(bool var) { log_finished = var; }
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
+
       void setCommands(QStringList Command){commands=(Command);}
       void getElapsedTime();
       void getMCA();
       void TimerUpdate();
       void GrabarFPGA( );
       void requestGrabarFPGA();
+      void requestAdquirir();
+      bool Adquirir_handler();
+      void prtstdoutput();
+      void prtstderror();
 
 
 
@@ -272,6 +294,8 @@ namespace ap {
        * @param _sec
        */
       void setTimeBetweenLogs(int _sec) {time_sec = _sec;}
+
+      bool getrunning(){return running;}
 
   };
 

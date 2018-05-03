@@ -34,7 +34,6 @@ Thread::Thread(shared_ptr<MCAE> _arpet, QMutex *_mutex, QObject *parent) :
     mutex(_mutex),
     time_sec(1)
 {
-
 }
 /**
  * @brief Thread::setAbortBool
@@ -222,6 +221,8 @@ void Thread::getLogWork() {
     //                }
     //                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
                     //// FIN TASA
+                    /////////////////////////
+
                     arpet->portDisconnect();
 
                   }
@@ -254,13 +255,14 @@ void Thread::getLogWork() {
                 }
             }
 
-            mutex->unlock();
 
+            emit sendresetHeads();
+
+            mutex->unlock();
         }
 
 
-
-    }
+    }//termina el log por señal de aborto
 
     mutex->lock();
     _logging = false;
@@ -468,6 +470,14 @@ void Thread::GrabarFPGA(){
 
 }
 
+bool Thread::Adquirir_handler()
+{
+//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardOutput()),this,SLOT(prtstdoutput()));
+//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardError()),this,SLOT(prtstderror()));
+    emit StatusFinishAdq(Adquirir());
+
+}
+
 
 bool Thread::Grabar_FPGA()
 {
@@ -496,14 +506,67 @@ bool Thread::Grabar_FPGA()
             cout << output.toStdString() << endl;
             return false;
         }
-
         }
-
         return true;
-
 }
 
 
+bool Thread::Adquirir()
+{
+        QString input,output;
+        //cout << commands[i].toStdString() << endl;
+        QProcess *Adquisidor=new QProcess(this);
+
+        Adquisidor->waitForStarted();
+        input=  "recvRawEth -s " + commands.at(0); //"echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
+        //Adquisidor->setReadChannel(QProcess::StandardError);
+        Adquisidor->start(input );
+
+        //cout<<Adquisidor.readAllStandardError().toStdString()<<endl;
+//        while(Adquisidor.waitForReadyRead(3000000)){
+//          //
+//            if (Adquisidor.readAllStandardError().isEmpty()) cout<<Adquisidor.readAllStandardError().toStdString()+ " "+Adquisidor.readAllStandardOutput().toStdString()<<endl;
+
+//        }
+        //while(!Adquisidor->exitStatus()) ;
+        Adquisidor->waitForFinished(-1);
+        output=Adquisidor->readAllStandardOutput();
 
 
+        //Adquisidor.close();
+        if(output.contains("timeout"))
+            return false;
+        else
+        {
+            QProcess Adquisidor_copia;
+            Adquisidor->waitForStarted();
+            input= "cp /home/ar-pet/GIT/Receptor_Ethernet/" + commands.at(2) + " " + commands.at(1);
+            cout << input.toStdString() << endl;
+            Adquisidor->start(input);
+            Adquisidor->waitForFinished(10);
+            output=(Adquisidor->readAllStandardError());
+            Adquisidor->close();
 
+            cout<<output.toStdString()<<endl;
+
+            if(output.isEmpty())
+                return true;
+            else
+                return false;
+        }
+    return true;
+}
+
+void Thread::requestAdquirir()
+{
+    emit AdquisicionRequested();
+}
+
+void Thread::prtstdoutput(){
+   // cout<<Adquisidor.readAllStandardOutput().toStdString()<<endl;
+}
+
+
+void Thread::prtstderror(){
+   // cout<<Adquisidor.readAllStandardError().toStdString()<<endl;
+}

@@ -42,6 +42,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBox_head_mode_select_config->hide();
     ui->comboBox_head_select_graph->hide();
     ui->comboBox_adquire_mode->hide();
+    ui->lineEdit_aqd_path_file->hide();
+    ui->pushButton_aqd_file_open->hide();
+    ui->cb_Calib_Cab->hide();
 
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
@@ -79,6 +82,11 @@ MainWindow::~MainWindow()
     thread_fpga->wait();
     delete thread_fpga;
     delete worker_fpga;
+
+    worker_adq->abort();
+    thread_adq->wait();
+    delete thread_adq;
+    delete worker_adq;
 
     etime_wr->abort();
     etime_th->wait();
@@ -135,6 +143,9 @@ void MainWindow::setInitialConfigurations()
     worker_fpga = new Thread(arpet, &Mutex_fpga);
     worker_fpga->moveToThread(thread_fpga);
 
+    thread_adq = new QThread();
+    worker_adq = new Thread(arpet, &Mutex_adq);
+    worker_adq->moveToThread(thread_adq);
 
     connectSlots();
 
@@ -317,6 +328,9 @@ void MainWindow::connectSlots()
 
     connect(worker, SIGNAL(sendRatesValuesCoin(int, int, int,int,int,int,int,int,int)), this, SLOT(writeRatesCoinToLog(  int, int, int,int,int,int,int,int,int)));
     //connect(thread_FPGA, SIGNAL( Grabo_OK(bool)),this , SLOT(image_button(bool)) );
+    connect(worker, SIGNAL(sendresetHeads()), this, SLOT(recieveresetheads()));
+
+
 
     connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
     connect(worker, SIGNAL(sendOffSetValues(int, int *)), this, SLOT(writeOffSetToLog(int,  int *)));
@@ -324,8 +338,10 @@ void MainWindow::connectSlots()
     connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
 
     connect(worker_fpga, SIGNAL(GrabarFPGArequested()), thread_fpga, SLOT(start()));
-
     connect(thread_fpga, SIGNAL(started()), worker_fpga, SLOT(GrabarFPGA()));
+
+    connect(worker_adq, SIGNAL(AdquisicionRequested()), thread_adq, SLOT(start()));
+    connect(thread_adq, SIGNAL(started()), worker_adq, SLOT(Adquirir_handler()));
 
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(this,   SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
@@ -365,6 +381,10 @@ void MainWindow::connectSlots()
 
     /* THREAD FPGA*/
     connect(worker_fpga, SIGNAL(StatusFinishFPGA(bool )),this,SLOT(checkStatusFPGA(bool )));
+
+    /* THREAD ADQ */
+
+    connect(worker_adq, SIGNAL(StatusFinishAdq(bool )),this,SLOT(checkStatusAdq(bool)));
 
 
     /* Objetos */
@@ -422,6 +442,14 @@ void MainWindow::recievedPicosLog(struct Pico_espectro Pico,int index)
     writeLogFile("[LOG-PICO],"+ QString::fromStdString(getLocalDateAndTime()) +",Cabezal,"+QString::number(index)+","+QString::number(Pico.canal_pico)+","+QString::number(Pico.FWHM*100)+"\n");
     //ui->pushButton_reset->clicked(true);
 }
+
+/**
+ * @brief recieveresetheads
+ */
+void MainWindow::recieveresetheads(){
+    resetHeads();
+}
+
 /**
  * @brief MainWindow::recievedPicosMCA
  * @param Pico
@@ -498,6 +526,32 @@ void MainWindow::clearSpecPMTsGraphs()
 void MainWindow::clearSpecCalibGraphs()
 {
   ui->specPMTs_2->clearGraphs();
+}
+
+/**
+ * @brief MainWindow::checkStatusAdq
+ * @param status
+ */
+
+void MainWindow::checkStatusAdq(bool status)
+{
+
+    QPixmap image;
+    adq_running = false;
+
+    if(status)
+       image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+    else
+       image.load("/home/ar-pet/Downloads/ic_cancel.png");
+
+    ui->label_gif_3->setVisible(false);
+    ui->label_gif_4->setVisible(true);
+
+    ui->label_gif_4->setPixmap(image);
+    ui->label_gif_4->setScaledContents( true );
+    ui->label_gif_4->show();
+
+
 }
 
 /**
@@ -1369,103 +1423,20 @@ void MainWindow::on_pushButton_initialize_clicked()
         /* Inicialización del Cabezal */
         try
         {
-            switch (head_index) {
-            case 1:
-                port_name=Cab1;
-                writeFooterAndHeaderDebug(true);
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            case 2:
-                writeFooterAndHeaderDebug(true);
-                port_name=Cab2;
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            case 3:
-                writeFooterAndHeaderDebug(true);
-                port_name=Cab3;
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            case 4:
-                writeFooterAndHeaderDebug(true);
-                port_name=Cab4;
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            case 5:
-                writeFooterAndHeaderDebug(true);
-                port_name=Cab5;
-                calibrador->setPort_Name((port_name));
-                worker->setPortName(port_name);
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            case 6:
-                writeFooterAndHeaderDebug(true);
-                port_name=Cab6;
-                calibrador->setPort_Name(port_name);
-                worker->setPortName(port_name);
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-                if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
-                writeFooterAndHeaderDebug(false);
-                //getARPETStatus();
-                break;
-            default:
-                break;
+
+            port_name=Cab+QString::number(head_index);
+            writeFooterAndHeaderDebug(true);
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                throw exception_Cabezal_Apagado;
             }
-
-
-
+            if(debug) cout<<"Puerto conectado en: "<<port_name.toStdString()<<endl;
+            writeFooterAndHeaderDebug(false);
+            //getARPETStatus();
 
             if (initHead(head_index).length()==0){
                 ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
@@ -1568,6 +1539,9 @@ void MainWindow::on_pushButton_initialize_clicked()
 
     writeFooterAndHeaderDebug(false);
 }
+
+
+
 /**
  * @brief MainWindow::on_pushButton_hv_set_clicked
  */
@@ -3006,25 +2980,25 @@ bool MainWindow::resetHeads()
     QList<int> checkedHeads = getCheckedHeads();
     bool status = true;
 
-    for (int i=0;i < checkedHeads.length();i++)
+    for (int i=0;i < Estado_Cabezales.length();i++)
     {
         arpet->portDisconnect();
-        port_name=Cab+QString::number(checkedHeads.at(i));
+        port_name=Cab+QString::number(Estado_Cabezales.at(i));
         arpet->portConnect(port_name.toStdString().c_str());
-        parseConfigurationFile(true, QString::number(checkedHeads.at(i)));
+        parseConfigurationFile(true, QString::number(Estado_Cabezales.at(i)));
 
         try
         {
-            QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit[checkedHeads.at(i)-1]).toStdString());
+            QString q_msg = setHV(QString::number(Estado_Cabezales.at(i)).toStdString(),QString::number(LowLimit[Estado_Cabezales.at(i)-1]).toStdString());
             if(debug)
             {
-                cout<<"Reinicio del Cabezal "<<checkedHeads.at(i)<<" en la ventana: "<<QString::number(LowLimit[checkedHeads.at(i)-1]).toStdString()<<endl;
+                cout<<"Reinicio del Cabezal "<<Estado_Cabezales.at(i)<<" en la ventana: "<<QString::number(LowLimit[Estado_Cabezales.at(i)-1]).toStdString()<<endl;
                 showMCAEStreamDebugMode(q_msg.toStdString());
             }
         }
         catch (Exceptions ex)
         {
-            if(debug) cout<<"No se puede reiniciar el cabezal "<<checkedHeads.at(i)<<". Error: "<<ex.excdesc<<endl;
+            if(debug) cout<<"No se puede reiniciar el cabezal "<<Estado_Cabezales.at(i)<<". Error: "<<ex.excdesc<<endl;
             status = false;
             QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
             arpet->portDisconnect();
@@ -3172,7 +3146,11 @@ void MainWindow::on_pushButton_select_pmt_clicked()
  */
 void MainWindow::on_pushButton_hv_configure_clicked()
 {
+    error_code error_code;
+    arpet->portDisconnect();
+
     writeFooterAndHeaderDebug(true);
+    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
 
     if (pmt_selected_list.isEmpty())
     {
@@ -3188,6 +3166,14 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     QString q_msg;
     try
     {
+
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
+
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
         q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
@@ -3211,6 +3197,10 @@ void MainWindow::on_pushButton_hv_configure_clicked()
  */
 void MainWindow::on_pushButton_l_5_clicked()
 {
+    error_code error_code;
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    arpet->portDisconnect();
+
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3227,6 +3217,12 @@ void MainWindow::on_pushButton_l_5_clicked()
     QString q_msg;
     try
     {
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3251,6 +3247,10 @@ void MainWindow::on_pushButton_l_5_clicked()
  */
 void MainWindow::on_pushButton_l_10_clicked()
 {
+    error_code error_code;
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    arpet->portDisconnect();
+
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3267,6 +3267,13 @@ void MainWindow::on_pushButton_l_10_clicked()
     QString q_msg;
     try
     {
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
+
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3291,6 +3298,10 @@ void MainWindow::on_pushButton_l_10_clicked()
  */
 void MainWindow::on_pushButton_l_50_clicked()
 {
+    error_code error_code;
+    arpet->portDisconnect();
+
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3307,6 +3318,13 @@ void MainWindow::on_pushButton_l_50_clicked()
     QString q_msg;
     try
     {
+
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3331,6 +3349,10 @@ void MainWindow::on_pushButton_l_50_clicked()
  */
 void MainWindow::on_pushButton_p_5_clicked()
 {
+    error_code error_code;
+    arpet->portDisconnect();
+
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3347,6 +3369,14 @@ void MainWindow::on_pushButton_p_5_clicked()
     QString q_msg;
     try
     {
+
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
+
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3371,6 +3401,10 @@ void MainWindow::on_pushButton_p_5_clicked()
  */
 void MainWindow::on_pushButton_p_10_clicked()
 {
+    error_code error_code;
+    arpet->portDisconnect();
+
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3387,6 +3421,13 @@ void MainWindow::on_pushButton_p_10_clicked()
     QString q_msg;
     try
     {
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
+
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3411,6 +3452,10 @@ void MainWindow::on_pushButton_p_10_clicked()
  */
 void MainWindow::on_pushButton_p_50_clicked()
 {
+    error_code error_code;
+    arpet->portDisconnect();
+
+    port_name = Cab+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3427,6 +3472,13 @@ void MainWindow::on_pushButton_p_50_clicked()
     QString q_msg;
     try
     {
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
+
         getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
         if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
@@ -3599,6 +3651,8 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
     coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
     path_Planar_bit  = settings.value("Paths/Planar_bit", "US").toString();
     path_SP3_bit     = settings.value("Paths/SP3_bit", "US").toString();
+    path_adq_Calib  = settings.value("Paths/Adq_Calib", "US").toString();
+    path_adq_Coin  = settings.value("Paths/Adq_Coin", "US").toString();
     path_Coin_bit    = settings.value("Paths/Coin_bit", "US").toString();
     device_planar     = settings.value("model/Planar", "US").toString();
     device_SP3        = settings.value("model/SP3", "US").toString();
@@ -5846,12 +5900,12 @@ void MainWindow::on_pushButton_6_clicked()
 
 /* CUIPET */
 /**
- * @brief MainWindow::on_pushButton_cuipet_aqd_file_open_clicked
+ * @brief MainWindow::on_pushButton_aqd_file_open_clicked
  */
-void MainWindow::on_pushButton_cuipet_aqd_file_open_clicked()
+void MainWindow::on_pushButton_aqd_file_open_clicked()
 {
     QString directory = openDirectory();
-    ui->lineEdit_cuipet_aqd_path_file->setText(directory);
+    ui->lineEdit_aqd_path_file->setText(directory);
 }
 
 /**
@@ -6035,6 +6089,8 @@ QStringList MainWindow::getLogFromFiles(QString filename,QRegExp rx, string pars
 
 void MainWindow::on_pushButton_p_51_clicked()
 {
+    error_code error_code;
+    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -6051,6 +6107,12 @@ void MainWindow::on_pushButton_p_51_clicked()
     QString q_msg;
     try
     {
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            throw exception_Cabezal_Apagado;
+        }
         for(int i=0;i < pmt_selected_list.length();i++)
         {
             q_msg =setHV(getHead("mca").toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
@@ -6573,6 +6635,22 @@ void MainWindow::updateCaption(){
     dir.setNameFilters(filters);
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
+    int size = 0;
+
+    if(adq_running){
+        QString mensaje;
+
+        QFile myFile(nombre_archivo_adq);
+        if (myFile.open(QIODevice::ReadOnly)){
+            size = myFile.size();  //when file does open.
+            myFile.close();
+        }
+
+        mensaje = "Nombre del archivo: " + nombre_archivo_adq + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + QString::number(size) + "Mb";
+        cout<< mensaje.toStdString() <<endl;
+    }
+
+
 
     Estado_Aux_Cabezales.clear();
     for (int i=0;i<list.length();i++){
@@ -6912,6 +6990,8 @@ int MainWindow::loadCalibrationTables(QString head){
         coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
         coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
         path_Planar_bit  = settings.value("Paths/Planar_bit", "US").toString();
+        path_adq_Calib  = settings.value("Paths/Adq_Calib", "US").toString();
+        path_adq_Coin  = settings.value("Paths/Adq_Coin", "US").toString();
         path_SP3_bit     = settings.value("Paths/SP3_bit", "US").toString();
         path_Coin_bit    = settings.value("Paths/Coin_bit", "US").toString();
         device_planar     = settings.value("model/Planar", "US").toString();
@@ -7010,17 +7090,86 @@ void MainWindow::CargoTemaOscuro(){
 void MainWindow::on_pbAdquirir_toggled(bool checked)
 {
     error_code error_code;
-    //QList<int> checkedHeads=getCheckedHeads();
     string msg;
     QString psoc_alta;
     QString psoc_alta_Tabla;
+    QStringList commands;
+    QString NombredeArchivo;
     arpet->portDisconnect();
-
 
 
   //  Cabezales_On_Off(checked);
 
     if (checked){
+
+        /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
+
+        if (ui->lineEdit_Titulo_Medicion->text().isEmpty()){
+            QMessageBox::critical(this,tr("Error"),tr("La medición debe contener un título."));
+            return;
+        }else{
+
+        }
+
+        if (ui->lineEdit_aqd_file_size->text().isEmpty()){
+            QMessageBox::critical(this,tr("Error"),tr("Se debe definir un tamaño de archivo de adquisición."));
+            return;
+        }else{
+            commands.append(ui->lineEdit_aqd_file_size->text());
+            size_archivo_adq = ui->lineEdit_aqd_file_size->text();
+
+        }
+        if(ui->cb_Path_alternativo_adq->isChecked()){
+            if(ui->lineEdit_aqd_path_file->text().isEmpty()){
+                QMessageBox::critical(this,tr("Error"),tr("Se debe definir una ruta específica si se definió ."));
+                return;
+            }else{
+                commands.append(ui->lineEdit_aqd_path_file->text());
+                nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
+                if(ui->comboBox_cuipet_aqd_mode->currentIndex()==1){
+                    NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
+                }else{
+                    NombredeArchivo="acquire_coin.raw";
+                }
+            }
+        }else{
+            if(ui->comboBox_cuipet_aqd_mode->currentIndex()==1){
+                commands.append(path_adq_Calib);
+                nombre_archivo_adq = path_adq_Calib;
+                NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
+
+            }else{
+                commands.append(path_adq_Coin);
+                nombre_archivo_adq = path_adq_Coin;
+                NombredeArchivo="acquire_coin.raw";
+            }
+
+        }
+
+
+
+
+        commands.append(NombredeArchivo);
+        nombre_archivo_adq = nombre_archivo_adq + "/" + NombredeArchivo ;
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // commands Parametros:     1er valor Cantidad de MB de medicion
+        //                          2do valor Path Coincidencia/Calibracion
+        //                          3er valor Nombre de Archivo
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        worker_adq->setCommands(commands);
+        worker_adq->requestAdquirir();
+        adq_running = true;
+
+        return;
+
+        /////////////////////////Fin de verificacion previa antes de configurar y adquirir//////////////////////////
+
+
         /////////////// CONFIGURACION Y CARGA DE TABLAS
         for (int i=0;i<Estado_Cabezales.length();i++)
         {
@@ -7552,3 +7701,25 @@ void MainWindow::on_comboBox_FPGA_Cab_currentIndexChanged(int index)
 void MainWindow::TimerUpdate(){
     worker->TimerUpdate();
 }
+
+void MainWindow::on_cb_Path_alternativo_adq_toggled(bool checked)
+{
+    if (checked){
+        ui->lineEdit_aqd_path_file->show();
+        ui->pushButton_aqd_file_open->show();
+    }else{
+        ui->lineEdit_aqd_path_file->hide();
+        ui->pushButton_aqd_file_open->hide();
+    }
+}
+
+void MainWindow::on_comboBox_cuipet_aqd_mode_currentIndexChanged(const QString &arg1)
+{
+    if (arg1.contains("Coincidencia")){
+        ui->cb_Calib_Cab->hide();
+    }else if(arg1.contains("Calibración")){
+        ui->cb_Calib_Cab->show();
+    }
+
+}
+

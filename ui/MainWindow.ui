@@ -55,8 +55,8 @@
    <widget class="QTabWidget" name="tabWidget_general">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>10</y>
+      <x>11</x>
+      <y>0</y>
       <width>1011</width>
       <height>631</height>
      </rect>
@@ -3580,7 +3580,7 @@ calibrar</string>
      <widget class="QComboBox" name="comboBox_head_mode_select_graph">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>660</x>
         <y>10</y>
         <width>141</width>
         <height>29</height>
@@ -3614,10 +3614,10 @@ calibrar</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>187</x>
+        <x>20</x>
         <y>10</y>
-        <width>51</width>
-        <height>29</height>
+        <width>71</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="currentIndex">
@@ -3828,6 +3828,18 @@ calibrar</string>
        <string>PMT 49</string>
       </property>
      </widget>
+     <zorder>tabWidget_mca</zorder>
+     <zorder>frame_multihead_graph</zorder>
+     <zorder>frame_MCA</zorder>
+     <zorder>frame_HV</zorder>
+     <zorder>frame_PMT</zorder>
+     <zorder>comboBox_head_mode_select_graph</zorder>
+     <zorder>comboBox_head_select_graph</zorder>
+     <zorder>frame_output</zorder>
+     <zorder>pushButton_adquirir</zorder>
+     <zorder>pushButton_reset</zorder>
+     <zorder>checkBox_espectro_calibrado</zorder>
+     <zorder>comboBox_adquire_mode</zorder>
     </widget>
     <widget class="QWidget" name="graph">
      <attribute name="title">
@@ -4123,11 +4135,16 @@ calibrar</string>
      <widget class="QCalendarWidget" name="calendarWidget">
       <property name="geometry">
        <rect>
-        <x>680</x>
+        <x>650</x>
         <y>10</y>
-        <width>321</width>
-        <height>151</height>
+        <width>351</width>
+        <height>141</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
       </property>
      </widget>
     </widget>
@@ -4138,8 +4155,8 @@ calibrar</string>
      <widget class="QPushButton" name="pushButton_write_cuipet_file">
       <property name="geometry">
        <rect>
-        <x>633</x>
-        <y>32</y>
+        <x>620</x>
+        <y>10</y>
         <width>271</width>
         <height>141</height>
        </rect>
@@ -4150,32 +4167,35 @@ calibrar</string>
  del cuipet</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_cuipet_aqd_file_size">
+     <widget class="QLineEdit" name="lineEdit_aqd_file_size">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>80</y>
+        <x>500</x>
+        <y>90</y>
         <width>111</width>
-        <height>33</height>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string>9999</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_aqd_path_file">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>130</y>
+        <width>331</width>
+        <height>31</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_cuipet_aqd_path_file">
+     <widget class="QPushButton" name="pushButton_aqd_file_open">
       <property name="geometry">
        <rect>
-        <x>23</x>
-        <y>30</y>
-        <width>491</width>
-        <height>33</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_cuipet_aqd_file_open">
-      <property name="geometry">
-       <rect>
-        <x>523</x>
-        <y>29</y>
-        <width>95</width>
+        <x>520</x>
+        <y>130</y>
+        <width>91</width>
         <height>31</height>
        </rect>
       </property>
@@ -4187,9 +4207,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>132</y>
+        <y>50</y>
         <width>131</width>
-        <height>29</height>
+        <height>31</height>
        </rect>
       </property>
       <item>
@@ -4206,11 +4226,16 @@ calibrar</string>
      <widget class="QLabel" name="label_103">
       <property name="geometry">
        <rect>
-        <x>23</x>
-        <y>85</y>
+        <x>20</x>
+        <y>90</y>
         <width>221</width>
-        <height>21</height>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Tamaño del archivo en MB:</string>
@@ -4219,49 +4244,207 @@ calibrar</string>
      <widget class="QLabel" name="label_105">
       <property name="geometry">
        <rect>
-        <x>23</x>
-        <y>137</y>
-        <width>221</width>
-        <height>21</height>
+        <x>20</x>
+        <y>50</y>
+        <width>171</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Modo de adquisición:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_cuipet_stdoutput">
+     <widget class="QPushButton" name="pbAdquirir">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>220</y>
-        <width>581</width>
-        <height>321</height>
+        <x>810</x>
+        <y>500</y>
+        <width>171</width>
+        <height>51</height>
        </rect>
       </property>
-      <property name="autoFillBackground">
+      <property name="text">
+       <string>Adquirir</string>
+      </property>
+      <property name="checkable">
        <bool>true</bool>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::WinPanel</enum>
+     </widget>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>211</width>
+        <height>31</height>
+       </rect>
       </property>
-      <property name="midLineWidth">
-       <number>-3</number>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Título de la medición:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_Titulo_Medicion">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>10</y>
+        <width>371</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_24">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>190</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Comentarios:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="cb_Calib_Cab">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>50</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>3</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>4</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>5</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>6</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QFrame" name="frame_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>611</width>
+        <height>341</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QTextEdit" name="textEdit">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>591</width>
+         <height>321</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QCheckBox" name="cb_Path_alternativo_adq">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>130</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::RightToLeft</enum>
+      </property>
+      <property name="text">
+       <string>Path Alternativo</string>
+      </property>
+     </widget>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>500</y>
+        <width>161</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_gif_3">
+      <property name="geometry">
+       <rect>
+        <x>657</x>
+        <y>310</y>
+        <width>70</width>
+        <height>70</height>
+       </rect>
       </property>
       <property name="text">
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_cuipet_status">
+     <widget class="QLabel" name="label_gif_4">
       <property name="geometry">
        <rect>
-        <x>634</x>
-        <y>220</y>
-        <width>141</width>
-        <height>51</height>
+        <x>640</x>
+        <y>310</y>
+        <width>70</width>
+        <height>70</height>
        </rect>
       </property>
       <property name="text">
-       <string>Estado</string>
+       <string/>
       </property>
      </widget>
     </widget>
@@ -5868,7 +6051,7 @@ calibrar</string>
         <rect>
          <x>150</x>
          <y>40</y>
-         <width>121</width>
+         <width>71</width>
          <height>31</height>
         </rect>
        </property>
@@ -5938,7 +6121,7 @@ calibrar</string>
         <rect>
          <x>150</x>
          <y>0</y>
-         <width>101</width>
+         <width>81</width>
          <height>31</height>
         </rect>
        </property>
@@ -5993,7 +6176,7 @@ calibrar</string>
         <rect>
          <x>150</x>
          <y>20</y>
-         <width>121</width>
+         <width>71</width>
          <height>31</height>
         </rect>
        </property>
@@ -6038,6 +6221,24 @@ calibrar</string>
         </font>
        </property>
       </widget>
+      <zorder>label_81</zorder>
+      <zorder>label_88</zorder>
+      <zorder>label_87</zorder>
+      <zorder>label_82</zorder>
+      <zorder>label_83</zorder>
+      <zorder>label_84</zorder>
+      <zorder>label_86</zorder>
+      <zorder>label_89</zorder>
+      <zorder>label_85</zorder>
+      <zorder>Box_Span</zorder>
+      <zorder>Box_Emax</zorder>
+      <zorder>Box_Emin</zorder>
+      <zorder>Box_max_Rho</zorder>
+      <zorder>Box_max_Z</zorder>
+      <zorder>Box_Cant_anillos</zorder>
+      <zorder>Box_Dif_anillos</zorder>
+      <zorder>Box_cant_ang</zorder>
+      <zorder>Box_cant_rhos</zorder>
      </widget>
      <widget class="QLabel" name="label_91">
       <property name="geometry">
@@ -6277,6 +6478,18 @@ calibrar</string>
         </font>
        </property>
       </widget>
+      <zorder>label_92</zorder>
+      <zorder>label_95</zorder>
+      <zorder>label_97</zorder>
+      <zorder>label_98</zorder>
+      <zorder>label_100</zorder>
+      <zorder>label_104</zorder>
+      <zorder>Box_FOV_Axial</zorder>
+      <zorder>Box_zona_muerta</zorder>
+      <zorder>Box_Iteraciones</zorder>
+      <zorder>Box_Radio_FOV</zorder>
+      <zorder>Box_Radio_PET</zorder>
+      <zorder>Box_Min_dif_cab</zorder>
      </widget>
      <widget class="QTextBrowser" name="textBrowser_estimacion_ini">
       <property name="geometry">
@@ -7609,35 +7822,6 @@ calibrar</string>
      <attribute name="title">
       <string>Configuración Rápida</string>
      </attribute>
-     <widget class="QPushButton" name="pbAdquirir">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>460</y>
-        <width>161</width>
-        <height>121</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Adquirir</string>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pbConfigurar">
-      <property name="geometry">
-       <rect>
-        <x>820</x>
-        <y>460</y>
-        <width>171</width>
-        <height>121</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Configurar Cabezal</string>
-      </property>
-     </widget>
     </widget>
    </widget>
    <widget class="QLabel" name="label_data_output">
@@ -7703,6 +7887,239 @@ calibrar</string>
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>comboBox_head_mode_select_config</tabstop>
+  <tabstop>pushButton_On_Off_Cabs</tabstop>
+  <tabstop>pushButton_Encendido_1</tabstop>
+  <tabstop>pushButton_Encendido_2</tabstop>
+  <tabstop>pushButton_Encendido_3</tabstop>
+  <tabstop>pushButton_Encendido_4</tabstop>
+  <tabstop>pushButton_Encendido_5</tabstop>
+  <tabstop>pushButton_Encendido_6</tabstop>
+  <tabstop>checkBox_c_1</tabstop>
+  <tabstop>checkBox_c_2</tabstop>
+  <tabstop>checkBox_c_3</tabstop>
+  <tabstop>checkBox_c_4</tabstop>
+  <tabstop>checkBox_c_5</tabstop>
+  <tabstop>checkBox_c_6</tabstop>
+  <tabstop>pushButton_initialize</tabstop>
+  <tabstop>comboBox_adquire_mode_coin</tabstop>
+  <tabstop>lineEdit_WN</tabstop>
+  <tabstop>lineEdit_WP</tabstop>
+  <tabstop>comboBox_head_select_calib</tabstop>
+  <tabstop>pushButton_configure</tabstop>
+  <tabstop>comboBox_coin_1</tabstop>
+  <tabstop>comboBox_coin_2</tabstop>
+  <tabstop>comboBox_coin_3</tabstop>
+  <tabstop>comboBox_coin_4</tabstop>
+  <tabstop>comboBox_coin_5</tabstop>
+  <tabstop>comboBox_coin_6</tabstop>
+  <tabstop>comboBox_coin_7</tabstop>
+  <tabstop>comboBox_coin_8</tabstop>
+  <tabstop>comboBox_coin_9</tabstop>
+  <tabstop>comboBox_head_select_config</tabstop>
+  <tabstop>lineEdit_alta</tabstop>
+  <tabstop>pushButton_hv_set</tabstop>
+  <tabstop>pushButton_hv_on</tabstop>
+  <tabstop>pushButton_hv_off</tabstop>
+  <tabstop>pushButton_hv_estado</tabstop>
+  <tabstop>textBrowser_triple_ventana</tabstop>
+  <tabstop>textBrowser_hv</tabstop>
+  <tabstop>textBrowser_energia</tabstop>
+  <tabstop>textBrowser_posicion_X</tabstop>
+  <tabstop>textBrowser_posicion_Y</tabstop>
+  <tabstop>textBrowser_tiempos_cabezal</tabstop>
+  <tabstop>textBrowser_tiempos_Inter_cabezal</tabstop>
+  <tabstop>pushButton_triple_ventana</tabstop>
+  <tabstop>pushButton_hv</tabstop>
+  <tabstop>pushButton_energia</tabstop>
+  <tabstop>pushButton_posicion_X</tabstop>
+  <tabstop>pushButton_posicion_Y</tabstop>
+  <tabstop>pushButton_tiempos_cabezal</tabstop>
+  <tabstop>pushButton_tiempos_cabezal_2</tabstop>
+  <tabstop>lineEdit_limiteinferior</tabstop>
+  <tabstop>pushButton_obtener_ini</tabstop>
+  <tabstop>comboBox_head_mode_select_graph</tabstop>
+  <tabstop>tabWidget_mca</tabstop>
+  <tabstop>comboBox_head_select_graph</tabstop>
+  <tabstop>checkBox_mca_1</tabstop>
+  <tabstop>checkBox_mca_2</tabstop>
+  <tabstop>checkBox_mca_3</tabstop>
+  <tabstop>checkBox_mca_4</tabstop>
+  <tabstop>checkBox_mca_5</tabstop>
+  <tabstop>checkBox_mca_6</tabstop>
+  <tabstop>checkBox_espectro_calibrado</tabstop>
+  <tabstop>comboBox_adquire_mode</tabstop>
+  <tabstop>pushButton_select_pmt</tabstop>
+  <tabstop>checkBox_centroid</tabstop>
+  <tabstop>pushButton_adquirir</tabstop>
+  <tabstop>pushButton_reset</tabstop>
+  <tabstop>checkBox_temp</tabstop>
+  <tabstop>checkBox_tasa</tabstop>
+  <tabstop>lineEdit_between_logs</tabstop>
+  <tabstop>pushButton_logguer</tabstop>
+  <tabstop>lineEdit_hv_value</tabstop>
+  <tabstop>pushButton_l_5</tabstop>
+  <tabstop>pushButton_l_10</tabstop>
+  <tabstop>pushButton_l_50</tabstop>
+  <tabstop>pushButton_p_5</tabstop>
+  <tabstop>pushButton_p_10</tabstop>
+  <tabstop>pushButton_p_50</tabstop>
+  <tabstop>pushButton_p_51</tabstop>
+  <tabstop>pushButton_hv_configure</tabstop>
+  <tabstop>listWidget</tabstop>
+  <tabstop>comboBox_head_mode_select_graph_2</tabstop>
+  <tabstop>calendarWidget</tabstop>
+  <tabstop>checkBox_Rate_Coin</tabstop>
+  <tabstop>checkBox_temp_log</tabstop>
+  <tabstop>ChechBox_Pico</tabstop>
+  <tabstop>checkBox_rate_log</tabstop>
+  <tabstop>comboBox_head_select_graph_3</tabstop>
+  <tabstop>checkBox_mca_7</tabstop>
+  <tabstop>checkBox_mca_8</tabstop>
+  <tabstop>checkBox_mca_9</tabstop>
+  <tabstop>checkBox_mca_10</tabstop>
+  <tabstop>checkBox_mca_11</tabstop>
+  <tabstop>checkBox_mca_12</tabstop>
+  <tabstop>lineEdit_Titulo_Medicion</tabstop>
+  <tabstop>comboBox_cuipet_aqd_mode</tabstop>
+  <tabstop>cb_Calib_Cab</tabstop>
+  <tabstop>lineEdit_aqd_file_size</tabstop>
+  <tabstop>cb_Path_alternativo_adq</tabstop>
+  <tabstop>lineEdit_aqd_path_file</tabstop>
+  <tabstop>pushButton_aqd_file_open</tabstop>
+  <tabstop>textEdit</tabstop>
+  <tabstop>pbAdquirir</tabstop>
+  <tabstop>comboBox_head_select_graph_2</tabstop>
+  <tabstop>Tiempo_adq_box</tabstop>
+  <tabstop>pushButton_select_pmt_2</tabstop>
+  <tabstop>listWidget_2</tabstop>
+  <tabstop>checkBox_Cab_Completo</tabstop>
+  <tabstop>pb_Autocalib</tabstop>
+  <tabstop>comboBox_FPGA_Cab</tabstop>
+  <tabstop>comboBox_FPGA_DISP</tabstop>
+  <tabstop>checkBox_FPGA_1</tabstop>
+  <tabstop>checkBox_FPGA_2</tabstop>
+  <tabstop>text_FPGA_1</tabstop>
+  <tabstop>pushButton_FPGA_1</tabstop>
+  <tabstop>pushButton_FPGA_4</tabstop>
+  <tabstop>pushButton_FPGA_3</tabstop>
+  <tabstop>pushButton_triple_ventana_5</tabstop>
+  <tabstop>textBrowser_adq_5</tabstop>
+  <tabstop>pushButton_triple_ventana_6</tabstop>
+  <tabstop>pushButton_triple_ventana_7</tabstop>
+  <tabstop>textBrowser_adq_6</tabstop>
+  <tabstop>pushButton_triple_ventana_8</tabstop>
+  <tabstop>textBrowser_adq_coin</tabstop>
+  <tabstop>pushButton_2</tabstop>
+  <tabstop>checkBox_calib_fina_05</tabstop>
+  <tabstop>checkBox_calib_fina_06</tabstop>
+  <tabstop>checkBox_calib_fina_07</tabstop>
+  <tabstop>checkBox_calib_fina_01</tabstop>
+  <tabstop>checkBox_calib_fina_02</tabstop>
+  <tabstop>checkBox_calib_fina_03</tabstop>
+  <tabstop>checkBox_calib_fina_04</tabstop>
+  <tabstop>checkBox_count_skimm</tabstop>
+  <tabstop>textBrowser_salida</tabstop>
+  <tabstop>pushButton_triple_ventana_9</tabstop>
+  <tabstop>checkBox_count_skimm_2</tabstop>
+  <tabstop>parser_coincidencia</tabstop>
+  <tabstop>textBrowser_parser_coin</tabstop>
+  <tabstop>pushButton_triple_ventana_10</tabstop>
+  <tabstop>pushButton_triple_ventana_11</tabstop>
+  <tabstop>textBrowser_entrada</tabstop>
+  <tabstop>pushButton_triple_ventana_12</tabstop>
+  <tabstop>textBrowser_adq_7</tabstop>
+  <tabstop>textBrowser_adq_8</tabstop>
+  <tabstop>textBrowser_adq_9</tabstop>
+  <tabstop>textBrowser_adq_10</tabstop>
+  <tabstop>pushButton_triple_ventana_13</tabstop>
+  <tabstop>textBrowser_adq_11</tabstop>
+  <tabstop>textBrowser_adq_12</tabstop>
+  <tabstop>pushButton_triple_ventana_14</tabstop>
+  <tabstop>pushButton_triple_ventana_15</tabstop>
+  <tabstop>pushButton_triple_ventana_16</tabstop>
+  <tabstop>checkBox_calib_fina_6</tabstop>
+  <tabstop>checkBox_calib_fina_7</tabstop>
+  <tabstop>checkBox_calib_fina_8</tabstop>
+  <tabstop>checkBox_calib_fina_2</tabstop>
+  <tabstop>checkBox_calib_fina_3</tabstop>
+  <tabstop>checkBox_calib_fina_4</tabstop>
+  <tabstop>checkBox_calib_fina_9</tabstop>
+  <tabstop>checkBox_calib_fina_10</tabstop>
+  <tabstop>checkBox_calib_fina_11</tabstop>
+  <tabstop>checkBox_calib_fina_5</tabstop>
+  <tabstop>pushButton_3</tabstop>
+  <tabstop>pushButton_arch_recon</tabstop>
+  <tabstop>textBrowser_archivo_recon</tabstop>
+  <tabstop>textBrowser_entrada_2</tabstop>
+  <tabstop>pushButton_APIRL_PATH</tabstop>
+  <tabstop>pushButton_INTERFILES</tabstop>
+  <tabstop>textBrowser_entrada_3</tabstop>
+  <tabstop>Box_cant_rhos</tabstop>
+  <tabstop>Box_Emin</tabstop>
+  <tabstop>Box_Dif_anillos</tabstop>
+  <tabstop>Box_cant_ang</tabstop>
+  <tabstop>Box_max_Z</tabstop>
+  <tabstop>Box_Emax</tabstop>
+  <tabstop>Box_Cant_anillos</tabstop>
+  <tabstop>Box_Span</tabstop>
+  <tabstop>Box_max_Rho</tabstop>
+  <tabstop>Box_Min_dif_cab</tabstop>
+  <tabstop>Box_FOV_Axial</tabstop>
+  <tabstop>Box_zona_muerta</tabstop>
+  <tabstop>Box_Radio_PET</tabstop>
+  <tabstop>Box_Radio_FOV</tabstop>
+  <tabstop>Box_Iteraciones</tabstop>
+  <tabstop>textBrowser_estimacion_ini</tabstop>
+  <tabstop>pushButton_Est_ini</tabstop>
+  <tabstop>pushButton_Arch_sens</tabstop>
+  <tabstop>textBrowser_Imagensensib</tabstop>
+  <tabstop>textBrowser_Conunt_skimming</tabstop>
+  <tabstop>pushButton_Arch_count_skimming</tabstop>
+  <tabstop>pushButton_5</tabstop>
+  <tabstop>checkBox_parsear</tabstop>
+  <tabstop>checkBox_Reconstruir</tabstop>
+  <tabstop>checkBox_Mostrar</tabstop>
+  <tabstop>plainTextEdit_Recon_console</tabstop>
+  <tabstop>textBrowser_entrada_4</tabstop>
+  <tabstop>pushButton_INTERFILES_2</tabstop>
+  <tabstop>textBrowser_entrada_5</tabstop>
+  <tabstop>pushButton_INTERFILES_3</tabstop>
+  <tabstop>checkBox_Server</tabstop>
+  <tabstop>checkBox_MLEM</tabstop>
+  <tabstop>checkBox_Backprojection</tabstop>
+  <tabstop>pushButton_6</tabstop>
+  <tabstop>pushButton_write_cuipet_file</tabstop>
+  <tabstop>textBrowser_adq_1</tabstop>
+  <tabstop>pushButton_triple_ventana_2</tabstop>
+  <tabstop>textBrowser_adq_3</tabstop>
+  <tabstop>pushButton_triple_ventana_3</tabstop>
+  <tabstop>textBrowser_adq_4</tabstop>
+  <tabstop>textBrowser_adq_2</tabstop>
+  <tabstop>pushButton_triple_ventana_4</tabstop>
+  <tabstop>pushButton_send_terminal</tabstop>
+  <tabstop>pushButton_flush_terminal</tabstop>
+  <tabstop>lineEdit_terminal</tabstop>
+  <tabstop>checkBox_end_terminal</tabstop>
+  <tabstop>comboBox_head_select_terminal</tabstop>
+  <tabstop>pushButton_stream_configure_mca_terminal</tabstop>
+  <tabstop>comboBox_func_terminal</tabstop>
+  <tabstop>pushButton_stream_configure_psoc_terminal</tabstop>
+  <tabstop>comboBox_psoc_function_terminal</tabstop>
+  <tabstop>comboBox_mca_function_terminal</tabstop>
+  <tabstop>lineEdit_pmt_terminal</tabstop>
+  <tabstop>lineEdit_psoc_hv_terminal</tabstop>
+  <tabstop>lineEdit_pmt_hv_terminal</tabstop>
+  <tabstop>pushButton_clear_terminal</tabstop>
+  <tabstop>RATECAB6</tabstop>
+  <tabstop>RATECAB4</tabstop>
+  <tabstop>RATECAB5</tabstop>
+  <tabstop>RATECAB1</tabstop>
+  <tabstop>RATECAB2</tabstop>
+  <tabstop>RATECAB3</tabstop>
+  <tabstop>tabWidget_general</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
