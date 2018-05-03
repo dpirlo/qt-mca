@@ -365,8 +365,11 @@ private slots:
 
     void on_cb_Path_alternativo_adq_toggled(bool checked);
 
-    void on_comboBox_cuipet_aqd_mode_currentIndexChanged(const QString &arg1);
+    void on_comboBox_aqd_mode_currentIndexChanged(const QString &arg1);
 
+    void on_pushButton_FPGA_2_clicked();
+
+    void on_comboBox_FPGA_DISP_activated(int index);
 
 private:
     void connectSlots();
@@ -534,6 +537,9 @@ private:
     QString device_SP3;
     QString device_SP3_MEM;
     QString device_coin;
+    QString name_Planar_bit;
+    QString name_Coin_bit;
+    QString name_SP3_bit;
 
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;
@@ -543,7 +549,7 @@ private:
 
     QTimer *timer = new QTimer(0);
     int  ogl_flag;
-    QStringList Mensaje_Grabar_FPGA(void);
+    QStringList Mensaje_Grabar_FPGA(int modo);
     QList<QString> array_PMT;
     int offset_MEM  = 0;
 

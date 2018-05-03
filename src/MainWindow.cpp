@@ -3661,7 +3661,10 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
     model_planar     = settings.value("model/Planar_model", "US").toString();
     model_SP3        = settings.value("model/SP3_model", "US").toString();
     model_SP3_MEM    = settings.value("model/SP3_MEM_model", "US").toString();
-    model_coin       = settings.value("model/Coin_model", "US").toString();;
+    model_coin       = settings.value("model/Coin_model", "US").toString();
+    name_Planar_bit  = settings.value("model/Bit_name_Planar", "US").toString();
+    name_Coin_bit    = settings.value("model/Bit_name_Coin", "US").toString();
+    name_SP3_bit     = settings.value("model/Bit_name_SP3", "US").toString();
 
     return MCAE::OK;
 }
@@ -7002,6 +7005,9 @@ int MainWindow::loadCalibrationTables(QString head){
         model_SP3        = settings.value("model/SP3_model", "US").toString();
         model_SP3_MEM    = settings.value("model/SP3_MEM_model", "US").toString();
         model_coin       = settings.value("model/Coin_model", "US").toString();
+        name_Planar_bit  = settings.value("model/Bit_name_Planar", "US").toString();
+        name_Coin_bit    = settings.value("model/Bit_name_Coin", "US").toString();
+        name_SP3_bit     = settings.value("model/Bit_name_SP3", "US").toString();
 
         coefTInter_values=getValuesFromFiles(coefTInter);
 
@@ -7126,14 +7132,14 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             }else{
                 commands.append(ui->lineEdit_aqd_path_file->text());
                 nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
-                if(ui->comboBox_cuipet_aqd_mode->currentIndex()==1){
+                if(ui->comboBox_aqd_mode->currentIndex()==1){
                     NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
                 }else{
                     NombredeArchivo="acquire_coin.raw";
                 }
             }
         }else{
-            if(ui->comboBox_cuipet_aqd_mode->currentIndex()==1){
+            if(ui->comboBox_aqd_mode->currentIndex()==1){
                 commands.append(path_adq_Calib);
                 nombre_archivo_adq = path_adq_Calib;
                 NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText()+".raw";
@@ -7399,6 +7405,7 @@ void MainWindow::on_pushButton_FPGA_1_clicked()
 void MainWindow::on_pushButton_FPGA_3_clicked()
 {
     QPixmap image;
+    int modo ;
 
     ui->label_gif_2->setVisible(false);
     ui->label_gif  ->setVisible(true);
@@ -7411,7 +7418,12 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
 
     qApp->processEvents();
 
-    QStringList commands = Mensaje_Grabar_FPGA();
+    if(ui->checkBox_FPGA_1->isChecked())
+        modo = 1;
+    else
+        modo = 0;
+
+    QStringList commands = Mensaje_Grabar_FPGA(modo);
 
     if(!commands.isEmpty()) {
 
@@ -7438,20 +7450,30 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
 
 
 }
+/**
+ * @brief MainWindow::Mensaje_Grabar_FPGA
+ * int modo
+                0 = MODO PROGRAMACION
+                1 = MODO PROGRAMACION MEMORIA
+                2 = MODO BORRAR MEMORIA
+    Returns QStringList = comandos a ser ejecutados por el XC3sprog
+ */
 
-
-QStringList MainWindow::Mensaje_Grabar_FPGA(void)
+QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 {
     QStringList command;                                                                                     /// Vector de comandos a despachar por consola
     QString path= "";                                                                                        /// Ruta al archivo que se va grabar
     QString device ="";                                                                                      /// Nombre del dispositivo que ve el JTAG
     QString model ="";                                                                                       /// Modelo del dispositivo que aparece dentro del archivo .bit
+    QString bit_name ="";                                                                                       /// Nombre de la Entiti principal que aparece dentro del archivo .bit
     QStringList device_list;                                                                                 /// lista de los dispositivos conectados al jtag
     QString JTAG[7] ={ "jtag_cab1","jtag_cab2","jtag_cab3","jtag_cab4","jtag_cab5","jtag_cab6","jtag_coin"}; /// Nombres de los dipositivos JTAG
-    QString Dispositivo[7] ={ "Cab1","Cab2","Cab3","Cab4","Cab5","Cab6","Coincidencias"}; /// Nombres de los dipositivos JTAG
+    QString Dispositivo[7] ={ "Cab1","Cab2","Cab3","Cab4","Cab5","Cab6","Coincidencias"};                    /// Nombres de los dipositivos JTAG
     QString filtro = "JTAG";                                                                                 /// Filtro para encontrar los dispositivos dentro de lo que retorna el XC3SPROG
     QString command_check = "";                                                                              /// Comando a enviar por consola
     QString output  = "";                                                                                    /// Salida que retorna el XC3SPROG
+    QString Options = "";                                                                                    /// Agrega opciones a los comandos
+
 
 
         // Diferancio el Target y guardo los parametros a utilizar
@@ -7462,12 +7484,14 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
                               path= path_Planar_bit;
                               device = device_planar;
                               model = model_planar;
+                              bit_name = name_Planar_bit;
                            }
                         else
                            {
                              path= path_SP3_bit;
                              model = model_SP3;
-                             if (ui->checkBox_FPGA_1->isChecked())
+                             bit_name = name_SP3_bit;
+                             if (modo == 1)
                              {
                                 device = device_SP3_MEM;
                                 offset_MEM = 1;
@@ -7484,11 +7508,36 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
                     path= path_Coin_bit;
                     device = device_coin;
                     model = model_coin;
+                    bit_name = name_Coin_bit;
             }
 
-            if (ui->checkBox_FPGA_1->isChecked())
+            if (ui->checkBox_FPGA_2->isChecked())
                 if ( ui->text_FPGA_1->toPlainText() != "")
                     path = ui->text_FPGA_1->toPlainText();
+
+
+            switch(modo)
+            {
+                case 0 : // MODO PROGRAMACION
+                    Options = " -v -p ";
+                break;
+
+                case 1 : // MODO PROGRAMACION MEMORIA
+                    if (model == model_SP3 || model == model_SP3_MEM)
+                        Options = " -v -p ";
+                    else
+                        Options = " -v -I -p ";
+                break;
+
+                case 2 : // MODO BORRAR MEMORIA
+                    Options = " -v -e -p ";
+                    path = "";
+                break;
+
+                default:
+                    Options = " ";
+                break;
+            }
 
         // verifico que el archivo seleccionado sea .bit y contenga el deviceo de dispositivo
 
@@ -7505,14 +7554,14 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
 
             do {
                 line = in.readLine();
-                if (line.contains(model, Qt::CaseSensitive))
+                if (line.contains(model, Qt::CaseSensitive) && line.contains(bit_name, Qt::CaseSensitive) )
                     correcto = true;
                }while (!line.isNull());
 
 
             if(!correcto)
             {
-                cout << "No coincide el archivo con el dispositivo seleccionado" << endl;
+                cout << "No coinciden los parametros del archivo .bit con el dispositivo seleccionado" << endl;
 
                 return command;
             }
@@ -7563,7 +7612,7 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
                     for( int i=0 ; i < array_PMT.length() ; i++ )
                         if ( device_list[PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM] == device)
                         {
-                            command.append( Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] + " PMT= " + array_PMT[i] + "#" +"xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + " -J 600000 -v -p " + QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM)  + " " + path);
+                            command.append( Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] + " PMT= " + array_PMT[i] + "#" +"xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + Options + QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM)  + " " + path);
 
                             //cout << command.toStdString() << endl;
                             //QProcess prog_fpga;
@@ -7595,58 +7644,11 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
                 }
                 else
                     if (device_list[0] == device)
-                        if (ui->checkBox_FPGA_1->isChecked())
-                        {
-                            command.append(Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] + " Planar" +  "#xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + " -v -I -p " +  "0 " + path);
-                            /*QProcess prog_fpga;
-                            prog_fpga.waitForStarted();
-                            prog_fpga.start(command);
-                            prog_fpga.waitForFinished(-1);
-                            output=(prog_fpga.readAllStandardError());
-                            prog_fpga.close();
-
-                            if (output.contains("done"))
-                            {
-                                output =  output.mid(output.indexOf("done"));
-                                output =  output.left(output.indexOf("\n"));
-                                cout << "CAB= " << ui->comboBox_FPGA_Cab->currentText().toStdString() << " " << output.toStdString() << endl;
-                            }
-                            else
-                            {
-                                cout << output.toStdString() << endl;
-                                  return null;
-                            }
-                            */
-                            //cout << command.toStdString() << endl;
-                        }
-                        else
-                        {
-                            command.append( Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] + " Planar" + "#xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + " -v -p " +  "0 " + path);
-                            //cout << command.toStdString() << endl;
-                            /*QProcess prog_fpga;
-                            prog_fpga.waitForStarted();
-                            prog_fpga.start(command);
-                            prog_fpga.waitForFinished(-1);
-                            output=(prog_fpga.readAllStandardError());
-                            prog_fpga.close();
-
-                            if (output.contains("done"))
-                            {
-                                output =  output.mid(output.indexOf("done"));
-                                output =  output.left(output.indexOf("\n"));
-                                cout << "CAB= " << ui->comboBox_FPGA_Cab->currentText().toStdString() << " " << output.toStdString() << endl;
-
-                            }
-                            else
-                            {
-                                cout << output.toStdString() << endl;
-                                  return null;
-                            }*/
-                        }
+                            command.append(Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] +  "#xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + Options+  "0 " + path);
                     else
                     {
                         cout << "No coincide el dispositivo: 0 con el device de FPGA" << device.toStdString() << endl;
-                          return command;
+                        return command;
                     }
 
                return command;
@@ -7658,22 +7660,6 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(void)
 
 void MainWindow::on_comboBox_FPGA_DISP_currentIndexChanged(int index)
 {
-     ui->text_FPGA_1->setText("");
-     if(ui->comboBox_FPGA_DISP->currentIndex() == 1)
-     {
-
-         int ret = pmt_select->exec();
-
-         array_PMT = pmt_select->GetPMTSelectedList();
-
-         if(ret == QDialog::Accepted)
-         {
-              cout << "PMTs Seleccionados"<< endl;
-              for( int i=0 ; i < array_PMT.length() ; i++ )
-              cout << array_PMT[i].toStdString() << " Pos_Real: " << QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM).toStdString() << endl;
-         }
-     }
-
 
 }
 
@@ -7713,7 +7699,7 @@ void MainWindow::on_cb_Path_alternativo_adq_toggled(bool checked)
     }
 }
 
-void MainWindow::on_comboBox_cuipet_aqd_mode_currentIndexChanged(const QString &arg1)
+void MainWindow::on_comboBox_aqd_mode_currentIndexChanged(const QString &arg1)
 {
     if (arg1.contains("Coincidencia")){
         ui->cb_Calib_Cab->hide();
@@ -7723,3 +7709,80 @@ void MainWindow::on_comboBox_cuipet_aqd_mode_currentIndexChanged(const QString &
 
 }
 
+void MainWindow::on_pushButton_FPGA_2_clicked()
+{
+    QPixmap image;
+
+    QMessageBox msgBox;//(QMessageBox.Warning);
+    msgBox.setIcon(QMessageBox::Warning);
+    //msgBox.setWindowIcon(QMessageBox.icon(QMessa));
+    msgBox.setWindowTitle("Borrar dispositivo");
+    msgBox.setText("Desea borrar la/s memorias ?");
+    QPushButton *connectButton = msgBox.addButton(tr("Aceptar"), QMessageBox::YesRole);
+    QPushButton *abortButton = msgBox.addButton(tr("Cancelar"),  QMessageBox::NoRole);
+    msgBox.setDefaultButton(abortButton);
+    msgBox.setEscapeButton(abortButton);
+
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == abortButton)
+        return;
+    else if ( msgBox.clickedButton() == connectButton)
+    {
+
+        ui->label_gif_2->setVisible(false);
+        ui->label_gif  ->setVisible(true);
+
+        //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
+        ui->label_gif->setMovie(movie_cargando);
+        movie_cargando->start();
+        ui->label_gif->setScaledContents( false );
+        ui->label_gif->show();
+
+        qApp->processEvents();
+
+        QStringList commands = Mensaje_Grabar_FPGA(2);
+
+        if(!commands.isEmpty()) {
+
+            worker_fpga->abort();
+            thread_fpga->exit(0);
+            usleep(500);
+            worker_fpga->setCommands(commands);
+            worker_fpga->requestGrabarFPGA();
+        }
+        else
+        {
+            image.load("/home/ar-pet/Downloads/ic_cancel.png");
+
+            ui->label_gif->setVisible(false);
+            ui->label_gif_2->setVisible(true);
+
+            ui->label_gif_2->setPixmap(image);
+            ui->label_gif_2->setScaledContents( true );
+            ui->label_gif_2->show();
+        }
+     }
+
+}
+
+void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
+{
+    ui->text_FPGA_1->setText("");
+    if(ui->comboBox_FPGA_DISP->currentIndex() == 1)
+    {
+
+        int ret = pmt_select->exec();
+
+        array_PMT = pmt_select->GetPMTSelectedList();
+
+        if(ret == QDialog::Accepted)
+        {
+             cout << "PMTs Seleccionados"<< endl;
+             for( int i=0 ; i < array_PMT.length() ; i++ )
+             cout << array_PMT[i].toStdString() << " Pos_JTAG: " << QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM).toStdString() << endl;
+        }
+    }
+
+
+}

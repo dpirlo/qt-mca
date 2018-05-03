@@ -482,30 +482,56 @@ bool Thread::Adquirir_handler()
 bool Thread::Grabar_FPGA()
 {
         QString output,PMT;
+        int retries = 10;
+        bool exit;
+
 
         for(int i=0; i< commands.length() ; i++)
         {
-        PMT =  commands[i].left(commands[i].indexOf("#"));
-        commands[i] =  commands[i].mid(commands[i].indexOf("#") + 1);
-        //cout << commands[i].toStdString() << endl;
-        QProcess prog_fpga;
-        prog_fpga.waitForStarted();
-        prog_fpga.start(commands[i]);
-        prog_fpga.waitForFinished(-1);
-        output=(prog_fpga.readAllStandardError());
-        prog_fpga.close();
+            PMT =  commands[i].left(commands[i].indexOf("#"));
+            commands[i] =  commands[i].mid(commands[i].indexOf("#") + 1);
+            exit = false;
+            retries = 10;
+            cout << commands[i].toStdString() << endl;
+            while (!exit)
+            {
+                QProcess prog_fpga;
+                prog_fpga.waitForStarted();
+                prog_fpga.start(commands[i]);
+                prog_fpga.waitForFinished(-1);
+                output=(prog_fpga.readAllStandardError());
+                prog_fpga.close();
 
-        if (output.contains("done"))
-        {
-            output =  output.mid(output.indexOf("done"));
-            output =  output.left(output.indexOf("\n"));
-            cout << PMT.toStdString() << " " << output.toStdString() << endl;
-        }
-        else
-        {
-            cout << output.toStdString() << endl;
-            return false;
-        }
+                if (output.contains("done"))
+                {
+
+                    output =  output.mid(output.indexOf("done"));
+                    output =  output.left(output.indexOf("\n"));
+                    cout << PMT.toStdString() << " " << output.toStdString() << endl;
+                    exit = true;
+                }
+
+                else if(output.contains("Success!"))
+                {
+                    output =  output.mid(output.indexOf("Success!"));
+                    //output =  output.left(output.indexOf("\n"));
+                    cout << PMT.toStdString() << " " << output.toStdString() << endl;
+                    exit = true;
+                }
+
+
+               else
+                {
+                    if(retries == 0)
+                        return false;
+                    else
+                    {
+                        retries --;
+                        cout << output.toStdString() << endl;
+                    } //return false;
+                }
+
+            }
         }
         return true;
 }
