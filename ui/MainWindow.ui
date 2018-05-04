@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>8</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -4152,21 +4152,6 @@ calibrar</string>
      <attribute name="title">
       <string>Adquisición</string>
      </attribute>
-     <widget class="QPushButton" name="pushButton_write_cuipet_file">
-      <property name="geometry">
-       <rect>
-        <x>620</x>
-        <y>10</y>
-        <width>271</width>
-        <height>141</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Escribir el archivo
- de configuración
- del cuipet</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="lineEdit_aqd_file_size">
       <property name="geometry">
        <rect>
@@ -4421,7 +4406,7 @@ calibrar</string>
        </rect>
       </property>
       <property name="value">
-       <number>24</number>
+       <number>0</number>
       </property>
      </widget>
      <widget class="QLabel" name="label_gif_3">
@@ -4488,7 +4473,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>460</y>
+        <y>467</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -4502,7 +4487,78 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <zorder>pushButton_write_cuipet_file</zorder>
+     <widget class="QLabel" name="label_adq_tasa">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>210</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Tasa de adquisición</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_tasa_2">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>240</y>
+        <width>190</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Tramas/seg</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_error">
+      <property name="geometry">
+       <rect>
+        <x>872</x>
+        <y>210</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Error en tramas</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_error_2">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>240</y>
+        <width>130</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>%</string>
+      </property>
+     </widget>
      <zorder>lineEdit_aqd_path_file</zorder>
      <zorder>pushButton_aqd_file_open</zorder>
      <zorder>comboBox_aqd_mode</zorder>
@@ -4522,6 +4578,10 @@ calibrar</string>
      <zorder>lineEdit_aqd_cant_archivos</zorder>
      <zorder>lineEdit_aqd_file_size</zorder>
      <zorder>label_cant_archivos</zorder>
+     <zorder>label_adq_tasa</zorder>
+     <zorder>label_adq_tasa_2</zorder>
+     <zorder>label_adq_error</zorder>
+     <zorder>label_adq_error_2</zorder>
     </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -8181,7 +8241,6 @@ calibrar</string>
   <tabstop>checkBox_MLEM</tabstop>
   <tabstop>checkBox_Backprojection</tabstop>
   <tabstop>pushButton_6</tabstop>
-  <tabstop>pushButton_write_cuipet_file</tabstop>
   <tabstop>textBrowser_adq_1</tabstop>
   <tabstop>pushButton_triple_ventana_2</tabstop>
   <tabstop>textBrowser_adq_3</tabstop>

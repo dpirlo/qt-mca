@@ -6719,26 +6719,35 @@ void MainWindow::updateCaption(){
 
     if(adq_running){
 
-        QString input, output;
+        QString input, output,tasa,error;
+
+        QProcess ver_tasa;
+        ver_tasa.waitForStarted();
+        ver_tasa.start("cat ./log_ETH.info");
+        ver_tasa.waitForFinished(-1);
+
+        output=(ver_tasa.readAllStandardOutput());
+        tasa=output.left(output.indexOf("Tramas"));
+        if(tasa.toInt() > 0 )
+        ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
+        error=output.mid(output.indexOf("con") + 3);
+        error = error.left(error.indexOf("\n"));
+        if(!error.isEmpty())
+        ui->label_adq_error_2->setText(error);
+        ver_tasa.close();
+
 
         QProcess size_of_adq;
-/*
-        int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos_copiados;
-        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
-        ui->label_cant_archivos->setText(mensaje);
-        qApp->processEvents();
-        */
+
+
 
         size_of_adq.waitForStarted();
         input= "du -h -m "+nombre_archivo_adq+".raw";
-        //cout << input.toStdString() << endl;
+
         size_of_adq.start(input);
         size_of_adq.waitForFinished(10000);
-
         output=(size_of_adq.readAllStandardOutput());
         output=output.left(output.indexOf("\t"));
-        mensaje = "Nombre del archivo: " + nombre_archivo_adq+".raw" + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + output + " MB";
-        if (debug)cout<< mensaje.toStdString() <<endl;
         size_of_adq.close();
         if(output.toInt() > 0 )
         ui->progressBar->setValue(output.toInt());
