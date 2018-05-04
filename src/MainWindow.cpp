@@ -553,57 +553,82 @@ void MainWindow::checkStatusAdq(bool status)
 {
 
 
-    if (cant_archivos==1){
+    if (!status)
+    {
 
-           worker_adq->requestAdquirir();
-           worker_adq->setCantArchivos(cant_archivos);
-
-           cant_archivos++;
-
-    }
-
-    else if(ui->lineEdit_aqd_cant_archivos->text().toInt()>=cant_archivos){
-
-
-        while(copying);
-
-        copying=true;
-        worker_adq->abort();
-        thread_adq->exit(0);
-        usleep(500);
-
-        worker_adq->setCantArchivos(cant_archivos);
-
-        worker_copy->abort();
-        thread_copy->exit(0);
-        usleep(5000);
-        worker_copy->setCantArchivos(cant_archivos-1);
-
-        worker_copy->requestMoveToServer();
-        worker_adq->requestAdquirir();
-        cant_archivos++;
-
-
-    }else{
-        usleep(500);
-
-        while(copying);
-
-        worker_copy->abort();
-        thread_copy->exit(0);
-        usleep(5000);
-        worker_copy->setCantArchivos(cant_archivos-1);
-
-        worker_copy->requestMoveToServer();
-        copying=true;
-
-        //worker_copy->requestMoveToServer();
         adq_running = false;
+        QPixmap image;
+        image.load("/home/ar-pet/Downloads/ic_cancel.png");
         cant_archivos =1;
+        ui->label_gif_3->setVisible(false);
+        ui->label_gif_4->setVisible(true);
+        ui->label_gif_4->setPixmap(image);
+        ui->label_gif_4->setScaledContents( true );
+        ui->label_gif_4->show();
+        return;
     }
-    return;
+
+    if(copying)
+    {
+            finish_adquirir=true;
+            return;
+    }
+
+        if (cant_archivos==1){
+
+               worker_adq->requestAdquirir();
+               worker_adq->setCantArchivos(cant_archivos);
+               cant_archivos++;
+
+        }
+
+        else if(ui->lineEdit_aqd_cant_archivos->text().toInt()>=cant_archivos){
+
+
+
+
+            copying=true;
+            worker_adq->abort();
+            thread_adq->exit(0);
+            usleep(500);
+
+            worker_adq->setCantArchivos(cant_archivos);
+
+            worker_copy->abort();
+            thread_copy->exit(0);
+            usleep(5000);
+            worker_copy->setCantArchivos(cant_archivos-1);
+
+            worker_copy->requestMoveToServer();
+            worker_adq->requestAdquirir();
+            cant_archivos++;
+
+
+        }else{
+            usleep(500);
+
+
+
+            worker_copy->abort();
+            thread_copy->exit(0);
+            usleep(5000);
+            worker_copy->setCantArchivos(cant_archivos-1);
+
+            worker_copy->requestMoveToServer();
+            copying=true;
+
+            //worker_copy->requestMoveToServer();
+            adq_running = false;
+            cant_archivos =1;
+        }
+        return;
+
+
+
 
 }
+
+
 
 /**
  * @brief MainWindow::checkStatusFPGA
@@ -6690,12 +6715,20 @@ void MainWindow::updateCaption(){
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
     int size = 0;
+    QString mensaje;
 
     if(adq_running){
-        QString mensaje;
+
         QString input, output;
 
         QProcess size_of_adq;
+/*
+        int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos_copiados;
+        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+        ui->label_cant_archivos->setText(mensaje);
+        qApp->processEvents();
+        */
+
         size_of_adq.waitForStarted();
         input= "du -h -m "+nombre_archivo_adq+".raw";
         //cout << input.toStdString() << endl;
@@ -7162,13 +7195,30 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     QString NombredeArchivo;
     QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
     arpet->portDisconnect();
+    QVector<int> Cabezales;
 
 
   //  Cabezales_On_Off(checked);
 
     if (checked){
 
+        cant_archivos=1;
+        cant_archivos_copiados=0;
         /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
+         int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos + 1;
+        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+        ui->label_cant_archivos->setText(mensaje);
+
+        ui->label_gif_4->setVisible(false);
+        ui->label_gif_3  ->setVisible(true);
+
+
+        //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
+        ui->label_gif_3->setMovie(movie_cargando);
+        movie_cargando->start();
+        ui->label_gif_3->setScaledContents( false );
+        ui->label_gif_3->show();
+
 
         if (ui->lineEdit_Titulo_Medicion->text().isEmpty()){
             QMessageBox::critical(this,tr("Error"),tr("La medición debe contener un título."));
@@ -7194,8 +7244,11 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 //nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
                 if(ui->comboBox_aqd_mode->currentIndex()==1){
                     NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
+                    Cabezales.append(ui->cb_Calib_Cab->currentText().toInt());
+
                 }else{
                     NombredeArchivo="acquire_coin";
+                    Cabezales=Estado_Cabezales;
                 }
             }
         }else{
@@ -7203,11 +7256,15 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 commands.append(path_adq_Calib);
                 //nombre_archivo_adq = path_adq_Calib;
                 NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
+                Cabezales.append(ui->cb_Calib_Cab->currentText().toInt());
+
 
             }else{
                 commands.append(path_adq_Coin);
                 //nombre_archivo_adq = path_adq_Coin;
                 NombredeArchivo="acquire_coin";
+                Cabezales=Estado_Cabezales;
+
             }
 
         }
@@ -7251,41 +7308,48 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
 
         /////////////// CONFIGURACION Y CARGA DE TABLAS
-        for (int i=0;i<Estado_Cabezales.length();i++)
+        for (int i=0;i<Cabezales.length();i++)
         {
 
-            int head_index=Estado_Cabezales.at(i);
+            int head_index=Cabezales.at(i);
             /* Inicialización del Cabezal */
             try
             {
 
 
                 log.append("[CAB-"+QString::number(head_index)+"]\t");
-                log.append("[PMT-HVTABLE]\t");
-                log.append("[PMT-ENERGIA]\t");
-                log.append("[PMT-XPOS]\t");
-                log.append("[PMT-YPOS]\t");
-                log.append("[PMT-TIEMPO]\t");
+                log.append("[HV]\t");
+                log.append("[EN]\t");
+                log.append("[XPOS]\t");
+                log.append("[YPOS]\t");
+                log.append("[TIME]\t");
                 log.append("\n");
 
-                for (int i=0;i<PMTs;i++){
-                    log.append(QString::number(i)+"\t");
-                    log.append(QString::number(hvtable_values[0][i])+"\t");
-                    log.append(QString::number(Matrix_coefenerg_values[0][i])+"\t");
-                    log.append(QString::number(Matrix_coefx_values[0][i])+"\t");
-                    log.append(QString::number(Matrix_coefy_values[0][i])+"\t");
-                    log.append(QString::number(Matrix_coefT_values[0][i])+"\t");
+                for (int j=0;j<PMTs;j++){
+                    log.append(QString::number(j)+"\t");
+                    log.append(QString::number(hvtable_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefenerg_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefx_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefy_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefT_values[head_index-1][j])+"\t");
                     log.append("\n");
 
                 }
 
-                log.append("[LOW-LIMIT], "+ QString::number(LowLimit[1-1])+"\n");
+                log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head_index-1])+"\n");
 
-                log.append("[PMT-EST], ");
-                log.append(QString::number(Matrix_coefest_values[0][0])+", ");
-                log.append("\n");
-                log.append("[PMT-TINTER], ");
-                log.append(QString::number(coefTInter_values[0])+"\n");
+                log.append("[VENTANAS-ENERGIA]\n");
+                //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
+                log.append("Vent. Inf.: "+QString::number(Matrix_coefest_values[head_index-1][0])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][1])+"\n");
+
+                log.append("Vent. Med.: "+QString::number(Matrix_coefest_values[head_index-1][2])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][3])+"\n");
+                log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
+
+
+
 
 
                 port_name=Cab+QString::number(head_index);
@@ -7347,6 +7411,13 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             }
         }
 
+        log.append("[TIEMPOS-INTER-CAB]\n");
+        log.append("CAB1: "+QString::number(coefTInter_values[0])+"\n");
+        log.append("CAB2: "+QString::number(coefTInter_values[1])+"\n");
+        log.append("CAB3: "+QString::number(coefTInter_values[2])+"\n");
+        log.append("CAB4: "+QString::number(coefTInter_values[3])+"\n");
+        log.append("CAB5: "+QString::number(coefTInter_values[4])+"\n");
+        log.append("CAB6: "+QString::number(coefTInter_values[5])+"\n");
 
         //head = ui->comboBox_head_select_calib->currentText();
 
@@ -7381,14 +7452,21 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else{
-        worker_adq->abort();
-        thread_adq->exit(0);
-        usleep(500);
+
+        QProcess killall;
+        killall.waitForStarted();
+        killall.execute("pkill recvRawEth");
+        killall.waitForFinished(1000);
+        cout<<killall.readAll().toStdString()<<endl;
+        adq_running = false;
 
 
         worker_copy->abort();
         thread_copy->exit(0);
         usleep(5000);
+
+
+
     }
 }
 
@@ -7918,10 +7996,16 @@ void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
 void MainWindow::checkStatusMoveToServer(bool status){
     QPixmap image;
     //adq_running = false;
-    copying=false;
-    int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos + 1;
+
+    cant_archivos_copiados = cant_archivos_copiados + 1;
+    int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos_copiados;
     QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
     ui->label_cant_archivos->setText(mensaje);
+    qApp->processEvents();
+
+    copying=false;
+
+
 
     if (!status){
         worker_adq->abort();
@@ -7940,21 +8024,32 @@ void MainWindow::checkStatusMoveToServer(bool status){
          ui->label_gif_4->setPixmap(image);
          ui->label_gif_4->setScaledContents( true );
          ui->label_gif_4->show();
+         adq_running = false;
+         return;
     }
 
-    if (cant_archivos==1){
+    if (ui->lineEdit_aqd_cant_archivos->text().toInt()==cant_archivos_copiados)
+    {
 
-        if(status)
-           image.load("/home/ar-pet/Downloads/ic_check_circle.png");
-        else
-           image.load("/home/ar-pet/Downloads/ic_cancel.png");
-
+        image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+        ui->progressBar->setValue(size_archivo_adq.toInt());
+        ui->pbAdquirir->blockSignals(true);
+        ui->pbAdquirir->setChecked(false);
+        ui->pbAdquirir->blockSignals(false);
         ui->label_gif_3->setVisible(false);
         ui->label_gif_4->setVisible(true);
 
         ui->label_gif_4->setPixmap(image);
         ui->label_gif_4->setScaledContents( true );
         ui->label_gif_4->show();
+    }
+    else
+    {
+         if(finish_adquirir){
+            checkStatusAdq(true);
+            finish_adquirir=false;
+         }
+
     }
 }
 

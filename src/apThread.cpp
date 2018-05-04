@@ -592,7 +592,7 @@ void Thread::prtstderror(){
 
 bool Thread::MoveToServer_handler()
 {
-    sleep(1);
+    usleep(5000);
     emit StatusFinishMoveToServer(MoveToServer());
 }
 
@@ -623,28 +623,36 @@ bool Thread::MoveToServer(){
         return false;
         qDebug()<<"Directory could not be created";
     }
-        input= "mv ./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw" + " " + mpath;
-        cout << input.toStdString() << endl;
-        Adquisidor_copia.start(input);
-        Adquisidor_copia.waitForFinished(-1);
-        output=(Adquisidor_copia.readAllStandardOutput());
-        if(!output.isEmpty()) {
-            cout << output.toStdString() << endl;
-            return false;
-        }
-        if (cantidad_archivos==1){
-            input= "mv " +commands.at(3) + " " + mpath;
-            cout << input.toStdString() << endl;
-            Adquisidor_copia.start(input);
-            Adquisidor_copia.waitForFinished(-1);
-            output=(Adquisidor_copia.readAllStandardOutput());
+    try
+    {
+        if (QFile::copy("./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw",mpath+"/"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw"))
+        {
+            qDebug() <<"Copiado adquisicion";
+            if (cantidad_archivos==1)
+            {
+                if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3))){
+                    qDebug() <<"Copiado log";
 
-            if(!output.isEmpty()){
-                cout << output.toStdString() << endl;
-                return false;
+                }
+                else{
+                    Exceptions exception_Cabezal_Apagado("Error en la copia del log");
+                    throw exception_Cabezal_Apagado;
+                }
             }
+
         }
-        //if(!output.isEmpty()) return false;
-    Adquisidor_copia.close();
+        else
+        {
+            Exceptions exception_Cabezal_Apagado("Error en la copia de la adquisicion");
+            throw exception_Cabezal_Apagado;
+        }
+
+
+    }
+    catch(Exceptions & ex)
+    {
+        cout<<ex.excdesc<<endl;
+        return false;
+    }
     return true;
 }

@@ -553,6 +553,8 @@ private:
     QTimer *timer = new QTimer(0);
     int  ogl_flag;
     int cant_archivos=1;
+    int cant_archivos_copiados = 0;
+    bool finish_adquirir=false;
     QStringList Mensaje_Grabar_FPGA(int modo);
     QList<QString> array_PMT;
     int offset_MEM  = 0;
