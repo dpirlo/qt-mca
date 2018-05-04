@@ -140,6 +140,7 @@ private slots:
     void checkStatusFPGA(bool status);
     void checkStatusAdq(bool status);
     void recieveresetheads();
+    void checkStatusMoveToServer(bool status);
 
     /* Threads */
     void writeRatesToLog(int index, int rate_low, int rate_med, int rate_high);
@@ -481,13 +482,15 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
-    QMutex mMutex, bMutex, Mutex_fpga,Mutex_adq;
+    QMutex mMutex, bMutex, Mutex_fpga,Mutex_adq,Mutex_copy;
     QThread *thread;
     Thread *worker;
     QThread *thread_fpga;
     Thread *worker_fpga;
     QThread *thread_adq;
     Thread *worker_adq;
+    QThread *thread_copy;
+    Thread *worker_copy;
     QThread *etime_th;
     Thread *etime_wr;
     QThread *mcae_th;
@@ -549,6 +552,7 @@ private:
 
     QTimer *timer = new QTimer(0);
     int  ogl_flag;
+    int cant_archivos=1;
     QStringList Mensaje_Grabar_FPGA(int modo);
     QList<QString> array_PMT;
     int offset_MEM  = 0;
@@ -557,6 +561,7 @@ private:
     QString nombre_archivo_adq;
     QString size_archivo_adq;
     bool adq_running = false;
+    bool copying= false;
 
     /* Area de prueba/testing */
 

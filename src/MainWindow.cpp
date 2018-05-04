@@ -89,6 +89,11 @@ MainWindow::~MainWindow()
     delete thread_adq;
     delete worker_adq;
 
+    worker_copy->abort();
+    thread_copy->wait();
+    delete thread_copy;
+    delete worker_copy;
+
     etime_wr->abort();
     etime_th->wait();
     delete etime_th;
@@ -147,6 +152,10 @@ void MainWindow::setInitialConfigurations()
     thread_adq = new QThread();
     worker_adq = new Thread(arpet, &Mutex_adq);
     worker_adq->moveToThread(thread_adq);
+
+    thread_copy = new QThread();
+    worker_copy = new Thread(arpet, &Mutex_copy);
+    worker_copy->moveToThread(thread_copy);
 
     connectSlots();
 
@@ -344,6 +353,9 @@ void MainWindow::connectSlots()
     connect(worker_adq, SIGNAL(AdquisicionRequested()), thread_adq, SLOT(start()));
     connect(thread_adq, SIGNAL(started()), worker_adq, SLOT(Adquirir_handler()));
 
+    connect(worker_copy, SIGNAL(MoveToServerRequested()), thread_copy, SLOT(start()));
+    connect(thread_copy, SIGNAL(started()), worker_copy, SLOT(MoveToServer_handler()));
+
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(this,   SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
     connect(worker, SIGNAL(sendLogErrorCommand()),this,SLOT(getLogErrorThread()));
@@ -386,6 +398,9 @@ void MainWindow::connectSlots()
     /* THREAD ADQ */
 
     connect(worker_adq, SIGNAL(StatusFinishAdq(bool )),this,SLOT(checkStatusAdq(bool)));
+
+
+    connect(worker_copy, SIGNAL(StatusFinishMoveToServer(bool )),this,SLOT(checkStatusMoveToServer(bool)));
 
 
     /* Objetos */
@@ -537,21 +552,56 @@ void MainWindow::clearSpecCalibGraphs()
 void MainWindow::checkStatusAdq(bool status)
 {
 
-    QPixmap image;
-    adq_running = false;
 
-    if(status)
-       image.load("/home/ar-pet/Downloads/ic_check_circle.png");
-    else
-       image.load("/home/ar-pet/Downloads/ic_cancel.png");
+    if (cant_archivos==1){
 
-    ui->label_gif_3->setVisible(false);
-    ui->label_gif_4->setVisible(true);
+           worker_adq->requestAdquirir();
+           worker_adq->setCantArchivos(cant_archivos);
 
-    ui->label_gif_4->setPixmap(image);
-    ui->label_gif_4->setScaledContents( true );
-    ui->label_gif_4->show();
+           cant_archivos++;
 
+    }
+
+    else if(ui->lineEdit_aqd_cant_archivos->text().toInt()>=cant_archivos){
+
+
+        while(copying);
+
+        copying=true;
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
+
+        worker_adq->setCantArchivos(cant_archivos);
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        worker_copy->setCantArchivos(cant_archivos-1);
+
+        worker_copy->requestMoveToServer();
+        worker_adq->requestAdquirir();
+        cant_archivos++;
+
+
+    }else{
+        usleep(500);
+
+        while(copying);
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        worker_copy->setCantArchivos(cant_archivos-1);
+
+        worker_copy->requestMoveToServer();
+        copying=true;
+
+        //worker_copy->requestMoveToServer();
+        adq_running = false;
+        cant_archivos =1;
+    }
+    return;
 
 }
 
@@ -6657,6 +6707,7 @@ void MainWindow::updateCaption(){
         mensaje = "Nombre del archivo: " + nombre_archivo_adq+".raw" + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + output + " MB";
         if (debug)cout<< mensaje.toStdString() <<endl;
         size_of_adq.close();
+        if(output.toInt() > 0 )
         ui->progressBar->setValue(output.toInt());
 
     }
@@ -7319,13 +7370,25 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         logger.write( log.toUtf8());
         logger.close();
         commands.append(logFileAdq);
+        commands.append(QDate::currentDate().toString("yyyy-MM-dd"));
+        commands.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
+        commands.append(ui->lineEdit_aqd_cant_archivos->text());
         worker_adq->setCommands(commands);
-        worker_adq->requestAdquirir();
+        worker_copy->setCommands(commands);
+
+        checkStatusAdq(true);
         adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else{
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
 
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
     }
 }
 
@@ -7568,9 +7631,7 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
                              }
                              else
                                 device = device_SP3;
-
                            }
-
 
                     }
             else
@@ -7610,7 +7671,8 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
             }
 
         // verifico que el archivo seleccionado sea .bit y contenga el deviceo de dispositivo
-
+       if(modo!=2)
+       {
             QFile file(path);
              if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
              {
@@ -7638,6 +7700,7 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 
 
             file.close();
+       }
 
 
 
@@ -7852,3 +7915,46 @@ void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
 
 
 }
+void MainWindow::checkStatusMoveToServer(bool status){
+    QPixmap image;
+    //adq_running = false;
+    copying=false;
+    int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos + 1;
+    QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+    ui->label_cant_archivos->setText(mensaje);
+
+    if (!status){
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
+
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+
+         ui->label_gif_3->setVisible(false);
+         ui->label_gif_4->setVisible(true);
+
+         ui->label_gif_4->setPixmap(image);
+         ui->label_gif_4->setScaledContents( true );
+         ui->label_gif_4->show();
+    }
+
+    if (cant_archivos==1){
+
+        if(status)
+           image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+        else
+           image.load("/home/ar-pet/Downloads/ic_cancel.png");
+
+        ui->label_gif_3->setVisible(false);
+        ui->label_gif_4->setVisible(true);
+
+        ui->label_gif_4->setPixmap(image);
+        ui->label_gif_4->setScaledContents( true );
+        ui->label_gif_4->show();
+    }
+}
+

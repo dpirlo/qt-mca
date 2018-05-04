@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>8</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -4170,7 +4170,7 @@ calibrar</string>
      <widget class="QLineEdit" name="lineEdit_aqd_file_size">
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>240</x>
         <y>90</y>
         <width>111</width>
         <height>31</height>
@@ -4178,6 +4178,9 @@ calibrar</string>
       </property>
       <property name="inputMask">
        <string>9999</string>
+      </property>
+      <property name="text">
+       <string>10</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineEdit_aqd_path_file">
@@ -4447,6 +4450,78 @@ calibrar</string>
        <string/>
       </property>
      </widget>
+     <widget class="QLabel" name="label_110">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>90</y>
+        <width>221</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Cant. de Archivos</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>90</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string>9999</string>
+      </property>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_cant_archivos">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>460</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <zorder>pushButton_write_cuipet_file</zorder>
+     <zorder>lineEdit_aqd_path_file</zorder>
+     <zorder>pushButton_aqd_file_open</zorder>
+     <zorder>comboBox_aqd_mode</zorder>
+     <zorder>label_103</zorder>
+     <zorder>label_105</zorder>
+     <zorder>pbAdquirir</zorder>
+     <zorder>label_5</zorder>
+     <zorder>lineEdit_Titulo_Medicion</zorder>
+     <zorder>label_24</zorder>
+     <zorder>cb_Calib_Cab</zorder>
+     <zorder>frame_3</zorder>
+     <zorder>cb_Path_alternativo_adq</zorder>
+     <zorder>progressBar</zorder>
+     <zorder>label_gif_3</zorder>
+     <zorder>label_gif_4</zorder>
+     <zorder>label_110</zorder>
+     <zorder>lineEdit_aqd_cant_archivos</zorder>
+     <zorder>lineEdit_aqd_file_size</zorder>
+     <zorder>label_cant_archivos</zorder>
     </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">

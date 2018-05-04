@@ -472,10 +472,7 @@ void Thread::GrabarFPGA(){
 
 bool Thread::Adquirir_handler()
 {
-//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardOutput()),this,SLOT(prtstdoutput()));
-//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardError()),this,SLOT(prtstderror()));
-    emit StatusFinishAdq(Adquirir());
-
+   emit StatusFinishAdq(Adquirir());
 }
 
 
@@ -542,9 +539,9 @@ bool Thread::Adquirir()
         QString input,output;
         //cout << commands[i].toStdString() << endl;
         QProcess *Adquisidor=new QProcess(this);
-        QString date =QDate::currentDate().toString("yyyy-MM-dd");
-        QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
 
+        date =commands.at(4);
+        time =commands.at(5);
         Adquisidor->waitForStarted();
         input=  "recvRawEth -q -s " + commands.at(0); /// "echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
 
@@ -559,46 +556,19 @@ bool Thread::Adquirir()
             return false;
         else if(output.contains("FIN")) {
 
-            QDir mDir;
-            QString mpath=commands.at(1)+"/"+date;
-            if (!mDir.exists(mpath))
-            {
-                mDir.mkpath(mpath);
-                qDebug() <<"Created";
-            }
-            else if (mDir.exists(mpath))
-            {
-                qDebug() <<"Already existed";
-            }
-            else
-            {
-                return false;
-                qDebug()<<"Directory could not be created";
-            }
 
             Adquisidor->waitForStarted();
-            QProcess Adquisidor_copia;
 
-            input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+".raw";
+            input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw";
+
             cout << input.toStdString() << endl;
             Adquisidor->start(input);
             Adquisidor->waitForFinished(10000);
             output=(Adquisidor->readAllStandardError());
             if(!output.isEmpty()) return false;
-            input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
-            cout << input.toStdString() << endl;
-            Adquisidor_copia.start(input);
-            Adquisidor_copia.waitForFinished(-1);
-            output=(Adquisidor_copia.readAllStandardError());
-            if(!output.isEmpty()) return false;
-            input= "mv " +commands.at(3) + " " + mpath;
-            cout << input.toStdString() << endl;
-            Adquisidor_copia.start(input);
-            Adquisidor_copia.waitForFinished(-1);
-            output=(Adquisidor_copia.readAllStandardError());
-            if(!output.isEmpty()) return false;
+
             Adquisidor->close();
-            Adquisidor_copia.close();
+
 
         }
         else return false;
@@ -620,24 +590,61 @@ void Thread::prtstderror(){
 }
 
 
-/*
-void Thread::MoveToServer(){
+bool Thread::MoveToServer_handler()
+{
+    sleep(1);
+    emit StatusFinishMoveToServer(MoveToServer());
+}
+
+void Thread::requestMoveToServer()
+{
+
+    emit MoveToServerRequested();
+}
+
+bool Thread::MoveToServer(){
     QProcess Adquisidor_copia;
     QString input,output;
-  //  if(){
-        input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
+    QDir mDir;
+    date =commands.at(4);
+    time =commands.at(5);
+    QString mpath=commands.at(1)+"/"+date;
+    if (!mDir.exists(mpath))
+    {
+        mDir.mkpath(mpath);
+        qDebug() <<"Created";
+    }
+    else if (mDir.exists(mpath))
+    {
+        qDebug() <<"Already existed";
+    }
+    else
+    {
+        return false;
+        qDebug()<<"Directory could not be created";
+    }
+        input= "mv ./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw" + " " + mpath;
         cout << input.toStdString() << endl;
-        Adquisidor_copia->start(input);
-        Adquisidor_copia->waitForFinished(-1);
-        output=(Adquisidor_copia->readAllStandardError());
-        if(!output.isEmpty()) return false;
-        input= "mv " +commands.at(3) + " " + mpath;
-        cout << input.toStdString() << endl;
-        Adquisidor_copia->start(input);
-        Adquisidor_copia->waitForFinished(-1);
-        output=(Adquisidor_copia->readAllStandardError());
-        if(!output.isEmpty()) return false;
-//}
-    Adquisidor_copia->close();
+        Adquisidor_copia.start(input);
+        Adquisidor_copia.waitForFinished(-1);
+        output=(Adquisidor_copia.readAllStandardOutput());
+        if(!output.isEmpty()) {
+            cout << output.toStdString() << endl;
+            return false;
+        }
+        if (cantidad_archivos==1){
+            input= "mv " +commands.at(3) + " " + mpath;
+            cout << input.toStdString() << endl;
+            Adquisidor_copia.start(input);
+            Adquisidor_copia.waitForFinished(-1);
+            output=(Adquisidor_copia.readAllStandardOutput());
 
-}*/
+            if(!output.isEmpty()){
+                cout << output.toStdString() << endl;
+                return false;
+            }
+        }
+        //if(!output.isEmpty()) return false;
+    Adquisidor_copia.close();
+    return true;
+}
