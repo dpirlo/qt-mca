@@ -105,6 +105,7 @@ namespace ap {
     string setCalibTable(string head, string calib_function, QVector<double> table, string port_name);
     string setTime(string head, double time_value, string pmt, string port_name);
     string getTemp(string head, string pmt, string port_name);
+    string getAlmohada(string head, string port_name);
     vector<int> getRate(string head, string port_name);
     vector<int> getRateCoin(string head, string port_name);
     QVector<QString> parserPSOCStream(string stream);

@@ -1399,6 +1399,21 @@ string MCAE::getTemp(string head, string pmt, string port_name)
     return msg;
 }
 /**
+ * @brief MCAE::getTemp
+ *
+ * Método que obtiene la temperatura del PMT
+ *
+ * @param head
+ * @param pmt
+ * @param port_name
+ * @return Mensaje de recepción en _string_
+ */
+string MCAE::getAlmohada(string head, string port_name)
+{
+    return getMCA("50",getFunCHead(),head,1024,port_name);
+
+}
+/**
  * @brief MCAE::parserRateStream
  *
  * Método que parsea la trama de recepción de la tasa de adquisición del cabezal

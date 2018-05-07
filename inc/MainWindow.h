@@ -39,6 +39,8 @@
 #include <QThread>
 #include <cstdio>
 #include <QString>
+#include <QPixmap>
+#include <QTextStream>
 
 #define MONOHEAD 0
 #define MULTIHEAD 1
@@ -46,6 +48,7 @@
 #define PMT 0
 #define CABEZAL 1
 #define TEMPERATURE 2
+#define ALMOHADA 3
 #define HEAD 0
 #define HEADS 6
 #define COIN_NORMAL 0
@@ -439,6 +442,7 @@ private:
     bool resetPMTs(bool centroide=false);
     void setQListElements();
     void drawTemperatureBoard();
+    void drawAlmohada();
     void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
     void clearTemperatureBoard();
     temp_code getTemperatureCode(double temperature);
@@ -457,9 +461,6 @@ private:
     void Cabezales_On_Off(bool estado);
     string getEstadoCabezal(int head);
     void UncheckHeads(void);
-
-
-
 
 
 
@@ -558,6 +559,7 @@ private:
     QString size_archivo_adq;
     bool adq_running = false;
 
+    QGraphicsScene *scene;
     /* Area de prueba/testing */
 
 

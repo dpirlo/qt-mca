@@ -2399,26 +2399,30 @@ void MainWindow::drawAlmohada()
             cout << msg << endl;
             arpet->portDisconnect();
 
+            // Adquiero los 1024 canales correspondientes a la imagen de 32x32 (no me daba para más la RAM de la Artix)
             QVector<double> vec_aux = arpet->getHitsMCA();
 
+            // Me fijo el máximo valor para sacar un poco de pasto 
             double max_vec = *std::max_element(vec_aux.begin(), vec_aux.end());
 
             QVector<float> vec;
 
             for (int j=0;j<32;j++)
                 for (int k=0;k<32;k++){
-                    if(vec_aux.at(j+k*32) > max_vec/32)
-                        vec.append((qLn((vec_aux.at(j+k*32)))));
+                    if(vec_aux.at(j+k*32) > max_vec/32) // Saco pasto
+                        vec.append((qLn((vec_aux.at(j+k*32))))); // Aplico logaritmo para suavizar la distancia de alturas
                     else
-                       vec.append(0);
+                       vec.append(0); // Plancho en 0 los que estén debajo del umbral
                 }
 
+            // Saco el nuevo máximo para normalizar y tener un buen rango de colores
             double max = *std::max_element(vec.begin(), vec.end());
 
             double co = (256*256*256-1)/((max));
 
             QImage tmpImage(32, 32, QImage::Format_RGB32);
 
+            //Genero la imagen pintando pixel a pixel (en esta parte se puede rellenar de diferentes maneras dependiendo de la orientación que se prefiera para el almohadón)
             for (int j=0;j<32;j++)
                 for (int k=0;k<32;k++){
                     tmpImage.setPixel(j,k,qCeil((vec.at(j+k*32)*co)));
