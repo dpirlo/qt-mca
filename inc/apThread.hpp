@@ -65,13 +65,16 @@ namespace ap {
       bool Timer_concluded=true;
       QString etime;
       QStringList commands;
-
+      int cantidad_archivos;
+      QString time;
+      QString date;
 
       bool running;
 
   private:    //funciones privadas
       bool Grabar_FPGA();
       bool Adquirir();
+      bool MoveToServer();
 
 
   signals:
@@ -94,6 +97,9 @@ namespace ap {
        * @brief mcaRequest
        */
       void mcaRequested();
+
+      void MoveToServerRequested();
+
       /**
        * @brief sendRatesValuesCoin
        * @param index
@@ -226,6 +232,7 @@ namespace ap {
        * @brief StatusFinishAdq
        */
       void StatusFinishAdq(bool status);
+      void StatusFinishMoveToServer(bool status);
 
       void sendresetHeads();
 
@@ -241,6 +248,7 @@ namespace ap {
       void receivedFinalElapsedTimeString(QString eatime_string) { etime = eatime_string; }
 
       void setCommands(QStringList Command){commands=(Command);}
+      void setCantArchivos(int cant){cantidad_archivos=cant;}
       void getElapsedTime();
       void getMCA();
       void TimerUpdate();
@@ -248,6 +256,8 @@ namespace ap {
       void requestGrabarFPGA();
       void requestAdquirir();
       bool Adquirir_handler();
+      void requestMoveToServer();
+      bool MoveToServer_handler();
       void prtstdoutput();
       void prtstderror();
 

@@ -89,6 +89,11 @@ MainWindow::~MainWindow()
     delete thread_adq;
     delete worker_adq;
 
+    worker_copy->abort();
+    thread_copy->wait();
+    delete thread_copy;
+    delete worker_copy;
+
     etime_wr->abort();
     etime_th->wait();
     delete etime_th;
@@ -147,6 +152,10 @@ void MainWindow::setInitialConfigurations()
     thread_adq = new QThread();
     worker_adq = new Thread(arpet, &Mutex_adq);
     worker_adq->moveToThread(thread_adq);
+
+    thread_copy = new QThread();
+    worker_copy = new Thread(arpet, &Mutex_copy);
+    worker_copy->moveToThread(thread_copy);
 
     connectSlots();
 
@@ -344,6 +353,9 @@ void MainWindow::connectSlots()
     connect(worker_adq, SIGNAL(AdquisicionRequested()), thread_adq, SLOT(start()));
     connect(thread_adq, SIGNAL(started()), worker_adq, SLOT(Adquirir_handler()));
 
+    connect(worker_copy, SIGNAL(MoveToServerRequested()), thread_copy, SLOT(start()));
+    connect(thread_copy, SIGNAL(started()), worker_copy, SLOT(MoveToServer_handler()));
+
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(this,   SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
     connect(worker, SIGNAL(sendLogErrorCommand()),this,SLOT(getLogErrorThread()));
@@ -386,6 +398,9 @@ void MainWindow::connectSlots()
     /* THREAD ADQ */
 
     connect(worker_adq, SIGNAL(StatusFinishAdq(bool )),this,SLOT(checkStatusAdq(bool)));
+
+
+    connect(worker_copy, SIGNAL(StatusFinishMoveToServer(bool )),this,SLOT(checkStatusMoveToServer(bool)));
 
 
     /* Objetos */
@@ -537,23 +552,83 @@ void MainWindow::clearSpecCalibGraphs()
 void MainWindow::checkStatusAdq(bool status)
 {
 
-    QPixmap image;
-    adq_running = false;
 
-    if(status)
-       image.load("/home/ar-pet/Downloads/ic_check_circle.png");
-    else
-       image.load("/home/ar-pet/Downloads/ic_cancel.png");
+    if (!status)
+    {
 
-    ui->label_gif_3->setVisible(false);
-    ui->label_gif_4->setVisible(true);
+        adq_running = false;
+        QPixmap image;
+        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+        cant_archivos =1;
+        ui->label_gif_3->setVisible(false);
+        ui->label_gif_4->setVisible(true);
+        ui->label_gif_4->setPixmap(image);
+        ui->label_gif_4->setScaledContents( true );
+        ui->label_gif_4->show();
+        return;
+    }
 
-    ui->label_gif_4->setPixmap(image);
-    ui->label_gif_4->setScaledContents( true );
-    ui->label_gif_4->show();
+    if(copying)
+    {
+            finish_adquirir=true;
+            return;
+    }
+
+        if (cant_archivos==1){
+
+               worker_adq->requestAdquirir();
+               worker_adq->setCantArchivos(cant_archivos);
+               cant_archivos++;
+
+        }
+
+        else if(ui->lineEdit_aqd_cant_archivos->text().toInt()>=cant_archivos){
+
+
+
+
+            copying=true;
+            worker_adq->abort();
+            thread_adq->exit(0);
+            usleep(500);
+
+            worker_adq->setCantArchivos(cant_archivos);
+
+            worker_copy->abort();
+            thread_copy->exit(0);
+            usleep(5000);
+            worker_copy->setCantArchivos(cant_archivos-1);
+
+            worker_copy->requestMoveToServer();
+            worker_adq->requestAdquirir();
+            cant_archivos++;
+
+
+        }else{
+            usleep(500);
+
+
+
+            worker_copy->abort();
+            thread_copy->exit(0);
+            usleep(5000);
+            worker_copy->setCantArchivos(cant_archivos-1);
+
+            worker_copy->requestMoveToServer();
+            copying=true;
+
+            //worker_copy->requestMoveToServer();
+            adq_running = false;
+            cant_archivos =1;
+        }
+        return;
+
+
 
 
 }
+
+
 
 /**
  * @brief MainWindow::checkStatusFPGA
@@ -1773,7 +1848,7 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
         error_code=arpet->portConnect("/dev/UART_Coin");
         if (error_code.value()!=0){
             arpet->portDisconnect();
-            Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+            Exceptions exception_Cabezal_Apagado("Está Coincidencia apagado");
             throw exception_Cabezal_Apagado;
         }
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
@@ -6773,23 +6848,41 @@ void MainWindow::updateCaption(){
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
     int size = 0;
+    QString mensaje;
 
     if(adq_running){
-        QString mensaje;
-        QString input, output;
+
+        QString input, output,tasa,error;
+
+        QProcess ver_tasa;
+        ver_tasa.waitForStarted();
+        ver_tasa.start("cat ./log_ETH.info");
+        ver_tasa.waitForFinished(-1);
+
+        output=(ver_tasa.readAllStandardOutput());
+        tasa=output.left(output.indexOf("Tramas"));
+        if(tasa.toInt() > 0 )
+        ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
+        error=output.mid(output.indexOf("con") + 3);
+        error = error.left(error.indexOf("\n"));
+        if(!error.isEmpty())
+        ui->label_adq_error_2->setText(error);
+        ver_tasa.close();
+
 
         QProcess size_of_adq;
+
+
+
         size_of_adq.waitForStarted();
         input= "du -h -m "+nombre_archivo_adq+".raw";
-        //cout << input.toStdString() << endl;
+
         size_of_adq.start(input);
         size_of_adq.waitForFinished(10000);
-
         output=(size_of_adq.readAllStandardOutput());
         output=output.left(output.indexOf("\t"));
-        mensaje = "Nombre del archivo: " + nombre_archivo_adq+".raw" + " Tamaño_Final: " + size_archivo_adq + " Tamaño Actual : " + output + " MB";
-        if (debug)cout<< mensaje.toStdString() <<endl;
         size_of_adq.close();
+        if(output.toInt() > 0 )
         ui->progressBar->setValue(output.toInt());
 
     }
@@ -7246,14 +7339,32 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     QString psoc_alta_Tabla;
     QStringList commands;
     QString NombredeArchivo;
+    QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
     arpet->portDisconnect();
+    QVector<int> Cabezales;
 
 
   //  Cabezales_On_Off(checked);
 
     if (checked){
 
+        cant_archivos=1;
+        cant_archivos_copiados=0;
         /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
+         int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos + 1;
+        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+        ui->label_cant_archivos->setText(mensaje);
+
+        ui->label_gif_4->setVisible(false);
+        ui->label_gif_3  ->setVisible(true);
+
+
+        //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
+        ui->label_gif_3->setMovie(movie_cargando);
+        movie_cargando->start();
+        ui->label_gif_3->setScaledContents( false );
+        ui->label_gif_3->show();
+
 
         if (ui->lineEdit_Titulo_Medicion->text().isEmpty()){
             QMessageBox::critical(this,tr("Error"),tr("La medición debe contener un título."));
@@ -7279,8 +7390,11 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 //nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
                 if(ui->comboBox_aqd_mode->currentIndex()==1){
                     NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
+                    Cabezales.append(ui->cb_Calib_Cab->currentText().toInt());
+
                 }else{
                     NombredeArchivo="acquire_coin";
+                    Cabezales=Estado_Cabezales;
                 }
             }
         }else{
@@ -7288,11 +7402,15 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 commands.append(path_adq_Calib);
                 //nombre_archivo_adq = path_adq_Calib;
                 NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
+                Cabezales.append(ui->cb_Calib_Cab->currentText().toInt());
+
 
             }else{
                 commands.append(path_adq_Coin);
                 //nombre_archivo_adq = path_adq_Coin;
                 NombredeArchivo="acquire_coin";
+                Cabezales=Estado_Cabezales;
+
             }
 
         }
@@ -7313,22 +7431,73 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         //                          3er valor Nombre de Archivo
         ///////////////////////////////////////////////////////////////////////////////////////
 
-        worker_adq->setCommands(commands);
-        worker_adq->requestAdquirir();
-        adq_running = true;
 
-        return;
+
+
+        QString logFileAdq = "./LOG_Adquisicion_"+time+".txt";
+        QFile logger( logFileAdq );
+        QString log;
+        logger.open(QIODevice::WriteOnly | QIODevice::Append);
+
+        log.append(ui->lineEdit_Titulo_Medicion->text()+"\n");
+        log.append(ui->Comentarios_Adquisicion->toPlainText()+"\n");
+
+
+
+
+
+
+
+        //return;
 
         /////////////////////////Fin de verificacion previa antes de configurar y adquirir//////////////////////////
 
 
         /////////////// CONFIGURACION Y CARGA DE TABLAS
-        for (int i=0;i<Estado_Cabezales.length();i++)
+        for (int i=0;i<Cabezales.length();i++)
         {
-            int head_index=Estado_Cabezales.at(i);
+
+            int head_index=Cabezales.at(i);
             /* Inicialización del Cabezal */
             try
             {
+
+
+                log.append("[CAB-"+QString::number(head_index)+"]\t");
+                log.append("[HV]\t");
+                log.append("[EN]\t");
+                log.append("[XPOS]\t");
+                log.append("[YPOS]\t");
+                log.append("[TIME]\t");
+                log.append("\n");
+
+                for (int j=0;j<PMTs;j++){
+                    log.append(QString::number(j)+"\t");
+                    log.append(QString::number(hvtable_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefenerg_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefx_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefy_values[head_index-1][j])+"\t");
+                    log.append(QString::number(Matrix_coefT_values[head_index-1][j])+"\t");
+                    log.append("\n");
+
+                }
+
+                log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head_index-1])+"\n");
+
+                log.append("[VENTANAS-ENERGIA]\n");
+                //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
+                log.append("Vent. Inf.: "+QString::number(Matrix_coefest_values[head_index-1][0])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][1])+"\n");
+
+                log.append("Vent. Med.: "+QString::number(Matrix_coefest_values[head_index-1][2])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][3])+"\n");
+                log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
+                        +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
+
+
+
+
+
                 port_name=Cab+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
                 worker->setPortName((port_name));
@@ -7375,19 +7544,8 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 //hv_status_table[head_index-1]->setText(psoc_alta);
 
                 setCalibrationTables(head_index);
-                //ui->lineEdit_alta->setText(QString::number(AT));
-                //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-                //hv_status_table[head_index-1]->setText(QString::number(AT));
-
-                initCoincidenceMode();
-                usleep(5000);
-                setCoincidenceModeWindowTime();
-                usleep(5000);
-                setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-                usleep(5000);
 
                 arpet->portDisconnect();
-
 
             }
             catch(Exceptions & ex)
@@ -7398,9 +7556,62 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 setLabelState(false, hv_status_table[head_index-1], true);
             }
         }
+
+        log.append("[TIEMPOS-INTER-CAB]\n");
+        log.append("CAB1: "+QString::number(coefTInter_values[0])+"\n");
+        log.append("CAB2: "+QString::number(coefTInter_values[1])+"\n");
+        log.append("CAB3: "+QString::number(coefTInter_values[2])+"\n");
+        log.append("CAB4: "+QString::number(coefTInter_values[3])+"\n");
+        log.append("CAB5: "+QString::number(coefTInter_values[4])+"\n");
+        log.append("CAB6: "+QString::number(coefTInter_values[5])+"\n");
+
+        //head = ui->comboBox_head_select_calib->currentText();
+
+
+        if(ui->comboBox_aqd_mode->currentIndex()==1){
+            if(debug) cout<<"Modo Calibración en el cabezal: "<<ui->cb_Calib_Cab->currentText().toStdString()<<endl;
+            setCalibrationMode(ui->cb_Calib_Cab->currentText());
+            usleep(5000);
+            setTimeModeCoin(COIN_CALIB, ui->cb_Calib_Cab->currentText());
+        }else{
+            if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
+            initCoincidenceMode();
+            usleep(5000);
+            setCoincidenceModeWindowTime();
+            usleep(5000);
+            setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+            usleep(5000);
+            setTimeModeCoin(COIN_NORMAL);
+        }
+
+        logger.write( log.toUtf8());
+        logger.close();
+        commands.append(logFileAdq);
+        commands.append(QDate::currentDate().toString("yyyy-MM-dd"));
+        commands.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
+        commands.append(ui->lineEdit_aqd_cant_archivos->text());
+        worker_adq->setCommands(commands);
+        worker_copy->setCommands(commands);
+
+        checkStatusAdq(true);
+        adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else{
+
+        QProcess killall;
+        killall.waitForStarted();
+        killall.execute("pkill recvRawEth");
+        killall.waitForFinished(1000);
+        cout<<killall.readAll().toStdString()<<endl;
+        adq_running = false;
+
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+
+
 
     }
 }
@@ -7644,9 +7855,7 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
                              }
                              else
                                 device = device_SP3;
-
                            }
-
 
                     }
             else
@@ -7686,7 +7895,8 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
             }
 
         // verifico que el archivo seleccionado sea .bit y contenga el deviceo de dispositivo
-
+       if(modo!=2)
+       {
             QFile file(path);
              if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
              {
@@ -7714,6 +7924,7 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 
 
             file.close();
+       }
 
 
 
@@ -7801,14 +8012,10 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 }
 
 
-
-
-
 void MainWindow::on_comboBox_FPGA_DISP_currentIndexChanged(int index)
 {
 
 }
-
 
 void MainWindow::on_checkBox_FPGA_2_clicked(bool checked)
 {
@@ -7932,3 +8139,63 @@ void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
 
 
 }
+void MainWindow::checkStatusMoveToServer(bool status){
+    QPixmap image;
+    //adq_running = false;
+
+    cant_archivos_copiados = cant_archivos_copiados + 1;
+    int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos_copiados;
+    QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+    ui->label_cant_archivos->setText(mensaje);
+    qApp->processEvents();
+
+    copying=false;
+
+
+
+    if (!status){
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
+
+
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+
+         ui->label_gif_3->setVisible(false);
+         ui->label_gif_4->setVisible(true);
+
+         ui->label_gif_4->setPixmap(image);
+         ui->label_gif_4->setScaledContents( true );
+         ui->label_gif_4->show();
+         adq_running = false;
+         return;
+    }
+
+    if (ui->lineEdit_aqd_cant_archivos->text().toInt()==cant_archivos_copiados)
+    {
+
+        image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+        ui->progressBar->setValue(size_archivo_adq.toInt());
+        ui->pbAdquirir->blockSignals(true);
+        ui->pbAdquirir->setChecked(false);
+        ui->pbAdquirir->blockSignals(false);
+        ui->label_gif_3->setVisible(false);
+        ui->label_gif_4->setVisible(true);
+
+        ui->label_gif_4->setPixmap(image);
+        ui->label_gif_4->setScaledContents( true );
+        ui->label_gif_4->show();
+    }
+    else
+    {
+         if(finish_adquirir){
+            checkStatusAdq(true);
+            finish_adquirir=false;
+         }
+
+    }
+}
+

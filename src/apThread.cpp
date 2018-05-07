@@ -472,10 +472,7 @@ void Thread::GrabarFPGA(){
 
 bool Thread::Adquirir_handler()
 {
-//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardOutput()),this,SLOT(prtstdoutput()));
-//    connect(&Adquisidor,SIGNAL(Adquisidor.readyReadStandardError()),this,SLOT(prtstderror()));
-    emit StatusFinishAdq(Adquirir());
-
+   emit StatusFinishAdq(Adquirir());
 }
 
 
@@ -542,9 +539,9 @@ bool Thread::Adquirir()
         QString input,output;
         //cout << commands[i].toStdString() << endl;
         QProcess *Adquisidor=new QProcess(this);
-        QString date =QDate::currentDate().toString("yyyy-MM-dd");
-        QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
 
+        date =commands.at(4);
+        time =commands.at(5);
         Adquisidor->waitForStarted();
         input=  "recvRawEth -q -s " + commands.at(0); /// "echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
 
@@ -559,46 +556,20 @@ bool Thread::Adquirir()
             return false;
         else if(output.contains("FIN")) {
 
-            QDir mDir;
-            QString mpath=commands.at(1)+"/"+date;
-            if (!mDir.exists(mpath))
-            {
-                mDir.mkpath(mpath);
-                qDebug() <<"Created";
-            }
-            else if (mDir.exists(mpath))
-            {
-                qDebug() <<"Already existed";
-            }
-            else
-            {
-                return false;
-                qDebug()<<"Directory could not be created";
-            }
 
-            QProcess Adquisidor_copia;
             Adquisidor->waitForStarted();
-            input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+".raw";
+
+            input= "mv ./" + commands.at(2)+".raw" + " " + "./"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw";
+
             cout << input.toStdString() << endl;
             Adquisidor->start(input);
             Adquisidor->waitForFinished(10000);
             output=(Adquisidor->readAllStandardError());
             if(!output.isEmpty()) return false;
-            input= "mv ./" +commands.at(2)+ "_"+time+".raw" + " " + mpath;
-            cout << input.toStdString() << endl;
-            Adquisidor->start(input);
-            Adquisidor->waitForFinished(-1);
-            output=(Adquisidor->readAllStandardError());
-            if(!output.isEmpty()) return false;
 
             Adquisidor->close();
 
-            cout<<output.toStdString()<<endl;
 
-            if(output.isEmpty())
-                return true;
-            else
-                return false;
         }
         else return false;
     return true;
@@ -616,4 +587,72 @@ void Thread::prtstdoutput(){
 
 void Thread::prtstderror(){
    // cout<<Adquisidor.readAllStandardError().toStdString()<<endl;
+}
+
+
+bool Thread::MoveToServer_handler()
+{
+    usleep(5000);
+    emit StatusFinishMoveToServer(MoveToServer());
+}
+
+void Thread::requestMoveToServer()
+{
+
+    emit MoveToServerRequested();
+}
+
+bool Thread::MoveToServer(){
+    QProcess Adquisidor_copia;
+    QString input,output;
+    QDir mDir;
+    date =commands.at(4);
+    time =commands.at(5);
+    QString mpath=commands.at(1)+"/"+date;
+    if (!mDir.exists(mpath))
+    {
+        mDir.mkpath(mpath);
+        qDebug() <<"Created";
+    }
+    else if (mDir.exists(mpath))
+    {
+        qDebug() <<"Already existed";
+    }
+    else
+    {
+        return false;
+        qDebug()<<"Directory could not be created";
+    }
+    try
+    {
+        if (QFile::copy("./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw",mpath+"/"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw"))
+        {
+            qDebug() <<"Copiado adquisicion";
+            if (cantidad_archivos==1)
+            {
+                if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3))){
+                    qDebug() <<"Copiado log";
+
+                }
+                else{
+                    Exceptions exception_Cabezal_Apagado("Error en la copia del log");
+                    throw exception_Cabezal_Apagado;
+                }
+            }
+
+        }
+        else
+        {
+            Exceptions exception_Cabezal_Apagado("Error en la copia de la adquisicion");
+            throw exception_Cabezal_Apagado;
+        }
+
+
+    }
+    catch(Exceptions & ex)
+    {
+        cout<<ex.excdesc<<endl;
+        return false;
+    }
+    return true;
 }

@@ -4235,25 +4235,10 @@ calibrar</string>
      <attribute name="title">
       <string>Adquisición</string>
      </attribute>
-     <widget class="QPushButton" name="pushButton_write_cuipet_file">
-      <property name="geometry">
-       <rect>
-        <x>620</x>
-        <y>10</y>
-        <width>271</width>
-        <height>141</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Escribir el archivo
- de configuración
- del cuipet</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="lineEdit_aqd_file_size">
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>240</x>
         <y>90</y>
         <width>111</width>
         <height>31</height>
@@ -4261,6 +4246,9 @@ calibrar</string>
       </property>
       <property name="inputMask">
        <string>9999</string>
+      </property>
+      <property name="text">
+       <string>10</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineEdit_aqd_path_file">
@@ -4459,7 +4447,7 @@ calibrar</string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QTextEdit" name="textEdit">
+      <widget class="QTextEdit" name="Comentarios_Adquisicion">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -4501,7 +4489,7 @@ calibrar</string>
        </rect>
       </property>
       <property name="value">
-       <number>24</number>
+       <number>0</number>
       </property>
      </widget>
      <widget class="QLabel" name="label_gif_3">
@@ -4530,6 +4518,153 @@ calibrar</string>
        <string/>
       </property>
      </widget>
+     <widget class="QLabel" name="label_110">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>90</y>
+        <width>221</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Cant. de Archivos</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>90</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string>9999</string>
+      </property>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_cant_archivos">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>467</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_tasa">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>210</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Tasa de adquisición</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_tasa_2">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>240</y>
+        <width>190</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Tramas/seg</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_error">
+      <property name="geometry">
+       <rect>
+        <x>872</x>
+        <y>210</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Error en tramas</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_adq_error_2">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>240</y>
+        <width>130</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>%</string>
+      </property>
+     </widget>
+     <zorder>lineEdit_aqd_path_file</zorder>
+     <zorder>pushButton_aqd_file_open</zorder>
+     <zorder>comboBox_aqd_mode</zorder>
+     <zorder>label_103</zorder>
+     <zorder>label_105</zorder>
+     <zorder>pbAdquirir</zorder>
+     <zorder>label_5</zorder>
+     <zorder>lineEdit_Titulo_Medicion</zorder>
+     <zorder>label_24</zorder>
+     <zorder>cb_Calib_Cab</zorder>
+     <zorder>frame_3</zorder>
+     <zorder>cb_Path_alternativo_adq</zorder>
+     <zorder>progressBar</zorder>
+     <zorder>label_gif_3</zorder>
+     <zorder>label_gif_4</zorder>
+     <zorder>label_110</zorder>
+     <zorder>lineEdit_aqd_cant_archivos</zorder>
+     <zorder>lineEdit_aqd_file_size</zorder>
+     <zorder>label_cant_archivos</zorder>
+     <zorder>label_adq_tasa</zorder>
+     <zorder>label_adq_tasa_2</zorder>
+     <zorder>label_adq_error</zorder>
+     <zorder>label_adq_error_2</zorder>
     </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -8087,7 +8222,7 @@ calibrar</string>
   <tabstop>cb_Path_alternativo_adq</tabstop>
   <tabstop>lineEdit_aqd_path_file</tabstop>
   <tabstop>pushButton_aqd_file_open</tabstop>
-  <tabstop>textEdit</tabstop>
+  <tabstop>Comentarios_Adquisicion</tabstop>
   <tabstop>pbAdquirir</tabstop>
   <tabstop>comboBox_head_select_graph_2</tabstop>
   <tabstop>Tiempo_adq_box</tabstop>
@@ -8189,7 +8324,6 @@ calibrar</string>
   <tabstop>checkBox_MLEM</tabstop>
   <tabstop>checkBox_Backprojection</tabstop>
   <tabstop>pushButton_6</tabstop>
-  <tabstop>pushButton_write_cuipet_file</tabstop>
   <tabstop>textBrowser_adq_1</tabstop>
   <tabstop>pushButton_triple_ventana_2</tabstop>
   <tabstop>textBrowser_adq_3</tabstop>
