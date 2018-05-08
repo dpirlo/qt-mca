@@ -25,6 +25,7 @@
 #include <boost/system/system_error.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/spirit/include/qi_eol.hpp>
 #include <stdlib.h>
 #include <iostream>
 #include <vector>

@@ -566,6 +566,8 @@ private:
     bool adq_running = false;
     bool copying= false;
 
+    QString ruta_log_adquisicion="";
+
     QGraphicsScene *scene;
     /* Area de prueba/testing */
 

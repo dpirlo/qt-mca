@@ -555,7 +555,7 @@ void MainWindow::checkStatusAdq(bool status)
 
     if (!status)
     {
-
+        QFile logger(ruta_log_adquisicion);
         adq_running = false;
         QPixmap image;
         image.load("/home/ar-pet/Downloads/ic_cancel.png");
@@ -565,7 +565,17 @@ void MainWindow::checkStatusAdq(bool status)
         ui->label_gif_4->setPixmap(image);
         ui->label_gif_4->setScaledContents( true );
         ui->label_gif_4->show();
+
+
+
+        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+        {
+            logger.write("Error en la recepción Ethernet, se cancela adquisición");
+            logger.close();
+        }
+
         return;
+
     }
 
     if(copying)
@@ -574,11 +584,13 @@ void MainWindow::checkStatusAdq(bool status)
             return;
     }
 
-        if (cant_archivos==1){
+        if (cant_archivos==1)
+        {
 
-               worker_adq->requestAdquirir();
-               worker_adq->setCantArchivos(cant_archivos);
-               cant_archivos++;
+            worker_adq->requestAdquirir();
+            worker_adq->setCantArchivos(cant_archivos);
+            cant_archivos++;
+
 
         }
 
@@ -1494,6 +1506,7 @@ void MainWindow::on_pushButton_initialize_clicked()
     arpet->portDisconnect();
     for (int i=0;i<checkedHeads.length();i++)
     {
+        qApp->processEvents();
         int head_index=checkedHeads.at(i);
 
         /* Inicialización del Cabezal */
@@ -1609,6 +1622,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         hv_status_table[head_index-1]->setText(QString::number(AT));
 
         arpet->portDisconnect();
+
     }
 
     //resetHeads();
@@ -3705,6 +3719,9 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
+
+
+
 
     if(checked)
     {
@@ -7337,17 +7354,28 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     string msg;
     QString psoc_alta;
     QString psoc_alta_Tabla;
-    QStringList commands;
+    static QStringList commands;
     QString NombredeArchivo;
     QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
     arpet->portDisconnect();
     QVector<int> Cabezales;
 
+    QString log;
+    QString logFileAdq;
+
 
   //  Cabezales_On_Off(checked);
 
+    QProcess killall;
+    killall.waitForStarted();
+    killall.execute("pkill recvRawEth");
+    killall.waitForFinished(1000);
+    cout<<killall.readAll().toStdString()<<endl;
+
+
     if (checked){
 
+        commands.clear();
         cant_archivos=1;
         cant_archivos_copiados=0;
         /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
@@ -7429,14 +7457,19 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         // commands Parametros:     1er valor Cantidad de MB de medicion
         //                          2do valor Path Coincidencia/Calibracion
         //                          3er valor Nombre de Archivo
+        //                          4to nombre de log
+        //                          5to valor Fecha formato yyyy-MM-dd
+        //                          6to valor Fecha formato yyyy-MM-dd-hh-mm
+        //                          7to valor cantidad de archivos
+        //                          8vo titulo de medicion
+        //                          9no registra o no la medicion segun path alternativo
         ///////////////////////////////////////////////////////////////////////////////////////
 
 
 
+        QFile logger("./LOG_Adquisicion_"+time+".txt");
+        logFileAdq = "./LOG_Adquisicion_"+time+".txt";
 
-        QString logFileAdq = "./LOG_Adquisicion_"+time+".txt";
-        QFile logger( logFileAdq );
-        QString log;
         logger.open(QIODevice::WriteOnly | QIODevice::Append);
 
         log.append(ui->lineEdit_Titulo_Medicion->text()+"\n");
@@ -7587,9 +7620,17 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         logger.write( log.toUtf8());
         logger.close();
         commands.append(logFileAdq);
+
         commands.append(QDate::currentDate().toString("yyyy-MM-dd"));
         commands.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
         commands.append(ui->lineEdit_aqd_cant_archivos->text());
+        commands.append(ui->lineEdit_Titulo_Medicion->text());
+        if( ui->cb_Path_alternativo_adq->isChecked()){
+            commands.append(" ");
+        }else{
+            commands.append("Registrar");
+        }
+        ruta_log_adquisicion = commands.at(1) + "/" + commands.at(4) + "/" + logFileAdq;
         worker_adq->setCommands(commands);
         worker_copy->setCommands(commands);
 
@@ -7597,16 +7638,19 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
-    else{
+    else
+    {
 
-        QProcess killall;
-        killall.waitForStarted();
-        killall.execute("pkill recvRawEth");
-        killall.waitForFinished(1000);
-        cout<<killall.readAll().toStdString()<<endl;
+
+
+        QFile logger(ruta_log_adquisicion);
+        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+        {
+            logger.write("Se cancela la adquisición manualmente \n");
+            logger.close();
+        }
+
         adq_running = false;
-
-
         worker_copy->abort();
         thread_copy->exit(0);
         usleep(5000);
@@ -8170,6 +8214,14 @@ void MainWindow::checkStatusMoveToServer(bool status){
          ui->label_gif_4->setPixmap(image);
          ui->label_gif_4->setScaledContents( true );
          ui->label_gif_4->show();
+
+
+         QFile logger(ruta_log_adquisicion);
+         if(logger.open(QIODevice::WriteOnly | QIODevice::Append) && adq_running)
+         {
+             logger.write("Error en la copia de un archivo, se cancela la adquisición");
+             logger.close();
+         }
          adq_running = false;
          return;
     }

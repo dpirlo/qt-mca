@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -8082,7 +8082,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

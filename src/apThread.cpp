@@ -603,8 +603,9 @@ void Thread::requestMoveToServer()
 }
 
 bool Thread::MoveToServer(){
-    QProcess Adquisidor_copia;
-    QString input,output;
+
+    //QProcess Adquisidor_copia;
+    //QString input,output;
     QDir mDir;
     date =commands.at(4);
     time =commands.at(5);
@@ -630,9 +631,20 @@ bool Thread::MoveToServer(){
             qDebug() <<"Copiado adquisicion";
             if (cantidad_archivos==1)
             {
-                if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3))){
+                if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3)))
+                {
                     qDebug() <<"Copiado log";
 
+                    if ( commands.at(8).contains("Registrar")){
+                        QString aux = commands.at(1) + "/" + "Listado_Aquisiciones.log";
+                        QFile logger(aux);
+                        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+                        {
+                            aux = "Medicion: " + commands.at(7) + "\t Nombre: " + mpath+"/"+commands.at(2)+ "_"+time + "\t Tamaño por archivo: " + commands.at(0) + "Mb\t Cantidad de archivos: " + commands.at(6) + "\n";
+                            logger.write(aux.toUtf8());
+                            logger.close();
+                        }
+                    }
                 }
                 else{
                     Exceptions exception_Cabezal_Apagado("Error en la copia del log");
