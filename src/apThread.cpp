@@ -136,6 +136,7 @@ void Thread::getLogWork() {
 
 
     int try_error_count = 0;
+    emit startElapsedTime();
 
     while(!_abort)
     {
@@ -155,7 +156,6 @@ void Thread::getLogWork() {
 
                   for (int i=0;i<checkedHeads.length();i++)
                   {
-                    emit startElapsedTime();
                     head_index=checkedHeads.at(i);
                     if (debug) cout<<"Cabezal: "<<head_index<<endl;
                     QVector<double> temp_vec;
@@ -164,7 +164,7 @@ void Thread::getLogWork() {
 
                     arpet->portConnect(port_name.toStdString().c_str());
 
-
+                    usleep(500);
                     if(temp)
                     {
 
@@ -257,6 +257,8 @@ void Thread::getLogWork() {
 
 
             emit sendresetHeads();
+
+            usleep(500);
 
             mutex->unlock();
         }

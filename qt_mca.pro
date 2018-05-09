@@ -64,3 +64,8 @@ CONFIG(debug, debug|release) {
 } else {
     DESTDIR = build/release
 }
+
+DISTFILES += \
+    images/cargando2.gif \
+    images/ic_cancel.png \
+    images/ic_check_circle.png

@@ -4,7 +4,6 @@
 #include "ui_SetPMTs.h"
 #include <QFileInfo>
 
-
 /**
  * @brief MainWindow::MainWindow
  *
@@ -24,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initfile("/media/arpet/pet/calibraciones/03-info/cabezales/ConfigINI/config_cabs_linux.ini"),
     root_calib_path("/media/arpet/pet/calibraciones/campo_inundado/03-info"),
     root_config_path("/media/arpet/pet/calibraciones/03-info/cabezales"),
-    root_log_path("/home/ar-pet/.qt-mca/logs"),
+    root_log_path(QDir::homePath() +"/.qt-mca/logs"),
     preferencesdir(QDir::homePath() + "/.qt-mca"),
     preferencesfile("qt-mca.conf"),
     ui(new Ui::MainWindow)
@@ -34,14 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setFixedSize(this->maximumSize());
     setInitialConfigurations();
     setPreferencesConfiguration();
-    getPaths();
-//    ui->tabWidget_general->setTabEnabled(Tab1,false); // Escondo pestaña MCA
-//    ui->tabWidget_general->setTabEnabled(Tab4,false); // Escondo pestaña Autocalib
-//    ui->tabWidget_general->setTabEnabled(Tab9,false); // Escondo pestaña Terminal
-//    ui->comboBox_head_select_config->hide();
-    ui->comboBox_head_mode_select_config->hide();
     ui->comboBox_head_select_graph->hide();
-    ui->comboBox_adquire_mode->hide();
     ui->lineEdit_aqd_path_file->hide();
     ui->pushButton_aqd_file_open->hide();
     ui->cb_Calib_Cab->hide();
@@ -62,8 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
             break;
         }
     }
-
-
 }
 /**
  * @brief MainWindow::~MainWindow
@@ -125,7 +115,6 @@ void MainWindow::setInitialConfigurations()
     arpet = shared_ptr<MCAE>(new MCAE());
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
-
     pmt_select_autocalib = new SetPMTs(this);
 
     // Calibrador
@@ -156,7 +145,6 @@ void MainWindow::setInitialConfigurations()
     thread_copy = new QThread();
     worker_copy = new Thread(arpet, &Mutex_copy);
     worker_copy->moveToThread(thread_copy);
-
     connectSlots();
 
     // Reconstructor
@@ -184,22 +172,16 @@ void MainWindow::setInitialConfigurations()
     ui->plainTextEdit_Recon_console->setReadOnly(true);    // Seteo el texto a modo solo lectura
     recon_externa->setConsola(ui->plainTextEdit_Recon_console); // Conecto la consola de salida
     ui->textBrowser_entrada_2->setReadOnly(false);
-    //ui->frame_multihead_graph_2->hide();
     manageHeadCheckBox("config",false);
     manageHeadCheckBox("mca",false);
-    setAdquireMode(ui->comboBox_adquire_mode->currentIndex());
     ui->frame_adquire_advance_mode->hide();
     ui->comboBox_head_select_calib->hide();
-    ui->comboBox_head_mode_select_graph->hide();
     ui->label_calib->hide();
 
     // Inicializo algunos widgets de FPGA
-
     ui->label_FPGA_3     ->setVisible(false);
     ui->text_FPGA_1      ->setVisible(false);
     ui->pushButton_FPGA_1->setVisible(false);
-
-
     ui->lineEdit_WN->setValidator(new QIntValidator(1, 127, this));
     ui->lineEdit_WP->setValidator(new QIntValidator(1, 128, this));
     ui->lineEdit_between_logs->setValidator( new QIntValidator(1, 3600, this) );
@@ -218,9 +200,6 @@ void MainWindow::setInitialConfigurations()
     setHitsInit(true);
     setAdquireMode(CABEZAL);
     Estado_Cabezales.reserve(6);
-
-
-
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -302,15 +281,7 @@ void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str
  */
 void MainWindow::checkCombosStatus()
 {
-    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeGraph(int)));
-    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setHeadModeConfig(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabHead(int)));
-    connect(ui->comboBox_adquire_mode ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdquireMode(int)));
-    connect(ui->tabWidget_mca ,SIGNAL(currentChanged(int)),this,SLOT(setTabMode(int)));
-    connect(ui->comboBox_head_mode_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToMCA(int)));
     connect(ui->comboBox_head_select_config ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToMCA(int)));
-    connect(ui->comboBox_head_mode_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadModeComboBoxToConfig(int)));
     connect(ui->comboBox_head_select_graph ,SIGNAL(currentIndexChanged (int)),this,SLOT(syncHeadComboBoxToConfig(int)));
     connect(ui->comboBox_adquire_mode_coin ,SIGNAL(currentIndexChanged (int)),this,SLOT(setAdvanceCoinMode(int)));
     connect(ui->checkBox_mca_1 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead1ToConfig(bool)));
@@ -558,7 +529,7 @@ void MainWindow::checkStatusAdq(bool status)
         QFile logger(ruta_log_adquisicion);
         adq_running = false;
         QPixmap image;
-        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+        image.load(icon_notok);
         cant_archivos =1;
         ui->label_gif_3->setVisible(false);
         ui->label_gif_4->setVisible(true);
@@ -653,9 +624,9 @@ void MainWindow::checkStatusFPGA(bool status)
     QPixmap image;
 
     if(status)
-       image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+       image.load(icon_ok);
     else
-       image.load("/home/ar-pet/Downloads/ic_cancel.png");
+       image.load(icon_notok);
 
     ui->label_gif->setVisible(false);
     ui->label_gif_2->setVisible(true);
@@ -712,12 +683,10 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
     {
         if (pmt_selected_list.length()==1)
         {
-            ui->label_title_output->setText("MCA Extended | PMT: " + pmt_selected_list.at(0));
             ui->label_data_output->setText("| HV: "+QString::number(hv_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time/1000) + " | Modo Centroide: " + centroid_mode + " | "+"Offset : " +QString::number(arpet->getOffSetMCA()) );
         }
         else
         {
-            ui->label_title_output->setText("");
             ui->label_data_output->setText("");
         }
 
@@ -726,12 +695,10 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
     {
         if (getCheckedHeads().length()==1)
         {
-            ui->label_title_output->setText("MCA Extended | Cabezal: " + QString::number(getCheckedHeads().at(0)));
             //ui->label_data_output->setText("| Umbral: "+ QString::number(hv_pmt) + " |");
         }
         else
         {
-            ui->label_title_output->setText("");
             ui->label_data_output->setText("");
         }
     }
@@ -740,7 +707,6 @@ void MainWindow::receivedValuesMCA(long long time, int hv_pmt, int offset, int v
 
 void MainWindow::receivedValuesMCACalib(int umbral, int pico, int FWHM)
 {
-    ui->label_title_output->setText("Cabezal calibrado");
     float num = (float)(FWHM*100)/pico;
     ui->label_data_output->setText("                     | Umbral: "+QString::number(umbral)+" | Pico: "+QString::number(pico)+" | FWHM: "+QString::number(num,'g',4)+"%");
 }
@@ -750,51 +716,6 @@ void MainWindow::receivedValuesMCACalib(int umbral, int pico, int FWHM)
  */
 void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
 {
-    //getHeadStatus(arg1.toInt());
-
-//    arpet->portDisconnect();                  // OBSOLETO
-
-
-//    switch (arg1.toInt()) {
-//    case 1:{
-//        port_name=Cab1;
-//      //  setHeadMode(1,"config");
-//        break;
-//    }
-//    case 2:{
-//        port_name=Cab2;
-//       // setHeadMode(2,"config");
-
-//        break;
-//    }
-//    case 3:{
-//        port_name=Cab3;
-//       // setHeadMode(3,"config");
-
-//        break;
-//    }
-//    case 4:{
-//        port_name=Cab4;
-//       // setHeadMode(4,"config");
-//        break;
-//    }
-//    case 5:{
-//        port_name=Cab5;
-//       // setHeadMode(5,"config");
-//        break;
-//    }
-//    case 6:{
-//        port_name=Cab6;
-//      //  setHeadMode(6,"config");
-//        break;
-//    }
-//    default:
-//        break;
-//    }
-//    calibrador->setPort_Name((port_name));
-//    worker->setPortName((port_name));
-//    arpet->portConnect(port_name.toStdString().c_str());
-
 
 }
 /**
@@ -835,22 +756,7 @@ void MainWindow::on_comboBox_adquire_mode_coin_currentIndexChanged(int index)
         ui->label_calib->hide();
     }
 }
-/**
- * @brief MainWindow::on_comboBox_head_mode_select_config_currentIndexChanged
- * @param index
- */
-void MainWindow::on_comboBox_head_mode_select_config_currentIndexChanged(int index)
-{
-    if (index == ALLHEADS)
-    {
-        ui->checkBox_c_1->setChecked(true);
-        ui->checkBox_c_2->setChecked(true);
-        ui->checkBox_c_3->setChecked(true);
-        ui->checkBox_c_4->setChecked(true);
-        ui->checkBox_c_5->setChecked(true);
-        ui->checkBox_c_6->setChecked(true);
-    }
-}
+
 /**
  * @brief MainWindow::setQListElements
  */
@@ -1233,75 +1139,8 @@ void MainWindow::getHeadStatus(int head_index)
 }
 
 
-/**
- * @brief MainWindow::on_pushButton_triple_ventana_clicked
- */
-void MainWindow::on_pushButton_triple_ventana_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_triple_ventana->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_hv_clicked
- */
-void MainWindow::on_pushButton_hv_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_hv->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_energia_clicked
- */
-void MainWindow::on_pushButton_energia_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_energia->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_posicion_X_clicked
- */
-void MainWindow::on_pushButton_posicion_X_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_posicion_X->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_posicion_Y_clicked
- */
-void MainWindow::on_pushButton_posicion_Y_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_posicion_Y->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_tiempos_cabezal_clicked
- */
-void MainWindow::on_pushButton_tiempos_cabezal_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_tiempos_cabezal->setText(fileName);
-}
-/**
- * @brief MainWindow::on_pushButton_obtener_ini_clicked
- */
-void MainWindow::on_pushButton_obtener_ini_clicked()
-{
-    writeFooterAndHeaderDebug(true);
-    openConfigurationFile();
-    setPreferencesSettingsFile("Paths","conf_set_file",initfile);
-    if(debug)
-    {
-        cout<<"El nuevo archivo de configuración: "<<initfile.toStdString()<<endl;
-        writeFooterAndHeaderDebug(false);
-    }
 
-}
+
 
 
 /**
@@ -1539,9 +1378,7 @@ void MainWindow::on_pushButton_initialize_clicked()
 
             parseConfigurationFile(true, QString::number(head_index));
             /* Configuración de la Alta Tensión*/
-            //ui->lineEdit_alta->setText(QString::number(AT));
-            //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-            //LowLimit = ui->lineEdit_limiteinferior->text().toInt();
+
 
             QString q_msg = setHV(QString::number(checkedHeads.at(i)).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
             if(debug)
@@ -1617,10 +1454,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         }
         /* Configuración de las tablas de calibración */
         setCalibrationTables(head_index);
-        //ui->lineEdit_alta->setText(QString::number(AT));
-        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
         hv_status_table[head_index-1]->setText(QString::number(AT));
-
         arpet->portDisconnect();
 
     }
@@ -1638,13 +1472,11 @@ void MainWindow::on_pushButton_initialize_clicked()
 void MainWindow::on_pushButton_hv_set_clicked()
 {
     writeFooterAndHeaderDebug(true);
-    //QList<int> checkedHeads = getCheckedHeads();
     error_code error_code;
     string msg;
 
     try
     {
-        setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
         arpet->portDisconnect();
 
         port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
@@ -1656,17 +1488,14 @@ void MainWindow::on_pushButton_hv_set_clicked()
             Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
             throw exception_Cabezal_Apagado;
         }
-    //    mMutex.lock();
         QString psoc_alta = (ui->lineEdit_alta->text());
         int head_index=setPSOCDataStream(ui->comboBox_head_select_config->currentText().toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta);
-      //  mMutex.unlock();
         if(debug) cout<<"Cabezal: "<<head_index<<endl;
 
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
         msg = readString();
         hv_status_table[head_index-1]->setText(psoc_alta);
-        //resetPMTs(false);
-        //resetPMTs(true);
+
         if(debug) cout<< "HV configurado en: "<<psoc_alta.toStdString()<<endl;
     }
     catch(Exceptions & ex)
@@ -1693,10 +1522,6 @@ void MainWindow::on_pushButton_hv_on_clicked()
     error_code error_code;
     string msg;
 
-    //QList<int> checkedHeads = getCheckedHeads();
-
-
-    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
     arpet->portDisconnect();
 
     port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
@@ -1741,8 +1566,6 @@ void MainWindow::on_pushButton_hv_off_clicked()
 {
     writeFooterAndHeaderDebug(true);
     error_code error_code;
-    //QList<int> checkedHeads = getCheckedHeads();
-    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
     arpet->portDisconnect();
     string msg;
 
@@ -1788,7 +1611,6 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     writeFooterAndHeaderDebug(true);
     string msg;
     error_code error_code;
-    setHeadMode(ui->comboBox_head_select_config->currentText().toInt(),"config");
 
     port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
     try
@@ -2075,7 +1897,7 @@ void MainWindow::setCoincidenceModeWindowTime()
  */
 void MainWindow::setHeadModeConfig(int index)
 {
-    setHeadMode(index,"config");
+    //setHeadMode(index,"config");
 }
 /**
  * @brief MainWindow::initHead
@@ -2178,7 +2000,6 @@ void MainWindow::setCalibrationTables(int head) {
         x_calib = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Posición X. Error: "<<ex.excdesc<<endl;
     }
-    setTextBrowserState(x_calib, ui->textBrowser_posicion_X);
 
     try
     {
@@ -2194,7 +2015,6 @@ void MainWindow::setCalibrationTables(int head) {
         y_calib = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Posición Y. Error: "<<ex.excdesc<<endl;
     }
-    setTextBrowserState(y_calib, ui->textBrowser_posicion_Y);
 
     try
     {
@@ -2210,7 +2030,6 @@ void MainWindow::setCalibrationTables(int head) {
         energy_calib = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Energía. Error: "<<ex.excdesc<<endl;
     }
-    setTextBrowserState(energy_calib, ui->textBrowser_energia);
 
     try
     {
@@ -2226,8 +2045,6 @@ void MainWindow::setCalibrationTables(int head) {
         windows_limits = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en Ventana de Tiempo. Error: "<<ex.excdesc<<endl;
     }
-    setTextBrowserState(windows_limits, ui->textBrowser_triple_ventana);
-
     mMutex.unlock();
 
     try
@@ -2239,7 +2056,6 @@ void MainWindow::setCalibrationTables(int head) {
         set_hv = false;
         if (debug) cout<<"No se pueden configurar las tablas de calibración en HV. Error: "<<ex.excdesc<<endl;
     }
-    setTextBrowserState(set_hv, ui->textBrowser_hv);
 
     mMutex.lock();
 
@@ -2269,8 +2085,6 @@ void MainWindow::setCalibrationTables(int head) {
 
     mMutex.unlock();
 
-    setTextBrowserState(set_time_INTER, ui->textBrowser_tiempos_Inter_cabezal);
-    setTextBrowserState(set_time, ui->textBrowser_tiempos_cabezal);
     if (debug) cout<<"Final de la configuración de las tablas de calibración "<<endl;
     setLabelState(x_calib && y_calib && energy_calib && windows_limits && set_hv && set_time && set_time_INTER && lowlimit, calib_status_table[head-1]);
 
@@ -2437,7 +2251,6 @@ void MainWindow::drawTemperatureBoard()
 
     mMutex.unlock();
 
-    ui->label_title_output->setText("Temperatura");
     ui->label_data_output->setText("| Media: "+QString::number(mean)+"°C"+" | Máxima: "+QString::number(t_max)+"°C"+" | Mínima: "+QString::number(t_min)+"°C |");
 }
 /**
@@ -2566,64 +2379,54 @@ void MainWindow::drawAlmohada()
     mMutex.unlock();
 
 }
-/**
- * @brief MainWindow::setTabHead
- * @param index
- */
-void MainWindow::setTabHead(int index)
-{
-    if(index==MULTIHEAD || index==ALLHEADS)
-    {
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
-    }
-    else
-    {
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
-    }
-}
-/**
- * @brief MainWindow::setHeadModeGraph
- * @param index
- */
-void MainWindow::setHeadModeGraph(int index)
-{
-    setHeadMode(index,"mca");
-}
+
 /**
  * @brief MainWindow::setAdquireMode
  * @param index
  */
 void MainWindow::setAdquireMode(int index)
 {
-    adquire_mode=index == -1? 3 : index; // Perdón por esto pero no tengo idea por qué recibo un -1 cuando usa la pesataña de almohada
+    adquire_mode=index;
     switch (adquire_mode) {
-    case PMT:
-        ui->frame_PMT->show();
-        ui->frame_HV->show();
-        ui->frame_MCA->show();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
-        break;
-    case CABEZAL:
-        ui->frame_PMT->hide();
-        ui->frame_HV->hide();
-        ui->frame_MCA->show();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
-        setHeadCustomPlotEnvironment();
-        break;
-    case TEMPERATURE:
-        ui->frame_PMT->hide();
-        ui->frame_HV->hide();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
-        ui->frame_MCA->hide();
-        break;
-    case ALMOHADA:
-        ui->frame_PMT->hide();
-        ui->frame_HV->hide();
-        ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_4);
-        ui->frame_MCA->hide();
-        break;
-    default:
-        break;
+        case PMT:
+            ui->frame_PMT->show();
+            ui->frame_HV->show();
+            ui->frame_MCA->show();
+            ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
+            ui->checkBox_espectro_calibrado->hide();
+            ui->comboBox_head_select_graph->show();
+            ui->frame_multihead_graph->hide();
+            break;
+        case CABEZAL:
+            ui->frame_PMT->hide();
+            ui->frame_HV->hide();
+            ui->frame_MCA->show();
+            ui->comboBox_head_select_graph->hide();
+            ui->frame_multihead_graph->show();
+            ui->checkBox_espectro_calibrado->show();
+            ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_2);
+            setHeadCustomPlotEnvironment();
+            break;
+        case TEMPERATURE:
+            ui->frame_PMT->hide();
+            ui->frame_HV->hide();
+            ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_3);
+            ui->frame_MCA->hide();
+            ui->comboBox_head_select_graph->show();
+            ui->checkBox_espectro_calibrado->hide();
+            ui->frame_multihead_graph->hide();
+            break;
+        case ALMOHADA:
+            ui->frame_PMT->hide();
+            ui->frame_HV->hide();
+            ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_4);
+            ui->frame_MCA->hide();
+            ui->checkBox_espectro_calibrado->hide();
+            ui->comboBox_head_select_graph->hide();
+            ui->frame_multihead_graph->show();
+            break;
+        default:
+            break;
     }
 }
 /**
@@ -2668,7 +2471,6 @@ void MainWindow::setAdvanceCoinMode(int index)
 void MainWindow::setTabMode(int index)
 {
     adquire_mode=index;
-    ui->comboBox_adquire_mode->setCurrentIndex(adquire_mode);
 }
 /**
  * @brief MainWindow::getHeadMCA
@@ -2683,22 +2485,18 @@ QString MainWindow::getHeadMCA(QString head)
     QString msg;
     try
     {
-        //setButtonAdquireState(true);
         msg = getMCA(head.toStdString(), arpet->getFunCHead(), true, CHANNELS);
         addGraph(arpet->getHitsMCA(),ui->specHead,CHANNELS, head, qcp_head_parameters[head.toInt()-1]);
     }
     catch(Exceptions & ex)
     {
-        //setButtonAdquireState(false);
         if(debug) {
             cout<<"No se pueden obtener los valores de MCA del Cabezal. Error: "<<ex.excdesc<<endl;
-           // cout<<"PMT: "<<pmt<<" "<<"Saturados "<< pmt<<": " << QString::number(arpet->getHitsMCA()[255]).toStdString()<<endl;
         }
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         Exceptions exception_timeout(ex.excdesc);
         throw exception_timeout;
     }
-    //setButtonAdquireState(true, true);
 
     return msg;
 }
@@ -2713,9 +2511,8 @@ QString MainWindow::getHeadMCA(QString head)
 QString MainWindow::getMultiMCA(QString head)
 {
     int size_pmt_selected = pmt_selected_list.length();
-    double SaturatedChannel;
     QString msg;
-
+    double SaturatedChannel;
     if (pmt_selected_list.isEmpty())
     {
         if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
@@ -2726,7 +2523,6 @@ QString MainWindow::getMultiMCA(QString head)
 
     try
     {
-        //setButtonAdquireState(true);
         for (int index=0;index<size_pmt_selected;index++)
         {
             string pmt = pmt_selected_list.at(index).toStdString();
@@ -2745,12 +2541,9 @@ QString MainWindow::getMultiMCA(QString head)
     }
     catch(Exceptions & ex)
     {
-        //setButtonAdquireState(false);
         if(debug) cout<<"No se pueden obtener los valores de MCA de los PMTs seleccionados. Error: "<<ex.excdesc<<endl;
         QMessageBox::critical(this,tr("Atención"),tr((string("No se pueden obtener los valores de MCA. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    //setButtonAdquireState(true, true);
-
     return msg;
 }
 /**
@@ -2796,12 +2589,10 @@ QString MainWindow::getMCA(string head, string function, bool multimode, int cha
         QString centroid_mode = ui->checkBox_centroid->isChecked() ? "Si" : "No";
         vector<int> rates = arpet->getRate(head, port_name.toStdString());
         if (debug) cout<<"Tasas: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<" | "<<arpet->getTrama_MCAE()<<endl;
-        ui->label_title_output->setText("MCA Extended | PMT: " + QString::fromStdString(pmt));
         ui->label_data_output->setText("| Tasas: " + QString::number(rates.at(0)) + "," + QString::number(rates.at(1)) + "," + QString::number(rates.at(2)) + "| HV: "+QString::number(HV_pmt)+" | Varianza: "+QString::number(var)+" | Offset ADC: "+QString::number(offset)+" | Tiempo (mseg):"+QString::number(time_mca/1000) + " | Modo Centroide: " + centroid_mode + " |" );
     }
     else
     {
-        ui->label_title_output->setText("MCA Extended");
         ui->label_data_output->setText("");
     }
 
@@ -2867,8 +2658,6 @@ QString MainWindow::setCalibTable(string head, string function, QVector<double> 
 QString MainWindow::setTime(string head, double time_value, string pmt)
 {
     string msg;
-    //mMutex.lock();
-
     try
     {
         msg = arpet->setTime(head, time_value, pmt, port_name.toStdString());
@@ -2876,12 +2665,8 @@ QString MainWindow::setTime(string head, double time_value, string pmt)
     catch(Exceptions & ex)
     {
         Exceptions exception_time(ex.excdesc);
-       //mMutex.unlock();
-
         throw exception_time;
     }
-    //mMutex.unlock();
-
     return QString::fromStdString(msg);
 }
 /**
@@ -2902,7 +2687,6 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
 
     try
     {
-       // if (debug) cout<<"Envio: "<<endl<<"Cabezal: "<<head<<" - "<<"PMT: "<<pmt<<endl<<"HV: "<<hv_value<<endl<<port_name.toStdString();
         msg = arpet->setHV(head, pmt, hv_value, port_name.toStdString());
     }
     catch(Exceptions & ex)
@@ -2912,9 +2696,6 @@ QString MainWindow::setHV(string head, string hv_value, string pmt)
         mMutex.unlock();
         throw exception_hv;
     }
-//    arpet->resetHitsMCA();
-//    setHitsInit(true);
-
     mMutex.unlock();
 
     return QString::fromStdString(msg);
@@ -2989,7 +2770,6 @@ QString MainWindow::getPSOCAlta(QLineEdit *line_edit)
         psoc_value=QString::number(MIN_HIGH_HV_VOLTAGE);
         line_edit->setText(psoc_value);
     }
-
     return line_edit->text();
 }
 /**
@@ -3121,7 +2901,6 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
                 Exceptions exception_Cabezal_Apagado("Está el cabezal apagado! Revise las conexiones");
                 throw exception_Cabezal_Apagado;
             }
-            //cout<<port_name.toStdString()<<endl;
             arpet->setHeader_MCAE(arpet->getHead_MCAE() + head + arpet->getFunCHead());
             arpet->setMCAEStream("0",0,arpet->getCalib_Mode());
         }
@@ -3171,7 +2950,6 @@ void MainWindow::resetHitsValues(QString head)
     QString Cabezal = Cab +head;
     arpet->resetHitsMCA();
     setHitsInit(true);
-    //asdf
     if (debug) cout<<"Reinicio los graficos"<<endl;
     arpet->portDisconnect();
     arpet->portConnect(Cabezal.toStdString().c_str());
@@ -3222,33 +3000,30 @@ bool MainWindow::resetHead(QString Cabezal)
 {
     bool status = true;
 
-    //for (int i=0;i < checkedHeads.length();i++)
+    arpet->portDisconnect();
+    port_name=Cab+Cabezal;
+    arpet->portConnect(port_name.toStdString().c_str());
+    parseConfigurationFile(true, Cabezal);
+
+    try
     {
-        arpet->portDisconnect();
-        port_name=Cab+Cabezal;
-        arpet->portConnect(port_name.toStdString().c_str());
-        parseConfigurationFile(true, Cabezal);
-
-        try
+        QString q_msg = setHV(Cabezal.toStdString(),QString::number(LowLimit[Cabezal.toInt()-1]).toStdString());
+        if(debug)
         {
-            QString q_msg = setHV(Cabezal.toStdString(),QString::number(LowLimit[Cabezal.toInt()-1]).toStdString());
-            if(debug)
-            {
-                cout<<"Reinicio del Cabezal "<<Cabezal.toStdString()<<" en la ventana: "<<QString::number(LowLimit[Cabezal.toInt()-1]).toStdString()<<endl;
-                showMCAEStreamDebugMode(q_msg.toStdString());
-            }
+            cout<<"Reinicio del Cabezal "<<Cabezal.toStdString()<<" en la ventana: "<<QString::number(LowLimit[Cabezal.toInt()-1]).toStdString()<<endl;
+            showMCAEStreamDebugMode(q_msg.toStdString());
         }
-        catch (Exceptions ex)
-        {
-            if(debug) cout<<"No se puede reiniciar el cabezal "<<Cabezal.toStdString()<<". Error: "<<ex.excdesc<<endl;
-            status = false;
-            QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
-            arpet->portDisconnect();
-
-        }
+    }
+    catch (Exceptions ex)
+    {
+        if(debug) cout<<"No se puede reiniciar el cabezal "<<Cabezal.toStdString()<<". Error: "<<ex.excdesc<<endl;
+        status = false;
+        QMessageBox::critical(this,tr("Atención"),tr((string("Imposible reiniciar el/los cabezal/es. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
         arpet->portDisconnect();
 
     }
+    arpet->portDisconnect();
+
     return status;
 }
 /**
@@ -3259,22 +3034,17 @@ bool MainWindow::resetPMTs(bool centroide)
 {
     QList<int> checkedHeads = getCheckedHeads();
     bool status = true;
+    parseConfigurationFile(true, QString::number(checkedHeads.at(0)));
 
-
-        parseConfigurationFile(true, QString::number(checkedHeads.at(0)));
-
-        try
-        {
-            /*if (centroide)*/ setHV(QString::number(checkedHeads.at(0)).toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        }
-        catch( Exceptions & ex )
-        {
-            status = false;
-            if (debug) cout<<"No se pueden configurar las tablas de calibración en HV. Error: "<<ex.excdesc<<endl;
-        }
-
-
-
+    try
+    {
+        /*if (centroide)*/ setHV(QString::number(checkedHeads.at(0)).toStdString(), QString::number(LowLimit[checkedHeads.at(0)]).toStdString());
+    }
+    catch( Exceptions & ex )
+    {
+        status = false;
+        if (debug) cout<<"No se pueden configurar las tablas de calibración en HV. Error: "<<ex.excdesc<<endl;
+    }
     return status;
 }
 
@@ -3379,6 +3149,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
 
@@ -3389,8 +3160,8 @@ void MainWindow::on_pushButton_hv_configure_clicked()
             throw exception_Cabezal_Apagado;
         }
 
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg =setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(), QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg =setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value),pmt_selected_list.at(0).toStdString());
         if(debug) cout<<ui->lineEdit_hv_value->text().toStdString()<<endl;
         ui->label_data_output->setText("| Canal configurado: " + QString::fromStdString(getHVValue(ui->lineEdit_hv_value))+" | Configuración OK.");
     }
@@ -3400,7 +3171,6 @@ void MainWindow::on_pushButton_hv_configure_clicked()
         ui->label_data_output->setText("Error en la configuración de la tensión de dinodo.");
         QMessageBox::critical(this,tr("Atención"),tr((string("No se puede configurar el valor de HV. Revise la conexión al equipo. Error: ")+string(ex.excdesc)).c_str()));
     }
-    ui->label_title_output->setText("HV de Dinodo | PMT: " + pmt_selected_list.at(0));
     if (debug)
     {
         showMCAEStreamDebugMode(q_msg.toStdString());
@@ -3430,6 +3200,7 @@ void MainWindow::on_pushButton_l_5_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -3438,11 +3209,11 @@ void MainWindow::on_pushButton_l_5_clicked()
             Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
             throw exception_Cabezal_Apagado;
         }
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(), QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,-5),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3480,6 +3251,7 @@ void MainWindow::on_pushButton_l_10_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -3489,11 +3261,11 @@ void MainWindow::on_pushButton_l_10_clicked()
             throw exception_Cabezal_Apagado;
         }
 
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(), QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,-10),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3531,6 +3303,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
 
@@ -3540,11 +3313,11 @@ void MainWindow::on_pushButton_l_50_clicked()
             Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
             throw exception_Cabezal_Apagado;
         }
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,-50),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3582,6 +3355,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
 
@@ -3592,11 +3366,11 @@ void MainWindow::on_pushButton_p_5_clicked()
             throw exception_Cabezal_Apagado;
         }
 
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(), QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,5),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3634,6 +3408,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -3643,11 +3418,11 @@ void MainWindow::on_pushButton_p_10_clicked()
             throw exception_Cabezal_Apagado;
         }
 
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(), QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,10),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3685,6 +3460,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -3694,11 +3470,11 @@ void MainWindow::on_pushButton_p_50_clicked()
             throw exception_Cabezal_Apagado;
         }
 
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         ui->lineEdit_hv_value->setText(QString::number(arpet->getHVMCA()));
-        if (ui->checkBox_centroid->isChecked()) setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
-        q_msg = setHV(getHead("mca").toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
-        getMCA(getHead("mca").toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
+        if (ui->checkBox_centroid->isChecked()) setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
+        q_msg = setHV(head.toStdString(),getHVValue(ui->lineEdit_hv_value,50),pmt_selected_list.at(0).toStdString());
+        getMCA(head.toStdString(),arpet->getFunCSP3(),true,CHANNELS_PMT,pmt_selected_list.at(0).toStdString());
         if(debug) cout<<"El nuevo canal configurado en el PMT "<<pmt_selected_list.at(0).toStdString()<<" es: "<<ui->lineEdit_hv_value->text().toStdString()<<endl;
     }
     catch (Exceptions ex)
@@ -3719,13 +3495,8 @@ void MainWindow::on_pushButton_p_50_clicked()
  */
 void MainWindow::on_pushButton_logguer_toggled(bool checked)
 {
-
-
-
-
     if(checked)
     {
-
         connect(timer, SIGNAL(timeout()), this, SLOT(TimerUpdate()));
         timer->setInterval(ui->lineEdit_between_logs->text().toInt()*1000);
         timer->start();
@@ -3765,28 +3536,20 @@ void MainWindow::on_pushButton_logguer_toggled(bool checked)
 QList<int> MainWindow::getCheckedHeads()
 {
     QList<int> checkedHeads;
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MULTIHEAD || ui->comboBox_head_mode_select_config->currentIndex()==ALLHEADS)
+
+    for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
     {
-        for(int i = 0; i < ui->frame_multihead_config->children().size(); i++)
+        QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
+        if(q->checkState() == Qt::Checked)
         {
-            QCheckBox *q = qobject_cast<QCheckBox*>(ui->frame_multihead_config->children().at(i));
-            if(q->checkState() == Qt::Checked)
-            {
-                checkedHeads.append(i+1);
-            }
+            checkedHeads.append(i+1);
         }
     }
-    else
-    {
-        checkedHeads.append(getHead("config").toInt());
-    }
-
     if(checkedHeads.length() == 0)
     {
         QMessageBox::critical(this,tr("Atención"),tr("No se ha seleccionado ningún cabezal"));
         return checkedHeads;
     }
-
     return checkedHeads;
 }
 
@@ -3921,37 +3684,8 @@ QString MainWindow::openDirectory()
                                                          QDir::homePath());
     return directory;
 }
-/**
- * @brief MainWindow::getPaths
- */
-void MainWindow::getPaths()
-{
-    if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
-    {
-        parseConfigurationFile(false);
-        ui->textBrowser_triple_ventana->setText(coefest);
-        ui->textBrowser_hv->setText(hvtable);
-        ui->textBrowser_energia->setText(coefenerg);
-        ui->textBrowser_posicion_X->setText(coefx);
-        ui->textBrowser_posicion_Y->setText(coefy);
-        ui->textBrowser_tiempos_cabezal->setText(coefT);
-        ui->textBrowser_tiempos_Inter_cabezal->setText(coefTInter);
-        ui->lineEdit_alta->setText(QString::number(AT));
-        //ui->lineEdit_limiteinferior->setText(QString::number(LowLimit));
-    }
-    else
-    {
-        ui->textBrowser_triple_ventana->setText("");
-        ui->textBrowser_hv->setText("");
-        ui->textBrowser_energia->setText("");
-        ui->textBrowser_posicion_X->setText("");
-        ui->textBrowser_posicion_Y->setText("");
-        ui->textBrowser_tiempos_cabezal->setText("");
-        ui->textBrowser_tiempos_Inter_cabezal->setText("");
-        ui->lineEdit_alta->setText("");
-        ui->lineEdit_limiteinferior->setText("");
-    }
-}
+
+
 /**
  * @brief MainWindow::setLabelState
  * @param state
@@ -4077,33 +3811,7 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     ui->pb_Autocalib->setText(qt_text);
     ui->pb_Autocalib->update();
 }
-/**
- * @brief MainWindow::setButtonConnectState
- * @param state
- * @param disable
- */
-void MainWindow::setButtonConnectState(bool state, bool disable)
-{
-//    QString qt_text;
 
-//    if (state && !disable)
-//    {
-//        qt_text="Conectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
-//    }
-//    else if (!state && !disable)
-//    {
-//        qt_text="Desconectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
-//    }
-//    else
-//    {
-//        qt_text="Conectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
-//    }
-//    ui->pushButton_init_configure->setText(qt_text);
-//    ui->pushButton_init_configure->update();
-}
 void MainWindow::setButtonLoggerState(bool state, bool disable)
 {
     QString qt_text;
@@ -4188,14 +3896,11 @@ QString MainWindow::getHead(string tab)
     QString head;
     if (tab=="mca")
     {
-        //if (ui->comboBox_head_mode_select_graph->currentIndex()==MONOHEAD)
-        {
             head=ui->comboBox_head_select_graph->currentText();
-        }
     }
     else if (tab=="config")
     {
-        if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
+        //if (ui->comboBox_head_mode_select_config->currentIndex()==MONOHEAD)
         {
             head=ui->comboBox_head_select_config->currentText();
         }
@@ -4315,14 +4020,9 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
  */
 void MainWindow::manageHeadComboBox(string tab, bool show)
 {
-/*    if (tab=="config"){
-        if (show) ui->comboBox_head_select_config->show();
-        else ui->comboBox_head_select_config->hide();
-    }
-    else*/ if(tab=="mca")
+    if(tab=="mca")
     {
-        //if (show) ui->comboBox_head_select_graph->show();
-       /* else*/ ui->comboBox_head_select_graph->hide();
+        ui->comboBox_head_select_graph->hide();
     }
     else return;
 }
@@ -4349,33 +4049,15 @@ void MainWindow::setHeadMode(int index, string tab)
         break;
     }
 }
-/**
- * @brief MainWindow::syncHeadModeComboBoxToConfig
- * @param index
- */
-void MainWindow::syncHeadModeComboBoxToConfig(int index)
-{
-    getPaths();
-    ui->comboBox_head_mode_select_config->setCurrentIndex(index);
-}
+
 /**
  * @brief MainWindow::syncHeadComboBoxToConfig
  * @param index
  */
 void MainWindow::syncHeadComboBoxToConfig(int index)
 {
-    getPaths();
     setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_config->setCurrentIndex(index);
-}
-/**
- * @brief MainWindow::syncHeadModeComboBoxToMCA
- * @param index
- */
-void MainWindow::syncHeadModeComboBoxToMCA(int index)
-{
-    getPaths();
-    ui->comboBox_head_mode_select_graph->setCurrentIndex(index);
 }
 /**
  * @brief MainWindow::syncHeadComboBoxToMCA
@@ -4383,7 +4065,6 @@ void MainWindow::syncHeadModeComboBoxToMCA(int index)
  */
 void MainWindow::syncHeadComboBoxToMCA(int index)
 {
-    getPaths();
     setHeadCustomPlotEnvironment();
     ui->comboBox_head_select_graph->setCurrentIndex(index);
 }
@@ -6164,17 +5845,6 @@ void MainWindow::on_pushButton_select_pmt_2_clicked()
 
     writeFooterAndHeaderDebug(false);
 }
-/**
- * @brief MainWindow::on_pushButton_tiempos_cabezal_2_clicked
- */
-void MainWindow::on_pushButton_tiempos_cabezal_2_clicked()
-{
-    QString fileName = openConfigurationFile();
-    if (fileName!="")
-      ui->textBrowser_tiempos_Inter_cabezal->setText(fileName);
-}
-
-
 
 /**
  * @brief MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged
@@ -6326,6 +5996,7 @@ void MainWindow::on_pushButton_p_51_clicked()
     }
 
     QString q_msg;
+    QString head=getHead("mca");
     try
     {
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -6336,9 +6007,9 @@ void MainWindow::on_pushButton_p_51_clicked()
         }
         for(int i=0;i < pmt_selected_list.length();i++)
         {
-            q_msg =setHV(getHead("mca").toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
+            q_msg =setHV(head.toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
         }
-        setHV(getHead("mca").toStdString(), ui->lineEdit_limiteinferior->text().toStdString());
+        setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
         ui->label_data_output->setText("| Canal configurado en todos los PMT: 350 |");
     }
     catch (Exceptions ex)
@@ -6857,15 +6528,12 @@ void MainWindow::updateCaption(){
     QDir dir("/dev/");
     QString numerocabezal;
     QStringList filters;
-    static int inicio=1;
     static QVector<int> Estado_Aux_Cabezales;
     QRegExp  RegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
     filters << "UART*";
     dir.setNameFilters(filters);
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
-    int size = 0;
-    QString mensaje;
 
     if(adq_running){
 
@@ -7001,103 +6669,9 @@ void MainWindow::updateCaption(){
     }
 }
 
-void MainWindow::on_checkBox_c_3_toggled(bool checked)
-{
-    if (checked){
-       // setHeadMode(3,"config");
-    }
-}
-
-void MainWindow::on_checkBox_c_6_toggled(bool checked)
-{
-    if (checked){
-       // setHeadMode(6,"config");
-    }
-}
-
-void MainWindow::on_checkBox_c_5_toggled(bool checked)
-{
-    if (checked){
-       // setHeadMode(5,"config");
-    }
-}
-
-void MainWindow::on_checkBox_c_4_toggled(bool checked)
-{
-    if (checked){
-      //  setHeadMode(4,"config");
-    }
-}
-
-void MainWindow::on_checkBox_c_2_toggled(bool checked)
-{
-    if (checked){
-       // setHeadMode(2,"config");
-    }
-}
-
-void MainWindow::on_checkBox_c_1_toggled(bool checked)
-{
-    if (checked){
-       // setHeadMode(1,"config");
-    }
-}
-
-void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
-{
-    
-}
-
-void MainWindow::on_checkBox_mca_1_toggled(bool checked)
-{
-
-}
-
-void MainWindow::on_checkBox_mca_2_toggled(bool checked)
-{
-
-}
-
-void MainWindow::on_checkBox_mca_3_toggled(bool checked)
-{
-
-}
-
-void MainWindow::on_checkBox_mca_4_toggled(bool checked)
-{
-
-}
-
-void MainWindow::on_checkBox_mca_5_toggled(bool checked)
-{
-
-}
-
-void MainWindow::on_checkBox_mca_6_toggled(bool checked)
-{
-
-}
-
 void MainWindow::on_tabWidget_mca_currentChanged(int index)
-{
-    if (index==1){
-        ui->comboBox_head_select_graph->hide();
-        ui->frame_multihead_graph->show();
-        ui->checkBox_espectro_calibrado->show();
-    }else if (index==0){
-        setAdquireMode(PMT);
-        ui->checkBox_espectro_calibrado->hide();
-        ui->comboBox_head_select_graph->show();
-        ui->frame_multihead_graph->hide();
-    }else if (index==3){
-        ui->checkBox_espectro_calibrado->hide();
-        ui->comboBox_head_select_graph->hide();
-        ui->frame_multihead_graph->show();
-    }else{
-        ui->comboBox_head_select_graph->show();
-        ui->checkBox_espectro_calibrado->hide();
-        ui->frame_multihead_graph->hide();
-    }
+{  
+    setAdquireMode(index);
 }
 
 void MainWindow::on_pushButton_Encendido_1_toggled(bool checked)
@@ -7386,8 +6960,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         ui->label_gif_4->setVisible(false);
         ui->label_gif_3  ->setVisible(true);
 
-
-        //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
         ui->label_gif_3->setMovie(movie_cargando);
         movie_cargando->start();
         ui->label_gif_3->setScaledContents( false );
@@ -7728,9 +7300,9 @@ void MainWindow::on_pushButton_FPGA_4_clicked()
 
 
     if(device_list.length() == Cantidad_elementos + 1 && !error )
-       image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+       image.load(icon_ok);
     else
-       image.load("/home/ar-pet/Downloads/ic_cancel.png");
+       image.load(icon_notok);
 
     ui->label_gif->setVisible(false);
     ui->label_gif_2->setVisible(true);
@@ -7746,7 +7318,7 @@ void MainWindow::on_pushButton_FPGA_1_clicked()
 {
 
     QString filename = QFileDialog::getOpenFileName(this,
-        tr("Abrir Archivo.bit"), "/home/ar-pet", tr("Image Files (*.bit)"));
+        tr("Abrir Archivo.bit"), QDir::homePath() , tr("Image Files (*.bit)"));
 
     // = QFileDialog::getOpenFileName();
 
@@ -7810,8 +7382,6 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
 
     ui->label_gif_2->setVisible(false);
     ui->label_gif  ->setVisible(true);
-
-    //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
     ui->label_gif->setMovie(movie_cargando);
     movie_cargando->start();
     ui->label_gif->setScaledContents( false );
@@ -7836,7 +7406,7 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
     }
     else
     {
-        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+        image.load(icon_notok);
 
         ui->label_gif->setVisible(false);
         ui->label_gif_2->setVisible(true);
@@ -8129,8 +7699,6 @@ void MainWindow::on_pushButton_FPGA_2_clicked()
 
         ui->label_gif_2->setVisible(false);
         ui->label_gif  ->setVisible(true);
-
-        //QMovie movie("/home/ar-pet/Downloads/ajax-loader.gif");
         ui->label_gif->setMovie(movie_cargando);
         movie_cargando->start();
         ui->label_gif->setScaledContents( false );
@@ -8150,7 +7718,7 @@ void MainWindow::on_pushButton_FPGA_2_clicked()
         }
         else
         {
-            image.load("/home/ar-pet/Downloads/ic_cancel.png");
+            image.load(icon_notok);
 
             ui->label_gif->setVisible(false);
             ui->label_gif_2->setVisible(true);
@@ -8206,7 +7774,7 @@ void MainWindow::checkStatusMoveToServer(bool status){
         worker_copy->abort();
         thread_copy->exit(0);
         usleep(5000);
-        image.load("/home/ar-pet/Downloads/ic_cancel.png");
+        image.load(icon_notok);
 
          ui->label_gif_3->setVisible(false);
          ui->label_gif_4->setVisible(true);
@@ -8229,7 +7797,7 @@ void MainWindow::checkStatusMoveToServer(bool status){
     if (ui->lineEdit_aqd_cant_archivos->text().toInt()==cant_archivos_copiados)
     {
 
-        image.load("/home/ar-pet/Downloads/ic_check_circle.png");
+        image.load(icon_ok);
         ui->progressBar->setValue(size_archivo_adq.toInt());
         ui->pbAdquirir->blockSignals(true);
         ui->pbAdquirir->setChecked(false);
