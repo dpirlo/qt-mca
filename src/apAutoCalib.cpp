@@ -111,6 +111,15 @@ void AutoCalib::initCalib()
     setHV(QString::number(Cab_actual).toStdString(),QString::number(150).toStdString(),port_name.toStdString());
 }
 
+void AutoCalib::initCalibTiempos()
+{
+    portConnect(port_name.toStdString().c_str());
+
+    iter_actual = 0;
+
+    cout<<"Arranco AutoCalib de tiempos"<<endl;
+}
+
 //QVector<double> AutoCalib::calibrar_simple()
 int AutoCalib::calibrar_simple()
 {
@@ -396,6 +405,56 @@ int AutoCalib::calibrar_simple()
 //                cout<<PMTs_List[i]<<'\t'<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
     }
 
+    catch (Exceptions ex)
+    {
+        cout<<"Se va por Exception: "<<ex.excdesc<<endl;
+    }
+
+    return 1;
+}
+
+int AutoCalib::calibrar_tiempos(){
+
+    cout<<"Acá se hace la calibración de tiempos"<<endl;
+
+    try
+    {
+        // Borro memoria de la clase
+        for (int j=0 ; j < PMTs ; j++)
+        {
+            Picos_PMT[j] = 0;
+        }
+
+        PMTsEnPico = 0;
+
+        // LLeno los buffers de memoria de la clase
+        for (int i=0 ; i<PMTs_List.length() ; i++)
+        {
+            // Busco el pico
+            struct Pico_espectro aux;
+            aux = Buscar_Pico(Hist_Double[PMTs_List[i]-1], CHANNELS);
+            Picos_PMT[PMTs_List[i]-1] = aux.canal_pico;
+
+            // Suma en FWHM
+            double cuentas_Totales = 0,cuentas_FWHM = 0,cuentas_FWTM = 0;
+            for (int j = 0 ; j < CHANNELS ; j++)
+            {
+              cuentas_Totales = cuentas_Totales + Hist_Double[PMTs_List[i]-1][j];
+            }
+            for (int j = aux.limites_FWHM[0] ; j < aux.limites_FWHM[1] ; j++)
+            {
+              cuentas_FWHM = cuentas_FWHM + Hist_Double[PMTs_List[i]-1][j];
+            }
+            for (int j = aux.limites_FWTM[0] ; j < aux.limites_FWTM[1] ; j++)
+            {
+              cuentas_FWTM = cuentas_FWTM + Hist_Double[PMTs_List[i]-1][j];
+            }
+
+            cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1];
+            cout<<"; FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1];
+            cout<<"; Cuentas Totales: "<<cuentas_Totales<<"; Cuentas en FWHM: "<<cuentas_FWHM<<", FWTM: "<<cuentas_FWTM<<endl;
+        }
+    }
     catch (Exceptions ex)
     {
         cout<<"Se va por Exception: "<<ex.excdesc<<endl;

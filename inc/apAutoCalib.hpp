@@ -152,7 +152,9 @@ namespace ap {
             AutoCalib();
             // Calibracion Simple
             void initCalib();
+            void initCalibTiempos();
             int calibrar_simple();
+            int calibrar_tiempos();
 
             // Busqueda de pico sobre vector
             struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
@@ -162,6 +164,8 @@ namespace ap {
 
             // Set de lista de PMTs a calibrar
             void setPMT_List(QList<int> checked_PMTs) {this->PMTs_List = checked_PMTs;}
+            // Set de modo de AutoCalib
+            void setMode_AutoCalibTiempos(bool tiempo) {this->Mode_AutoCalibTiempos = tiempo;}
             // Set de lista de cabezales a calibrar
             void setCab_List(QList<int> checked_Cab) {this->Cab_List = checked_Cab;}
             // Set de canal objetivo
@@ -200,6 +204,7 @@ namespace ap {
             // Visualizacion planar
             bool visualizar_planar(void);
             QList<int> PMTs_List;
+            bool Mode_AutoCalibTiempos;
             double Hist_Double[PMTs][CHANNELS];
             // Cabezal actual
             int Cab_actual;

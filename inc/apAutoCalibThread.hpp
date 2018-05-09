@@ -36,6 +36,7 @@ namespace ap {
       void sendOffButtonCalib();
       void sendCalibErrorCommand();
       void sendHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+      void sendHitsTiempos(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
       void sendValuesMCACalib(int umbral,int pico, int FWHM);
       void clearGraphsCalib();
 

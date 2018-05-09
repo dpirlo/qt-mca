@@ -389,6 +389,7 @@ void MainWindow::connectSlots()
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
     connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
+    connect(calib_wr, SIGNAL(sendHitsTiempos(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsTiempos(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
     connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
 
@@ -685,6 +686,12 @@ void MainWindow::receivedHitsCalib(QVector<double> hits, int channels, QString p
 {
     addGraph_Calib(hits, ui->specPMTs_2, channels, pmt_head, qcp_pmt_calib_parameters[index]);
 }
+
+void MainWindow::receivedHitsTiempos(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
+{
+    addGraph_Tiempos(hits, ui->specPMTs_2, channels, pmt_head, qcp_pmt_calib_parameters[index]);
+}
+
 /**
  * @brief MainWindow::receivedValuesMCA
  * @param time
@@ -732,59 +739,59 @@ void MainWindow::receivedValuesMCACalib(int umbral, int pico, int FWHM)
     float num = (float)(FWHM*100)/pico;
     ui->label_data_output->setText("                     | Umbral: "+QString::number(umbral)+" | Pico: "+QString::number(pico)+" | FWHM: "+QString::number(num,'g',4)+"%");
 }
-/**
- * @brief MainWindow::on_comboBox_head_select_config_currentIndexChangedº
- * @param arg1
- */
-void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
-{
-    //getHeadStatus(arg1.toInt());
+///**
+// * @brief MainWindow::on_comboBox_head_select_config_currentIndexChangedº
+// * @param arg1
+// */
+//void MainWindow::on_comboBox_head_select_config_currentIndexChanged(const QString &arg1)
+//{
+//    //getHeadStatus(arg1.toInt());
 
-//    arpet->portDisconnect();                  // OBSOLETO
-
-
-//    switch (arg1.toInt()) {
-//    case 1:{
-//        port_name=Cab1;
-//      //  setHeadMode(1,"config");
-//        break;
-//    }
-//    case 2:{
-//        port_name=Cab2;
-//       // setHeadMode(2,"config");
-
-//        break;
-//    }
-//    case 3:{
-//        port_name=Cab3;
-//       // setHeadMode(3,"config");
-
-//        break;
-//    }
-//    case 4:{
-//        port_name=Cab4;
-//       // setHeadMode(4,"config");
-//        break;
-//    }
-//    case 5:{
-//        port_name=Cab5;
-//       // setHeadMode(5,"config");
-//        break;
-//    }
-//    case 6:{
-//        port_name=Cab6;
-//      //  setHeadMode(6,"config");
-//        break;
-//    }
-//    default:
-//        break;
-//    }
-//    calibrador->setPort_Name((port_name));
-//    worker->setPortName((port_name));
-//    arpet->portConnect(port_name.toStdString().c_str());
+////    arpet->portDisconnect();                  // OBSOLETO
 
 
-}
+////    switch (arg1.toInt()) {
+////    case 1:{
+////        port_name=Cab1;
+////      //  setHeadMode(1,"config");
+////        break;
+////    }
+////    case 2:{
+////        port_name=Cab2;
+////       // setHeadMode(2,"config");
+
+////        break;
+////    }
+////    case 3:{
+////        port_name=Cab3;
+////       // setHeadMode(3,"config");
+
+////        break;
+////    }
+////    case 4:{
+////        port_name=Cab4;
+////       // setHeadMode(4,"config");
+////        break;
+////    }
+////    case 5:{
+////        port_name=Cab5;
+////       // setHeadMode(5,"config");
+////        break;
+////    }
+////    case 6:{
+////        port_name=Cab6;
+////      //  setHeadMode(6,"config");
+////        break;
+////    }
+////    default:
+////        break;
+////    }
+////    calibrador->setPort_Name((port_name));
+////    worker->setPortName((port_name));
+////    arpet->portConnect(port_name.toStdString().c_str());
+
+
+//}
 /**
  * @brief MainWindow::getLogErrorThread
  */
@@ -1316,7 +1323,7 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-            setTimeModeCoin(COIN_NORMAL);
+            setTimeModeCoin(COIN_NORMAL,false);
             break;
         case COIN_AUTOCOINCIDENCE:
             if(debug) cout<<"Modo Coincidencia: Autocoincidencia"<<endl;
@@ -1326,7 +1333,7 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getAuto_Coin_Mode());
             usleep(5000);
-            setTimeModeCoin(COIN_AUTOCOINCIDENCE);
+            setTimeModeCoin(COIN_AUTOCOINCIDENCE,false);
             break;
         case COIN_AVANCED:
             if(debug) cout<<"Modo Coincidencia: Avanzado"<<endl;
@@ -1336,21 +1343,21 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(getCoincidenceAdvanceModeDataStream());
             usleep(5000);
-            setTimeModeCoin(COIN_AVANCED);
+            setTimeModeCoin(COIN_AVANCED,false);
             break;
         case COIN_CALIB:
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
             setCalibrationMode(head);
             usleep(5000);
-            setTimeModeCoin(COIN_CALIB, head);
+            setTimeModeCoin(COIN_CALIB,false, head);
             break;
         case COIN_VERIF:
             head = ui->comboBox_head_select_calib->currentText();
             if(debug) cout<<"Modo Calibración en el cabezal: "<<head.toStdString()<<endl;
 
             setCalibrationMode(head);
-            setTimeModeCoin(COIN_VERIF, head);
+            setTimeModeCoin(COIN_VERIF,false, head);
             break;
         case COIN_INTER_CABEZAL:
             if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
@@ -1360,7 +1367,7 @@ void MainWindow::on_pushButton_configure_clicked()
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-            setTimeModeCoin(COIN_INTER_CABEZAL);
+            setTimeModeCoin(COIN_INTER_CABEZAL,false);
             break;
         default:
             break;
@@ -1376,7 +1383,7 @@ void MainWindow::on_pushButton_configure_clicked()
 }
 
 
-void MainWindow::setTimeModeCoin(int modo, QString head){
+void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
 
     arpet->portDisconnect();
     error_code error_code;
@@ -1396,7 +1403,10 @@ void MainWindow::setTimeModeCoin(int modo, QString head){
                 }
                 for(int pmt = 0; pmt < PMTs; pmt++){
                     Cabezal=QString::number(Estado_Cabezales.at(i));
-                    ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());
+                    if(cero) // Manda solo Intracabezal
+                        ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt], QString::number(pmt+1).toStdString());
+                    else
+                        ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt] + coefTInter_values[Estado_Cabezales.at(i)-1], QString::number(pmt+1).toStdString());
                 }
                 arpet->portDisconnect();
             }
@@ -2094,7 +2104,7 @@ string MainWindow::initHead(int head)
         cout<<"Inicialización del Cabezal: "<<endl;
         showMCAEStreamDebugMode(msg_head);
     }
-    setLabelState(arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head-1]);
+    if(head<7) setLabelState(arpet->verifyMCAEStream(msg_head,arpet->getAnsHeadInit()),head_status_table[head-1]);
 
     return msg_head;
 }
@@ -2699,7 +2709,7 @@ QString MainWindow::getHeadMCA(QString head)
 QString MainWindow::getMultiMCA(QString head)
 {
     int size_pmt_selected = pmt_selected_list.length();
-    double SaturatedChannel;
+   // double SaturatedChannel;
     QString msg;
 
     if (pmt_selected_list.isEmpty())
@@ -2717,7 +2727,7 @@ QString MainWindow::getMultiMCA(QString head)
         {
             string pmt = pmt_selected_list.at(index).toStdString();
             msg = getMCA(head.toStdString(), arpet->getFunCSP3(), false, CHANNELS_PMT, pmt);
-            SaturatedChannel =arpet->getHitsMCA()[255];
+            //SaturatedChannel =arpet->getHitsMCA()[255];
 
             if(debug)
             {
@@ -3241,7 +3251,7 @@ bool MainWindow::resetHead(QString Cabezal)
  * @brief MainWindow::resetPMTs
  * @return
  */
-bool MainWindow::resetPMTs(bool centroide)
+bool MainWindow::resetPMTs()//bool centroide)
 {
     QList<int> checkedHeads = getCheckedHeads();
     bool status = true;
@@ -3279,7 +3289,7 @@ void MainWindow::on_pushButton_reset_clicked()
         resetHead(getHead("mca"));
         resetHitsValues(getHead("mca"));
         setPMTCustomPlotEnvironment(pmt_selected_list);
-        resetPMTs(ui->checkBox_centroid->isChecked());
+        resetPMTs();//ui->checkBox_centroid->isChecked());
         removeAllGraphsPMT();
         break;
     case CABEZAL:
@@ -4045,7 +4055,7 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     if (state && !disable)
     {
         qt_text="Adquiriendo";
-        setButtonState(state,ui->pb_Autocalib,disable);///qwerty
+        setButtonState(state,ui->pb_Autocalib,disable);
     }
     else if (!state && !disable)
     {
@@ -4054,39 +4064,86 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     }
     else
     {
-        qt_text="Adquirir";
+        qt_text="Calibrar";
         setButtonState(state,ui->pb_Autocalib,disable);
     }
     ui->pb_Autocalib->setText(qt_text);
     ui->pb_Autocalib->update();
 }
-/**
- * @brief MainWindow::setButtonConnectState
- * @param state
- * @param disable
- */
-void MainWindow::setButtonConnectState(bool state, bool disable)
+
+void MainWindow::setButtonCalibTiemposState(bool state, bool disable)
 {
+    QString qt_text;
+
+    if (state && !disable)
+    {
+        qt_text="Adquiriendo";
+        setButtonState(state,ui->pb_Autocalib_Tiempos,disable);
+    }
+    else if (!state && !disable)
+    {
+        qt_text="Error";
+        setButtonState(state,ui->pb_Autocalib_Tiempos,disable);
+    }
+    else
+    {
+        qt_text="Calibrar Tiempos";
+        setButtonState(state,ui->pb_Autocalib_Tiempos,disable);
+    }
+    ui->pb_Autocalib_Tiempos->setText(qt_text);
+    ui->pb_Autocalib_Tiempos->update();
+}
+
+//void MainWindow::setButtonVerTiemposState(bool state, bool disable)
+//{
 //    QString qt_text;
 
 //    if (state && !disable)
 //    {
-//        qt_text="Conectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
+//        qt_text="Adquiriendo";
+//        setButtonState(state,ui->pb_Autocalib_Tiempos_Debug,disable);
 //    }
 //    else if (!state && !disable)
 //    {
-//        qt_text="Desconectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
+//        qt_text="Error";
+//        setButtonState(state,ui->pb_Autocalib_Tiempos_Debug,disable);
 //    }
 //    else
 //    {
-//        qt_text="Conectar";
-//        setButtonState(state,ui->pushButton_init_configure,disable);
+//        qt_text="Ver Tiempos";
+//        setButtonState(state,ui->pb_Autocalib_Tiempos_Debug,disable);
 //    }
-//    ui->pushButton_init_configure->setText(qt_text);
-//    ui->pushButton_init_configure->update();
-}
+//    ui->pb_Autocalib_Tiempos_Debug->setText(qt_text);
+//    ui->pb_Autocalib_Tiempos_Debug->update();
+//}
+
+///**
+// * @brief MainWindow::setButtonConnectState
+// * @param state
+// * @param disable
+// */
+//void MainWindow::setButtonConnectState(bool state, bool disable)
+//{
+////    QString qt_text;
+
+////    if (state && !disable)
+////    {
+////        qt_text="Conectar";
+////        setButtonState(state,ui->pushButton_init_configure,disable);
+////    }
+////    else if (!state && !disable)
+////    {
+////        qt_text="Desconectar";
+////        setButtonState(state,ui->pushButton_init_configure,disable);
+////    }
+////    else
+////    {
+////        qt_text="Conectar";
+////        setButtonState(state,ui->pushButton_init_configure,disable);
+////    }
+////    ui->pushButton_init_configure->setText(qt_text);
+////    ui->pushButton_init_configure->update();
+//}
 void MainWindow::setButtonLoggerState(bool state, bool disable)
 {
     QString qt_text;
@@ -4296,7 +4353,7 @@ void MainWindow::manageHeadCheckBox(string tab, bool show)
  * @param tab
  * @param show
  */
-void MainWindow::manageHeadComboBox(string tab, bool show)
+void MainWindow::manageHeadComboBox(string tab)//, bool show)
 {
 /*    if (tab=="config"){
         if (show) ui->comboBox_head_select_config->show();
@@ -4318,15 +4375,15 @@ void MainWindow::setHeadMode(int index, string tab)
 {
     switch (index) {
     case MONOHEAD:
-        manageHeadComboBox(tab, true);
+        manageHeadComboBox(tab);//, true);
         manageHeadCheckBox(tab, false);
         break;
     case MULTIHEAD:
-        manageHeadComboBox(tab, false);
+        manageHeadComboBox(tab);//, false);
         manageHeadCheckBox(tab, true);
         break;
     case ALLHEADS:
-        manageHeadComboBox(tab, false);
+        manageHeadComboBox(tab);//, false);
         manageHeadCheckBox(tab, true);
     default:
         break;
@@ -4629,7 +4686,7 @@ QVector<int> MainWindow::getCustomPlotParameters()
  */
 void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 {
-    for (unsigned int index=0; index < qlist.length(); index++)
+    for (int index=0; index < qlist.length(); index++)
     {
         qcp_pmt_parameters.insert(index, 1, getCustomPlotParameters());
     }
@@ -4637,7 +4694,7 @@ void MainWindow::setPMTCustomPlotEnvironment(QList<QString> qlist)
 
 void MainWindow::setPMTCalibCustomPlotEnvironment(QList<int> qlist)
 {
-    for (unsigned int index=0; index < qlist.length(); index++)
+    for ( int index=0; index < qlist.length(); index++)
     {
         qcp_pmt_calib_parameters.insert(index, 1, getCustomPlotParameters());
     }
@@ -4648,7 +4705,7 @@ void MainWindow::setPMTCalibCustomPlotEnvironment(QList<int> qlist)
  */
 void MainWindow::setHeadCustomPlotEnvironment()
 {
-    for (unsigned int index=0; index < HEADS; index++)
+    for ( int index=0; index < HEADS; index++)
     {
         qcp_head_parameters.insert(index, 1, getCustomPlotParameters());
     }
@@ -4708,6 +4765,37 @@ void MainWindow::addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int c
     graph->graph()->setPen(graphPen);
     graph->legend->setVisible(true);
     graph->legend->setWrap(8);
+    graph->legend->setRowSpacing(1);
+    graph->legend->setColumnSpacing(2);
+    graph->rescaleAxes();
+    graph->replot();
+}
+
+void MainWindow::addGraph_Tiempos(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param,bool local)
+{
+    channels_ui.resize(channels);
+    if(local)
+        channels_ui = arpet->getChannels();
+    else
+        channels_ui = calibrador->getChannels();
+
+    QVector<double> channels_aux;
+
+    for(int i=0;i<channels;i++)
+        channels_aux.append(channels_ui.at(i)-128);
+
+    graph->addGraph();
+    graph->graph()->setName(graph_legend);
+    graph->graph()->setAdaptiveSampling(true);
+    //graph->graph()->addData(channels_ui,hits);
+    graph->graph()->addData(channels_aux,hits);
+    graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
+    QPen graphPen;
+    graphPen.setColor(QColor(param[0], param[1], param[2]));
+    graphPen.setWidthF(param[5]);
+    graph->graph()->setPen(graphPen);
+    graph->legend->setVisible(true);
+    graph->legend->setWrap(1);
     graph->legend->setRowSpacing(1);
     graph->legend->setColumnSpacing(2);
     graph->rescaleAxes();
@@ -5150,7 +5238,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
                 setButtonCalibState(false);
                 setIsAbortCalibFlag(false);
                 setButtonCalibState(true,true);
-                emit ToPushButtonCalib(false);
+                //emit ToPushButtonCalib(false);
                 return;
             }
             calibrador->setPMT_List(checked_PMTs);
@@ -5167,12 +5255,14 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
             setButtonCalibState(false);
             setIsAbortCalibFlag(false);
             setButtonCalibState(true,true);
-            emit ToPushButtonCalib(false);
+            //emit ToPushButtonCalib(false);
             return;
         }
         calibrador->setTiempo_adq(Tiempo_adq.toInt());
         checked_Cab.append(ui->comboBox_head_select_graph_2->currentIndex()+1);
         calibrador->setCab_List(checked_Cab);
+
+        calibrador->setMode_AutoCalibTiempos(false);
 
         arpet->portDisconnect();
 
@@ -5202,16 +5292,374 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
     }
 }
 
+/* Autocalib Tiempos*/
+void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
+{
+
+    error_code error_code;
+
+
+    // Este MCa se va a hacer a las 9 máquinas de coincidencias en modo normal
+    // Para esto primero tengo que configurar los cabezales en modo normal con tablas intercabezal en cero
+
+    // Esto lo hago con la rutina de inicialización que usa Dami cuando va a adquirir (modificando lo de la tabla de tiempos)
+
+    // Si todo sale bien espero el tiempo de acumulación (que habría que ver de cuánto lo hago), podría ser fijo o que espere a
+    // que haya un mínimo total de cuentas en todas las máquinas (las más complicadas van a ser la de cabezales cruzados, pero hay que ver cómo se comportan)
+
+    // Con ese MCA se calcula posición de pico, se sacan las relaciones, se configuran y se vuelve a empezar. Se podría usar la calibración que hizo Rama
+    // en Matlab y hacerlo hasta que los picos estén a una tolerancia del cero (debería converger rápido)
+
+
+
+    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
+
+    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+    {
+
+        QList<int> checked_PMTs;
+        QMessageBox messageBox;
+
+        cout<<"Autocalibrando Tiempos"<<endl;
+
+        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+
+        for(int i = 0;  i< 9 ; i++ )
+        {
+            checked_PMTs.append(i+1);
+            //cout<<checked_PMTs[i]<<endl;
+        }
+        calibrador->setPMT_List(checked_PMTs);
+
+        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
+
+        // Recupero el tiempo de adquisicion
+        QString Tiempo_adq = ui->Tiempo_adq_box->text();
+        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+        {
+            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+            messageBox.setFixedSize(500,200);
+            setButtonCalibTiemposState(false);
+            setIsAbortCalibFlag(false);
+            setButtonCalibTiemposState(true,true);
+            return;
+        }
+
+        try{
+
+
+
+
+            // Acá veo que todos estén inicializados y con MCA
+            //for (int i=0;i<6;i++)
+            //  if (!Estado_Cabezales.contains(i+1))
+            if(Estado_Cabezales.length()<6){
+                ui->label_data_output->setText("Para hacer calibración de tiempos deben estar todos los cabezales encendidos");
+                return;
+            }
+            else
+                ui->label_data_output->setText("");
+
+            arpet->portDisconnect();
+            port_name=Coin;
+
+            calibrador->setPort_Name(port_name);
+            worker->setPortName(port_name);
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                ui->label_data_output->setText("Coincidencias todavía no iniciado");
+                return;
+            }
+
+            arpet->portDisconnect();
+
+            // Estaría bueno pedirle a Coincidencias que hay AND entre los LVDS de los cabezales para corroborrar que están con CLK externo
+            // Esto lo poídra devolver Coincidencias en el Init con solamente un campo tipo flag
+
+
+            // Si todo esto está listo procedo a la configuración de los cabezales
+
+
+
+            string msg;
+            QString psoc_alta_Tabla;
+
+
+            /////////////// CONFIGURACION Y CARGA DE TABLAS
+            for (int i=0;i<6;i++) // Se exige que estén los 6 cabezales para calibrar tiempos
+            {
+
+                int head_index=i+1;
+                /* Inicialización del Cabezal */
+
+                port_name=Cab+QString::number(head_index);
+                calibrador->setPort_Name((port_name));
+                worker->setPortName((port_name));
+                error_code= arpet->portConnect(port_name.toStdString().c_str());
+                if (error_code.value()!=0){
+                    arpet->portDisconnect();
+                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                    throw exception_Cabezal_Apagado;
+                }
+
+                if (initHead(head_index).length()==0){
+                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
+                    return;
+                }
+                if(initSP3(head_index).length()==0){
+                    ui->label_data_output->setText("PMTs no responden");
+                    return;
+                }
+                parseConfigurationFile(true, QString::number(head_index));
+
+                usleep(500);
+                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+
+                psoc_alta_Tabla = QString::number(AT);
+
+                usleep(500);
+
+                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+                usleep(500);
+                msg = readString();
+                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+                usleep(500);
+
+                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+                if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+                msg = readString(CHAR_LF);
+
+                usleep(500);
+                //hv_status_table[head_index-1]->setText(psoc_alta);
+
+                setCalibrationTables(head_index);
+
+                arpet->portDisconnect();
+
+            }
+
+        arpet->portDisconnect();
+        port_name=Coin;
+
+        calibrador->setPort_Name(port_name);
+        worker->setPortName(port_name);
+
+        error_code= arpet->portConnect(port_name.toStdString().c_str());
+        if (error_code.value()!=0){
+            arpet->portDisconnect();
+            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+            throw exception_Cabezal_Apagado;
+        }
+
+        // Configuro Coincidencias
+
+        initCoincidenceMode();
+        usleep(5000);
+        setCoincidenceModeWindowTime();
+        usleep(5000);
+        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+        usleep(5000);
+
+        // Seteo intercabezal en cero, es decir, solo envío intracabezal
+
+        setTimeModeCoin(COIN_NORMAL,true);
+
+
+
+
+
+// Usar esto para ir modificando los tiempos
+        // Mandar después de esto un reset mca a coin
+
+//        arpet->portDisconnect();
+//        error_code error_code;
+//        QString ignore;
+//        QString Cabezal;
+
+//        for ( int i = 0; i < 6; i++ )
+//        {
+//            port_name=Cab+QString::number(Estado_Cabezales.at(i));
+//            error_code= arpet->portConnect(port_name.toStdString().c_str());
+//            if (error_code.value()!=0){
+//                arpet->portDisconnect();
+//                Exceptions exception_Cabezal_Apagado("Está coincidencia y los cabezales apagados! Revise las conexiones");
+//                throw exception_Cabezal_Apagado;
+//            }
+//            for(int pmt = 0; pmt < PMTs; pmt++){
+//                Cabezal=QString::number(Estado_Cabezales.at(i));
+//                ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt], QString::number(pmt+1).toStdString());
+//            }
+//            arpet->portDisconnect();
+//        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            arpet->portDisconnect();
+
+            calibrador->setTiempo_adq(Tiempo_adq.toInt());
+            calibrador->setMode_AutoCalibTiempos(true);
+
+            calib_wr->abort();
+            calib_th->wait();
+            calib_wr->requestCalib();
+        }
+        catch(Exceptions & ex)
+        {
+            QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+
+        }
+        else
+        {
+            setButtonCalibTiemposState(true,true);
+            if (is_abort_calib)
+            {
+                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+                emit sendCalibAbortCommand(true);
+            }
+            setIsAbortCalibFlag(true);
+        }
+}
+
+
+void MainWindow::on_pb_Autocalib_Tiempos_Reset_clicked()
+{
+    error_code error_code;
+
+    arpet->portDisconnect();
+    port_name=Coin;
+
+    error_code= arpet->portConnect(port_name.toStdString().c_str());
+    if (error_code.value()!=0){
+        arpet->portDisconnect();
+        Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+        throw exception_Cabezal_Apagado;
+    }
+
+    setHV(QString::number(7).toStdString(),QString::number(0).toStdString());
+
+    clearSpecCalibGraphs();
+
+
+//    resetHead(QString::number(7));
+//    resetHitsValues(QString::number(7));
+//    setPMTCustomPlotEnvironment(pmt_selected_list);
+//    resetPMTs();//ui->checkBox_centroid->isChecked());
+//    removeAllGraphsPMT();
+}
+
+void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
+{
+    error_code error_code;
+
+    if(debug) cout<<"Ver espectros para AutoCalib de Tiempos"<<endl;
+
+//    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+    {
+
+        QList<int> checked_PMTs;
+
+        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+
+        for(int i = 0;  i< 9 ; i++ )
+        {
+            checked_PMTs.append(i+1);
+        }
+
+        setPMTCalibCustomPlotEnvironment(checked_PMTs);
+
+        try{
+
+            arpet->portDisconnect();
+            port_name=Coin;
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (QString::fromStdString(initHead(7)).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                ui->label_data_output->setText("Coincidencias todavía no iniciado");
+                return;
+            }
+
+            clearSpecCalibGraphs();
+
+            for (int i=0 ; i<checked_PMTs.length() ; i++)
+            {
+                getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
+                addGraph_Tiempos(arpet->getHitsMCA(), ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+            }
+
+//            setButtonVerTiemposState(true,true);
+
+        }
+        catch(Exceptions & ex)
+        {
+            QMessageBox::critical(this,tr("Atención"),tr((string("Coincidencias no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+
+        }
+//        else
+//        {
+//            setButtonVerTiemposState(true,true);
+//            if (is_abort_calib)
+//            {
+//                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+//                emit sendCalibAbortCommand(true);
+//            }
+//            setIsAbortCalibFlag(true);
+//        }
+
+
+}
 void MainWindow::connectPortArpet()
 {
-    // Devuelvo serial a arpet
-    //cout<<"Devolviendo puerto serie de arpet..."<<endl;
     arpet->portConnect(port_name.toStdString().c_str());
 }
 
 void MainWindow::OffButtonCalib()
 {
     setButtonCalibState(true,true);
+    setButtonCalibTiemposState(true,true);
+    //setButtonVerTiemposState(true,true);
 }
 
 
@@ -5640,7 +6088,7 @@ void MainWindow::on_pushButton_5_clicked()
 
 
 
-    if ((recon_externa->getReconstruir() == 0 )& (recon_externa->getParsear() == 0) & (recon_externa->getMostrar() == 0 )| (recon_externa->getReconstruir() == 0 & recon_externa->getReconServer()))
+    if (((recon_externa->getReconstruir() == 0 )& (recon_externa->getParsear() == 0) & (recon_externa->getMostrar() == 0 )) | ((recon_externa->getReconstruir() == 0) & (recon_externa->getReconServer())))
     {
         messageBox.critical(0,"Error","Seleccionar metodo.");
         messageBox.setFixedSize(500,200);
@@ -5648,7 +6096,7 @@ void MainWindow::on_pushButton_5_clicked()
     }
 
     // Checkeo que los path existan
-    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir() & recon_externa->getReconServer() == 0)
+    if (!QDir(recon_externa->getPathAPIRL()).exists() & recon_externa->getReconstruir() & (recon_externa->getReconServer() == 0))
     {
         messageBox.critical(0,"Error","Paths de APIRL invalido.");
         messageBox.setFixedSize(500,200);
@@ -6082,7 +6530,7 @@ void MainWindow::on_pushButton_INTERFILES_3_clicked()
  * @brief MainWindow::on_checkBox_MLEM_clicked
  * @param checked
  */
-void MainWindow::on_checkBox_MLEM_clicked(bool checked)
+void MainWindow::on_checkBox_MLEM_clicked()//bool checked)
 {
     ui->checkBox_Backprojection->setCheckState( Qt::Unchecked);
 }
@@ -6090,7 +6538,7 @@ void MainWindow::on_checkBox_MLEM_clicked(bool checked)
  * @brief MainWindow::on_checkBox_Backprojection_clicked
  * @param checked
  */
-void MainWindow::on_checkBox_Backprojection_clicked(bool checked)
+void MainWindow::on_checkBox_Backprojection_clicked()//bool checked)
 {
     ui->checkBox_MLEM->setCheckState( Qt::Unchecked);
 }
@@ -6840,15 +7288,15 @@ void MainWindow::updateCaption(){
     QDir dir("/dev/");
     QString numerocabezal;
     QStringList filters;
-    static int inicio=1;
+//    static int inicio=1;
     static QVector<int> Estado_Aux_Cabezales;
     QRegExp  RegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
     filters << "UART*";
     dir.setNameFilters(filters);
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
-    int size = 0;
-    QString mensaje;
+//    int size = 0;
+//    QString mensaje;
 
     if(adq_running){
 
@@ -7026,40 +7474,40 @@ void MainWindow::on_checkBox_c_1_toggled(bool checked)
     }
 }
 
-void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
-{
+//void MainWindow::on_comboBox_head_select_graph_currentIndexChanged(int index)
+//{
     
-}
+//}
 
-void MainWindow::on_checkBox_mca_1_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_1_toggled(bool checked)
+//{
 
-}
+//}
 
-void MainWindow::on_checkBox_mca_2_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_2_toggled(bool checked)
+//{
 
-}
+//}
 
-void MainWindow::on_checkBox_mca_3_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_3_toggled(bool checked)
+//{
 
-}
+//}
 
-void MainWindow::on_checkBox_mca_4_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_4_toggled(bool checked)
+//{
 
-}
+//}
 
-void MainWindow::on_checkBox_mca_5_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_5_toggled(bool checked)
+//{
 
-}
+//}
 
-void MainWindow::on_checkBox_mca_6_toggled(bool checked)
-{
+//void MainWindow::on_checkBox_mca_6_toggled(bool checked)
+//{
 
-}
+//}
 
 void MainWindow::on_tabWidget_mca_currentChanged(int index)
 {
@@ -7572,7 +8020,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             if(debug) cout<<"Modo Calibración en el cabezal: "<<ui->cb_Calib_Cab->currentText().toStdString()<<endl;
             setCalibrationMode(ui->cb_Calib_Cab->currentText());
             usleep(5000);
-            setTimeModeCoin(COIN_CALIB, ui->cb_Calib_Cab->currentText());
+            setTimeModeCoin(COIN_CALIB,false, ui->cb_Calib_Cab->currentText());
         }else{
             if(debug) cout<<"Modo Coincidencia: Normal"<<endl;
             initCoincidenceMode();
@@ -7581,7 +8029,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             usleep(5000);
             setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
             usleep(5000);
-            setTimeModeCoin(COIN_NORMAL);
+            setTimeModeCoin(COIN_NORMAL,false);
         }
 
         logger.write( log.toUtf8());
@@ -8012,10 +8460,10 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 }
 
 
-void MainWindow::on_comboBox_FPGA_DISP_currentIndexChanged(int index)
-{
+//void MainWindow::on_comboBox_FPGA_DISP_currentIndexChanged(int index)
+//{
 
-}
+//}
 
 void MainWindow::on_checkBox_FPGA_2_clicked(bool checked)
 {
@@ -8025,7 +8473,7 @@ void MainWindow::on_checkBox_FPGA_2_clicked(bool checked)
     ui->pushButton_FPGA_1->setVisible(checked);
  }
 
-void MainWindow::on_comboBox_FPGA_Cab_currentIndexChanged(int index)
+void MainWindow::on_comboBox_FPGA_Cab_currentIndexChanged()//int index)
 {
 
        ui->text_FPGA_1->setText("");
@@ -8119,7 +8567,7 @@ void MainWindow::on_pushButton_FPGA_2_clicked()
 
 }
 
-void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
+void MainWindow::on_comboBox_FPGA_DISP_activated()//int index)
 {
     ui->text_FPGA_1->setText("");
     if(ui->comboBox_FPGA_DISP->currentIndex() == 1)
@@ -8198,4 +8646,5 @@ void MainWindow::checkStatusMoveToServer(bool status){
 
     }
 }
+
 

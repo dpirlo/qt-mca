@@ -77,6 +77,7 @@
 #define Cab5 "/dev/UART_Cab5"
 #define Cab6 "/dev/UART_Cab6"
 #define Cab "/dev/UART_Cab"
+#define Coin "/dev/UART_Coin"
 
 #define CANTIDAD_ELEMENTOS_PLANAR 97
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
@@ -117,6 +118,7 @@ private slots:
     /* Slots de sincronización para QCustomPlot */
     void addGraph(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
     void addGraph_Calib(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param);
+    void addGraph_Tiempos(QVector<double> hits,  QCustomPlot *graph, int channels, QString graph_legend, QVector<int> param, bool local=false);
     void titleDoubleClickPMT(QMouseEvent* event);
     void titleDoubleClickHead(QMouseEvent* event);
     void axisLabelDoubleClickPMT(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -158,6 +160,7 @@ private slots:
     void receivedElapsedTimeString(QString etime_string);
     void receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
     void receivedHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
+    void receivedHitsTiempos(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
 
     void receivedValuesMCA(long long time, int hv_pmt, int offset, int var, bool mode);
     void receivedValuesMCACalib(int umbral, int pico, int FWHM);
@@ -197,7 +200,7 @@ private slots:
     void syncCheckBoxHead4ToConfig(bool check);
     void syncCheckBoxHead5ToConfig(bool check);
     void syncCheckBoxHead6ToConfig(bool check);
-    void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
+    //void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /* FPGA */
@@ -241,6 +244,8 @@ private slots:
     /* AutoCalib */
 //    void on_pushButton_clicked();
     void on_pb_Autocalib_toggled(bool checked);
+    void on_pb_Autocalib_Tiempos_toggled(bool checked);
+    void on_pb_Autocalib_Tiempos_Debug_clicked();
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
     void on_pushButton_triple_ventana_4_clicked();
@@ -269,8 +274,8 @@ private slots:
     void on_pushButton_Arch_count_skimming_clicked();
     void on_pushButton_INTERFILES_2_clicked();
     void on_pushButton_INTERFILES_3_clicked();
-    void on_checkBox_MLEM_clicked(bool checked);
-    void on_checkBox_Backprojection_clicked(bool checked);
+    void on_checkBox_MLEM_clicked();//bool checked);
+    void on_checkBox_Backprojection_clicked();//bool checked);
     void on_pushButton_6_clicked();
     void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
@@ -327,19 +332,19 @@ private slots:
 
     void on_checkBox_c_1_toggled(bool checked);
 
-    void on_comboBox_head_select_graph_currentIndexChanged(int index);
+//    void on_comboBox_head_select_graph_currentIndexChanged(int index);
 
-    void on_checkBox_mca_1_toggled(bool checked);
+//    void on_checkBox_mca_1_toggled(bool checked);
 
-    void on_checkBox_mca_2_toggled(bool checked);
+//    void on_checkBox_mca_2_toggled(bool checked);
 
-    void on_checkBox_mca_3_toggled(bool checked);
+//    void on_checkBox_mca_3_toggled(bool checked);
 
-    void on_checkBox_mca_4_toggled(bool checked);
+//    void on_checkBox_mca_4_toggled(bool checked);
 
-    void on_checkBox_mca_5_toggled(bool checked);
+//    void on_checkBox_mca_5_toggled(bool checked);
 
-    void on_checkBox_mca_6_toggled(bool checked);
+//    void on_checkBox_mca_6_toggled(bool checked);
 
     void on_tabWidget_mca_currentChanged(int index);
 
@@ -363,9 +368,9 @@ private slots:
 
     void on_pushButton_FPGA_3_clicked();
 
-    void on_comboBox_FPGA_Cab_currentIndexChanged(int index);
+    void on_comboBox_FPGA_Cab_currentIndexChanged();//int index);
 
-    void on_comboBox_FPGA_DISP_currentIndexChanged(int index);
+//    void on_comboBox_FPGA_DISP_currentIndexChanged(int index);
 
     void on_cb_Path_alternativo_adq_toggled(bool checked);
 
@@ -373,7 +378,9 @@ private slots:
 
     void on_pushButton_FPGA_2_clicked();
 
-    void on_comboBox_FPGA_DISP_activated(int index);
+    void on_comboBox_FPGA_DISP_activated();//int index);
+
+    void on_pb_Autocalib_Tiempos_Reset_clicked();
 
 private:
     void connectSlots();
@@ -408,13 +415,15 @@ private:
     void setButtonState(bool state, QPushButton * button, bool disable=false);
     void setButtonAdquireState(bool state, bool disable=false);
     void setButtonCalibState(bool state, bool disable=false);
-    void setButtonConnectState(bool state, bool disable=false);
+    void setButtonCalibTiemposState(bool state, bool disable=false);
+    //void setButtonVerTiemposState(bool state, bool disable=false);
+    //void setButtonConnectState(bool state, bool disable=false);
     void setButtonLoggerState(bool state, bool disable=false);
     string readString(char delimeter='\r');
     string readBufferString(int buffer_size);
     size_t sendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
-    void manageHeadComboBox(string tab, bool show);
+    void manageHeadComboBox(string tab);//, bool show);
     QString getMCA(string head, string function, bool multimode, int channels, string pmt="0");
     QString getMultiMCA(QString head);
     QString getHeadMCA(QString head);
@@ -440,7 +449,7 @@ private:
     string getHVValue(QLineEdit *line_edit, int value=0);
     bool resetHeads();
     bool resetHead(QString Cabezal);
-    bool resetPMTs(bool centroide=false);
+    bool resetPMTs();//bool centroide=false);
     void setQListElements();
     void drawTemperatureBoard();
     void drawAlmohada();
@@ -458,6 +467,7 @@ private:
     void showMCAEStreamDebugMode(string msg);
     void LoadHVPMT(int head);
     void setTimeModeCoin(int mode,QString head="");
+    void setTimeModeCoin(int mode,bool cero=false,QString head="");
     void Cabezal_On_Off(int Cabezal, bool estado);
     void Cabezales_On_Off(bool estado);
     string getEstadoCabezal(int head);
@@ -473,7 +483,8 @@ signals:
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
     void ToPushButtonLogger(bool toggle);
-    void ToPushButtonCalib(bool toggle);
+//    void ToPushButtonCalib(bool toggle);
+//    void ToPushButtonCalibTiempos(bool toggle);
 
 private:
     Ui::MainWindow *ui;
