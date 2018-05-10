@@ -2025,11 +2025,14 @@ void MainWindow::setCalibrationMode(QString head)
  * Método que configura la trama de ventana de tiempo en modo coincidencia
  *
  */
-void MainWindow::setCoincidenceModeWindowTime()
+void MainWindow::setCoincidenceModeWindowTime(bool calib)
 {
     string vn="-"+ui->lineEdit_WN->text().toStdString();
     string vp=ui->lineEdit_WP->text().toStdString();
-    setMCAEDataStream(arpet->getWindow_Time_Coin(),vn,vp,true);
+    if(calib)
+        setMCAEDataStream(arpet->getWindow_Time_Coin(),"-127","127",true);
+    else
+        setMCAEDataStream(arpet->getWindow_Time_Coin(),vn,vp,true);
     string msg_ans;
     error_code error_code;
     arpet->portDisconnect();
@@ -5354,7 +5357,10 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
             //for (int i=0;i<6;i++)
             //  if (!Estado_Cabezales.contains(i+1))
             if(Estado_Cabezales.length()<6){
-                ui->label_data_output->setText("Para hacer calibración de tiempos deben estar todos los cabezales encendidos");
+                setButtonCalibTiemposState(false);
+                messageBox.critical(0,"Error","Para hacer calibración de tiempos deben estar todos los cabezales encendidos.");
+                setIsAbortCalibFlag(false);
+                setButtonCalibTiemposState(true,true);
                 return;
             }
             else
@@ -5369,12 +5375,18 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
+                setButtonCalibTiemposState(false);
                 Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                setIsAbortCalibFlag(false);
+                setButtonCalibTiemposState(true,true);
                 throw exception_Cabezal_Apagado;
             }
 
             if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-                ui->label_data_output->setText("Coincidencias todavía no iniciado");
+                setButtonCalibTiemposState(false);
+                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+                setIsAbortCalibFlag(false);
+                setButtonCalibTiemposState(true,true);
                 return;
             }
 
@@ -5467,7 +5479,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
 
         initCoincidenceMode();
         usleep(5000);
-        setCoincidenceModeWindowTime();
+        setCoincidenceModeWindowTime(true);
         usleep(5000);
         setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
         usleep(5000);

@@ -461,7 +461,7 @@ private:
     void setCoincidenceModeDataStream(string stream);
     string getCoincidenceAdvanceModeDataStream();
     void initCoincidenceMode();
-    void setCoincidenceModeWindowTime();
+    void setCoincidenceModeWindowTime(bool calib=false);
     void setCalibrationMode(QString head);
     void getARPETStatus();
     void showMCAEStreamDebugMode(string msg);
