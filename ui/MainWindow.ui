@@ -55,10 +55,10 @@
    <widget class="QTabWidget" name="tabWidget_general">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>20</y>
-      <width>1011</width>
-      <height>631</height>
+      <x>10</x>
+      <y>0</y>
+      <width>1013</width>
+      <height>651</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -911,37 +911,6 @@
         </property>
        </widget>
       </widget>
-      <widget class="QComboBox" name="comboBox_head_mode_select_config">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>11</y>
-         <width>111</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="currentIndex">
-        <number>1</number>
-       </property>
-       <property name="modelColumn">
-        <number>0</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>Cabezal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Multicabezal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Todos</string>
-        </property>
-       </item>
-      </widget>
      </widget>
      <widget class="QFrame" name="frame_calib_tables">
       <property name="geometry">
@@ -949,7 +918,7 @@
         <x>10</x>
         <y>340</y>
         <width>981</width>
-        <height>251</height>
+        <height>241</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -958,157 +927,13 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QPushButton" name="pushButton_triple_ventana">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>10</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>18</x>
-         <y>43</y>
-         <width>101</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Tabla de HV:</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_energia">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>70</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_10">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>220</y>
-         <width>221</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Límite inferior ventana Cabezal:</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_tiempos_cabezal">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>160</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_energia">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>70</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_hv">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>40</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_tiempos_cabezal">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>160</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_11">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>159</y>
-         <width>121</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Delta T intraCab</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label">
-       <property name="geometry">
-        <rect>
-         <x>27</x>
-         <y>2</y>
-         <width>81</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Tabla triple
-  ventana:</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_triple_ventana">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>10</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
       <widget class="QPushButton" name="pushButton_initialize">
        <property name="geometry">
         <rect>
-         <x>870</x>
+         <x>860</x>
          <y>10</y>
-         <width>101</width>
-         <height>201</height>
+         <width>111</width>
+         <height>221</height>
         </rect>
        </property>
        <property name="font">
@@ -1121,175 +946,6 @@
         <string>Configuración
  de
  Cabezales</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_posicion_X">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>100</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>14</x>
-         <y>103</y>
-         <width>111</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Coef. Posición X:</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_hv">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>40</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_limiteinferior">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>220</y>
-         <width>81</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_posicion_Y">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>130</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_posicion_X">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>100</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_posicion_Y">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>130</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_8">
-       <property name="geometry">
-        <rect>
-         <x>14</x>
-         <y>130</y>
-         <width>111</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Coef. Posición Y:</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>18</x>
-         <y>73</y>
-         <width>101</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Coef. Energía:</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_obtener_ini">
-       <property name="geometry">
-        <rect>
-         <x>330</x>
-         <y>220</y>
-         <width>161</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Obtener config.ini</string>
-       </property>
-      </widget>
-      <widget class="QTextBrowser" name="textBrowser_tiempos_Inter_cabezal">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>190</y>
-         <width>651</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_108">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>190</y>
-         <width>121</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Delta T InterCab</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_tiempos_cabezal_2">
-       <property name="geometry">
-        <rect>
-         <x>790</x>
-         <y>190</y>
-         <width>71</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Abrir</string>
        </property>
       </widget>
      </widget>
@@ -1495,9 +1151,9 @@ Tensión: </string>
       <widget class="QLabel" name="label_40">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>60</x>
          <y>10</y>
-         <width>181</width>
+         <width>161</width>
          <height>21</height>
         </rect>
        </property>
@@ -1534,7 +1190,7 @@ Tensión: </string>
          <x>40</x>
          <y>40</y>
          <width>141</width>
-         <height>29</height>
+         <height>31</height>
         </rect>
        </property>
        <item>
@@ -1687,9 +1343,9 @@ Tensión: </string>
       <widget class="QLabel" name="label_coincidencia_estado">
        <property name="geometry">
         <rect>
-         <x>200</x>
+         <x>190</x>
          <y>40</y>
-         <width>46</width>
+         <width>51</width>
          <height>31</height>
         </rect>
        </property>
@@ -1782,28 +1438,6 @@ calibrar</string>
       <zorder>label_coincidencia_estado</zorder>
       <zorder>comboBox_head_select_calib</zorder>
       <zorder>label_calib</zorder>
-     </widget>
-     <widget class="QLabel" name="label_title_output">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>590</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
      </widget>
      <widget class="QFrame" name="frame_2">
       <property name="geometry">
@@ -2266,10 +1900,9 @@ calibrar</string>
      <zorder>frame_2</zorder>
      <zorder>frame_status</zorder>
      <zorder>frame_heads</zorder>
-     <zorder>frame_calib_tables</zorder>
      <zorder>frame_hv</zorder>
      <zorder>frame_adquid_mode</zorder>
-     <zorder>label_title_output</zorder>
+     <zorder>frame_calib_tables</zorder>
     </widget>
     <widget class="QWidget" name="mca">
      <property name="sizePolicy">
@@ -2291,7 +1924,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>50</y>
+        <y>70</y>
         <width>791</width>
         <height>511</height>
        </rect>
@@ -3219,9 +2852,9 @@ calibrar</string>
      <widget class="QFrame" name="frame_multihead_graph">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>4</y>
-        <width>291</width>
+        <x>200</x>
+        <y>10</y>
+        <width>251</width>
         <height>41</height>
        </rect>
       </property>
@@ -3239,8 +2872,8 @@ calibrar</string>
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -3253,10 +2886,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>58</x>
+         <x>50</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -3269,10 +2902,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>105</x>
+         <x>90</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="text">
@@ -3285,10 +2918,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>151</x>
+         <x>130</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -3301,10 +2934,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>199</x>
+         <x>170</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -3317,10 +2950,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>247</x>
+         <x>210</x>
          <y>10</y>
-         <width>39</width>
-         <height>26</height>
+         <width>31</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -3334,7 +2967,7 @@ calibrar</string>
         <x>820</x>
         <y>459</y>
         <width>181</width>
-        <height>101</height>
+        <height>121</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3382,7 +3015,7 @@ calibrar</string>
       <widget class="QLabel" name="label_34">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>20</x>
          <y>10</y>
          <width>41</width>
          <height>31</height>
@@ -3402,37 +3035,46 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_hv_configure">
        <property name="geometry">
         <rect>
-         <x>17</x>
-         <y>92</y>
-         <width>91</width>
-         <height>21</height>
+         <x>20</x>
+         <y>90</y>
+         <width>89</width>
+         <height>20</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Configurar</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_hv_value">
        <property name="geometry">
         <rect>
-         <x>45</x>
-         <y>9</y>
-         <width>101</width>
-         <height>33</height>
+         <x>60</x>
+         <y>10</y>
+         <width>111</width>
+         <height>31</height>
         </rect>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_l_5">
        <property name="geometry">
         <rect>
-         <x>17</x>
-         <y>52</y>
+         <x>20</x>
+         <y>50</y>
          <width>50</width>
-         <height>20</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3444,14 +3086,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_l_10">
        <property name="geometry">
         <rect>
-         <x>67</x>
-         <y>52</y>
+         <x>70</x>
+         <y>50</y>
          <width>50</width>
-         <height>20</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3463,14 +3106,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_l_50">
        <property name="geometry">
         <rect>
-         <x>117</x>
-         <y>52</y>
-         <width>50</width>
-         <height>20</height>
+         <x>120</x>
+         <y>50</y>
+         <width>51</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3482,14 +3126,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_p_5">
        <property name="geometry">
         <rect>
-         <x>17</x>
-         <y>72</y>
+         <x>20</x>
+         <y>70</y>
          <width>50</width>
-         <height>20</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3501,14 +3146,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_p_10">
        <property name="geometry">
         <rect>
-         <x>67</x>
-         <y>72</y>
+         <x>70</x>
+         <y>70</y>
          <width>50</width>
-         <height>20</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3520,14 +3166,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_p_50">
        <property name="geometry">
         <rect>
-         <x>117</x>
-         <y>72</y>
-         <width>50</width>
-         <height>20</height>
+         <x>120</x>
+         <y>70</y>
+         <width>51</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3539,14 +3186,15 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_p_51">
        <property name="geometry">
         <rect>
-         <x>106</x>
-         <y>92</y>
+         <x>110</x>
+         <y>90</y>
          <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="font">
         <font>
+         <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -3555,37 +3203,6 @@ calibrar</string>
         <string>3500</string>
        </property>
       </widget>
-     </widget>
-     <widget class="QComboBox" name="comboBox_adquire_mode">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>740</x>
-        <y>10</y>
-        <width>71</width>
-        <height>29</height>
-       </rect>
-      </property>
-      <property name="contextMenuPolicy">
-       <enum>Qt::NoContextMenu</enum>
-      </property>
-      <item>
-       <property name="text">
-        <string>PMT</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Cabezal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Temperatura</string>
-       </property>
-      </item>
      </widget>
      <widget class="QFrame" name="frame_PMT">
       <property name="geometry">
@@ -3660,47 +3277,16 @@ calibrar</string>
        </property>
       </widget>
      </widget>
-     <widget class="QComboBox" name="comboBox_head_mode_select_graph">
-      <property name="geometry">
-       <rect>
-        <x>660</x>
-        <y>10</y>
-        <width>141</width>
-        <height>29</height>
-       </rect>
-      </property>
-      <property name="currentIndex">
-       <number>1</number>
-      </property>
-      <property name="minimumContentsLength">
-       <number>0</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>Cabezal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Multicabezal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Todos</string>
-       </property>
-      </item>
-     </widget>
      <widget class="QComboBox" name="comboBox_head_select_graph">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>200</x>
         <y>10</y>
         <width>71</width>
-        <height>31</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="currentIndex">
@@ -3873,7 +3459,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>832</x>
-        <y>523</y>
+        <y>540</y>
         <width>161</width>
         <height>31</height>
        </rect>
@@ -3889,7 +3475,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>909</x>
-        <y>469</y>
+        <y>480</y>
         <width>81</width>
         <height>40</height>
        </rect>
@@ -3901,28 +3487,45 @@ calibrar</string>
      <widget class="QCheckBox" name="checkBox_espectro_calibrado">
       <property name="geometry">
        <rect>
-        <x>570</x>
+        <x>460</x>
         <y>10</y>
-        <width>121</width>
-        <height>31</height>
+        <width>161</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>PMT 49</string>
+       <string>Espectro Calibrado</string>
       </property>
      </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>10</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Selector Cabezal: </string>
+      </property>
+     </widget>
+     <zorder>frame_PMT</zorder>
+     <zorder>frame_HV</zorder>
+     <zorder>frame_output</zorder>
+     <zorder>frame_MCA</zorder>
      <zorder>tabWidget_mca</zorder>
      <zorder>frame_multihead_graph</zorder>
-     <zorder>frame_MCA</zorder>
-     <zorder>frame_HV</zorder>
-     <zorder>frame_PMT</zorder>
-     <zorder>comboBox_head_mode_select_graph</zorder>
      <zorder>comboBox_head_select_graph</zorder>
-     <zorder>frame_output</zorder>
      <zorder>pushButton_adquirir</zorder>
      <zorder>pushButton_reset</zorder>
      <zorder>checkBox_espectro_calibrado</zorder>
-     <zorder>comboBox_adquire_mode</zorder>
+     <zorder>label</zorder>
     </widget>
     <widget class="QWidget" name="graph">
      <attribute name="title">
@@ -3932,9 +3535,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>180</y>
         <width>991</width>
-        <height>421</height>
+        <height>401</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -3949,7 +3552,7 @@ calibrar</string>
          <x>10</x>
          <y>10</y>
          <width>971</width>
-         <height>401</height>
+         <height>381</height>
         </rect>
        </property>
        <property name="autoFillBackground">
@@ -4221,7 +3824,7 @@ calibrar</string>
         <x>650</x>
         <y>10</y>
         <width>351</width>
-        <height>141</height>
+        <height>161</height>
        </rect>
       </property>
       <property name="font">
@@ -4334,7 +3937,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>810</x>
-        <y>500</y>
+        <y>530</y>
         <width>171</width>
         <height>51</height>
        </rect>
@@ -4377,8 +3980,8 @@ calibrar</string>
      <widget class="QLabel" name="label_24">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>190</y>
+        <x>10</x>
+        <y>210</y>
         <width>121</width>
         <height>21</height>
        </rect>
@@ -4436,7 +4039,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>210</y>
+        <y>240</y>
         <width>611</width>
         <height>341</height>
        </rect>
@@ -4483,7 +4086,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>500</y>
+        <y>530</y>
         <width>161</width>
         <height>51</height>
        </rect>
@@ -4574,7 +4177,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>630</x>
-        <y>210</y>
+        <y>230</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -4592,7 +4195,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>630</x>
-        <y>240</y>
+        <y>260</y>
         <width>190</width>
         <height>31</height>
        </rect>
@@ -4610,7 +4213,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>872</x>
-        <y>210</y>
+        <y>230</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -4628,7 +4231,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>870</x>
-        <y>240</y>
+        <y>260</y>
         <width>130</width>
         <height>31</height>
        </rect>
@@ -5240,10 +4843,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>10</y>
+         <x>20</x>
+         <y>5</y>
          <width>39</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5256,10 +4859,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>50</x>
-         <y>10</y>
+         <x>60</x>
+         <y>5</y>
          <width>39</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5272,10 +4875,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>110</x>
-         <y>10</y>
+         <x>100</x>
+         <y>5</y>
          <width>41</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5288,10 +4891,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>10</y>
+         <x>140</x>
+         <y>5</y>
          <width>39</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5304,10 +4907,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>200</x>
-         <y>10</y>
+         <x>180</x>
+         <y>5</y>
          <width>39</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5320,10 +4923,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>250</x>
-         <y>10</y>
+         <x>220</x>
+         <y>5</y>
          <width>39</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5337,9 +4940,9 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>330</x>
-         <y>10</y>
-         <width>121</width>
-         <height>26</height>
+         <y>5</y>
+         <width>111</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -5891,7 +5494,7 @@ calibrar</string>
        <rect>
         <x>10</x>
         <y>250</y>
-        <width>171</width>
+        <width>151</width>
         <height>21</height>
        </rect>
       </property>
@@ -5904,7 +5507,7 @@ calibrar</string>
        <rect>
         <x>10</x>
         <y>300</y>
-        <width>171</width>
+        <width>151</width>
         <height>21</height>
        </rect>
       </property>
@@ -6886,7 +6489,7 @@ calibrar</string>
      <widget class="QPushButton" name="pushButton_5">
       <property name="geometry">
        <rect>
-        <x>670</x>
+        <x>660</x>
         <y>420</y>
         <width>271</width>
         <height>151</height>
@@ -6899,9 +6502,9 @@ calibrar</string>
      <widget class="QFrame" name="frame_multihead_graph_8">
       <property name="geometry">
        <rect>
-        <x>90</x>
+        <x>80</x>
         <y>280</y>
-        <width>321</width>
+        <width>331</width>
         <height>31</height>
        </rect>
       </property>
@@ -6917,10 +6520,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>10</x>
          <y>0</y>
          <width>121</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -6933,10 +6536,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>120</x>
+         <x>130</x>
          <y>0</y>
          <width>111</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -6949,24 +6552,27 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>230</x>
+         <x>240</x>
          <y>0</y>
          <width>81</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
         <string>Mostrar</string>
        </property>
       </widget>
+      <zorder>checkBox_Mostrar</zorder>
+      <zorder>checkBox_parsear</zorder>
+      <zorder>checkBox_Reconstruir</zorder>
      </widget>
      <widget class="QLabel" name="label_101">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>270</y>
+        <x>10</x>
+        <y>280</y>
         <width>81</width>
-        <height>41</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -6978,7 +6584,7 @@ calibrar</string>
        <rect>
         <x>20</x>
         <y>420</y>
-        <width>641</width>
+        <width>631</width>
         <height>151</height>
        </rect>
       </property>
@@ -7066,7 +6672,7 @@ calibrar</string>
        <rect>
         <x>440</x>
         <y>280</y>
-        <width>271</width>
+        <width>291</width>
         <height>31</height>
        </rect>
       </property>
@@ -7082,10 +6688,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>10</x>
          <y>0</y>
          <width>71</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7098,10 +6704,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>70</x>
+         <x>80</x>
          <y>0</y>
          <width>71</width>
-         <height>26</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7114,7 +6720,7 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>140</x>
+         <x>150</x>
          <y>0</y>
          <width>131</width>
          <height>31</height>
@@ -7124,11 +6730,14 @@ calibrar</string>
         <string>Backprojection</string>
        </property>
       </widget>
+      <zorder>checkBox_Backprojection</zorder>
+      <zorder>checkBox_Server</zorder>
+      <zorder>checkBox_MLEM</zorder>
      </widget>
      <widget class="QPushButton" name="pushButton_6">
       <property name="geometry">
        <rect>
-        <x>950</x>
+        <x>940</x>
         <y>420</y>
         <width>51</width>
         <height>151</height>
@@ -7138,6 +6747,42 @@ calibrar</string>
        <string>Kill</string>
       </property>
      </widget>
+     <zorder>label_101</zorder>
+     <zorder>label_90</zorder>
+     <zorder>label_91</zorder>
+     <zorder>label_75</zorder>
+     <zorder>pushButton_arch_recon</zorder>
+     <zorder>label_77</zorder>
+     <zorder>textBrowser_archivo_recon</zorder>
+     <zorder>label_78</zorder>
+     <zorder>pushButton_APIRL_PATH</zorder>
+     <zorder>pushButton_INTERFILES</zorder>
+     <zorder>label_79</zorder>
+     <zorder>textBrowser_entrada_3</zorder>
+     <zorder>label_80</zorder>
+     <zorder>textBrowser_estimacion_ini</zorder>
+     <zorder>label_93</zorder>
+     <zorder>pushButton_Est_ini</zorder>
+     <zorder>pushButton_Arch_sens</zorder>
+     <zorder>textBrowser_Imagensensib</zorder>
+     <zorder>label_94</zorder>
+     <zorder>label_99</zorder>
+     <zorder>pushButton_Arch_count_skimming</zorder>
+     <zorder>pushButton_5</zorder>
+     <zorder>plainTextEdit_Recon_console</zorder>
+     <zorder>label_96</zorder>
+     <zorder>textBrowser_entrada_4</zorder>
+     <zorder>pushButton_INTERFILES_2</zorder>
+     <zorder>pushButton_INTERFILES_3</zorder>
+     <zorder>label_102</zorder>
+     <zorder>pushButton_6</zorder>
+     <zorder>textBrowser_entrada_2</zorder>
+     <zorder>textBrowser_entrada_5</zorder>
+     <zorder>textBrowser_Conunt_skimming</zorder>
+     <zorder>frame_multihead_graph_7</zorder>
+     <zorder>frame_multihead_graph_6</zorder>
+     <zorder>frame_multihead_graph_9</zorder>
+     <zorder>frame_multihead_graph_8</zorder>
     </widget>
     <widget class="QWidget" name="fpga">
      <attribute name="title">
@@ -7500,7 +7145,7 @@ calibrar</string>
         <x>640</x>
         <y>50</y>
         <width>95</width>
-        <height>26</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7511,9 +7156,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>270</y>
-        <width>951</width>
-        <height>201</height>
+        <y>370</y>
+        <width>961</width>
+        <height>211</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -7528,10 +7173,10 @@ calibrar</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>870</x>
-         <y>20</y>
-         <width>51</width>
-         <height>30</height>
+         <x>840</x>
+         <y>30</y>
+         <width>91</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="currentIndex">
@@ -7576,10 +7221,10 @@ calibrar</string>
       <widget class="QLabel" name="label_7">
        <property name="geometry">
         <rect>
-         <x>809</x>
-         <y>24</y>
+         <x>730</x>
+         <y>30</y>
          <width>66</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7609,9 +7254,9 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_stream_configure_mca_terminal">
        <property name="geometry">
         <rect>
-         <x>820</x>
-         <y>140</y>
-         <width>95</width>
+         <x>840</x>
+         <y>150</y>
+         <width>91</width>
          <height>31</height>
         </rect>
        </property>
@@ -7622,10 +7267,10 @@ calibrar</string>
       <widget class="QComboBox" name="comboBox_func_terminal">
        <property name="geometry">
         <rect>
-         <x>147</x>
-         <y>140</y>
+         <x>160</x>
+         <y>150</y>
          <width>83</width>
-         <height>29</height>
+         <height>31</height>
         </rect>
        </property>
        <item>
@@ -7642,10 +7287,10 @@ calibrar</string>
       <widget class="QLabel" name="label_13">
        <property name="geometry">
         <rect>
-         <x>91</x>
-         <y>143</y>
+         <x>90</x>
+         <y>150</y>
          <width>66</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7656,7 +7301,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>70</y>
+         <y>90</y>
          <width>51</width>
          <height>31</height>
         </rect>
@@ -7675,8 +7320,8 @@ calibrar</string>
       <widget class="QLabel" name="label_20">
        <property name="geometry">
         <rect>
-         <x>31</x>
-         <y>137</y>
+         <x>30</x>
+         <y>150</y>
          <width>41</width>
          <height>31</height>
         </rect>
@@ -7695,9 +7340,9 @@ calibrar</string>
       <widget class="QPushButton" name="pushButton_stream_configure_psoc_terminal">
        <property name="geometry">
         <rect>
-         <x>820</x>
-         <y>70</y>
-         <width>95</width>
+         <x>840</x>
+         <y>90</y>
+         <width>91</width>
          <height>31</height>
         </rect>
        </property>
@@ -7708,10 +7353,10 @@ calibrar</string>
       <widget class="QComboBox" name="comboBox_psoc_function_terminal">
        <property name="geometry">
         <rect>
-         <x>200</x>
-         <y>70</y>
+         <x>160</x>
+         <y>90</y>
          <width>83</width>
-         <height>29</height>
+         <height>31</height>
         </rect>
        </property>
        <item>
@@ -7738,10 +7383,10 @@ calibrar</string>
       <widget class="QComboBox" name="comboBox_mca_function_terminal">
        <property name="geometry">
         <rect>
-         <x>481</x>
-         <y>140</y>
+         <x>490</x>
+         <y>150</y>
          <width>83</width>
-         <height>29</height>
+         <height>31</height>
         </rect>
        </property>
        <item>
@@ -7769,7 +7414,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>295</x>
-         <y>140</y>
+         <y>150</y>
          <width>71</width>
          <height>33</height>
         </rect>
@@ -7778,10 +7423,10 @@ calibrar</string>
       <widget class="QLabel" name="label_31">
        <property name="geometry">
         <rect>
-         <x>136</x>
-         <y>74</y>
+         <x>90</x>
+         <y>90</y>
          <width>66</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7791,10 +7436,10 @@ calibrar</string>
       <widget class="QLabel" name="label_33">
        <property name="geometry">
         <rect>
-         <x>255</x>
-         <y>143</y>
+         <x>250</x>
+         <y>150</y>
          <width>41</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7804,10 +7449,10 @@ calibrar</string>
       <widget class="QLabel" name="label_35">
        <property name="geometry">
         <rect>
-         <x>320</x>
-         <y>76</y>
+         <x>500</x>
+         <y>90</y>
          <width>121</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7817,8 +7462,8 @@ calibrar</string>
       <widget class="QLineEdit" name="lineEdit_psoc_hv_terminal">
        <property name="geometry">
         <rect>
-         <x>450</x>
-         <y>70</y>
+         <x>630</x>
+         <y>90</y>
          <width>71</width>
          <height>33</height>
         </rect>
@@ -7828,7 +7473,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>389</x>
-         <y>143</y>
+         <y>153</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -7840,10 +7485,10 @@ calibrar</string>
       <widget class="QLabel" name="label_37">
        <property name="geometry">
         <rect>
-         <x>591</x>
-         <y>143</y>
+         <x>590</x>
+         <y>150</y>
          <width>31</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -7853,13 +7498,32 @@ calibrar</string>
       <widget class="QLineEdit" name="lineEdit_pmt_hv_terminal">
        <property name="geometry">
         <rect>
-         <x>620</x>
-         <y>140</y>
+         <x>630</x>
+         <y>150</y>
          <width>71</width>
          <height>33</height>
         </rect>
        </property>
       </widget>
+      <zorder>label_7</zorder>
+      <zorder>label_12</zorder>
+      <zorder>pushButton_stream_configure_mca_terminal</zorder>
+      <zorder>label_13</zorder>
+      <zorder>label_19</zorder>
+      <zorder>label_20</zorder>
+      <zorder>pushButton_stream_configure_psoc_terminal</zorder>
+      <zorder>comboBox_mca_function_terminal</zorder>
+      <zorder>label_31</zorder>
+      <zorder>label_33</zorder>
+      <zorder>label_35</zorder>
+      <zorder>lineEdit_psoc_hv_terminal</zorder>
+      <zorder>label_36</zorder>
+      <zorder>label_37</zorder>
+      <zorder>lineEdit_pmt_hv_terminal</zorder>
+      <zorder>comboBox_psoc_function_terminal</zorder>
+      <zorder>comboBox_func_terminal</zorder>
+      <zorder>comboBox_head_select_terminal</zorder>
+      <zorder>lineEdit_pmt_terminal</zorder>
      </widget>
      <widget class="QPushButton" name="pushButton_clear_terminal">
       <property name="geometry">
@@ -7878,9 +7542,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>240</y>
-        <width>81</width>
-        <height>16</height>
+        <y>330</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7891,9 +7555,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>200</y>
-        <width>59</width>
-        <height>14</height>
+        <y>270</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7904,9 +7568,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>200</y>
-        <width>81</width>
-        <height>16</height>
+        <y>270</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7917,9 +7581,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>160</y>
-        <width>59</width>
-        <height>14</height>
+        <y>210</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7930,9 +7594,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>220</y>
-        <width>81</width>
-        <height>16</height>
+        <y>300</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7943,9 +7607,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>240</y>
-        <width>59</width>
-        <height>14</height>
+        <y>330</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7955,10 +7619,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB4">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>200</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>269</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7968,10 +7632,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB5">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>220</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>299</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7981,10 +7645,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB6">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>240</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>330</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -7995,9 +7659,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>140</y>
-        <width>81</width>
-        <height>16</height>
+        <y>180</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8008,9 +7672,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>160</y>
-        <width>81</width>
-        <height>16</height>
+        <y>210</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8021,9 +7685,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>180</y>
-        <width>81</width>
-        <height>16</height>
+        <y>240</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8034,9 +7698,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>180</y>
-        <width>59</width>
-        <height>14</height>
+        <y>240</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8046,10 +7710,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB1">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>140</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>180</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8060,9 +7724,9 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>140</y>
-        <width>59</width>
-        <height>14</height>
+        <y>180</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8072,10 +7736,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB3">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>180</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>240</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8085,10 +7749,10 @@ calibrar</string>
      <widget class="QLabel" name="label_CAB2">
       <property name="geometry">
        <rect>
-        <x>678</x>
-        <y>160</y>
-        <width>191</width>
-        <height>16</height>
+        <x>690</x>
+        <y>210</y>
+        <width>181</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -8099,15 +7763,41 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>640</x>
-        <y>220</y>
-        <width>59</width>
-        <height>14</height>
+        <y>300</y>
+        <width>41</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
        <string>CAB5</string>
       </property>
      </widget>
+     <zorder>pushButton_send_terminal</zorder>
+     <zorder>label_received_terminal</zorder>
+     <zorder>label_size_terminal</zorder>
+     <zorder>pushButton_flush_terminal</zorder>
+     <zorder>lineEdit_terminal</zorder>
+     <zorder>checkBox_end_terminal</zorder>
+     <zorder>frame_trama_terminal</zorder>
+     <zorder>pushButton_clear_terminal</zorder>
+     <zorder>RATECAB6</zorder>
+     <zorder>label_117</zorder>
+     <zorder>RATECAB4</zorder>
+     <zorder>label_113</zorder>
+     <zorder>RATECAB5</zorder>
+     <zorder>label_120</zorder>
+     <zorder>RATECAB1</zorder>
+     <zorder>RATECAB2</zorder>
+     <zorder>RATECAB3</zorder>
+     <zorder>label_115</zorder>
+     <zorder>label_111</zorder>
+     <zorder>label_119</zorder>
+     <zorder>label_CAB3</zorder>
+     <zorder>label_CAB2</zorder>
+     <zorder>label_CAB1</zorder>
+     <zorder>label_CAB5</zorder>
+     <zorder>label_CAB4</zorder>
+     <zorder>label_CAB6</zorder>
     </widget>
     <widget class="QWidget" name="UserTab">
      <attribute name="title">
@@ -8118,9 +7808,9 @@ calibrar</string>
    <widget class="QLabel" name="label_data_output">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>630</y>
-      <width>751</width>
+      <x>300</x>
+      <y>620</y>
+      <width>711</width>
       <height>21</height>
      </rect>
     </property>
@@ -8139,7 +7829,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
@@ -8179,7 +7869,6 @@ calibrar</string>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>comboBox_head_mode_select_config</tabstop>
   <tabstop>pushButton_On_Off_Cabs</tabstop>
   <tabstop>pushButton_Encendido_1</tabstop>
   <tabstop>pushButton_Encendido_2</tabstop>
@@ -8214,23 +7903,6 @@ calibrar</string>
   <tabstop>pushButton_hv_on</tabstop>
   <tabstop>pushButton_hv_off</tabstop>
   <tabstop>pushButton_hv_estado</tabstop>
-  <tabstop>textBrowser_triple_ventana</tabstop>
-  <tabstop>textBrowser_hv</tabstop>
-  <tabstop>textBrowser_energia</tabstop>
-  <tabstop>textBrowser_posicion_X</tabstop>
-  <tabstop>textBrowser_posicion_Y</tabstop>
-  <tabstop>textBrowser_tiempos_cabezal</tabstop>
-  <tabstop>textBrowser_tiempos_Inter_cabezal</tabstop>
-  <tabstop>pushButton_triple_ventana</tabstop>
-  <tabstop>pushButton_hv</tabstop>
-  <tabstop>pushButton_energia</tabstop>
-  <tabstop>pushButton_posicion_X</tabstop>
-  <tabstop>pushButton_posicion_Y</tabstop>
-  <tabstop>pushButton_tiempos_cabezal</tabstop>
-  <tabstop>pushButton_tiempos_cabezal_2</tabstop>
-  <tabstop>lineEdit_limiteinferior</tabstop>
-  <tabstop>pushButton_obtener_ini</tabstop>
-  <tabstop>comboBox_head_mode_select_graph</tabstop>
   <tabstop>tabWidget_mca</tabstop>
   <tabstop>comboBox_head_select_graph</tabstop>
   <tabstop>checkBox_mca_1</tabstop>
@@ -8240,7 +7912,6 @@ calibrar</string>
   <tabstop>checkBox_mca_5</tabstop>
   <tabstop>checkBox_mca_6</tabstop>
   <tabstop>checkBox_espectro_calibrado</tabstop>
-  <tabstop>comboBox_adquire_mode</tabstop>
   <tabstop>pushButton_select_pmt</tabstop>
   <tabstop>checkBox_centroid</tabstop>
   <tabstop>pushButton_adquirir</tabstop>

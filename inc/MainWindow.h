@@ -76,9 +76,12 @@
 #define Cab4 "/dev/UART_Cab4"
 #define Cab5 "/dev/UART_Cab5"
 #define Cab6 "/dev/UART_Cab6"
-#define Cab "/dev/UART_Cab"
+#define Cab  "/dev/UART_Cab"
 #define Coin "/dev/UART_Coin"
 
+#define icon_notok      ":/qss_icons/rc/ic_cancel.png"
+#define icon_ok         ":/qss_icons/rc/ic_check_circle.png"
+#define icon_loading    ":/qss_icons/rc/cargando2.gif"
 #define CANTIDAD_ELEMENTOS_PLANAR 97
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
 
@@ -178,14 +181,10 @@ private slots:
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
     void setAdvanceCoinMode(int index);
-    void setHeadModeConfig(int index);
-    void setHeadModeGraph(int index);
     void setAdquireMode(int index);
     void setTabMode(int index);
-    void setTabHead(int index);
     void setTabLog(int index);
     void syncHeadComboBoxToMCA(int index);
-    void syncHeadModeComboBoxToMCA(int index);
     void syncCheckBoxHead1ToMCA(bool check);
     void syncCheckBoxHead2ToMCA(bool check);
     void syncCheckBoxHead3ToMCA(bool check);
@@ -193,7 +192,6 @@ private slots:
     void syncCheckBoxHead5ToMCA(bool check);
     void syncCheckBoxHead6ToMCA(bool check);
     void syncHeadComboBoxToConfig(int index);
-    void syncHeadModeComboBoxToConfig(int index);
     void syncCheckBoxHead1ToConfig(bool check);
     void syncCheckBoxHead2ToConfig(bool check);
     void syncCheckBoxHead3ToConfig(bool check);
@@ -208,20 +206,12 @@ private slots:
     void on_pushButton_FPGA_4_clicked();
 
     /* Buttons */
-    void on_pushButton_triple_ventana_clicked();
-    void on_pushButton_hv_clicked();
-    void on_pushButton_energia_clicked();
-    void on_pushButton_posicion_X_clicked();
-    void on_pushButton_posicion_Y_clicked();
-    void on_pushButton_obtener_ini_clicked();
-    void on_pushButton_tiempos_cabezal_clicked();
     void on_pushButton_initialize_clicked();
     void on_pushButton_configure_clicked();
     void on_pushButton_hv_set_clicked();
     void on_pushButton_hv_on_clicked();
     void on_pushButton_hv_off_clicked();
     void on_pushButton_hv_estado_clicked();
-    //void on_pushButton_adquirir_toggled(bool checked);
     void on_pushButton_select_pmt_clicked();
     void on_pushButton_hv_configure_clicked();
     void on_pushButton_l_5_clicked();
@@ -242,7 +232,6 @@ private slots:
 
 
     /* AutoCalib */
-//    void on_pushButton_clicked();
     void on_pb_Autocalib_toggled(bool checked);
     void on_pb_Autocalib_Tiempos_toggled(bool checked);
     void on_pb_Autocalib_Tiempos_Debug_clicked();
@@ -274,10 +263,9 @@ private slots:
     void on_pushButton_Arch_count_skimming_clicked();
     void on_pushButton_INTERFILES_2_clicked();
     void on_pushButton_INTERFILES_3_clicked();
-    void on_checkBox_MLEM_clicked();//bool checked);
-    void on_checkBox_Backprojection_clicked();//bool checked);
+    void on_checkBox_MLEM_clicked();
+    void on_checkBox_Backprojection_clicked();
     void on_pushButton_6_clicked();
-    void on_comboBox_head_mode_select_config_currentIndexChanged(int index);
 
     /* CUIPET */
     void on_pushButton_aqd_file_open_clicked();
@@ -287,8 +275,6 @@ private slots:
     void on_parser_coincidencia_clicked();
 
     void on_pushButton_select_pmt_2_clicked();
-
-    void on_pushButton_tiempos_cabezal_2_clicked();
 
     void on_comboBox_head_mode_select_graph_2_currentIndexChanged(int index);
 
@@ -320,32 +306,6 @@ private slots:
 
     void updateCaption();
 
-    void on_checkBox_c_3_toggled(bool checked);
-
-    void on_checkBox_c_6_toggled(bool checked);
-
-    void on_checkBox_c_5_toggled(bool checked);
-
-    void on_checkBox_c_4_toggled(bool checked);
-
-    void on_checkBox_c_2_toggled(bool checked);
-
-    void on_checkBox_c_1_toggled(bool checked);
-
-//    void on_comboBox_head_select_graph_currentIndexChanged(int index);
-
-//    void on_checkBox_mca_1_toggled(bool checked);
-
-//    void on_checkBox_mca_2_toggled(bool checked);
-
-//    void on_checkBox_mca_3_toggled(bool checked);
-
-//    void on_checkBox_mca_4_toggled(bool checked);
-
-//    void on_checkBox_mca_5_toggled(bool checked);
-
-//    void on_checkBox_mca_6_toggled(bool checked);
-
     void on_tabWidget_mca_currentChanged(int index);
 
     void on_pushButton_Encendido_1_toggled(bool checked);
@@ -368,9 +328,7 @@ private slots:
 
     void on_pushButton_FPGA_3_clicked();
 
-    void on_comboBox_FPGA_Cab_currentIndexChanged();//int index);
-
-//    void on_comboBox_FPGA_DISP_currentIndexChanged(int index);
+    void on_comboBox_FPGA_Cab_currentIndexChanged(int index);
 
     void on_cb_Path_alternativo_adq_toggled(bool checked);
 
@@ -378,33 +336,56 @@ private slots:
 
     void on_pushButton_FPGA_2_clicked();
 
-    void on_comboBox_FPGA_DISP_activated();//int index);
+    void on_comboBox_FPGA_DISP_activated(int index);
 
     void on_pb_Autocalib_Tiempos_Reset_clicked();
 
 private:
-    void connectSlots();
     QString openConfigurationFile();
     QString openLogFile();
     QString openDirectory();
-    bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
-    void getPaths();
-    int parseConfigurationFile(bool mode, QString head="");
-    QStringList availablePortsName();
-    QList<int> getCheckedHeads();
-    QString port_name;
-    string getLocalDateAndTime();
-    void writeFooterAndHeaderDebug(bool header);
     QString getLogFileName(QString main="");
-    void writeLogFile(QString log_text, QString main="");
-    void writeDebugToStdOutLogFile(QString main="");
-    int writePreferencesFile(QString pref, QString filename, bool force=false);
-    void getElapsedTime();
-    void getHeadStatus(int head_index);
     QString getHead(string tab);
+    QString getMCA(string head, string function, bool multimode, int channels, string pmt="0");
+    QString getMultiMCA(QString head);
+    QString getHeadMCA(QString head);
+    QString setHV(string head, string hv_value, string pmt);
+    QString setHV(string head, string hv_value);
+    QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
+    QString setTime(string head, double time_value, string pmt);
+    QString getPSOCAlta(QLineEdit *line_edit);
+    bool fileExists(QString path);
+    bool resetHeads();
+    bool resetHead(QString Cabezal);
+    bool resetPMTs();
+    bool copyRecursively(const QString &srcFilePath,const QString &tgtFilePath);
+    struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
+    size_t sendString(string msg, string end);
+    string getEstadoCabezal(int head);
+    string getCoincidenceAdvanceModeDataStream();
+    string getHVValue(QLineEdit *line_edit, int value=0);
+    string readString(char delimeter='\r');
+    string readBufferString(int buffer_size);
     string initHead(int head);
     string initSP3(int head);
-    struct Pico_espectro Buscar_Pico(double* Canales, int num_canales);
+    string getLocalDateAndTime();
+    int getPMT(QLineEdit *line_edit);
+    int parseConfigurationFile(bool mode, QString head="");
+    int writePreferencesFile(QString pref, QString filename, bool force=false);
+    int setPSOCDataStream(string head, string size_received, string function, QString psoc_value="");
+    temp_code getTemperatureCode(double temperature);
+    QVector<int> getCustomPlotParameters();
+    QVector<double> getValuesFromFiles(QString filename, bool hv=false);
+    QStringList getLogFromFiles(QString filename, QRegExp rx, string parser);
+    QStringList availablePortsName();
+    QList<int> getCheckedHeads();
+    void writeFooterAndHeaderDebug(bool header);
+    void writeLogFile(QString log_text, QString main="");
+    void writeDebugToStdOutLogFile(QString main="");
+    void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
+    void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
+    void getElapsedTime();
+    void getHeadStatus(int head_index);
     void setCalibrationTables(int head);
     void setInitialConfigurations();
     void setPreferencesConfiguration();
@@ -415,51 +396,19 @@ private:
     void setButtonState(bool state, QPushButton * button, bool disable=false);
     void setButtonAdquireState(bool state, bool disable=false);
     void setButtonCalibState(bool state, bool disable=false);
+
     void setButtonCalibTiemposState(bool state, bool disable=false);
-    //void setButtonVerTiemposState(bool state, bool disable=false);
-    //void setButtonConnectState(bool state, bool disable=false);
+
     void setButtonLoggerState(bool state, bool disable=false);
-    string readString(char delimeter='\r');
-    string readBufferString(int buffer_size);
-    size_t sendString(string msg, string end);
     void manageHeadCheckBox(string tab, bool show);
-    void manageHeadComboBox(string tab);//, bool show);
-    QString getMCA(string head, string function, bool multimode, int channels, string pmt="0");
-    QString getMultiMCA(QString head);
-    QString getHeadMCA(QString head);
+    void manageHeadComboBox(string tab);
     void setMCAEDataStream(string head, string function, string pmt, string mca_function, int bytes_mca=0, string hv_value="");
     void setMCAEDataStream(string tab, string function, string pmt, string mca_function, double time);
     void setMCAEDataStream(string tab, string calib_function, QVector<double> table);
     void setMCAEDataStream(string coin_function, string data_one, string data_two, bool time);
     void setMCAEDataStream(string head, bool coin=false);
-    int setPSOCDataStream(string head, string size_received, string function, QString psoc_value="");
-    void setPMTCustomPlotEnvironment(QList<QString> qlist);
-    void setPMTCalibCustomPlotEnvironment(QList<int> qlist);
-    void setHeadCustomPlotEnvironment();
-    QVector<int> getCustomPlotParameters();
-    void SetQCustomPlotConfiguration(QCustomPlot *graph, int channels);
-    void SetQCustomPlotSlots(string title_pmt_str="", string title_head_str="");
-    QString setHV(string head, string hv_value, string pmt);
-    QString setHV(string head, string hv_value);
-    QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
-    QString setTime(string head, double time_value, string pmt);
-    int getPMT(QLineEdit *line_edit);
-    bool fileExists(QString path);
-    QString getPSOCAlta(QLineEdit *line_edit);
-    string getHVValue(QLineEdit *line_edit, int value=0);
-    bool resetHeads();
-    bool resetHead(QString Cabezal);
-    bool resetPMTs();//bool centroide=false);
-    void setQListElements();
-    void drawTemperatureBoard();
-    void drawAlmohada();
-    void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
-    void clearTemperatureBoard();
-    temp_code getTemperatureCode(double temperature);
-    QVector<double> getValuesFromFiles(QString filename, bool hv=false);
-    QStringList getLogFromFiles(QString filename, QRegExp rx, string parser);
+
     void setCoincidenceModeDataStream(string stream);
-    string getCoincidenceAdvanceModeDataStream();
     void initCoincidenceMode();
     void setCoincidenceModeWindowTime(bool calib=false);
     void setCalibrationMode(QString head);
@@ -470,12 +419,17 @@ private:
     void setTimeModeCoin(int mode,bool cero=false,QString head="");
     void Cabezal_On_Off(int Cabezal, bool estado);
     void Cabezales_On_Off(bool estado);
-    string getEstadoCabezal(int head);
     void UncheckHeads(void);
-
-
-
-    /* Area de prueba/testing */
+    void setQListElements();
+    void drawTemperatureBoard();
+    void drawAlmohada();
+    void setTemperatureBoard(double temp, QLabel *label_pmt, int pmt);
+    void clearTemperatureBoard();
+    void connectSlots();
+    void getPaths();
+    void setPMTCustomPlotEnvironment(QList<QString> qlist);
+    void setPMTCalibCustomPlotEnvironment(QList<int> qlist);
+    void setHeadCustomPlotEnvironment();
 
 signals:
     void sendAbortCommand(bool abort);
@@ -483,8 +437,6 @@ signals:
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
     void ToPushButtonLogger(bool toggle);
-//    void ToPushButtonCalib(bool toggle);
-//    void ToPushButtonCalibTiempos(bool toggle);
 
 private:
     Ui::MainWindow *ui;
@@ -520,7 +472,6 @@ private:
     QList<QString> pmt_selected_list;
     QList<QString> pmt_selected_list_autocalib;
     QVector<string> logTemp_values,logRate_values;
-  //  QList<QPushButton*> pmt_button_table;
     int adquire_mode;
     bool debug;
     bool init;
@@ -538,7 +489,6 @@ private:
 
     /* Programcion JTAG */
     const QString PMT_posJTAG[48]= {"7","5","3","1","89","91","93","95","15","13","11","9","81","83","85","87","23","21","19","17","73","75","77","79","31","29","27","25","65","67","69","71","39","37","35","33","57","59","61","63","47","45","43","41","49","51","53","55"} ;
-    //PMT_posJTAG[48]= {4,3,2,1,45,46,47,48,8,7,6,5,41,42,43,44,12,11,10,9,37,38,39,40,16,15,14,13,33,34,35,36,20,19,18,17,29,30,31,32,24,23,22,21,25,26,27,28} ; //Posicion que ocupa cada PMT en base a conexion en la cadena JTAG
     QString path_Planar_bit;
     QString path_SP3_bit;
     QString path_Coin_bit;
@@ -555,6 +505,7 @@ private:
     QString name_Planar_bit;
     QString name_Coin_bit;
     QString name_SP3_bit;
+    QString port_name;
 
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;
@@ -571,11 +522,13 @@ private:
     QList<QString> array_PMT;
     int offset_MEM  = 0;
 
-    QMovie *movie_cargando = new QMovie("/home/ar-pet/Downloads/cargando2.gif");
+    QMovie *movie_cargando = new QMovie(icon_loading);
     QString nombre_archivo_adq;
     QString size_archivo_adq;
     bool adq_running = false;
     bool copying= false;
+
+    QString ruta_log_adquisicion="";
 
     QGraphicsScene *scene;
     /* Area de prueba/testing */
