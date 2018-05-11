@@ -31,6 +31,7 @@
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
+#include "../ui/Validate.h"
 #include "apMCAE.hpp"
 //#include "apAutoCalib.hpp"
 #include "apRecon.hpp"
@@ -172,11 +173,12 @@ private slots:
     void clearSpecHeadsGraphs();
     void connectPortArpet();
     void OffButtonCalib();
+    void AutocalibReady(bool state);
+    void AutoAdqReady(bool state);
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();
     void TimerUpdate();
-
 
     /* Slots de sincronización en el entorno gráfico */
     void setHeadMode(int index, string tab);
@@ -200,6 +202,9 @@ private slots:
     void syncCheckBoxHead6ToConfig(bool check);
     //void on_comboBox_head_select_config_currentIndexChanged(const QString &arg1);
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
+
+    /*Calibrar Cabezal Completo*/
+    void on_pb_Calibrar_Cabezal_clicked();
 
     /* FPGA */
     void on_checkBox_FPGA_2_clicked(bool checked);
@@ -228,8 +233,6 @@ private slots:
     void on_pushButton_stream_configure_mca_terminal_clicked();
     void on_pushButton_stream_configure_psoc_terminal_clicked();
     void on_pushButton_logguer_toggled(bool checked);
-
-
 
     /* AutoCalib */
     void on_pb_Autocalib_toggled(bool checked);
@@ -441,6 +444,7 @@ signals:
 private:
     Ui::MainWindow *ui;
     SetPreferences *pref;
+    Validate *validate_autocalib;
     SetPMTs *pmt_select;
     SetPMTs *pmt_select_autocalib;
     shared_ptr<MCAE> arpet;
@@ -527,6 +531,8 @@ private:
     QString size_archivo_adq;
     bool adq_running = false;
     bool copying= false;
+
+    QStringList commands_calib;
 
     QString ruta_log_adquisicion="";
 
@@ -639,6 +645,7 @@ public:
      *
      */
     int getTarget() const {return Target;}
+    void setCommandsAdquire();
 };
 
 #endif // MAINWINDOW_H

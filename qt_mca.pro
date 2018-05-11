@@ -25,7 +25,8 @@ SOURCES += src/main.cpp\
         src/apAutoCalib.cpp \
         src/apRecon.cpp \
         src/apThread.cpp \
-        src/apAutoCalibThread.cpp
+        src/apAutoCalibThread.cpp \
+    ui/Validate.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
@@ -37,7 +38,8 @@ HEADERS  += \
         inc/apAutoCalib.hpp \
         inc/apRecon.hpp \
         inc/apThread.hpp \
-        inc/apAutoCalibThread.hpp
+        inc/apAutoCalibThread.hpp \
+    ui/Validate.h
 
 LIBS += -lboost_system
 
@@ -49,7 +51,8 @@ STYLES += qdarkstyle/style.qrc \
 FORMS += \
         ui/SetPreferences.ui \
         ui/MainWindow.ui \
-        ui/SetPMTs.ui
+        ui/SetPMTs.ui \
+    ui/Validate.ui
 
 INCLUDEPATH +=/opt/armadillo/include
 LIBS +=-llapack

@@ -101,6 +101,8 @@ MainWindow::~MainWindow()
 
     delete pref;
     delete pmt_select;
+    delete pmt_select_autocalib;
+    delete validate_autocalib;
     delete ui;
 }
 /**
@@ -116,6 +118,7 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
     pmt_select_autocalib = new SetPMTs(this);
+    validate_autocalib = new Validate(this);
 
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
@@ -359,6 +362,7 @@ void MainWindow::connectSlots()
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
     connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
+    connect(calib_wr, SIGNAL(sendAutocalibReady(bool)),this,SLOT(AutocalibReady(bool)));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendHitsTiempos(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsTiempos(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
@@ -532,13 +536,22 @@ void MainWindow::checkStatusAdq(bool status)
         QPixmap image;
         image.load(icon_notok);
         cant_archivos =1;
-        ui->label_gif_3->setVisible(false);
-        ui->label_gif_4->setVisible(true);
-        ui->label_gif_4->setPixmap(image);
-        ui->label_gif_4->setScaledContents( true );
-        ui->label_gif_4->show();
 
-
+        if(calibrador->AutoCalibBackground)
+        {
+            ui->label_gif_Calib_Adq->setPixmap(image);
+            ui->label_gif_Calib_Adq->setScaledContents(true);
+            ui->label_gif_Calib_Adq->show();
+            AutoAdqReady(false);
+        }
+        else
+        {
+            ui->label_gif_3->setVisible(false);
+            ui->label_gif_4->setVisible(true);
+            ui->label_gif_4->setPixmap(image);
+            ui->label_gif_4->setScaledContents(true);
+            ui->label_gif_4->show();
+        }
 
         if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
         {
@@ -547,7 +560,6 @@ void MainWindow::checkStatusAdq(bool status)
         }
 
         return;
-
     }
 
     if(copying)
@@ -556,59 +568,47 @@ void MainWindow::checkStatusAdq(bool status)
             return;
     }
 
-        if (cant_archivos==1)
-        {
+    QString cant_arch_aux = commands_calib.at(6);
 
-            worker_adq->requestAdquirir();
-            worker_adq->setCantArchivos(cant_archivos);
-            cant_archivos++;
+    if (cant_archivos==1)
+    {
 
+        worker_adq->requestAdquirir();
+        worker_adq->setCantArchivos(cant_archivos);
+        cant_archivos++;
+    }
+    else if(cant_arch_aux.toInt()>cant_archivos){
 
-        }
+        copying=true;
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
 
-        else if(ui->lineEdit_aqd_cant_archivos->text().toInt()>=cant_archivos){
+        worker_adq->setCantArchivos(cant_archivos);
 
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        worker_copy->setCantArchivos(cant_archivos-1);
 
+        worker_copy->requestMoveToServer();
+        worker_adq->requestAdquirir();
+        cant_archivos++;
+    }else{
+        usleep(500);
 
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+        worker_copy->setCantArchivos(cant_archivos-1);
 
-            copying=true;
-            worker_adq->abort();
-            thread_adq->exit(0);
-            usleep(500);
+        worker_copy->requestMoveToServer();
+        copying=true;
 
-            worker_adq->setCantArchivos(cant_archivos);
-
-            worker_copy->abort();
-            thread_copy->exit(0);
-            usleep(5000);
-            worker_copy->setCantArchivos(cant_archivos-1);
-
-            worker_copy->requestMoveToServer();
-            worker_adq->requestAdquirir();
-            cant_archivos++;
-
-
-        }else{
-            usleep(500);
-
-
-
-            worker_copy->abort();
-            thread_copy->exit(0);
-            usleep(5000);
-            worker_copy->setCantArchivos(cant_archivos-1);
-
-            worker_copy->requestMoveToServer();
-            copying=true;
-
-            //worker_copy->requestMoveToServer();
-            adq_running = false;
-            cant_archivos =1;
-        }
-        return;
-
-
-
+        adq_running = false;
+        cant_archivos =1;
+    }
+    return;
 
 }
 
@@ -3811,6 +3811,7 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     ui->pb_Autocalib->update();
 }
 
+
 void MainWindow::setButtonCalibTiemposState(bool state, bool disable)
 {
     QString qt_text;
@@ -4888,7 +4889,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
             for(int i = 0;  i< qlist.length() ; i++ )
             {
                 checked_PMTs.append(qlist[i].toInt());
-                cout<<checked_PMTs[i]<<endl;
+                //cout<<checked_PMTs[i]<<endl;
             }
             if(qlist.length() == 0)
             {
@@ -4920,12 +4921,13 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
         calibrador->setCab_List(checked_Cab);
 
         calibrador->setMode_AutoCalibTiempos(false);
+        calibrador->setAutoCalibBackground(false);
 
         arpet->portDisconnect();
 
         calib_wr->abort();
         calib_th->wait();
-	usleep(500);
+        usleep(500);
         calib_wr->requestCalib();
 
     }
@@ -5196,6 +5198,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
 
             calibrador->setTiempo_adq(Tiempo_adq.toInt());
             calibrador->setMode_AutoCalibTiempos(true);
+            calibrador->setAutoCalibBackground(false);
 
             calib_wr->abort();
             calib_th->wait();
@@ -6423,9 +6426,7 @@ void MainWindow::on_pushButton_p_51_clicked()
             throw exception_Cabezal_Apagado;
         }
         for(int i=0;i < pmt_selected_list.length();i++)
-        {
-            q_msg =setHV(head.toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
-        }
+            q_msg =setHV(head.toStdString(),QString::number(DINODO_MAX).toStdString(),pmt_selected_list.at(i).toStdString());
         setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
         ui->label_data_output->setText("| Canal configurado en todos los PMT: 350 |");
     }
@@ -7334,9 +7335,8 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 {
     error_code error_code;
     string msg;
-    QString psoc_alta;
     QString psoc_alta_Tabla;
-    static QStringList commands;
+    //static QStringList commands;
     QString NombredeArchivo;
     QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
     arpet->portDisconnect();
@@ -7348,16 +7348,20 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
   //  Cabezales_On_Off(checked);
 
+    if(calibrador->AutoCalibBackground){
+        QMessageBox::critical(this,tr("Error"),tr("Se está corriendo rutina automática de Calibración."));
+        return;
+    }
+
     QProcess killall;
     killall.waitForStarted();
     killall.execute("pkill recvRawEth");
     killall.waitForFinished(1000);
     cout<<killall.readAll().toStdString()<<endl;
 
-
     if (checked){
 
-        commands.clear();
+        commands_calib.clear();
         cant_archivos=1;
         cant_archivos_copiados=0;
         /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
@@ -7385,7 +7389,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             QMessageBox::critical(this,tr("Error"),tr("Se debe definir un tamaño de archivo de adquisición."));
             return;
         }else{
-            commands.append(ui->lineEdit_aqd_file_size->text());
+            commands_calib.append(ui->lineEdit_aqd_file_size->text());
             size_archivo_adq = ui->lineEdit_aqd_file_size->text();
 
         }
@@ -7394,7 +7398,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 QMessageBox::critical(this,tr("Error"),tr("Se debe definir una ruta específica si se definió ."));
                 return;
             }else{
-                commands.append(ui->lineEdit_aqd_path_file->text());
+                commands_calib.append(ui->lineEdit_aqd_path_file->text());
                 //nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
                 if(ui->comboBox_aqd_mode->currentIndex()==1){
                     NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
@@ -7407,14 +7411,14 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             }
         }else{
             if(ui->comboBox_aqd_mode->currentIndex()==1){
-                commands.append(path_adq_Calib);
+                commands_calib.append(path_adq_Calib);
                 //nombre_archivo_adq = path_adq_Calib;
                 NombredeArchivo="acquire_calib_"+ui->cb_Calib_Cab->currentText();
                 Cabezales.append(ui->cb_Calib_Cab->currentText().toInt());
 
 
             }else{
-                commands.append(path_adq_Coin);
+                commands_calib.append(path_adq_Coin);
                 //nombre_archivo_adq = path_adq_Coin;
                 NombredeArchivo="acquire_coin";
                 Cabezales=Estado_Cabezales;
@@ -7427,7 +7431,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
         ui->progressBar->setRange(0,size_archivo_adq.toInt());
 
-        commands.append(NombredeArchivo);
+        commands_calib.append(NombredeArchivo);
         nombre_archivo_adq =  NombredeArchivo ;
         worker_adq->abort();
         thread_adq->exit(0);
@@ -7478,35 +7482,41 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
                 log.append("[CAB-"+QString::number(head_index)+"]\t");
                 log.append("[HV]\t");
-                log.append("[EN]\t");
-                log.append("[XPOS]\t");
-                log.append("[YPOS]\t");
-                log.append("[TIME]\t");
+                if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                    log.append("[EN]\t");
+                    log.append("[XPOS]\t");
+                    log.append("[YPOS]\t");
+                    log.append("[TIME]\t");
+                }
                 log.append("\n");
 
                 for (int j=0;j<PMTs;j++){
                     log.append(QString::number(j)+"\t");
                     log.append(QString::number(hvtable_values[head_index-1][j])+"\t");
-                    log.append(QString::number(Matrix_coefenerg_values[head_index-1][j])+"\t");
-                    log.append(QString::number(Matrix_coefx_values[head_index-1][j])+"\t");
-                    log.append(QString::number(Matrix_coefy_values[head_index-1][j])+"\t");
-                    log.append(QString::number(Matrix_coefT_values[head_index-1][j])+"\t");
+                    if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                        log.append(QString::number(Matrix_coefenerg_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefx_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefy_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefT_values[head_index-1][j])+"\t");
+                    }
                     log.append("\n");
 
                 }
 
                 log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head_index-1])+"\n");
 
-                log.append("[VENTANAS-ENERGIA]\n");
-                //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
-                log.append("Vent. Inf.: "+QString::number(Matrix_coefest_values[head_index-1][0])+"-"
-                        +QString::number(Matrix_coefest_values[head_index-1][1])+"\n");
 
-                log.append("Vent. Med.: "+QString::number(Matrix_coefest_values[head_index-1][2])+"-"
-                        +QString::number(Matrix_coefest_values[head_index-1][3])+"\n");
-                log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
-                        +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
+                if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                    log.append("[VENTANAS-ENERGIA]\n");
+                    //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
+                    log.append("Vent. Inf.: "+QString::number(Matrix_coefest_values[head_index-1][0])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][1])+"\n");
 
+                    log.append("Vent. Med.: "+QString::number(Matrix_coefest_values[head_index-1][2])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][3])+"\n");
+                    log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
+                }
 
 
 
@@ -7543,7 +7553,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
                 usleep(500);
                 msg = readString();
-                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
                 usleep(500);
 
                 setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
@@ -7554,7 +7563,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 msg = readString(CHAR_LF);
 
                 usleep(500);
-                //hv_status_table[head_index-1]->setText(psoc_alta);
 
                 setCalibrationTables(head_index);
 
@@ -7570,14 +7578,15 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             }
         }
 
-        log.append("[TIEMPOS-INTER-CAB]\n");
-        log.append("CAB1: "+QString::number(coefTInter_values[0])+"\n");
-        log.append("CAB2: "+QString::number(coefTInter_values[1])+"\n");
-        log.append("CAB3: "+QString::number(coefTInter_values[2])+"\n");
-        log.append("CAB4: "+QString::number(coefTInter_values[3])+"\n");
-        log.append("CAB5: "+QString::number(coefTInter_values[4])+"\n");
-        log.append("CAB6: "+QString::number(coefTInter_values[5])+"\n");
-
+        if(ui->comboBox_aqd_mode->currentIndex()!=1){
+            log.append("[TIEMPOS-INTER-CAB]\n");
+            log.append("CAB1: "+QString::number(coefTInter_values[0])+"\n");
+            log.append("CAB2: "+QString::number(coefTInter_values[1])+"\n");
+            log.append("CAB3: "+QString::number(coefTInter_values[2])+"\n");
+            log.append("CAB4: "+QString::number(coefTInter_values[3])+"\n");
+            log.append("CAB5: "+QString::number(coefTInter_values[4])+"\n");
+            log.append("CAB6: "+QString::number(coefTInter_values[5])+"\n");
+        }
         //head = ui->comboBox_head_select_calib->currentText();
 
 
@@ -7599,20 +7608,20 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
         logger.write( log.toUtf8());
         logger.close();
-        commands.append(logFileAdq);
+        commands_calib.append(logFileAdq);
 
-        commands.append(QDate::currentDate().toString("yyyy-MM-dd"));
-        commands.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
-        commands.append(ui->lineEdit_aqd_cant_archivos->text());
-        commands.append(ui->lineEdit_Titulo_Medicion->text());
+        commands_calib.append(QDate::currentDate().toString("yyyy-MM-dd"));
+        commands_calib.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
+        commands_calib.append(ui->lineEdit_aqd_cant_archivos->text());
+        commands_calib.append(ui->lineEdit_Titulo_Medicion->text());
         if( ui->cb_Path_alternativo_adq->isChecked()){
-            commands.append(" ");
+            commands_calib.append(" ");
         }else{
-            commands.append("Registrar");
+            commands_calib.append("Registrar");
         }
-        ruta_log_adquisicion = commands.at(1) + "/" + commands.at(4) + "/" + logFileAdq;
-        worker_adq->setCommands(commands);
-        worker_copy->setCommands(commands);
+        ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
+        worker_adq->setCommands(commands_calib);
+        worker_copy->setCommands(commands_calib);
 
         checkStatusAdq(true);
         adq_running = true;
@@ -7824,10 +7833,6 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
         ui->label_gif_2->show();
     }
     return;
-
-
-
-
 }
 /**
  * @brief MainWindow::Mensaje_Grabar_FPGA
@@ -8158,14 +8163,13 @@ void MainWindow::checkStatusMoveToServer(bool status){
     //adq_running = false;
 
     cant_archivos_copiados = cant_archivos_copiados + 1;
-    int archivos = ui->lineEdit_aqd_cant_archivos->text().toInt() - cant_archivos_copiados;
+    QString cant_arch_aux = commands_calib.at(6);
+    int archivos = cant_arch_aux.toInt() - cant_archivos_copiados;
     QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
     ui->label_cant_archivos->setText(mensaje);
     qApp->processEvents();
 
     copying=false;
-
-
 
     if (!status){
         worker_adq->abort();
@@ -8178,14 +8182,6 @@ void MainWindow::checkStatusMoveToServer(bool status){
         usleep(5000);
         image.load(icon_notok);
 
-         ui->label_gif_3->setVisible(false);
-         ui->label_gif_4->setVisible(true);
-
-         ui->label_gif_4->setPixmap(image);
-         ui->label_gif_4->setScaledContents( true );
-         ui->label_gif_4->show();
-
-
          QFile logger(ruta_log_adquisicion);
          if(logger.open(QIODevice::WriteOnly | QIODevice::Append) && adq_running)
          {
@@ -8193,10 +8189,28 @@ void MainWindow::checkStatusMoveToServer(bool status){
              logger.close();
          }
          adq_running = false;
+
+         if(calibrador->AutoCalibBackground)
+         {
+            ui->label_gif_Calib_Adq->setPixmap(image);
+            ui->label_gif_Calib_Adq->setScaledContents(true);
+            ui->label_gif_Calib_Adq->show();
+            AutoAdqReady(true);
+         }
+         else
+         {
+            ui->label_gif_3->setVisible(false);
+            ui->label_gif_4->setVisible(true);
+
+            ui->label_gif_4->setPixmap(image);
+            ui->label_gif_4->setScaledContents( true );
+            ui->label_gif_4->show();
+         }
+
          return;
     }
 
-    if (ui->lineEdit_aqd_cant_archivos->text().toInt()==cant_archivos_copiados)
+    if (archivos == 0)
     {
 
         image.load(icon_ok);
@@ -8221,4 +8235,341 @@ void MainWindow::checkStatusMoveToServer(bool status){
     }
 }
 
+/**
+ * @brief MainWindow::on_pb_Calibrar_Cabezal_clicked
+ */
+void MainWindow::on_pb_Calibrar_Cabezal_clicked()
+{
+    error_code error_code;
+    QPixmap image;
+    QMessageBox messageBox;
+    QString psoc_alta_Tabla;
+    string msg;
+    QList<int> checked_PMTs;
+    QList<int> checked_Cab;
 
+    if(adq_running)
+    {
+        QMessageBox::critical(this,tr("Error"),tr("Se está adquiriendo en otra pestaña."));
+        return;
+    }
+
+    try
+    {
+
+        ui->label_gif_Calib_Config->setVisible(true);
+        ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+
+        int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
+        // Recupero el tiempo de adquisicion
+        QString Tiempo_adq = ui->Tiempo_adq_box_2->text();
+        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+        {
+            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+            messageBox.setFixedSize(500,200);
+            setIsAbortCalibFlag(false);
+            return;
+        }
+
+        /********************************************************************************************************/
+        /* CONFIGURACIÓN CABEZAL (SE PRENDE LA ALTA), LAS TABLAS PARA CONFIGURACIÓN NO IMPORTAN */
+        /********************************************************************************************************/
+
+
+            port_name=Coin;
+
+            arpet->portDisconnect();
+
+            calibrador->setPort_Name(port_name);
+            worker->setPortName(port_name);
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                setIsAbortCalibFlag(false);
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                setButtonCalibTiemposState(false);
+                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+                setIsAbortCalibFlag(false);
+                setButtonCalibTiemposState(true,true);
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+                return;
+            }
+
+            setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
+            usleep(500);
+
+            setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
+            port_name=Cab+QString::number(head);
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                image.load(icon_notok);
+        //        ui->label_gif_Calib_Config->setVisible(true);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(head).length()==0){
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                ui->label_data_output->setText("Cabezal "+QString::number(head)+ " todavía no iniciado");
+                return;
+            }
+            if(initSP3(head).length()==0){
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                ui->label_data_output->setText("PMTs no responden");
+                return;
+            }
+
+        //    ui->label_gif_Calib_Config->setVisible(true);
+            ui->label_gif_Calib_Config->setMovie(movie_cargando);
+            movie_cargando->start();
+            ui->label_gif_Calib_Config->setScaledContents(false);
+            ui->label_gif_Calib_Config->show();
+
+            qApp->processEvents();
+
+            parseConfigurationFile(true, QString::number(head));
+
+            usleep(500);
+            QString q_msg = setHV(QString::number(head).toStdString(),QString::number(LowLimit[head-1]).toStdString());
+
+            psoc_alta_Tabla = QString::number(AT);
+
+            usleep(500);
+
+            setPSOCDataStream(QString::number(head).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            usleep(500);
+            msg = readString();
+            usleep(500);
+
+            setPSOCDataStream(QString::number(head).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString(CHAR_LF);
+
+            usleep(500);
+
+            image.load(icon_ok);
+            ui->label_gif_Calib_Config->setPixmap(image);
+            ui->label_gif_Calib_Config->setScaledContents(true);
+            ui->label_gif_Calib_Config->show();
+
+            qApp->processEvents();
+
+        /*************/
+        /* AUTOCALIB */
+        /*************/
+
+            // Preparo PMTs para AutoCalib
+            for(int i = 0;  i< PMTs ; i++ )
+                checked_PMTs.append(i+1);
+            calibrador->setPMT_List(checked_PMTs);
+
+            calibrador->setTiempo_adq(Tiempo_adq.toInt());
+            checked_Cab.append(head);
+            calibrador->setCab_List(checked_Cab);
+
+            calibrador->setMode_AutoCalibTiempos(false);
+            calibrador->setAutoCalibBackground(true);
+
+            arpet->portDisconnect();
+
+            ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
+            movie_cargando->start();
+            ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
+            ui->label_gif_Calib_Calib_Gruesa->show();
+
+            qApp->processEvents();
+
+            calib_wr->abort();
+            calib_th->wait();
+            usleep(500);
+            calib_wr->requestCalib();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
+        calibrador->setAutoCalibBackground(false);
+    }
+
+}
+
+void MainWindow::AutocalibReady(bool state)
+{
+    QPixmap image;
+    QStringList commands;
+
+    ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+    ui->label_gif_Calib_Adq->setVisible(true);
+
+    emit sendCalibAbortCommand(true);
+
+    if(!state)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+        ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+        ui->label_gif_Calib_Calib_Gruesa->show();
+
+        ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
+        calibrador->setAutoCalibBackground(false);
+        return;
+    }
+
+    validate_autocalib->PlotHits(calibrador->getHitsMCA(),calibrador->getChannels());
+
+    int ret = validate_autocalib->exec();
+
+    if(ret == QDialog::Rejected)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+        ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+        ui->label_gif_Calib_Calib_Gruesa->show();
+
+        ui->label_data_output->setText("Se rechazó la Calibración Gruesa");
+        calibrador->setAutoCalibBackground(false);
+        return;
+    }
+
+    image.load(icon_ok);
+    ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+    ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+    ui->label_gif_Calib_Calib_Gruesa->show();
+
+    qApp->processEvents();
+
+    ui->label_gif_Calib_Adq->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Calib_Adq->setScaledContents(false);
+    ui->label_gif_Calib_Adq->show();
+
+    qApp->processEvents();
+
+    setCommandsAdquire();
+    cout<<"Acá empezaría la adquisición"<<endl;
+
+}
+
+void MainWindow::setCommandsAdquire()
+{
+    QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
+    QString log;
+    QString logFileAdq;
+
+    // commands Parametros:     1er valor Cantidad de MB de medicion
+    //                          2do valor Path Coincidencia/Calibracion
+    //                          3er valor Nombre de Archivo
+    //                          4to nombre de log
+    //                          5to valor Fecha formato yyyy-MM-dd
+    //                          6to valor Fecha formato yyyy-MM-dd-hh-mm
+    //                          7to valor cantidad de archivos
+    //                          8vo titulo de medicion
+    //                          9no registra o no la medicion segun path alternativo
+
+    int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
+
+    commands_calib.clear();
+    commands_calib.append("1024");
+    commands_calib.append(path_adq_Calib);
+    QString NombredeArchivo="acquire_calib_"+ui->comboBox_head_select_graph_4->currentText();
+    commands_calib.append(NombredeArchivo);
+
+    QFile logger("./LOG_Adquisicion_"+time+".txt");
+    logFileAdq = "./LOG_Adquisicion_"+time+".txt";
+    logger.open(QIODevice::WriteOnly | QIODevice::Append);
+    QString titulo = "Calibración Cabezal "+ui->comboBox_head_select_graph_4->currentText()+"\n";
+    log.append(titulo);
+    log.append("Esta Calibración se hizo por medio de la rutina automática.\n");
+
+    log.append("[CAB-"+QString::number(head)+"]\t");
+    log.append("[HV]");
+    log.append("\n");
+
+    for (int j=0;j<PMTs;j++){
+        log.append(QString::number(j)+"\t");
+        log.append(QString::number(hvtable_values[head-1][j])+"\t");
+        log.append("\n");
+    }
+
+    log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head-1])+"\n");
+
+    logger.write( log.toUtf8());
+    logger.close();
+    commands_calib.append(logFileAdq);
+
+    commands_calib.append(QDate::currentDate().toString("yyyy-MM-dd"));
+    commands_calib.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
+    commands_calib.append("1");
+    commands_calib.append(titulo);
+    commands_calib.append("Registrar");
+
+    ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
+    worker_adq->setCommands(commands_calib);
+    worker_copy->setCommands(commands_calib);
+
+    checkStatusAdq(true);
+    adq_running = true;
+}
+
+void MainWindow::AutoAdqReady(bool state)
+{
+    QPixmap image;
+
+    ui->label_gif_Calib_Adq->setVisible(true);
+    ui->label_gif_Calib_Fina->setVisible(true);
+
+    if(!state)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Adq->setPixmap(image);
+        ui->label_gif_Calib_Adq->setScaledContents(true);
+        ui->label_gif_Calib_Adq->show();
+
+        ui->label_data_output->setText("Error en Adquisición");
+        calibrador->setAutoCalibBackground(false);
+        return;
+    }
+
+    image.load(icon_ok);
+    ui->label_gif_Calib_Adq->setPixmap(image);
+    ui->label_gif_Calib_Adq->setScaledContents(true);
+    ui->label_gif_Calib_Adq->show();
+
+    qApp->processEvents();
+
+    ui->label_gif_Calib_Fina->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Calib_Fina->setScaledContents(false);
+    ui->label_gif_Calib_Fina->show();
+
+    qApp->processEvents();
+}

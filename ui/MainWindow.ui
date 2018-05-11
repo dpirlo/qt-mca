@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>10</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -3200,7 +3200,7 @@ calibrar</string>
         </font>
        </property>
        <property name="text">
-        <string>3500</string>
+        <string>3000</string>
        </property>
       </widget>
      </widget>
@@ -3502,7 +3502,7 @@ calibrar</string>
        <rect>
         <x>30</x>
         <y>10</y>
-        <width>151</width>
+        <width>161</width>
         <height>41</height>
        </rect>
       </property>
@@ -4338,9 +4338,9 @@ calibrar</string>
      <widget class="QLabel" name="label_55">
       <property name="geometry">
        <rect>
-        <x>440</x>
+        <x>420</x>
         <y>10</y>
-        <width>171</width>
+        <width>181</width>
         <height>31</height>
        </rect>
       </property>
@@ -7803,6 +7803,250 @@ calibrar</string>
      <attribute name="title">
       <string>Configuración Rápida</string>
      </attribute>
+     <widget class="QPushButton" name="pb_Calibrar_Cabezal">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>220</y>
+        <width>131</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Calibrar</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_head_select_graph_4">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>130</y>
+        <width>51</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>3</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>4</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>5</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>6</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="label_53">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>130</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Cabezal:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_gif_Calib_Config">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>190</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_54">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>190</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Configuración cabezal</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_gif_Calib_Calib_Gruesa">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>240</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_108">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>240</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Calibración gruesa</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_gif_Calib_Adq">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>290</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_112">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>290</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Adquisición</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_gif_Calib_Fina">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>340</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_114">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>340</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Calibración fina</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="Tiempo_adq_box_2">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>170</y>
+        <width>81</width>
+        <height>33</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>20</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_116">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>170</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Tiempo Acumulacion</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QLabel" name="label_data_output">
