@@ -174,6 +174,7 @@ private slots:
     void connectPortArpet();
     void OffButtonCalib();
     void AutocalibReady(bool state);
+    void AutoAdqReady(bool state);
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();
@@ -531,6 +532,8 @@ private:
     bool adq_running = false;
     bool copying= false;
 
+    QStringList commands_calib;
+
     QString ruta_log_adquisicion="";
 
     QGraphicsScene *scene;
@@ -642,6 +645,7 @@ public:
      *
      */
     int getTarget() const {return Target;}
+    void setCommandsAdquire();
 };
 
 #endif // MAINWINDOW_H
