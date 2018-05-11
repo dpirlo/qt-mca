@@ -403,7 +403,7 @@ void Thread::getMCA()
                     error_code error_code=arpet->portConnect(Cabezal_conectado.toStdString().c_str());
                     if(debug) cout<<"error code serie: "<<error_code<<endl;
 
-                    pmt = _CabCalib==true ? "49" : "0";
+                    pmt = _CabCalib==true ? "49" : "0";           
 
                     string msg = arpet->getMCA(pmt, arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
@@ -417,9 +417,7 @@ void Thread::getMCA()
                     if (checkedHeads.length()==1){
 
                         for (int j = 0 ; j < CHANNELS ; j++) {
-
                             Hist_Double[j] = aux_hits[j];
-                            //cout<<QString::number(aux_hits[j]).toStdString()<<endl;
                         }
 
                         aux=InitBuscaPico.Buscar_Pico(Hist_Double, CHANNELS);

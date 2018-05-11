@@ -655,12 +655,14 @@ void MainWindow::clearSpecHeadsGraphs()
  */
 void MainWindow::receivedHitsMCA(QVector<double> hits, int channels, QString pmt_head, int index, bool mode)
 {
+
     if(mode)
     {
         addGraph(hits, ui->specPMTs, channels, pmt_head, qcp_pmt_parameters[index]);
     }
     else
     {
+        if (ui->checkBox_espectro_calibrado->isChecked()) channels = 1024;
         addGraph(hits, ui->specHead, channels, pmt_head, qcp_head_parameters[index]);
     }
 }
@@ -4373,11 +4375,17 @@ void MainWindow::addGraph(QVector<double> hits,  QCustomPlot *graph, int channel
 {
     channels_ui.resize(channels);
     channels_ui = arpet->getChannels();
+    QVector<double>channels_aux;
 
     graph->addGraph();
     graph->graph()->setAdaptiveSampling(true);
     graph->graph()->setName(graph_legend);
-    graph->graph()->addData(channels_ui,hits);
+    if (ui->checkBox_espectro_calibrado->isChecked()){
+        for(int i=0;i<channels;i++)
+            channels_aux.append(channels_ui.at(i)*4);
+    }else channels_aux=channels_ui;
+
+    graph->graph()->addData(channels_aux,hits);
     graph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(param[4])));
     QPen graphPen;
     graphPen.setColor(QColor(param[0], param[1], param[2]));
@@ -6539,6 +6547,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
   bool centroide = ui->checkBox_centroid->isChecked();
   bool espectro_calib = ui->checkBox_espectro_calibrado->isChecked();
 
+
   QList<int> checkedHeads;
 
     {
@@ -6551,18 +6560,13 @@ void MainWindow::on_pushButton_adquirir_clicked()
           case PMT:
               if (pmt_selected_list.isEmpty())
               {
-
-
                   writeFooterAndHeaderDebug(true);
-                  //setButtonAdquireState(false);
                   setIsAbortMCAEFlag(false);
                   if(debug) cout<<"La lista de PMTs seleccionados se encuentra vacía."<<endl;
                   QMessageBox::information(this,tr("Información"),tr("No se encuentran PMTs seleccionados para la adquisición. Seleccione al menos un PMT."));
                   emit ToPushButtonAdquirir(false);
                   mcae_wr->abort();
-                  //setButtonAdquireState(true, true);
                   writeFooterAndHeaderDebug(false);
-                  //bMutex.unlock();
                   break;
               }
 
@@ -6576,7 +6580,6 @@ void MainWindow::on_pushButton_adquirir_clicked()
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(true);
               mcae_wr->setCentroidMode(centroide);
-              //mcae_wr->abort();
               mcae_th->wait();
               mcae_wr->requestMCA();
 
@@ -6584,14 +6587,10 @@ void MainWindow::on_pushButton_adquirir_clicked()
           case CABEZAL:
 
               checkedHeads= getCheckedHeads();
-
               mcae_wr->setCheckedHeads(checkedHeads);
-
               ui->specHead->clearGraphs();
-              //setButtonAdquireState(true);
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(false);
-              //double lala = calibrador->Buscar_Pico(, 256);
               mcae_wr->setModeCabCalib(espectro_calib);
               mcae_wr->abort();
               mcae_th->wait();
