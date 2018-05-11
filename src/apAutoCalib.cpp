@@ -104,7 +104,7 @@ void AutoCalib::initCalib()
     // Loop de calibracion
     iter_actual = 0;
 
-    cout<<"Subo todos los HV a 3500 para calcular el mínimo posible e ir bajando"<<endl;
+    cout<<"Subo todos los HV a "<<DINODO_MAX<<" para calcular el mínimo posible e ir bajando"<<endl;
     for (int i = 0 ; i < PMTs_List.length() ; i++)
         setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(DINODO_MAX).toStdString(),port_name.toStdString().c_str());
     // Limpio memos
@@ -140,6 +140,13 @@ int AutoCalib::calibrar_simple()
             // Busco el pico
             struct Pico_espectro aux;
             aux = Buscar_Pico(Hist_Double[PMTs_List[i]-1], CHANNELS);
+
+            if(aux.canal_pico == -1 || aux.canal_pico > 160)
+            {
+                cout<<"PMT "<<PMTs_List[i]<<" roto (no se puede detectar pico), pico en :"<<aux.canal_pico<<endl;
+                return -1;
+            }
+
             Picos_PMT[PMTs_List[i]-1] = aux.canal_pico;
 
             //if(std::abs(aux.canal_pico - Canal_Obj) < 2)
@@ -147,18 +154,15 @@ int AutoCalib::calibrar_simple()
 
             // Suma en FWHM
             double cuentas_Totales = 0,cuentas_FWHM = 0,cuentas_FWTM = 0;
+
             for (int j = 0 ; j < CHANNELS ; j++)
-            {
               cuentas_Totales = cuentas_Totales + Hist_Double[PMTs_List[i]-1][j];
-            }
+
             for (int j = aux.limites_FWHM[0] ; j < aux.limites_FWHM[1] ; j++)
-            {
               cuentas_FWHM = cuentas_FWHM + Hist_Double[PMTs_List[i]-1][j];
-            }
+
             for (int j = aux.limites_FWTM[0] ; j < aux.limites_FWTM[1] ; j++)
-            {
               cuentas_FWTM = cuentas_FWTM + Hist_Double[PMTs_List[i]-1][j];
-            }
 
             cout<<"Pico PMT "<< PMTs_List[i] << ": " <<Picos_PMT[PMTs_List[i]-1]<<", Dinodo antual: "<<Dinodos_PMT[PMTs_List[i]-1];
             cout<<"; FWHM: "<<aux.limites_FWHM[0]<<"-"<<aux.limites_FWHM[1]<<", FWTM: "<<aux.limites_FWTM[0]<<"-"<<aux.limites_FWTM[1];
@@ -184,8 +188,6 @@ int AutoCalib::calibrar_simple()
         {
             // Comparo la posición actual con la objetivo
             // usando armadillo
-//            mat Canal_Obj_vec_arma(Canal_Obj_vec, PMTs, 1);
-//            mat Canal_Obj_dif_arma(Canal_Obj_vec, PMTs, 1);
             mat Canal_Obj_vec_arma(Pico_Obj_Estimado_vec, PMTs, 1);
             mat Canal_Obj_dif_arma(Pico_Obj_Estimado_vec, PMTs, 1);
             mat Picos_PMT_arma(Picos_PMT, PMTs, 1);
@@ -201,12 +203,9 @@ int AutoCalib::calibrar_simple()
             {
                 adentro = false;
                 for(int i = 0 ; i < PMTs_List.length() ; i++)
-                {
                     if ((PMTs_List[i]-1) == j)
-                    {
                         adentro = true;
-                    }
-                }
+
                 if (!adentro)
                 {
                     Canal_Obj_dif_arma_cuad[j] = 0;
@@ -255,29 +254,19 @@ int AutoCalib::calibrar_simple()
                                 if (std::abs(paso_dinodo[PMTs_List[j]-1]) > std::abs(MAX_MOV_DIN))
                                 {
                                     if (paso_dinodo[PMTs_List[j]-1] < 0)
-                                    {
                                         paso_dinodo[PMTs_List[j]-1] = -MAX_MOV_DIN;
-                                    }
                                     else
-                                    {
                                         paso_dinodo[PMTs_List[j]-1] = MAX_MOV_DIN;
-                                    }
                                 }
                             }
                             else
                             {
                                 if (Canal_Obj_dif_arma[PMTs_List[j]-1] > 0)
-                                {
                                     paso_dinodo[PMTs_List[j]-1] = BASE_MOV_DIN;
-                                }
                                 else if (Canal_Obj_dif_arma[PMTs_List[j]-1] < 0)
-                                {
                                     paso_dinodo[PMTs_List[j]-1] = -BASE_MOV_DIN;
-                                }
                                 else
-                                {
                                     paso_dinodo[PMTs_List[j]-1] = 0;
-                                }
                             }
                         }
                         else
@@ -297,93 +286,55 @@ int AutoCalib::calibrar_simple()
             int ind_max_dif = -1;
             double aux_maximo= 0;
             for (int i=0 ; i < Canal_Obj_dif_arma_cuad.size() ; i++)
-            {
                 if (Canal_Obj_dif_arma_cuad[i] > aux_maximo)
                 {
                     ind_max_dif = i;
                     aux_maximo = Canal_Obj_dif_arma_cuad[i];
                 }
-            }
 
             // Busco el color
             for (int i = 0 ; i < PMTs/2 ; i++)
-            {
               if (weisse[i] == ind_max_dif+1)
               {
                 cout<<"blancas.."<<endl;
                 color_tablero = weisse;
               }
-            }
+
             for (int i = 0 ; i < PMTs/2 ; i++)
-            {
               if (schwarze[i] == ind_max_dif+1)
               {
                 cout<<"negras.."<<endl;
                 color_tablero = schwarze;
               }
-            }
 
             // Recorro y modifico todos los PMT del color
             int Nuevo_Dinodo;
             if (iter_actual == 0)
-/*                for (int i = 0 ; i < PMTs_List.length() ; i++)
+            {
+                int Pico_Obj_Min = 255;
+                int Pico_Obj_Max = 0;
+                for (int i=0 ; i < PMTs_List.length() ; i++)
                 {
-                    Nuevo_Dinodo = DINODO_MAX;
-                    cout<< "Subiendo PMT "<<PMTs_List[i]<<" a "<<Nuevo_Dinodo<<endl;
-                    setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
-                }*/
-                /*if (Canal_Obj_dif_arma(PMT_mover) > 0)
-                {
-                    Nuevo_Dinodo = Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover];
-                    if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
-                    cout<< "Subiendo PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
-                    setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
-                }
-                else
-                {
-                    Nuevo_Dinodo = Dinodos_PMT[PMT_mover] - paso_dinodo[PMT_mover];
-                    if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN;
-                    cout<< "Bajando PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
-                    setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
-                }*/
-//            else
-//                if (iter_actual == 1)
-                {
-                    int Pico_Obj_Min = 255;
-                    int Pico_Obj_Max = 0;
-                    for (int i=0 ; i < PMTs_List.length() ; i++)
-                    {
-                        if (Picos_PMT[PMTs_List[i]-1] < Pico_Obj_Min)
-                            Pico_Obj_Min = Picos_PMT[PMTs_List[i]-1];
+                    if (Picos_PMT[PMTs_List[i]-1] < Pico_Obj_Min)
+                        Pico_Obj_Min = Picos_PMT[PMTs_List[i]-1];
 
-                        if (Picos_PMT[PMTs_List[i]-1] > Pico_Obj_Max)
-                            Pico_Obj_Max = Picos_PMT[PMTs_List[i]-1];
-                    }
-                    Pico_Obj_Estimado = Pico_Obj_Min + (Pico_Obj_Max-Pico_Obj_Min)/2;
-                    cout<<"Pico Objetivo Estimado = "<<Pico_Obj_Estimado<<endl;
-                    // Armo el vector de canal objetivo
-                    Pico_Obj_Estimado_vec[PMTs];
-                    fill_n(Pico_Obj_Estimado_vec, PMTs, Pico_Obj_Estimado);
+                    if (Picos_PMT[PMTs_List[i]-1] > Pico_Obj_Max)
+                        Pico_Obj_Max = Picos_PMT[PMTs_List[i]-1];
                 }
-                else
-//                    for (int i = 0 ; i < PMTs/2 ; i++)
-//                    {
-//                        int PMT_mover = color_tablero[i]-1;
-//                        if (PMTs_List.contains(PMT_mover+1))
-//                        {
-//                            Nuevo_Dinodo = Dinodos_PMT[PMT_mover] + paso_dinodo[PMT_mover];
-//                            if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
-//                            cout<< "Modificando PMT "<<PMT_mover+1<<" a "<<Nuevo_Dinodo<<endl;
-//                            setHV(QString::number(Cab_actual).toStdString(),QString::number(PMT_mover+1).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
-//                        }
-//                    }
-                    for (int i=0 ; i < PMTs_List.length() ; i++)
-                    {
-                        Nuevo_Dinodo = Dinodos_PMT[PMTs_List[i]-1] + paso_dinodo[PMTs_List[i]-1];
-                        if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
-                        cout<< "Modificando PMT "<<PMTs_List[i]<<" a "<<Nuevo_Dinodo<<endl;
-                        setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
-                    }
+                Pico_Obj_Estimado = Pico_Obj_Min + (Pico_Obj_Max-Pico_Obj_Min)/2;
+                cout<<"Pico Objetivo Estimado = "<<Pico_Obj_Estimado<<endl;
+                // Armo el vector de canal objetivo
+                Pico_Obj_Estimado_vec[PMTs];
+                fill_n(Pico_Obj_Estimado_vec, PMTs, Pico_Obj_Estimado);
+            }
+            else
+                for (int i=0 ; i < PMTs_List.length() ; i++)
+                {
+                    Nuevo_Dinodo = Dinodos_PMT[PMTs_List[i]-1] + paso_dinodo[PMTs_List[i]-1];
+                    if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
+                    cout<< "Modificando PMT "<<PMTs_List[i]<<" a "<<Nuevo_Dinodo<<endl;
+                    setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
+                }
 
             // Reset de todas las memorias del cabezal
             // Limpio memorias en SP6
@@ -401,8 +352,6 @@ int AutoCalib::calibrar_simple()
         }
         else
             PMTsEnPico = PMTs_List.length();
-//            for (int i = 0 ; i < PMTs_List.length(); i++)
-//                cout<<PMTs_List[i]<<'\t'<<Dinodos_PMT[PMTs_List[i]-1]<<endl;
     }
 
     catch (Exceptions ex)

@@ -34,7 +34,7 @@
 // Mínimo valor de Dinodo
 #define DINODO_MIN 1000
 // Máximo valor de Dinodo
-#define DINODO_MAX 3500
+#define DINODO_MAX 3000
 // Valor maximo de movimiento de canal
 #define MAX_MOV_DIN 500
 // Valor base de movimiento de canal
@@ -166,6 +166,10 @@ namespace ap {
             void setPMT_List(QList<int> checked_PMTs) {this->PMTs_List = checked_PMTs;}
             // Set de modo de AutoCalib
             void setMode_AutoCalibTiempos(bool tiempo) {this->Mode_AutoCalibTiempos = tiempo;}
+            // Set estado final de AutoCalib
+            void setAutoCalibState(bool state) {this->AutoCalibState = state;}
+            // Set estado final de AutoCalib
+            void setAutoCalibBackground(bool state) {this->AutoCalibBackground = state;}
             // Set de lista de cabezales a calibrar
             void setCab_List(QList<int> checked_Cab) {this->Cab_List = checked_Cab;}
             // Set de canal objetivo
@@ -205,6 +209,8 @@ namespace ap {
             bool visualizar_planar(void);
             QList<int> PMTs_List;
             bool Mode_AutoCalibTiempos;
+            bool AutoCalibState;
+            bool AutoCalibBackground;
             double Hist_Double[PMTs][CHANNELS];
             // Cabezal actual
             int Cab_actual;

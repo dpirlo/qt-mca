@@ -102,13 +102,14 @@ void AutoCalibThread::getCalib()
                     // Leo los hits y los paso a double
                     aux_hits = calibrador->getHitsMCA();
                     for (int j = 0 ; j < CHANNELS ; j++)
-                    {
-                      calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
-                    }
-                    emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
+                        calibrador->Hist_Double[calibrador->PMTs_List[i]-1][j] = aux_hits[j];
+
+                    if(!calibrador->AutoCalibBackground) emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
                 }
 
-                calibrador->calibrar_simple();
+                if(calibrador->calibrar_simple() == -1)
+                    emit sendAutocalibReady(false);
+
 
                 cout<<"PMT calibrados: "<<calibrador->PMTsEnPico<<endl;
 
@@ -125,19 +126,26 @@ void AutoCalibThread::getCalib()
                         // Pido MCA a cabezal
                         calibrador->getMCA(QString::number(0).toStdString(), calibrador->getFunCHead(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
 
-                        // Leo los hits y los paso a double
-                        aux_hits = calibrador->getHitsMCA();
-                        for (int j = 0 ; j < CHANNELS ; j++)
+                        if(!calibrador->AutoCalibBackground)
                         {
-                          calibrador->Hist_Double[calibrador->PMTs_List[0]-1][j] = aux_hits[j];
+                            // Leo los hits y los paso a double
+                            aux_hits = calibrador->getHitsMCA();
+                            for (int j = 0 ; j < CHANNELS ; j++)
+                            {
+                              calibrador->Hist_Double[calibrador->PMTs_List[0]-1][j] = aux_hits[j];
+                            }
+                            // Dibujo el espectro resultante del cabezal después de la calibración
+                            emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[0]), 0, false);
+                            struct Pico_espectro aux;
+                            aux = calibrador->Buscar_Pico(calibrador->Hist_Double[calibrador->PMTs_List[0]-1], CHANNELS);
+                            emit sendValuesMCACalib(calibrador->getHVMCA(), aux.canal_pico, (aux.limites_FWTM[1] - aux.limites_FWTM[0]));
                         }
-                        // Dibujo el espectro resultante del cabezal después de la calibración
-                        emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[0]), 0, false);
-                        struct Pico_espectro aux;
-                        aux = calibrador->Buscar_Pico(calibrador->Hist_Double[calibrador->PMTs_List[0]-1], CHANNELS);
-                        emit sendValuesMCACalib(calibrador->getHVMCA(), aux.canal_pico, (aux.limites_FWTM[1] - aux.limites_FWTM[0]));
                     }
-                    emit sendOffButtonCalib();
+
+                    if(calibrador->AutoCalibBackground)
+                        emit sendAutocalibReady(true);
+                    else
+                        emit sendOffButtonCalib();
                 }
 
             }

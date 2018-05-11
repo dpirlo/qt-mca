@@ -101,6 +101,8 @@ MainWindow::~MainWindow()
 
     delete pref;
     delete pmt_select;
+    delete pmt_select_autocalib;
+    delete validate_autocalib;
     delete ui;
 }
 /**
@@ -116,6 +118,7 @@ void MainWindow::setInitialConfigurations()
     pref = new SetPreferences(this);
     pmt_select = new SetPMTs(this);
     pmt_select_autocalib = new SetPMTs(this);
+    validate_autocalib = new Validate(this);
 
     // Calibrador
     calibrador = shared_ptr<AutoCalib>(new AutoCalib());
@@ -359,6 +362,7 @@ void MainWindow::connectSlots()
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
     connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
+    connect(calib_wr, SIGNAL(sendAutocalibReady(bool)),this,SLOT(AutocalibReady(bool)));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendHitsTiempos(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsTiempos(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
@@ -3809,6 +3813,7 @@ void MainWindow::setButtonCalibState(bool state, bool disable)
     ui->pb_Autocalib->update();
 }
 
+
 void MainWindow::setButtonCalibTiemposState(bool state, bool disable)
 {
     QString qt_text;
@@ -4880,7 +4885,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
             for(int i = 0;  i< qlist.length() ; i++ )
             {
                 checked_PMTs.append(qlist[i].toInt());
-                cout<<checked_PMTs[i]<<endl;
+                //cout<<checked_PMTs[i]<<endl;
             }
             if(qlist.length() == 0)
             {
@@ -4912,12 +4917,13 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
         calibrador->setCab_List(checked_Cab);
 
         calibrador->setMode_AutoCalibTiempos(false);
+        calibrador->setAutoCalibBackground(false);
 
         arpet->portDisconnect();
 
         calib_wr->abort();
         calib_th->wait();
-	usleep(500);
+        usleep(500);
         calib_wr->requestCalib();
 
     }
@@ -5188,6 +5194,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
 
             calibrador->setTiempo_adq(Tiempo_adq.toInt());
             calibrador->setMode_AutoCalibTiempos(true);
+            calibrador->setAutoCalibBackground(false);
 
             calib_wr->abort();
             calib_th->wait();
@@ -6415,9 +6422,7 @@ void MainWindow::on_pushButton_p_51_clicked()
             throw exception_Cabezal_Apagado;
         }
         for(int i=0;i < pmt_selected_list.length();i++)
-        {
-            q_msg =setHV(head.toStdString(),QString::number(3500).toStdString(),pmt_selected_list.at(i).toStdString());
-        }
+            q_msg =setHV(head.toStdString(),QString::number(DINODO_MAX).toStdString(),pmt_selected_list.at(i).toStdString());
         setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
         ui->label_data_output->setText("| Canal configurado en todos los PMT: 350 |");
     }
@@ -7335,7 +7340,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 {
     error_code error_code;
     string msg;
-    QString psoc_alta;
     QString psoc_alta_Tabla;
     static QStringList commands;
     QString NombredeArchivo;
@@ -7544,7 +7548,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
                 usleep(500);
                 msg = readString();
-                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
                 usleep(500);
 
                 setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
@@ -7555,7 +7558,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                 msg = readString(CHAR_LF);
 
                 usleep(500);
-                //hv_status_table[head_index-1]->setText(psoc_alta);
 
                 setCalibrationTables(head_index);
 
@@ -7825,10 +7827,6 @@ void MainWindow::on_pushButton_FPGA_3_clicked()
         ui->label_gif_2->show();
     }
     return;
-
-
-
-
 }
 /**
  * @brief MainWindow::Mensaje_Grabar_FPGA
@@ -8222,4 +8220,198 @@ void MainWindow::checkStatusMoveToServer(bool status){
     }
 }
 
+/**
+ * @brief MainWindow::on_pb_Calibrar_Cabezal_clicked
+ */
+void MainWindow::on_pb_Calibrar_Cabezal_clicked()
+{
+    error_code error_code;
+    QPixmap image;
+    QMessageBox messageBox;
+    QString psoc_alta_Tabla;
+    string msg;
+    QList<int> checked_PMTs;
+    QList<int> checked_Cab;
 
+    try
+    {
+
+        ui->label_gif_Calib_Config->setVisible(true);
+        ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+
+        int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
+        // Recupero el tiempo de adquisicion
+        QString Tiempo_adq = ui->Tiempo_adq_box_2->text();
+        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+        {
+            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+            messageBox.setFixedSize(500,200);
+            setIsAbortCalibFlag(false);
+            return;
+        }
+
+        /********************************************************************************************************/
+        /* CONFIGURACIÓN CABEZAL (SE PRENDE LA ALTA), LAS TABLAS PARA CONFIGURACIÓN NO IMPORTAN */
+        /********************************************************************************************************/
+
+            port_name=Cab+QString::number(head);
+            calibrador->setPort_Name((port_name));
+            worker->setPortName((port_name));
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                image.load(icon_notok);
+        //        ui->label_gif_Calib_Config->setVisible(true);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(head).length()==0){
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                ui->label_data_output->setText("Cabezal "+QString::number(head)+ " todavía no iniciado");
+                return;
+            }
+            if(initSP3(head).length()==0){
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                ui->label_data_output->setText("PMTs no responden");
+                return;
+            }
+
+        //    ui->label_gif_Calib_Config->setVisible(true);
+            ui->label_gif_Calib_Config->setMovie(movie_cargando);
+            movie_cargando->start();
+            ui->label_gif_Calib_Config->setScaledContents(false);
+            ui->label_gif_Calib_Config->show();
+
+            qApp->processEvents();
+
+            parseConfigurationFile(true, QString::number(head));
+
+            usleep(500);
+
+            psoc_alta_Tabla = QString::number(AT);
+
+            usleep(500);
+
+            setPSOCDataStream(QString::number(head).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            usleep(500);
+            msg = readString();
+            usleep(500);
+
+            setPSOCDataStream(QString::number(head).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+            sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+            msg = readString(CHAR_LF);
+
+            usleep(500);
+
+            image.load(icon_ok);
+            ui->label_gif_Calib_Config->setPixmap(image);
+            ui->label_gif_Calib_Config->setScaledContents(true);
+            ui->label_gif_Calib_Config->show();
+
+            qApp->processEvents();
+
+        /*************/
+        /* AUTOCALIB */
+        /*************/
+
+            // Preparo PMTs para AutoCalib
+            for(int i = 0;  i< PMTs ; i++ )
+                checked_PMTs.append(i+1);
+            calibrador->setPMT_List(checked_PMTs);
+
+            calibrador->setTiempo_adq(Tiempo_adq.toInt());
+            checked_Cab.append(head);
+            calibrador->setCab_List(checked_Cab);
+
+            calibrador->setMode_AutoCalibTiempos(false);
+            calibrador->setAutoCalibBackground(true);
+
+            arpet->portDisconnect();
+
+            ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
+            movie_cargando->start();
+            ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
+            ui->label_gif_Calib_Calib_Gruesa->show();
+
+            qApp->processEvents();
+
+            calib_wr->abort();
+            calib_th->wait();
+            usleep(500);
+            calib_wr->requestCalib();
+    }
+    catch(Exceptions & ex)
+    {
+        QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
+    }
+
+}
+
+void MainWindow::AutocalibReady(bool state)
+{
+    QPixmap image;
+
+    ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+    ui->label_gif_Calib_Adq->setVisible(true);
+
+    emit sendCalibAbortCommand(true);
+
+    if(!state)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+        ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+        ui->label_gif_Calib_Calib_Gruesa->show();
+
+        ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
+        return;
+    }
+
+    validate_autocalib->PlotHits(calibrador->getHitsMCA(),calibrador->getChannels());
+
+    int ret = validate_autocalib->exec();
+
+    if(ret == QDialog::Rejected)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+        ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+        ui->label_gif_Calib_Calib_Gruesa->show();
+
+        ui->label_data_output->setText("Se rechazó la Calibración Gruesa");
+        return;
+    }
+
+    image.load(icon_ok);
+    ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+    ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+    ui->label_gif_Calib_Calib_Gruesa->show();
+
+    qApp->processEvents();
+
+    ui->label_gif_Calib_Adq->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Calib_Adq->setScaledContents(false);
+    ui->label_gif_Calib_Adq->show();
+
+    qApp->processEvents();
+
+    cout<<"Acá empezaría la adquisición"<<endl;
+
+}
