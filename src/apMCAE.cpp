@@ -407,7 +407,7 @@ size_t MCAE::sendString(string msg, string end, string port_name)
 {
     portFlush();
     size_t bytes_transfered = 0;
-    cout<<msg<<endl;
+    //cout<<msg<<endl;
     try{
         string sended= msg + end;
         bytes_transfered = portWrite(&sended, port_name.c_str());

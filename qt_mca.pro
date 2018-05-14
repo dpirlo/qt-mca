@@ -26,7 +26,8 @@ SOURCES += src/main.cpp\
         src/apRecon.cpp \
         src/apThread.cpp \
         src/apAutoCalibThread.cpp \
-    ui/Validate.cpp
+        ui/Validate.cpp \
+        src/QRoundProgressBar.cpp
 
 HEADERS  += \
         inc/qcustomplot.h \
@@ -39,7 +40,8 @@ HEADERS  += \
         inc/apRecon.hpp \
         inc/apThread.hpp \
         inc/apAutoCalibThread.hpp \
-    ui/Validate.h
+        ui/Validate.h \
+        inc/QRoundProgressBar.h
 
 LIBS += -lboost_system
 

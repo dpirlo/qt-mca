@@ -203,6 +203,9 @@ void MainWindow::setInitialConfigurations()
     setHitsInit(true);
     setAdquireMode(CABEZAL);
     Estado_Cabezales.reserve(6);
+
+    ui->RoundBar_Adq->setRange(0,MAX_MB_CALIB);
+    ui->RoundBar_Adq->hide();
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -601,6 +604,18 @@ void MainWindow::checkStatusAdq(bool status)
         thread_copy->exit(0);
         usleep(5000);
         worker_copy->setCantArchivos(cant_archivos-1);
+
+        QPixmap image;
+        image.load(icon_ok);
+
+        if(calibrador->AutoCalibBackground)
+        {
+           ui->RoundBar_Adq->setVisible(false);
+           ui->label_gif_Calib_Adq->setPixmap(image);
+           ui->label_gif_Calib_Adq->setScaledContents(true);
+           ui->label_gif_Calib_Adq->show();
+           AutoAdqReady(true);
+        }
 
         worker_copy->requestMoveToServer();
         copying=true;
@@ -6428,7 +6443,6 @@ void MainWindow::on_pushButton_p_51_clicked()
         for(int i=0;i < pmt_selected_list.length();i++)
             q_msg =setHV(head.toStdString(),QString::number(DINODO_MAX).toStdString(),pmt_selected_list.at(i).toStdString());
         setHV(head.toStdString(),QString::number(LowLimit[head.toInt()-1]).toStdString());
-        ui->label_data_output->setText("| Canal configurado en todos los PMT: 350 |");
     }
     catch (Exceptions ex)
     {
@@ -6944,42 +6958,55 @@ void MainWindow::updateCaption(){
     dir.setFilter(QDir::Files | QDir::System);
     QFileInfoList list = dir.entryInfoList();
 
+    QString input, output,tasa,error;
+
     if(adq_running){
+        if(calibrador->AutoCalibBackground){
+            QProcess size_of_adq;
 
-        QString input, output,tasa,error;
+            size_of_adq.waitForStarted();
+            input= "du -h -m "+nombre_archivo_adq+".raw";
 
-        QProcess ver_tasa;
-        ver_tasa.waitForStarted();
-        ver_tasa.start("cat ./log_ETH.info");
-        ver_tasa.waitForFinished(-1);
+            size_of_adq.start(input);
+            size_of_adq.waitForFinished(10000);
+            output=(size_of_adq.readAllStandardOutput());
+            output=output.left(output.indexOf("\t"));
+            size_of_adq.close();
+            if(output.toInt() > 0 )
+                ui->RoundBar_Adq->setValue(output.toInt());
+        }
+        else{
+            QProcess ver_tasa;
+            ver_tasa.waitForStarted();
+            ver_tasa.start("cat ./log_ETH.info");
+            ver_tasa.waitForFinished(-1);
 
-        output=(ver_tasa.readAllStandardOutput());
-        tasa=output.left(output.indexOf("Tramas"));
-        if(tasa.toInt() > 0 )
-        ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
-        error=output.mid(output.indexOf("con") + 3);
-        error = error.left(error.indexOf("\n"));
-        if(!error.isEmpty())
-        ui->label_adq_error_2->setText(error);
-        ver_tasa.close();
+            output=(ver_tasa.readAllStandardOutput());
+            tasa=output.left(output.indexOf("Tramas"));
+            if(tasa.toInt() > 0 )
+            ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
+            error=output.mid(output.indexOf("con") + 3);
+            error = error.left(error.indexOf("\n"));
+            if(!error.isEmpty())
+            ui->label_adq_error_2->setText(error);
+            ver_tasa.close();
 
+            QProcess size_of_adq;
 
-        QProcess size_of_adq;
+            size_of_adq.waitForStarted();
+            input= "du -h -m "+nombre_archivo_adq+".raw";
 
-
-
-        size_of_adq.waitForStarted();
-        input= "du -h -m "+nombre_archivo_adq+".raw";
-
-        size_of_adq.start(input);
-        size_of_adq.waitForFinished(10000);
-        output=(size_of_adq.readAllStandardOutput());
-        output=output.left(output.indexOf("\t"));
-        size_of_adq.close();
-        if(output.toInt() > 0 )
-        ui->progressBar->setValue(output.toInt());
-
+            size_of_adq.start(input);
+            size_of_adq.waitForFinished(10000);
+            output=(size_of_adq.readAllStandardOutput());
+            output=output.left(output.indexOf("\t"));
+            size_of_adq.close();
+            if(output.toInt() > 0 )
+                ui->progressBar->setValue(output.toInt());
+        }
     }
+
+
 
 
 
@@ -8192,10 +8219,11 @@ void MainWindow::checkStatusMoveToServer(bool status){
 
          if(calibrador->AutoCalibBackground)
          {
+            ui->RoundBar_Adq->setVisible(false);
             ui->label_gif_Calib_Adq->setPixmap(image);
             ui->label_gif_Calib_Adq->setScaledContents(true);
             ui->label_gif_Calib_Adq->show();
-            AutoAdqReady(true);
+            CopyAdqReady(false);
          }
          else
          {
@@ -8214,16 +8242,27 @@ void MainWindow::checkStatusMoveToServer(bool status){
     {
 
         image.load(icon_ok);
-        ui->progressBar->setValue(size_archivo_adq.toInt());
-        ui->pbAdquirir->blockSignals(true);
-        ui->pbAdquirir->setChecked(false);
-        ui->pbAdquirir->blockSignals(false);
-        ui->label_gif_3->setVisible(false);
-        ui->label_gif_4->setVisible(true);
 
-        ui->label_gif_4->setPixmap(image);
-        ui->label_gif_4->setScaledContents( true );
-        ui->label_gif_4->show();
+        if(calibrador->AutoCalibBackground)
+        {
+           ui->label_gif_Copiando->setPixmap(image);
+           ui->label_gif_Copiando->setScaledContents(true);
+           ui->label_gif_Copiando->show();
+           CopyAdqReady(true);
+        }
+        else
+        {
+            ui->progressBar->setValue(size_archivo_adq.toInt());
+            ui->pbAdquirir->blockSignals(true);
+            ui->pbAdquirir->setChecked(false);
+            ui->pbAdquirir->blockSignals(false);
+            ui->label_gif_3->setVisible(false);
+            ui->label_gif_4->setVisible(true);
+
+            ui->label_gif_4->setPixmap(image);
+            ui->label_gif_4->setScaledContents( true );
+            ui->label_gif_4->show();
+        }
     }
     else
     {
@@ -8254,15 +8293,18 @@ void MainWindow::on_pb_Calibrar_Cabezal_clicked()
         return;
     }
 
+    QString Tiempo_adq = ui->Tiempo_adq_box_2->text();
+    int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
+
     try
     {
 
         ui->label_gif_Calib_Config->setVisible(true);
         ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+        ui->RoundBar_Adq->setVisible(false);
 
-        int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
         // Recupero el tiempo de adquisicion
-        QString Tiempo_adq = ui->Tiempo_adq_box_2->text();
+
         if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
         {
             messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
@@ -8275,42 +8317,14 @@ void MainWindow::on_pb_Calibrar_Cabezal_clicked()
         /* CONFIGURACIÓN CABEZAL (SE PRENDE LA ALTA), LAS TABLAS PARA CONFIGURACIÓN NO IMPORTAN */
         /********************************************************************************************************/
 
+        //    ui->label_gif_Calib_Config->setVisible(true);
+            ui->label_gif_Calib_Config->setMovie(movie_cargando);
+            movie_cargando->start();
+            ui->label_gif_Calib_Config->setScaledContents(false);
+            ui->label_gif_Calib_Config->show();
 
-            port_name=Coin;
+            qApp->processEvents();
 
-            arpet->portDisconnect();
-
-            calibrador->setPort_Name(port_name);
-            worker->setPortName(port_name);
-
-            error_code= arpet->portConnect(port_name.toStdString().c_str());
-            if (error_code.value()!=0){
-                arpet->portDisconnect();
-                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-                setIsAbortCalibFlag(false);
-                image.load(icon_notok);
-                ui->label_gif_Calib_Config->setPixmap(image);
-                ui->label_gif_Calib_Config->setScaledContents(true);
-                ui->label_gif_Calib_Config->show();
-                throw exception_Cabezal_Apagado;
-            }
-
-            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                image.load(icon_notok);
-                ui->label_gif_Calib_Config->setPixmap(image);
-                ui->label_gif_Calib_Config->setScaledContents(true);
-                ui->label_gif_Calib_Config->show();
-                return;
-            }
-
-            setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
-            usleep(500);
-
-            setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
             port_name=Cab+QString::number(head);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
@@ -8346,14 +8360,6 @@ void MainWindow::on_pb_Calibrar_Cabezal_clicked()
                 return;
             }
 
-        //    ui->label_gif_Calib_Config->setVisible(true);
-            ui->label_gif_Calib_Config->setMovie(movie_cargando);
-            movie_cargando->start();
-            ui->label_gif_Calib_Config->setScaledContents(false);
-            ui->label_gif_Calib_Config->show();
-
-            qApp->processEvents();
-
             parseConfigurationFile(true, QString::number(head));
 
             usleep(500);
@@ -8377,6 +8383,39 @@ void MainWindow::on_pb_Calibrar_Cabezal_clicked()
 
             usleep(500);
 
+            port_name=Coin;
+            arpet->portDisconnect();
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                //setIsAbortCalibFlag(false);
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                setButtonCalibTiemposState(false);
+                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+                //setIsAbortCalibFlag(false);
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+                return;
+            }
+
+            setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
+            usleep(5000);
+
+            setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
+
+            arpet->portDisconnect();
+
             image.load(icon_ok);
             ui->label_gif_Calib_Config->setPixmap(image);
             ui->label_gif_Calib_Config->setScaledContents(true);
@@ -8384,6 +8423,19 @@ void MainWindow::on_pb_Calibrar_Cabezal_clicked()
 
             qApp->processEvents();
 
+    }
+    catch(Exceptions & ex)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Config->setPixmap(image);
+        ui->label_gif_Calib_Config->setScaledContents(true);
+        ui->label_gif_Calib_Config->show();
+        QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
+        calibrador->setAutoCalibBackground(false);
+    }
+
+    try
+    {
         /*************/
         /* AUTOCALIB */
         /*************/
@@ -8467,10 +8519,7 @@ void MainWindow::AutocalibReady(bool state)
 
     qApp->processEvents();
 
-    ui->label_gif_Calib_Adq->setMovie(movie_cargando);
-    movie_cargando->start();
-    ui->label_gif_Calib_Adq->setScaledContents(false);
-    ui->label_gif_Calib_Adq->show();
+    ui->RoundBar_Adq->setVisible(true);
 
     qApp->processEvents();
 
@@ -8498,10 +8547,11 @@ void MainWindow::setCommandsAdquire()
     int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
 
     commands_calib.clear();
-    commands_calib.append("1024");
+    commands_calib.append(QString::number(MAX_MB_CALIB));
     commands_calib.append(path_adq_Calib);
     QString NombredeArchivo="acquire_calib_"+ui->comboBox_head_select_graph_4->currentText();
     commands_calib.append(NombredeArchivo);
+    nombre_archivo_adq = NombredeArchivo;
 
     QFile logger("./LOG_Adquisicion_"+time+".txt");
     logFileAdq = "./LOG_Adquisicion_"+time+".txt";
@@ -8545,6 +8595,9 @@ void MainWindow::AutoAdqReady(bool state)
     QPixmap image;
 
     ui->label_gif_Calib_Adq->setVisible(true);
+    ui->label_gif_Copiando->setVisible(true);
+
+
     ui->label_gif_Calib_Fina->setVisible(true);
 
     if(!state)
@@ -8563,6 +8616,44 @@ void MainWindow::AutoAdqReady(bool state)
     ui->label_gif_Calib_Adq->setPixmap(image);
     ui->label_gif_Calib_Adq->setScaledContents(true);
     ui->label_gif_Calib_Adq->show();
+
+    qApp->processEvents();
+
+    ui->label_gif_Copiando->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Copiando->setScaledContents(false);
+    ui->label_gif_Copiando->show();
+
+    qApp->processEvents();
+}
+
+void MainWindow::CopyAdqReady(bool state)
+{
+    QPixmap image;
+
+    ui->label_gif_Copiando->setVisible(true);
+    ui->label_gif_Calib_Fina->setVisible(true);
+
+    calibrador->setAutoCalibBackground(false);
+
+    ui->label_gif_Calib_Fina->setVisible(true);
+
+    if(!state)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Copiando->setPixmap(image);
+        ui->label_gif_Copiando->setScaledContents(true);
+        ui->label_gif_Copiando->show();
+
+        ui->label_data_output->setText("Error en Adquisición");
+        calibrador->setAutoCalibBackground(false);
+        return;
+    }
+
+    image.load(icon_ok);
+    ui->label_gif_Copiando->setPixmap(image);
+    ui->label_gif_Copiando->setScaledContents(true);
+    ui->label_gif_Copiando->show();
 
     qApp->processEvents();
 

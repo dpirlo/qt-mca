@@ -42,6 +42,7 @@
 #include <QString>
 #include <QPixmap>
 #include <QTextStream>
+#include <inc/QRoundProgressBar.h>
 
 #define MONOHEAD 0
 #define MULTIHEAD 1
@@ -86,6 +87,7 @@
 #define CANTIDAD_ELEMENTOS_PLANAR 97
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
 
+#define MAX_MB_CALIB 102//4
 
 
 
@@ -175,6 +177,7 @@ private slots:
     void OffButtonCalib();
     void AutocalibReady(bool state);
     void AutoAdqReady(bool state);
+    void CopyAdqReady(bool state);
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();
