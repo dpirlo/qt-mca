@@ -5,3 +5,4 @@ Makefile
 moc_*
 moc_*
 ui_*
+qrc_style.cpp
