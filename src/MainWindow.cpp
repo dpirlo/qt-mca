@@ -8645,9 +8645,10 @@ void MainWindow::AutoAdqReady(bool state)
         ui->label_gif_Calib_Adq->show();
 
         ui->label_data_output->setText("Error en Adquisición");
-        calibrador->setAutoCalibBackground(false);
         return;
     }
+
+    calibrador->setAutoCalibBackground(false);
 
     image.load(icon_ok);
     ui->label_gif_Calib_Adq->setVisible(true);
