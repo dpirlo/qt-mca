@@ -649,6 +649,11 @@ bool Thread::MoveToServer(){
                                 logger.close();
                             }
                         }
+
+                        if(QFile::remove("./"+commands.at(3)))
+                        {
+                            qDebug() <<"LOG eliminado";
+                        }
                     }
                     else{
                         Exceptions exception_Cabezal_Apagado("Error en la copia del log");

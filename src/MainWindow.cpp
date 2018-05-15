@@ -8317,7 +8317,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             {
                 messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
                 messageBox.setFixedSize(500,200);
-                setIsAbortCalibFlag(false);
+                setIsAbortCalibFlag(true);
                 return;
             }
 
@@ -8347,6 +8347,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 arpet->portDisconnect();
                 Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
                 throw exception_Cabezal_Apagado;
+                setIsAbortCalibFlag(true);
                 return;
             }
 
@@ -8355,7 +8356,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                setIsAbortCalibFlag(false);
+                setIsAbortCalibFlag(true);
                 ui->label_data_output->setText("Cabezal "+QString::number(head)+ " todavía no iniciado");
                 return;
             }
@@ -8364,7 +8365,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                setIsAbortCalibFlag(false);
+                setIsAbortCalibFlag(true);
                 ui->label_data_output->setText("PMTs no responden");
                 return;
             }
@@ -8399,7 +8400,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             if (error_code.value()!=0){
                 arpet->portDisconnect();
                 Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-                setIsAbortCalibFlag(false);
+                setIsAbortCalibFlag(true);
                 image.load(icon_notok);
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
@@ -8410,7 +8411,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
                 setButtonCalibTiemposState(false);
                 messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
-                setIsAbortCalibFlag(false);
+                setIsAbortCalibFlag(true);
                 image.load(icon_notok);
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
@@ -8479,12 +8480,13 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
         catch(Exceptions & ex)
         {
             QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
+            setIsAbortCalibFlag(true);
             calibrador->setAutoCalibBackground(false);
         }
     }
     else
     {
-        setIsAbortCalibFlag(false);
+        setIsAbortCalibFlag(true);
         adq_running = false;
         ui->label_gif_Calib_Config->setVisible(false);
         ui->label_gif_Calib_Calib_Gruesa->setVisible(false);
@@ -8567,7 +8569,6 @@ void MainWindow::AutocalibReady(bool state)
     qApp->processEvents();
 
     setCommandsAdquire();
-    cout<<"Acá empezaría la adquisición"<<endl;
 
 }
 
@@ -8609,7 +8610,7 @@ void MainWindow::setCommandsAdquire()
 
     for (int j=0;j<PMTs;j++){
         log.append(QString::number(j)+"\t");
-        log.append(QString::number(calibrador->Dinodos_PMT[head-1])+"\t");
+        log.append(QString::number(calibrador->Dinodos_PMT[j])+"\t");
         log.append("\n");
     }
 
@@ -8647,8 +8648,6 @@ void MainWindow::AutoAdqReady(bool state)
         ui->label_data_output->setText("Error en Adquisición");
         return;
     }
-
-    calibrador->setAutoCalibBackground(false);
 
     image.load(icon_ok);
     ui->label_gif_Calib_Adq->setVisible(true);
