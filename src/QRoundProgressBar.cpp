@@ -32,7 +32,7 @@ QRoundProgressBar::QRoundProgressBar(QWidget *parent) :
     m_dataPenWidth(1),
     m_rebuildBrush(false),
     m_format("%p%"),
-    m_decimals(1),
+    m_decimals(0),
     m_updateFlags(UF_PERCENT)
 {
 }

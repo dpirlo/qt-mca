@@ -187,12 +187,7 @@ namespace ap {
             void setVis_List(QList<int> checked_Cab) {this->Vis_List = checked_Cab;}
 
             // Set de archivos de configuración
-            void setAdq_Cab_1(string par_string) {this->adq_cab[0] = par_string;}
-            void setAdq_Cab_2(string par_string) {this->adq_cab[1] = par_string;}
-            void setAdq_Cab_3(string par_string) {this->adq_cab[2] = par_string;}
-            void setAdq_Cab_4(string par_string) {this->adq_cab[3] = par_string;}
-            void setAdq_Cab_5(string par_string) {this->adq_cab[4] = par_string;}
-            void setAdq_Cab_6(string par_string) {this->adq_cab[5] = par_string;}
+            void setAdq_Cab(string par_string,int head) {this->adq_cab[head-1] = par_string;}
             void setAdq_Coin(string par_string) {this->adq_coin = par_string;}
             void setPathSalida(QString par_string) {this->path_salida = par_string;}
             void setPathEntrada(QString par_string) {this->path_entrada = par_string;}
@@ -220,6 +215,7 @@ namespace ap {
             QString port_name;
             // Valor de los dinodos
             double Dinodos_PMT[PMTs];
+            QString path_salida;
 
         private:
             // Pedir MCA
@@ -274,7 +270,6 @@ namespace ap {
             // Archivos de adquisición
             string adq_cab[CANTIDADdEcABEZALES];
             string adq_coin;
-            QString path_salida;
             QString path_entrada;
 
             // Archivos parseados
