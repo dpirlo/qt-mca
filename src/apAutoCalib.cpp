@@ -333,8 +333,8 @@ int AutoCalib::calibrar_simple()
                 for (int i=0 ; i < PMTs_List.length() ; i++)
                 {
                     Nuevo_Dinodo = Dinodos_PMT[PMTs_List[i]-1] + paso_dinodo[PMTs_List[i]-1];
-                    Dinodos_PMT[PMTs_List[i]-1] = Nuevo_Dinodo;
                     if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
+                    Dinodos_PMT[PMTs_List[i]-1] = Nuevo_Dinodo;
                     cout<< "Modificando PMT "<<PMTs_List[i]<<" a "<<Nuevo_Dinodo<<endl;
                     setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
                 }
