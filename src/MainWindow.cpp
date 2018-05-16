@@ -5385,6 +5385,17 @@ void MainWindow::on_pushButton_2_clicked()
     if (ui->checkBox_count_skimm->checkState() == Qt::Checked) calibrador->setCount_skimming();
     if (ui->checkBox_count_skimm_2->checkState() == Qt::Checked) calibrador->setCount_skimming_total();
 
+    // Llamo a la ventana de validación para cada uno de los cabezales calibrados
+    for(int i ; i<checked_Cab.length() ; i++)
+    {
+        Validate_Cal *validacion = new Validate_Cal();
+        validacion->load_data((int) checked_Cab[i], calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta);
+        validacion->show();
+
+    }
+    return;
+
+
     // Invoco al calibracor
     calibrador->set_plotear();
     calibrador->calibrar_fina();

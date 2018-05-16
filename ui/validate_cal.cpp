@@ -65,6 +65,15 @@ void Validate_Cal::on_buttonBox_accepted()
     // listasparametros.append("*"); // El asterisco no funciona......
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    int error_flag = proceso->exitCode();
+
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo crear el archivo .zip"<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo crear el archivo .zip")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
 
     // Copio al servidor
@@ -74,6 +83,16 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_back+"cabezal_"+QString::number(cab_test)+"/Constantes/BACK/"+nombre_log_file[1]);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+
+    error_flag = proceso->exitCode();
+
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar backup al server."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar backup al server.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     // Borro todo el contenido de la carpeta
     programa = "/bin/rm";
@@ -90,6 +109,17 @@ void Validate_Cal::on_buttonBox_accepted()
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
 
+    error_flag = proceso->exitCode();
+
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo eliminar copia local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo eliminar copia local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
+
+
     // Copio los nuevos archivos
 
     programa = "/bin/cp";
@@ -99,6 +129,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     listasparametros.clear();
     // listasparametros.append("*"); // El asterisco no funciona......
@@ -106,6 +144,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     listasparametros.clear();
     // listasparametros.append("*"); // El asterisco no funciona......
@@ -113,7 +159,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
-
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     listasparametros.clear();
     // listasparametros.append("*"); // El asterisco no funciona......
@@ -121,6 +174,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
 
     listasparametros.clear();
@@ -129,6 +190,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     listasparametros.clear();
     // listasparametros.append("*"); // El asterisco no funciona......
@@ -136,6 +205,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
     listasparametros.clear();
     // listasparametros.append("*"); // El asterisco no funciona......
@@ -143,6 +220,14 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old);
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
+    error_flag = proceso->exitCode();
+    if (error_flag != 0)
+    {
+        cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+        QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+        this->~Validate_Cal();
+        return;
+    }
 
 
     // Escribo en el log
@@ -151,8 +236,6 @@ void Validate_Cal::on_buttonBox_accepted()
     QTextStream stream(&file);
     stream << nombre_log_file[1] << " ; Cabezal ; " << QString::number(cab_test) << endl;
     file.close();
-
-    cout<<"asdasdasd"<<endl;
 
     // Finalmente destruyo la ventana.
     this->~Validate_Cal();
