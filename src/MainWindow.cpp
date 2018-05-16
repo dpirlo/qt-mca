@@ -2,6 +2,7 @@
 #include "ui_MainWindow.h"
 #include "ui_SetPreferences.h"
 #include "ui_SetPMTs.h"
+#include "ui/validate_cal.hpp"
 #include <QFileInfo>
 
 /**
@@ -986,6 +987,7 @@ void MainWindow::on_actionPreferencias_triggered()
     bool stdout_pref = pref->getDebugStdOutValue();
     QString file = pref->getInitFileConfigPath();
     QString calib_path = pref->getCalibDirectoryPath();
+    parseConfigurationFile(0, "");
 
     if(ret == QDialog::Accepted)
     {
@@ -1071,6 +1073,7 @@ void MainWindow::getPreferencesSettingsFile()
     stdout_mode = qtmcasettins.value("Modo/stdout", "US").toBool();
     initfile = qtmcasettins.value("Paths/conf_set_file", "US").toString();
     root_calib_path = qtmcasettins.value("Paths/calib_set_file", "US").toString();
+
 }
 /**
  * @brief MainWindow::setPreferencesSettingsFile
@@ -3632,18 +3635,19 @@ int MainWindow::parseConfigurationFile(bool mode, QString head)
         head = getHead("config");
     }
 
-    QString root = settings.value("Paths/root", "US").toString();
+    root_config_path_posta = settings.value("Paths/root", "US").toString();
+    root_server_path_posta = settings.value("Paths/root_server", "US").toString();
     /* Parameters */
     AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
     LowLimit[head.toInt()-1] = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
     Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
-    coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
-    hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
-    coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
-    coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
-    coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
-    coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
-    coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
+    coefenerg = root_config_path_posta+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
+    hvtable = root_config_path_posta+settings.value("Cabezal"+head+"/hvtable", "US").toString();
+    coefx = root_config_path_posta+settings.value("Cabezal"+head+"/coefx", "US").toString();
+    coefy = root_config_path_posta+settings.value("Cabezal"+head+"/coefy", "US").toString();
+    coefest = root_config_path_posta+settings.value("Cabezal"+head+"/coefest", "US").toString();
+    coefT = root_config_path_posta+settings.value("Cabezal"+head+"/coefT", "US").toString();
+    coefTInter = root_config_path_posta+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
     path_Planar_bit  = settings.value("Paths/Planar_bit", "US").toString();
     path_SP3_bit     = settings.value("Paths/SP3_bit", "US").toString();
     path_adq_Calib  = settings.value("Paths/Adq_Calib", "US").toString();
@@ -5373,13 +5377,41 @@ void MainWindow::on_pushButton_2_clicked()
         messageBox.setFixedSize(500,200);
         return;
     }
+
+
+
     calibrador->setCab_List(checked_Cab);
 
     if (ui->checkBox_count_skimm->checkState() == Qt::Checked) calibrador->setCount_skimming();
     if (ui->checkBox_count_skimm_2->checkState() == Qt::Checked) calibrador->setCount_skimming_total();
 
+    // Llamo a la ventana de validación para cada uno de los cabezales calibrados
+    for(int i ; i<checked_Cab.length() ; i++)
+    {
+        Validate_Cal *validacion = new Validate_Cal();
+        validacion->load_data((int) checked_Cab[i], calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta);
+        validacion->show();
+
+    }
+    return;
+
+
     // Invoco al calibracor
+    calibrador->set_plotear();
     calibrador->calibrar_fina();
+
+
+
+    // Llamo a la ventana de validación para cada uno de los cabezales calibrados
+    for(int i ; i<checked_Cab.length() ; i++)
+    {
+        Validate_Cal *validacion = new Validate_Cal();
+        validacion->load_data((int) checked_Cab[i], calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta);
+        validacion->show();
+
+    }
+    return;
+
 }
 /**
  * @brief MainWindow::on_pushButton_triple_ventana_2_clicked
@@ -7242,18 +7274,19 @@ int MainWindow::loadCalibrationTables(QString head){
 
     /* Paths to the configuration files */
     if (QFile(initfile).exists()){
-        QString root = settings.value("Paths/root", "US").toString();
+        root_config_path_posta = settings.value("Paths/root", "US").toString();
+        root_server_path_posta = settings.value("Paths/root_server", "US").toString();
 
         AT = settings.value("Cabezal"+head+"/AT", "US").toInt();
         LowLimit[head.toInt()-1] = settings.value("Cabezal"+head+"/LowLimit", "US").toInt();
         Target = settings.value("Cabezal"+head+"/Target", "US").toInt();
-        coefenerg = root+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
-        hvtable = root+settings.value("Cabezal"+head+"/hvtable", "US").toString();
-        coefx = root+settings.value("Cabezal"+head+"/coefx", "US").toString();
-        coefy = root+settings.value("Cabezal"+head+"/coefy", "US").toString();
-        coefest = root+settings.value("Cabezal"+head+"/coefest", "US").toString();
-        coefT = root+settings.value("Cabezal"+head+"/coefT", "US").toString();
-        coefTInter = root+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
+        coefenerg = root_config_path_posta+settings.value("Cabezal"+head+"/coefenerg", "US").toString();
+        hvtable = root_config_path_posta+settings.value("Cabezal"+head+"/hvtable", "US").toString();
+        coefx = root_config_path_posta+settings.value("Cabezal"+head+"/coefx", "US").toString();
+        coefy = root_config_path_posta+settings.value("Cabezal"+head+"/coefy", "US").toString();
+        coefest = root_config_path_posta+settings.value("Cabezal"+head+"/coefest", "US").toString();
+        coefT = root_config_path_posta+settings.value("Cabezal"+head+"/coefT", "US").toString();
+        coefTInter = root_config_path_posta+settings.value("Cabezal"+head+"/coefTInter", "US").toString();
         path_Planar_bit  = settings.value("Paths/Planar_bit", "US").toString();
         path_adq_Calib  = settings.value("Paths/Adq_Calib", "US").toString();
         path_adq_Coin  = settings.value("Paths/Adq_Coin", "US").toString();
@@ -8723,6 +8756,7 @@ void MainWindow::CopyAdqReady(bool state)
     ruta_archivo_adquisicion = commands_calib.at(1)+"/"+commands_calib.at(4)+"/"+commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw";
     calibrador->setAdq_Cab(ruta_archivo_adquisicion.toStdString(),head);
     calibrador->path_salida = "Salidas/";
+    calibrador->reset_plotear();
 
     ui->label_gif_Calib_Fina->setVisible(true);
     ui->label_gif_Calib_Fina->setMovie(movie_cargando);

@@ -27,6 +27,7 @@ SOURCES += src/main.cpp\
         src/apThread.cpp \
         src/apAutoCalibThread.cpp \
         ui/Validate.cpp \
+        ui/validate_cal.cpp \
         src/QRoundProgressBar.cpp
 
 HEADERS  += \
@@ -41,6 +42,7 @@ HEADERS  += \
         inc/apThread.hpp \
         inc/apAutoCalibThread.hpp \
         ui/Validate.h \
+        ui/validate_cal.hpp \
         inc/QRoundProgressBar.h
 
 LIBS += -lboost_system
@@ -54,7 +56,8 @@ FORMS += \
         ui/SetPreferences.ui \
         ui/MainWindow.ui \
         ui/SetPMTs.ui \
-    ui/Validate.ui
+        ui/Validate.ui \
+        ui/validate_cal.ui
 
 INCLUDEPATH +=/opt/armadillo/include
 LIBS +=-llapack

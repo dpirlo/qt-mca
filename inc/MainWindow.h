@@ -31,7 +31,7 @@
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
-#include "inc/QRoundProgressBar.h"
+//#include "inc/QRoundProgressBar.h"
 #include "../ui/Validate.h"
 #include "apMCAE.hpp"
 //#include "apAutoCalib.hpp"
@@ -43,7 +43,7 @@
 #include <QString>
 #include <QPixmap>
 #include <QTextStream>
-//#include <inc/QRoundProgressBar.h>
+#include <inc/QRoundProgressBar.h>
 
 
 #define MONOHEAD 0
@@ -517,6 +517,8 @@ private:
     QString name_Coin_bit;
     QString name_SP3_bit;
     QString port_name;
+    QString root_config_path_posta;
+    QString root_server_path_posta;
 
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;
