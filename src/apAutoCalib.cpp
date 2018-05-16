@@ -149,7 +149,7 @@ int AutoCalib::calibrar_simple()
             if(aux.canal_pico == -1 || aux.canal_pico > 160)
             {
                 cout<<"PMT "<<PMTs_List[i]<<" roto (no se puede detectar pico), pico en :"<<aux.canal_pico<<endl;
-                return -1;
+                return PMTs_List[i]*-1;
             }
 
             Picos_PMT[PMTs_List[i]-1] = aux.canal_pico;

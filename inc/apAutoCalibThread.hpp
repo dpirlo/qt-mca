@@ -38,7 +38,7 @@ namespace ap {
       void sendHitsCalib(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
       void sendHitsTiempos(QVector<double> hits, int channels, QString pmt_head, int index, bool mode);
       void sendValuesMCACalib(int umbral,int pico, int FWHM);
-      void sendAutocalibReady(bool state);
+      void sendAutocalibReady(bool state,int pmt_roto=0);
       void clearGraphsCalib();
 
   public slots:

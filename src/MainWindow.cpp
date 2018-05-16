@@ -366,7 +366,7 @@ void MainWindow::connectSlots()
     connect(calib_wr, SIGNAL(sendCalibErrorCommand()),this,SLOT(getCalibErrorThread()));
     connect(calib_wr, SIGNAL(sendConnectPortArpet()),this,SLOT(connectPortArpet()));
     connect(calib_wr, SIGNAL(sendOffButtonCalib()),this,SLOT(OffButtonCalib()));
-    connect(calib_wr, SIGNAL(sendAutocalibReady(bool)),this,SLOT(AutocalibReady(bool)));
+    connect(calib_wr, SIGNAL(sendAutocalibReady(bool,int)),this,SLOT(AutocalibReady(bool,int)));
     connect(calib_wr, SIGNAL(sendHitsCalib(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsCalib(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendHitsTiempos(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsTiempos(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
@@ -8309,6 +8309,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
     string msg;
     QList<int> checked_PMTs;
     QList<int> checked_Cab;
+    bool error=false;
 
     commands_calib.clear();
 
@@ -8330,6 +8331,11 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
         try
         {
+            ui->label_gif_Calib_Calib_Gruesa->setVisible(false);
+            ui->label_gif_Calib_Adq->setVisible(false);
+            ui->RoundBar_Adq->setVisible(false);
+            ui->label_gif_Copiando->setVisible(false);
+            ui->label_gif_Calib_Fina->setVisible(false);
 
             ui->label_gif_Calib_Config->setVisible(true);
             ui->RoundBar_Adq->setVisible(false);
@@ -8340,7 +8346,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             {
                 messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
                 messageBox.setFixedSize(500,200);
-                setIsAbortCalibFlag(true);
+                CancelCalib();
                 return;
             }
 
@@ -8356,21 +8362,22 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             qApp->processEvents();
 
+            arpet->portDisconnect();
+
             port_name=Cab+QString::number(head);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 image.load(icon_notok);
-                //        ui->label_gif_Calib_Config->setVisible(true);
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                setIsAbortCalibFlag(false);
-                arpet->portDisconnect();
                 Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
                 throw exception_Cabezal_Apagado;
-                setIsAbortCalibFlag(true);
+                CancelCalib();
+
+                error = true;
                 return;
             }
 
@@ -8379,8 +8386,9 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                setIsAbortCalibFlag(true);
+                CancelCalib();
                 ui->label_data_output->setText("Cabezal "+QString::number(head)+ " todavía no iniciado");
+                error = true;
                 return;
             }
             if(initSP3(head).length()==0){
@@ -8388,8 +8396,9 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                setIsAbortCalibFlag(true);
+                CancelCalib();
                 ui->label_data_output->setText("PMTs no responden");
+                error = true;
                 return;
             }
 
@@ -8416,39 +8425,6 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             usleep(500);
 
-            port_name=Coin;
-            arpet->portDisconnect();
-
-            error_code= arpet->portConnect(port_name.toStdString().c_str());
-            if (error_code.value()!=0){
-                arpet->portDisconnect();
-                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-                setIsAbortCalibFlag(true);
-                image.load(icon_notok);
-                ui->label_gif_Calib_Config->setPixmap(image);
-                ui->label_gif_Calib_Config->setScaledContents(true);
-                ui->label_gif_Calib_Config->show();
-                throw exception_Cabezal_Apagado;
-            }
-
-            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
-                setIsAbortCalibFlag(true);
-                image.load(icon_notok);
-                ui->label_gif_Calib_Config->setPixmap(image);
-                ui->label_gif_Calib_Config->setScaledContents(true);
-                ui->label_gif_Calib_Config->show();
-                return;
-            }
-
-            setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
-            usleep(5000);
-
-            setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
-
-            arpet->portDisconnect();
-
             image.load(icon_ok);
             ui->label_gif_Calib_Config->setPixmap(image);
             ui->label_gif_Calib_Config->setScaledContents(true);
@@ -8464,7 +8440,12 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             ui->label_gif_Calib_Config->setScaledContents(true);
             ui->label_gif_Calib_Config->show();
             QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
-            calibrador->setAutoCalibBackground(false);
+            error = true;
+            ui->pb_Calibrar_Cabezal->blockSignals(true);
+            ui->pb_Calibrar_Cabezal->setChecked(false);
+            ui->pb_Calibrar_Cabezal->blockSignals(false);
+
+            CancelCalib();
         }
 
         try
@@ -8472,33 +8453,35 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             /*************/
             /* AUTOCALIB */
             /*************/
+            if(!error)
+            {
+                // Preparo PMTs para AutoCalib
+                for(int i = 0;  i< PMTs ; i++ )
+                    checked_PMTs.append(i+1);
+                calibrador->setPMT_List(checked_PMTs);
 
-            // Preparo PMTs para AutoCalib
-            for(int i = 0;  i< PMTs ; i++ )
-                checked_PMTs.append(i+1);
-            calibrador->setPMT_List(checked_PMTs);
+                calibrador->setTiempo_adq(Tiempo_adq.toInt());
+                checked_Cab.append(head);
+                calibrador->setCab_List(checked_Cab);
 
-            calibrador->setTiempo_adq(Tiempo_adq.toInt());
-            checked_Cab.append(head);
-            calibrador->setCab_List(checked_Cab);
+                calibrador->setMode_AutoCalibTiempos(false);
+                calibrador->setAutoCalibBackground(true);
 
-            calibrador->setMode_AutoCalibTiempos(false);
-            calibrador->setAutoCalibBackground(true);
+                arpet->portDisconnect();
 
-            arpet->portDisconnect();
+                ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+                ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
+                movie_cargando->start();
+                ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
+                ui->label_gif_Calib_Calib_Gruesa->show();
 
-            ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
-            ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
-            movie_cargando->start();
-            ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
-            ui->label_gif_Calib_Calib_Gruesa->show();
+                qApp->processEvents();
 
-            qApp->processEvents();
-
-            calib_wr->abort();
-            calib_th->wait();
-            usleep(500);
-            calib_wr->requestCalib();
+                calib_wr->abort();
+                calib_th->wait();
+                usleep(500);
+                calib_wr->requestCalib();
+            }
         }
         catch(Exceptions & ex)
         {
@@ -8509,35 +8492,15 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
     }
     else
     {
-        setIsAbortCalibFlag(true);
-        adq_running = false;
+
         ui->label_gif_Calib_Config->setVisible(false);
         ui->label_gif_Calib_Calib_Gruesa->setVisible(false);
         ui->label_gif_Calib_Adq->setVisible(false);
         ui->RoundBar_Adq->setVisible(false);
         ui->label_gif_Copiando->setVisible(false);
         ui->label_gif_Calib_Fina->setVisible(false);
-        ui->label_data_output->setText("Calibración cancelada");
 
-        QProcess killall;
-        killall.waitForStarted();
-        killall.execute("pkill recvRawEth");
-        killall.waitForFinished(1000);
-
-        QFile logger(ruta_log_adquisicion);
-        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
-        {
-            logger.write("Se cancela la adquisición manualmente \n");
-            logger.close();
-        }
-
-        adq_running = false;
-        worker_copy->abort();
-        thread_copy->exit(0);
-        usleep(5000);
-        calib_wr->abort();
-        calib_th->exit(0);
-        usleep(5000);
+        CancelCalib();
 
         if(commands_calib.length()>2)
             QFile::remove("./acquire_c*");
@@ -8545,10 +8508,10 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
 }
 
-void MainWindow::AutocalibReady(bool state)
+void MainWindow::AutocalibReady(bool state,int pmt_roto)
 {
+    error_code error_code;
     QPixmap image;
-    QStringList commands;
 
     emit sendCalibAbortCommand(true);
 
@@ -8559,12 +8522,36 @@ void MainWindow::AutocalibReady(bool state)
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
 
+        CancelCalib();
+
         ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
-        calibrador->setAutoCalibBackground(false);
+
+        if(pmt_roto < 0){
+            QVector<double> aux_hist;
+            QVector<double> channels;
+            for (int j = 0 ; j < CHANNELS ; j++){
+                aux_hist.append(calibrador->Hist_Double[pmt_roto*-1 - 1][j]);
+                channels.append((double)j);
+            }
+
+            image.load(icon_notok);
+            ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
+            ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
+            ui->label_gif_Calib_Calib_Gruesa->show();
+
+            validate_autocalib->PlotRoto(pmt_roto*-1,aux_hist,channels);
+
+            validate_autocalib->exec();
+
+            CancelCalib();
+
+            ui->label_data_output->setText("Problema en PMT "+QString::number(pmt_roto*-1));
+        }
+
         return;
     }
 
-    validate_autocalib->PlotHits(calibrador->getHitsMCA(),calibrador->getChannels());
+    validate_autocalib->PlotHits(calibrador->getHitsMCA(),calibrador->getChannels(),calibrador->Pico_MAX,calibrador->Pico_MIN,calibrador->Dinodo_MAX,calibrador->Dinodo_MIN);
 
     int ret = validate_autocalib->exec();
 
@@ -8575,8 +8562,10 @@ void MainWindow::AutocalibReady(bool state)
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
 
+        CancelCalib();
+
         ui->label_data_output->setText("Se rechazó la Calibración Gruesa");
-        calibrador->setAutoCalibBackground(false);
+
         return;
     }
 
@@ -8586,6 +8575,37 @@ void MainWindow::AutocalibReady(bool state)
     ui->label_gif_Calib_Calib_Gruesa->show();
 
     qApp->processEvents();
+
+    port_name=Coin;
+    arpet->portDisconnect();
+
+    error_code= arpet->portConnect(port_name.toStdString().c_str());
+    if (error_code.value()!=0){
+        CancelCalib();
+        Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+        image.load(icon_notok);
+        ui->label_gif_Calib_Adq->setPixmap(image);
+        ui->label_gif_Calib_Adq->setScaledContents(true);
+        ui->label_gif_Calib_Adq->show();
+        throw exception_Cabezal_Apagado;
+    }
+
+    if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+        CancelCalib();
+        Exceptions exception_Cabezal_Apagado("Error Init con Coincidencias");
+        image.load(icon_notok);
+        ui->label_gif_Calib_Adq->setPixmap(image);
+        ui->label_gif_Calib_Adq->setScaledContents(true);
+        ui->label_gif_Calib_Adq->show();
+        return;
+    }
+
+    setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
+    usleep(5000);
+
+    setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
+
+    arpet->portDisconnect();
 
     ui->RoundBar_Adq->setVisible(true);
 
@@ -8668,6 +8688,8 @@ void MainWindow::AutoAdqReady(bool state)
         ui->label_gif_Calib_Adq->setScaledContents(true);
         ui->label_gif_Calib_Adq->show();
 
+        CancelCalib();
+
         ui->label_data_output->setText("Error en Adquisición");
         return;
     }
@@ -8701,8 +8723,10 @@ void MainWindow::CopyAdqReady(bool state)
         ui->label_gif_Copiando->setScaledContents(true);
         ui->label_gif_Copiando->show();
 
+        CancelCalib();
+
         ui->label_data_output->setText("Error en Adquisición");
-        calibrador->setAutoCalibBackground(false);
+
         return;
     }
 
@@ -8739,8 +8763,10 @@ void MainWindow::CopyAdqReady(bool state)
         ui->label_gif_Calib_Fina->setScaledContents(true);
         ui->label_gif_Calib_Fina->show();
 
-        ui->label_data_output->setText("Error en Adquisición");
-        calibrador->setAutoCalibBackground(false);
+        CancelCalib();
+
+        ui->label_data_output->setText("Error en Calibraócin fina");
+
         return;
     }
 
@@ -8754,6 +8780,42 @@ void MainWindow::CopyAdqReady(bool state)
     ui->pb_Calibrar_Cabezal->blockSignals(true);
     ui->pb_Calibrar_Cabezal->setChecked(false);
     ui->pb_Calibrar_Cabezal->blockSignals(false);
+}
+
+void MainWindow::CancelCalib()
+{
+    setIsAbortCalibFlag(true);
+    adq_running = false;
+
+    arpet->portDisconnect();
+
+    ui->label_data_output->setText("Calibración cancelada");
+
+    calibrador->setAutoCalibBackground(false);
+
+    ui->pb_Calibrar_Cabezal->blockSignals(true);
+    ui->pb_Calibrar_Cabezal->setChecked(false);
+    ui->pb_Calibrar_Cabezal->blockSignals(false);
+
+    QProcess killall;
+    killall.waitForStarted();
+    killall.execute("pkill recvRawEth");
+    killall.waitForFinished(1000);
+
+    QFile logger(ruta_log_adquisicion);
+    if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+    {
+        logger.write("Se cancela la adquisición manualmente \n");
+        logger.close();
+    }
+
+    adq_running = false;
+    worker_copy->abort();
+    thread_copy->exit(0);
+    usleep(5000);
+    calib_wr->abort();
+    calib_th->exit(0);
+    usleep(5000);
 }
 
 //void MainWindow::on_pb_Calibrar_Cabezal_clicked()
