@@ -197,6 +197,12 @@ namespace ap {
             void setPathSalida(QString par_string) {this->path_salida = par_string;}
             void setPathEntrada(QString par_string) {this->path_entrada = par_string;}
 
+            // Get de archivos de configuración
+            string getAdq_Cab_Path(int i) {return this->adq_cab[i];}
+            string getAdq_Coin() {return this->adq_coin;}
+            QString getPathSalida() {return this->path_salida;}
+            QString getPathEntrada() {return this->path_entrada;}
+
             // Parser
             void setPathPARSER(QString par_string) {this->path_PARSER = par_string;}
             QString getPathPARSER() {return this->path_PARSER;}
@@ -221,6 +227,10 @@ namespace ap {
             // Valor de los dinodos
             double Dinodos_PMT[PMTs];
 
+            // Plot control
+            void set_plotear() {plot_all = 1;}
+            void reset_plotear() {plot_all = 0;}
+
         private:
             // Pedir MCA
             bool pedir_MCA_PMT(int Cabezal, int PMT, int canales, bool Calib);
@@ -228,6 +238,8 @@ namespace ap {
             bool modificar_HV_PMT(int Cabezal, int PMT,  int val_dinodo);
             // Reseteo memoria cabezal (SP6)
             bool reset_Mem_Cab(int Cabezal);
+            // Plot flag
+            bool plot_all;
 
             // Datos calibracion
 //            QList<int> PMTs_List;
@@ -316,13 +328,13 @@ namespace ap {
             // Preprocesamiento de datos planar
             bool preprocesar_info_planar(int cab_num_act, bool plotear);
             // Pre calibrar usando la aleta
-            bool Pre_calibrar_aleta(int cab_num_act);
+            bool Pre_calibrar_aleta(int cab_num_act, bool plotear);
             // Calibración fina de eneregía
-            bool calibrar_fina_energia(int cab_num_act);
+            bool calibrar_fina_energia(int cab_num_act, bool plotear);
             // Calibración fina de tiempos
-            bool calibrar_fina_tiempos(int cab_num_act);
+            bool calibrar_fina_tiempos(int cab_num_act, bool plotear);
             // Calibración fina de posiciones
-            bool calibrar_fina_posiciones(int cab_num_act);
+            bool calibrar_fina_posiciones(int cab_num_act, bool plotear);
             // Recursiva tiempo
             struct tiempos_recursiva tiempos_a_vecino(int PMT_Ref, rowvec Correccion_Temporal, rowvec Corregido, rowvec Distancia, mat desv_temp_max_hist );
             // Calibración tiempos inter-cabezal
@@ -339,7 +351,7 @@ namespace ap {
             bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm);
 
             // Calcular Count skimming
-            bool calibrar_count_skimming(int cab_num_act);
+            bool calibrar_count_skimming(int cab_num_act, bool plotear);
             // Calcular Inter Count skimming
             bool calibrar_inter_count_skimming();
 

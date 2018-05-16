@@ -13,6 +13,9 @@ AutoCalib::AutoCalib()
 
     int ram = 0;
 
+
+    plot_all = 1;
+
     char line[256];
     while(fgets(line, sizeof(line), meminfo))
     {
@@ -441,7 +444,7 @@ bool AutoCalib::calibrar_fina(void)
             char buffer[80];
             time (&rawtime);
             timeinfo = localtime(&rawtime);
-            strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
+            strftime(buffer,sizeof(buffer),"%Y_%m_%d_%I_%M_%S",timeinfo);
             std::string str(buffer);
             //QString nombre_Log = path_salida+"Log_Cabezal_"+nombre_cab+"_"+QString::fromStdString( str )+".txt";
             QString nombre_Log = path_salida+"Log_Cabezal_"+nombre_cab+".txt";
@@ -475,19 +478,19 @@ bool AutoCalib::calibrar_fina(void)
             LevantarArchivo_Planar(cab_num_act);
 
             // Busco eventos promedio y calculo la posición del pico
-            preprocesar_info_planar(cab_num_act, 1);
+            preprocesar_info_planar(cab_num_act, plot_all);
 
             // Calculo un paso previo de calibración donde ajusto el espectro individual del PMT centroide
-            Pre_calibrar_aleta(cab_num_act);
+            Pre_calibrar_aleta(cab_num_act, plot_all);
 
             // Calibro energía
-            calibrar_fina_energia(cab_num_act);
+            calibrar_fina_energia(cab_num_act, plot_all);
 
             // Calibro en tiempos
-            calibrar_fina_tiempos(cab_num_act);
+            calibrar_fina_tiempos(cab_num_act, plot_all);
 
             // Calibro en posicion
-            calibrar_fina_posiciones(cab_num_act);
+            calibrar_fina_posiciones(cab_num_act, plot_all);
 
             // Libero la memoria del cabezal actual
             if (IsLowRAM)
@@ -530,7 +533,7 @@ bool AutoCalib::calibrar_fina(void)
                 }
 
                 // Calibro el count skimming
-                calibrar_count_skimming(cab_num_act);
+                calibrar_count_skimming(cab_num_act, plot_all);
 
                 // Muestro el nuevo almohadon
                 mostrar_almohadon(cab_num_act,1,1);
@@ -545,6 +548,7 @@ bool AutoCalib::calibrar_fina(void)
             guardar_tablas(cab_num_act, tipo);
 
             stream<<"% Log finalizado: "<<asctime(timeinfo)<<endl;
+            stream<<"% Log Archive: "<<QString::fromStdString(str)<<endl;
 
         }
         // Sino calibro tiempos
@@ -556,7 +560,7 @@ bool AutoCalib::calibrar_fina(void)
             char buffer[80];
             time (&rawtime);
             timeinfo = localtime(&rawtime);
-            strftime(buffer,sizeof(buffer),"%d_%m_%Y_%I_%M_%S",timeinfo);
+            strftime(buffer,sizeof(buffer),"%Y_%m_%d_%I_%M_%S",timeinfo);
             std::string str(buffer);
             QString nombre_Log = path_salida+"Log_Coincidencia.txt";
             QFile file(nombre_Log);
@@ -572,7 +576,9 @@ bool AutoCalib::calibrar_fina(void)
             // Calibro
             calibrar_tiempo_intercabezal();
 
-            stream<<" %Log finalizado: "<<asctime(timeinfo)<<endl;
+            stream<<"% Log finalizado: "<<asctime(timeinfo)<<endl;
+            stream<<"% Log Archive: "<<QString::fromStdString(str)<<endl;
+
         }
 
     }
@@ -1046,7 +1052,7 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 }
 
 
-bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
+bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
 {
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -1132,15 +1138,18 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
     QVector<double> aux_qvec(BinsHist);
     QString nombre_plot;
     /*
-    // ----------------------- Ploteo
-    // Paso los vectores a Qvector para plotear
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-    nombre_plot = "Espectro Pre calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_sin_calib.FWHM*100) + "%";
-    plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
-    Espectro_emergente.show();
-    Espectro_emergente.resize(1000,500);
-    qApp->processEvents();
+    if(plotear)
+    {
+        // ----------------------- Ploteo
+        // Paso los vectores a Qvector para plotear
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
+        nombre_plot = "Espectro Pre calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(pico_sin_calib.FWHM*100) + "%";
+        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
+        Espectro_emergente.show();
+        Espectro_emergente.resize(1000,500);
+        qApp->processEvents();
+    }
     */
 
 
@@ -1237,29 +1246,32 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
         Tiempos_max_PMT =  Tiempos_max_PMT.cols(indices_aux);
 
 
-        // Color y marker random
-        int param[6];
-        param[0]=rand()%245+10;//R
-        param[1]=rand()%245+10;//G
-        param[2]=rand()%245+10;//B
-        param[3]=rand()%5+1; //LineStyle
-        param[4]=rand()%14+1;//ScatterShape
-        param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
+        if(plotear)
+        {
+            // Color y marker random
+            int param[6];
+            param[0]=rand()%245+10;//R
+            param[1]=rand()%245+10;//G
+            param[2]=rand()%245+10;//B
+            param[3]=rand()%5+1; //LineStyle
+            param[4]=rand()%14+1;//ScatterShape
+            param[5]=rand()/(double)RAND_MAX*2+1;//setWidthF
 
-        centros_hist = linspace<vec>(0,8000,BinsHist);
+            centros_hist = linspace<vec>(0,8000,BinsHist);
 
-        // Ploteo el histograma de suma para este PMT
-        suma_aux = sum( Eventos_max_PMT,  0);
-        espectro_suma_crudo = hist(suma_aux, centros_hist);
-        // ----------------------- Ploteo
-        // Paso los vectores a Qvector para plotear
-        for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
-        for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
-        nombre_plot = QString::number(index_PMT_cent+1);
-        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
-        Espectro_PMT_emergente[cab_num_act].show();
-        Espectro_PMT_emergente[cab_num_act].resize(1000,500);
-        qApp->processEvents();
+            // Ploteo el histograma de suma para este PMT
+            suma_aux = sum( Eventos_max_PMT,  0);
+            espectro_suma_crudo = hist(suma_aux, centros_hist);
+            // ----------------------- Ploteo
+            // Paso los vectores a Qvector para plotear
+            for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+            for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma_crudo(i);}
+            nombre_plot = QString::number(index_PMT_cent+1);
+            plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_PMT_emergente[cab_num_act], nombre_plot, param, 0);
+            Espectro_PMT_emergente[cab_num_act].show();
+            Espectro_PMT_emergente[cab_num_act].resize(1000,500);
+            qApp->processEvents();
+        }
 
 
         stream<<" %       --------Centroides usados: "<<indices_aux.n_elem<<endl;
@@ -1339,7 +1351,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act)
 }
 
 
-bool AutoCalib::calibrar_fina_energia(int cab_num_act)
+bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
 {
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -1515,18 +1527,26 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
     stream<<"       Ce_final_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
 
-    // ----------------------- Ploteo
-    // Paso los vectores a Qvector para plotear
-    QVector<double> aux_qvec_cent(BinsHist);
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
-    QVector<double> aux_qvec(BinsHist);
-    for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma(i);}
+    if(plotear)
+    {
+        // ----------------------- Ploteo
+        // Paso los vectores a Qvector para plotear
+        QVector<double> aux_qvec_cent(BinsHist);
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec_cent[i] = centros_hist(i);}
+        QVector<double> aux_qvec(BinsHist);
+        for (int i=0 ; i < BinsHist ; i++){aux_qvec[i] = espectro_suma(i);}
 
-    QString nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(FWHM_mejor*100) + "%";
-    plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
-    Espectro_emergente.show();
-    Espectro_emergente.resize(1000,500);
-    qApp->processEvents();
+        QString nombre_plot = "Espectro calibrado cabezal "+ QString::number(cab_num_act+1)+" FWHM = "+ QString::number(FWHM_mejor*100) + "%";
+        plot_MCA(aux_qvec, aux_qvec_cent,&Espectro_emergente, nombre_plot, param_cab[cab_num_act], 0);
+        Espectro_emergente.show();
+        Espectro_emergente.resize(1000,500);
+        qApp->processEvents();
+    }
+
+    vec_log = arma::conv_to<vec>::from(espectro_suma);
+    stream<<"           Espect_Final_vec_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
+    vec_log = arma::conv_to<vec>::from(centros_hist);
+    stream<<"           Espect_Final_bins_"<<cab_num_act+1<<" ="<<guardar_vector_stream(vec_log)<<endl;
 
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -1539,7 +1559,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act)
 
 
 
-bool AutoCalib::calibrar_fina_tiempos(int cab_num_act)
+bool AutoCalib::calibrar_fina_tiempos(int cab_num_act, bool plotear)
 {
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------INICIO DE: calibrar_fina_tiempos --------------------------------------------------------- "<<endl;
@@ -1880,7 +1900,7 @@ struct tiempos_recursiva AutoCalib::tiempos_a_vecino(int PMT_Ref, rowvec Correcc
 
 
 
-bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
+bool AutoCalib::calibrar_fina_posiciones(int cab_num_act, bool plotear)
 {
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -1965,8 +1985,9 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act)
     // Calculo el alhoadon
     calcular_almohadon(cab_num_act);
 
-    // Dibujo el almohadon en pantalla
-    mostrar_almohadon(cab_num_act,1,0);
+    if(plotear)
+        // Dibujo el almohadon en pantalla
+        mostrar_almohadon(cab_num_act,1,0);
 
 
     vec vec_log = arma::conv_to<vec>::from(Cx_arma);
@@ -2123,7 +2144,7 @@ bool AutoCalib::calcular_almohadon(int cab_num_act)
 
 
 
-bool AutoCalib::calibrar_count_skimming(int cab_num_act)
+bool AutoCalib::calibrar_count_skimming(int cab_num_act, bool plotear)
 {
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------INICIO DE: calibrar_count_skimming ------------------------------------------------------- "<<endl;
