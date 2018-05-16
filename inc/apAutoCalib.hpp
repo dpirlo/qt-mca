@@ -215,7 +215,13 @@ namespace ap {
             QString port_name;
             // Valor de los dinodos
             double Dinodos_PMT[PMTs];
+            // Posiciones de los picos
+            double Picos_PMT[PMTs];
             QString path_salida;
+            double Pico_MAX;
+            double Pico_MIN;
+            double Dinodo_MAX;
+            double Dinodo_MIN;
 
         private:
             // Pedir MCA
@@ -257,8 +263,7 @@ namespace ap {
             double Dinodos_PMT_ant[PMTs];
             // Memoria de los PMT
             double Acum_PMT[PMTs][CHANNELS];
-            // Posiciones de los picos
-            double Picos_PMT[PMTs];
+
             // FWHM de cabezales
             struct Pico_espectro FW_struct_Cabezal[CANTIDADdEcABEZALES];
 

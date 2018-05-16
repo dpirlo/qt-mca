@@ -2,7 +2,6 @@
 #define VALIDATE_H
 
 #include <QDialog>
-#define CHANNELS 256
 
 namespace Ui {
 class Validate;
@@ -18,7 +17,8 @@ public:
     void accept();
     void reject();
     ~Validate();
-    void PlotHits(QVector<double> hits,QVector<double> channels);
+    void PlotHits(QVector<double> hits, QVector<double> channels, double Pico_MAX, double Pico_MIN, double Dinodo_MAX, double Dinodo_MIN);
+    void PlotRoto(int pmt_roto,QVector<double> hits,QVector<double> channels);
 
 private:
     Ui::Validate *ui;

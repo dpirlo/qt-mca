@@ -107,8 +107,10 @@ void AutoCalibThread::getCalib()
                     if(!calibrador->AutoCalibBackground) emit sendHitsCalib(aux_hits, CHANNELS, QString::number(calibrador->PMTs_List[i]), i, false);
                 }
 
-                if(calibrador->calibrar_simple() == -1)
-                    emit sendAutocalibReady(false);
+
+                int error = calibrador->calibrar_simple();
+                if( error < 0)
+                    emit sendAutocalibReady(false,error);
 
 
                 cout<<"PMT calibrados: "<<calibrador->PMTsEnPico<<endl;
@@ -139,6 +141,23 @@ void AutoCalibThread::getCalib()
                             struct Pico_espectro aux;
                             aux = calibrador->Buscar_Pico(calibrador->Hist_Double[calibrador->PMTs_List[0]-1], CHANNELS);
                             emit sendValuesMCACalib(calibrador->getHVMCA(), aux.canal_pico, (aux.limites_FWTM[1] - aux.limites_FWTM[0]));
+                        }
+
+                        calibrador->Pico_MAX = 0;
+                        calibrador->Pico_MIN = 255;
+                        calibrador->Dinodo_MAX = 0;
+                        calibrador->Dinodo_MIN = 3000;
+
+                        for (int j = 0 ; j < PMTs ; j++)
+                        {
+                          if( calibrador->Pico_MAX < calibrador->Picos_PMT[j] )
+                              calibrador->Pico_MAX = calibrador->Picos_PMT[j];
+                          if( calibrador->Pico_MIN > calibrador->Picos_PMT[j] )
+                              calibrador->Pico_MIN = calibrador->Picos_PMT[j];
+                          if( calibrador->Dinodo_MAX < calibrador->Dinodos_PMT[j] )
+                              calibrador->Dinodo_MAX = calibrador->Dinodos_PMT[j];
+                          if( calibrador->Dinodo_MIN > calibrador->Dinodos_PMT[j] )
+                              calibrador->Dinodo_MIN = calibrador->Dinodos_PMT[j];
                         }
                     }
 

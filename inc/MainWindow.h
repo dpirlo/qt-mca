@@ -177,9 +177,10 @@ private slots:
     void clearSpecHeadsGraphs();
     void connectPortArpet();
     void OffButtonCalib();
-    void AutocalibReady(bool state);
+    void AutocalibReady(bool state, int pmt_roto=0);
     void AutoAdqReady(bool state);
     void CopyAdqReady(bool state);
+    void CancelCalib();
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();

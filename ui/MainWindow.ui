@@ -74,7 +74,7 @@
      </size>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>10</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -8562,7 +8562,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
@@ -8597,13 +8597,13 @@ calibrar</string>
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header location="global">inc/qcustomplot.h</header>
+   <header>inc/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>QRoundProgressBar</class>
    <extends>QWidget</extends>
-   <header>QRoundProgressBar.h</header>
+   <header location="global">inc/QRoundProgressBar.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
