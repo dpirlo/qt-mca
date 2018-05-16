@@ -55,13 +55,13 @@ void Validate_Cal::on_buttonBox_accepted()
     QStringList listasparametros;
     listasparametros.append("-j");
     listasparametros.append(files_old+nombre_log_file[1]);
-    listasparametros.append(files_old+"Almohadon_Cabezal_"+QString::number(cab_test)+".pgm");
-    listasparametros.append(files_old+"Almohadon_Cabezal_"+QString::number(cab_test)+".ppm");
-    listasparametros.append(files_old+"Coef_Energia_Cabezal_"+QString::number(cab_test)+".txt");
-    listasparametros.append(files_old+"Cx_Cabezal_"+QString::number(cab_test)+".txt");
-    listasparametros.append(files_old+"Cy_Cabezal_"+QString::number(cab_test)+".txt");
-    listasparametros.append(files_old+"Log_Cabezal_"+QString::number(cab_test)+".txt");
-    listasparametros.append(files_old+"Tiempos_Cabezal_"+QString::number(cab_test)+".txt");
+    listasparametros.append(files_new+"Almohadon_Cabezal_"+QString::number(cab_test)+".pgm");
+    listasparametros.append(files_new+"Almohadon_Cabezal_"+QString::number(cab_test)+".ppm");
+    listasparametros.append(files_new+"Coef_Energia_Cabezal_"+QString::number(cab_test)+".txt");
+    listasparametros.append(files_new+"Cx_Cabezal_"+QString::number(cab_test)+".txt");
+    listasparametros.append(files_new+"Cy_Cabezal_"+QString::number(cab_test)+".txt");
+    listasparametros.append(files_new+"Log_Cabezal_"+QString::number(cab_test)+".txt");
+    listasparametros.append(files_new+"Tiempos_Cabezal_"+QString::number(cab_test)+".txt");
     // listasparametros.append("*"); // El asterisco no funciona......
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
@@ -237,6 +237,8 @@ void Validate_Cal::on_buttonBox_accepted()
     stream << nombre_log_file[1] << " ; Cabezal ; " << QString::number(cab_test) << endl;
     file.close();
 
+    cout<<"Backupeado"<<endl;
+
     // Finalmente destruyo la ventana.
     this->~Validate_Cal();
 }
@@ -250,6 +252,11 @@ void Validate_Cal::on_buttonBox_rejected()
 
 void Validate_Cal::load_data(int checked_Cab, QString Path_Calib_Actual, QString Path_Calib_Base, QString path_files_back)
 {
+
+    if ( Path_Calib_Actual.left(Path_Calib_Actual.length() - 1) != "/") {Path_Calib_Actual = Path_Calib_Actual+"/";}
+    if ( Path_Calib_Base.left(Path_Calib_Base.length() - 1) != "/") {Path_Calib_Base = Path_Calib_Base+"/";}
+    if ( path_files_back.left(path_files_back.length() - 1) != "/") {path_files_back = path_files_back+"/";}
+
     cab_test = checked_Cab;
     files_old = Path_Calib_Base+"cabezal_"+QString::number(cab_test)+"/Constantes/";
     files_new = Path_Calib_Actual;
