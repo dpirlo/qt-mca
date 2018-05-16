@@ -108,8 +108,10 @@ void AutoCalib::initCalib()
     iter_actual = 0;
 
     cout<<"Subo todos los HV a "<<DINODO_MAX<<" para calcular el mínimo posible e ir bajando"<<endl;
-    for (int i = 0 ; i < PMTs_List.length() ; i++)
+    for (int i = 0 ; i < PMTs_List.length() ; i++){
         setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(DINODO_MAX).toStdString(),port_name.toStdString().c_str());
+        Dinodos_PMT[PMTs_List[i]-1] = DINODO_MAX;
+    }
     // Limpio memos
     setHV(QString::number(Cab_actual).toStdString(),QString::number(150).toStdString(),port_name.toStdString());
 }
@@ -335,6 +337,7 @@ int AutoCalib::calibrar_simple()
                 {
                     Nuevo_Dinodo = Dinodos_PMT[PMTs_List[i]-1] + paso_dinodo[PMTs_List[i]-1];
                     if(Nuevo_Dinodo < DINODO_MIN) Nuevo_Dinodo = DINODO_MIN; else if(Nuevo_Dinodo > DINODO_MAX) Nuevo_Dinodo = DINODO_MAX;
+                    Dinodos_PMT[PMTs_List[i]-1] = Nuevo_Dinodo;
                     cout<< "Modificando PMT "<<PMTs_List[i]<<" a "<<Nuevo_Dinodo<<endl;
                     setHV(QString::number(Cab_actual).toStdString(),QString::number(PMTs_List[i]).toStdString(),QString::number(Nuevo_Dinodo).toStdString(),port_name.toStdString().c_str());
                 }
@@ -353,8 +356,10 @@ int AutoCalib::calibrar_simple()
 
             iter_actual++;
         }
-        else
+        else{
             PMTsEnPico = PMTs_List.length();
+
+        }
     }
 
     catch (Exceptions ex)
@@ -453,7 +458,7 @@ bool AutoCalib::calibrar_fina(void)
             if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
             {
                 cout<<"Error al abrir log"<<endl;
-                return -1;
+                return false;
             }
 
             //QTextStream stream_open(&file);
@@ -567,7 +572,7 @@ bool AutoCalib::calibrar_fina(void)
             if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
             {
                 cout<<"Error al abrir log"<<endl;
-                return -1;
+                return false;
             }
 
             stream.setDevice(&file);
@@ -598,7 +603,7 @@ bool AutoCalib::calibrar_fina(void)
         if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
         {
             cout<<"Error al abrir log"<<endl;
-            return -1;
+            return false;
         }
 
         stream<<" %Log iniciado: "<<asctime(timeinfo)<<endl;

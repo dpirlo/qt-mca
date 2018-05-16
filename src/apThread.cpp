@@ -629,26 +629,36 @@ bool Thread::MoveToServer(){
         if (QFile::copy("./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw",mpath+"/"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw"))
         {
             qDebug() <<"Copiado adquisicion";
-            if (cantidad_archivos==1)
-            {
-                if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3)))
-                {
-                    qDebug() <<"Copiado log";
 
-                    if ( commands.at(8).contains("Registrar")){
-                        QString aux = commands.at(1) + "/" + "Listado_Aquisiciones.log";
-                        QFile logger(aux);
-                        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+            if(QFile::remove("./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw"))
+            {
+                qDebug() <<"Adquisicion eliminada";
+                if (cantidad_archivos==1)
+                {
+                    if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3)))
+                    {
+                        qDebug() <<"Copiado log";
+
+                        if ( commands.at(8).contains("Registrar")){
+                            QString aux = commands.at(1) + "/" + "Listado_Aquisiciones.log";
+                            QFile logger(aux);
+                            if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+                            {
+                                aux = "Medicion: " + commands.at(7) + "\t Nombre: " + mpath+"/"+commands.at(2)+ "_"+time + "\t Tamaño por archivo: " + commands.at(0) + "Mb\t Cantidad de archivos: " + commands.at(6) + "\n";
+                                logger.write(aux.toUtf8());
+                                logger.close();
+                            }
+                        }
+
+                        if(QFile::remove("./"+commands.at(3)))
                         {
-                            aux = "Medicion: " + commands.at(7) + "\t Nombre: " + mpath+"/"+commands.at(2)+ "_"+time + "\t Tamaño por archivo: " + commands.at(0) + "Mb\t Cantidad de archivos: " + commands.at(6) + "\n";
-                            logger.write(aux.toUtf8());
-                            logger.close();
+                            qDebug() <<"LOG eliminado";
                         }
                     }
-                }
-                else{
-                    Exceptions exception_Cabezal_Apagado("Error en la copia del log");
-                    throw exception_Cabezal_Apagado;
+                    else{
+                        Exceptions exception_Cabezal_Apagado("Error en la copia del log");
+                        throw exception_Cabezal_Apagado;
+                    }
                 }
             }
 

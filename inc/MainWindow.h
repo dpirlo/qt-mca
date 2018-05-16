@@ -31,6 +31,7 @@
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
+//#include "inc/QRoundProgressBar.h"
 #include "../ui/Validate.h"
 #include "apMCAE.hpp"
 //#include "apAutoCalib.hpp"
@@ -42,6 +43,8 @@
 #include <QString>
 #include <QPixmap>
 #include <QTextStream>
+#include <inc/QRoundProgressBar.h>
+
 
 #define MONOHEAD 0
 #define MULTIHEAD 1
@@ -86,6 +89,7 @@
 #define CANTIDAD_ELEMENTOS_PLANAR 97
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
 
+#define MAX_MB_CALIB 1024
 
 
 
@@ -175,6 +179,7 @@ private slots:
     void OffButtonCalib();
     void AutocalibReady(bool state);
     void AutoAdqReady(bool state);
+    void CopyAdqReady(bool state);
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
     void CargoTemaOscuro();
@@ -204,7 +209,8 @@ private slots:
     void on_comboBox_adquire_mode_coin_currentIndexChanged(int index);
 
     /*Calibrar Cabezal Completo*/
-    void on_pb_Calibrar_Cabezal_clicked();
+//    void on_pb_Calibrar_Cabezal_clicked();
+    void on_pb_Calibrar_Cabezal_toggled(bool checked);
 
     /* FPGA */
     void on_checkBox_FPGA_2_clicked(bool checked);
@@ -537,6 +543,7 @@ private:
     QStringList commands_calib;
 
     QString ruta_log_adquisicion="";
+    QString ruta_archivo_adquisicion="";
 
     QGraphicsScene *scene;
     /* Area de prueba/testing */

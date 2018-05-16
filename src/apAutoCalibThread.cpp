@@ -93,8 +93,8 @@ void AutoCalibThread::getCalib()
                 for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
                 {
                     // Pido estado de SP3
-                    calibrador->getMCA(QString::number(calibrador->PMTs_List[i]).toStdString(), calibrador->getFunCSP3(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
-                    calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1] = calibrador->getHVMCA();
+//                    calibrador->getMCA(QString::number(calibrador->PMTs_List[i]).toStdString(), calibrador->getFunCSP3(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
+//                    calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1] = calibrador->getHVMCA();
 
                     // Pido MCA de calibracion
                     calibrador->getMCA(QString::number(calibrador->PMTs_List[i]).toStdString(), calibrador->getFunCHead(), QString::number(calibrador->Cab_actual).toStdString(), CHANNELS, calibrador->port_name.toStdString());
