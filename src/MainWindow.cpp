@@ -5387,7 +5387,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 
     // Invoco al calibracor
-    calibrador->set_plotear();
+    calibrador->reset_plotear();
     calibrador->calibrar_fina();
 
 

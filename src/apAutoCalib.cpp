@@ -619,8 +619,7 @@ bool AutoCalib::calibrar_fina(void)
 
     }
 
-
-
+    return 1;
 
 }
 
