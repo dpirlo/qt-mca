@@ -5387,7 +5387,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 
     // Invoco al calibracor
-    calibrador->reset_plotear();
+    calibrador->set_plotear();
     calibrador->calibrar_fina();
 
 
@@ -8616,6 +8616,10 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
 
     qApp->processEvents();
 
+    calib_wr->abort();
+    calib_th->exit(0);
+    usleep(5000);
+
     setCommandsAdquire();
 
 }
@@ -8774,6 +8778,11 @@ void MainWindow::CopyAdqReady(bool state)
 
         return;
     }
+
+    // Llamo a la ventana de validación para cada uno de los cabezales calibrados
+    Validate_Cal *validacion = new Validate_Cal();
+    validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta);
+    validacion->show();
 
     image.load(icon_ok);
     ui->label_gif_Calib_Fina->setPixmap(image);
