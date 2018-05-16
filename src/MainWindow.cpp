@@ -8323,17 +8323,20 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
     commands_calib.clear();
 
-    if(adq_running)
-    {
-        QMessageBox::critical(this,tr("Error"),tr("Se está adquiriendo en otra pestaña."));
-        ui->pb_Calibrar_Cabezal->blockSignals(true);
-        ui->pb_Calibrar_Cabezal->setChecked(false);
-        ui->pb_Calibrar_Cabezal->blockSignals(false);
-        return;
-    }
-
     if(checked)
     {
+
+
+        if(adq_running)
+        {
+            QMessageBox::critical(this,tr("Error"),tr("Se está adquiriendo en otra pestaña."));
+            ui->pb_Calibrar_Cabezal->blockSignals(true);
+            ui->pb_Calibrar_Cabezal->setChecked(false);
+            ui->pb_Calibrar_Cabezal->blockSignals(false);
+            error = true;
+            return;
+        }
+
         ui->label_data_output->setText("");
 
         QString Tiempo_adq = ui->Tiempo_adq_box_2->text();
@@ -8435,6 +8438,37 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             usleep(500);
 
+            port_name=Coin;
+            arpet->portDisconnect();
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                CancelCalib();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                image.load(icon_notok);
+                ui->label_gif_Calib_Adq->setPixmap(image);
+                ui->label_gif_Calib_Adq->setScaledContents(true);
+                ui->label_gif_Calib_Adq->show();
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                CancelCalib();
+                Exceptions exception_Cabezal_Apagado("Error Init con Coincidencias");
+                image.load(icon_notok);
+                ui->label_gif_Calib_Adq->setPixmap(image);
+                ui->label_gif_Calib_Adq->setScaledContents(true);
+                ui->label_gif_Calib_Adq->show();
+                return;
+            }
+
+            setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
+            usleep(5000);
+
+            setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
+
+            //arpet->portDisconnect();
+
             image.load(icon_ok);
             ui->label_gif_Calib_Config->setPixmap(image);
             ui->label_gif_Calib_Config->setScaledContents(true);
@@ -8491,6 +8525,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 calib_th->wait();
                 usleep(500);
                 calib_wr->requestCalib();
+
+                //AutocalibReady(true);
             }
         }
         catch(Exceptions & ex)
@@ -8585,37 +8621,6 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
     ui->label_gif_Calib_Calib_Gruesa->show();
 
     qApp->processEvents();
-
-    port_name=Coin;
-    arpet->portDisconnect();
-
-    error_code= arpet->portConnect(port_name.toStdString().c_str());
-    if (error_code.value()!=0){
-        CancelCalib();
-        Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-        image.load(icon_notok);
-        ui->label_gif_Calib_Adq->setPixmap(image);
-        ui->label_gif_Calib_Adq->setScaledContents(true);
-        ui->label_gif_Calib_Adq->show();
-        throw exception_Cabezal_Apagado;
-    }
-
-    if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-        CancelCalib();
-        Exceptions exception_Cabezal_Apagado("Error Init con Coincidencias");
-        image.load(icon_notok);
-        ui->label_gif_Calib_Adq->setPixmap(image);
-        ui->label_gif_Calib_Adq->setScaledContents(true);
-        ui->label_gif_Calib_Adq->show();
-        return;
-    }
-
-    setCalibrationMode(ui->comboBox_head_select_graph_4->currentText());
-    usleep(5000);
-
-    setTimeModeCoin(COIN_CALIB,false, ui->comboBox_head_select_graph_4->currentText());
-
-    arpet->portDisconnect();
 
     ui->RoundBar_Adq->setVisible(true);
 
