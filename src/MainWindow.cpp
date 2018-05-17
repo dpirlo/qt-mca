@@ -205,6 +205,11 @@ void MainWindow::setInitialConfigurations()
     setAdquireMode(CABEZAL);
     Estado_Cabezales.reserve(6);
 
+    ui->label_Calib_Config->setEnabled(false);
+    ui->label_Calib_Calib_Gruesa->setEnabled(false);
+    ui->label_Adquisicion->setEnabled(false);
+    ui->label_Copiando->setEnabled(false);
+    ui->label_Calib_Fina->setEnabled(false);
     ui->RoundBar_Adq->setRange(0,MAX_MB_CALIB);
     ui->RoundBar_Adq->hide();
 }
@@ -8334,14 +8339,47 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
         try
         {
-            ui->label_gif_Calib_Calib_Gruesa->setVisible(false);
-            ui->label_gif_Calib_Adq->setVisible(false);
-            ui->RoundBar_Adq->setVisible(false);
-            ui->label_gif_Copiando->setVisible(false);
-            ui->label_gif_Calib_Fina->setVisible(false);
 
             ui->label_gif_Calib_Config->setVisible(true);
+            ui->label_Calib_Config->setEnabled(true);
+
+            ui->label_gif_Calib_Calib_Gruesa->setVisible(false);
+            ui->label_Calib_Calib_Gruesa->setEnabled(false);
+
+            ui->label_gif_Calib_Adq->setVisible(false);
+            ui->label_Adquisicion->setEnabled(false);
             ui->RoundBar_Adq->setVisible(false);
+
+            ui->label_gif_Copiando->setVisible(false);
+            ui->label_Copiando->setEnabled(false);
+
+            ui->label_gif_Calib_Fina->setVisible(false);
+            ui->label_Calib_Fina->setEnabled(false);
+
+            qApp->processEvents();
+
+            QDir mDir;
+
+            if (!mDir.exists(calibrador->path_salida))
+            {
+                mDir.mkpath(calibrador->path_salida);
+                qDebug() <<"Creada carpeta de Salidas";
+            }
+            else if (mDir.exists(calibrador->path_salida))
+            {
+                qDebug() <<"Carpeta de Salidas ya existía";
+            }
+            else
+            {
+                image.load(icon_notok);
+                ui->label_gif_Calib_Config->setPixmap(image);
+                ui->label_gif_Calib_Config->setScaledContents(true);
+                ui->label_gif_Calib_Config->show();
+
+                CancelCalib();
+                qDebug()<<"Carpeta de Salidas no pudo ser creada";
+                return;
+            }
 
             // Recupero el tiempo de adquisicion
 
@@ -8503,7 +8541,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
                 arpet->portDisconnect();
 
-                ui->label_gif_Calib_Calib_Gruesa->setVisible(true);
+
+                ui->label_gif_Calib_Calib_Gruesa->setEnabled(true);
                 ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
                 movie_cargando->start();
                 ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
@@ -8612,6 +8651,7 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
 
     qApp->processEvents();
 
+    ui->label_Adquisicion->setEnabled(true);
     ui->RoundBar_Adq->setVisible(true);
 
     qApp->processEvents();
@@ -8710,6 +8750,7 @@ void MainWindow::AutoAdqReady(bool state)
     ui->label_gif_Calib_Adq->show();
 
     qApp->processEvents();
+    ui->label_Copiando->setEnabled(true);
     ui->label_gif_Copiando->setVisible(true);
     ui->label_gif_Copiando->setMovie(movie_cargando);
     movie_cargando->start();
@@ -8747,16 +8788,21 @@ void MainWindow::CopyAdqReady(bool state)
     qApp->processEvents();
 
     QList<int> checked_Cab;
-    int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
+    int head = 5;//ui->comboBox_head_select_graph_4->currentIndex()+1;
 
     checked_Cab.append(head);
 
     calibrador->setCab_List(checked_Cab);
-    ruta_archivo_adquisicion = commands_calib.at(1)+"/"+commands_calib.at(4)+"/"+commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw";
+
+    //ruta_archivo_adquisicion = commands_calib.at(1)+"/"+commands_calib.at(4)+"/"+commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw";
+    ruta_archivo_adquisicion = "/media/arpet/pet/calibraciones/campo_inundado/03-info/2018-05-16/acquire_calib_5_2018-05-16-16-09_1.raw";
+
+
     calibrador->setAdq_Cab(ruta_archivo_adquisicion.toStdString(),head);
     calibrador->path_salida = "Salidas/";
     calibrador->reset_plotear();
 
+    ui->label_Calib_Fina->setEnabled(true);
     ui->label_gif_Calib_Fina->setVisible(true);
     ui->label_gif_Calib_Fina->setMovie(movie_cargando);
     movie_cargando->start();
@@ -8781,8 +8827,9 @@ void MainWindow::CopyAdqReady(bool state)
 
     // Llamo a la ventana de validación para cada uno de los cabezales calibrados
     Validate_Cal *validacion = new Validate_Cal();
-    validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta);
-    validacion->show();
+    validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta,true,true); // El true es para que sume a las tablas backupeadas el HV
+    //validacion->show();
+    validacion->exec(); // Para que sea bloqueante
 
     image.load(icon_ok);
     ui->label_gif_Calib_Fina->setPixmap(image);
@@ -8810,6 +8857,12 @@ void MainWindow::CancelCalib()
     ui->pb_Calibrar_Cabezal->blockSignals(true);
     ui->pb_Calibrar_Cabezal->setChecked(false);
     ui->pb_Calibrar_Cabezal->blockSignals(false);
+
+    ui->label_Calib_Config->setEnabled(false);
+    ui->label_Calib_Calib_Gruesa->setEnabled(false);
+    ui->label_Adquisicion->setEnabled(false);
+    ui->label_Copiando->setEnabled(false);
+    ui->label_Calib_Fina->setEnabled(false);
 
     QProcess killall;
     killall.waitForStarted();

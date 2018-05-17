@@ -27,7 +27,7 @@ public:
     Validate_Cal(QWidget *parent = 0);
     ~Validate_Cal();
 
-    void load_data(int checked_Cab, QString Path_Calib_Actual, QString Path_Calib_Base, QString path_files_back);
+    void load_data(int checked_Cab, QString Path_Calib_Actual, QString Path_Calib_Base, QString path_files_back, bool include_HV=false, bool Delete_Output=false);
 
 private slots:
     void on_buttonBox_accepted();
@@ -44,6 +44,10 @@ private:
     QString* nombre_log_file;
 
     float* FWHM;
+
+    bool Send_HV;
+    bool Delete_Salidas;
+
 
     QVector<double> *Coef_energia , *Espectro, *Espectro_bins , *Coef_pos_X , *Coef_pos_Y , *Almohadon;
 

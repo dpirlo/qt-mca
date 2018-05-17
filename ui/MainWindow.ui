@@ -7898,7 +7898,7 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_54">
+     <widget class="QLabel" name="label_Calib_Config">
       <property name="geometry">
        <rect>
         <x>520</x>
@@ -7931,7 +7931,7 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_108">
+     <widget class="QLabel" name="label_Calib_Calib_Gruesa">
       <property name="geometry">
        <rect>
         <x>520</x>
@@ -7964,7 +7964,7 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_112">
+     <widget class="QLabel" name="label_Adquisicion">
       <property name="geometry">
        <rect>
         <x>520</x>
@@ -7997,7 +7997,7 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_114">
+     <widget class="QLabel" name="label_Copiando">
       <property name="geometry">
        <rect>
         <x>520</x>
@@ -8516,7 +8516,7 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_118">
+     <widget class="QLabel" name="label_Calib_Fina">
       <property name="geometry">
        <rect>
         <x>520</x>
@@ -8562,7 +8562,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

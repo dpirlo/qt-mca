@@ -348,7 +348,7 @@ namespace ap {
             // Calcular alohadon
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
-            bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm);
+            bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm, bool gen_image_only);
 
             // Calcular Count skimming
             bool calibrar_count_skimming(int cab_num_act, bool plotear);

@@ -62,6 +62,11 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_new+"Cy_Cabezal_"+QString::number(cab_test)+".txt");
     listasparametros.append(files_new+"Log_Cabezal_"+QString::number(cab_test)+".txt");
     listasparametros.append(files_new+"Tiempos_Cabezal_"+QString::number(cab_test)+".txt");
+    if(Send_HV)
+        listasparametros.append(files_new+"HVTable_Cabezal_"+QString::number(cab_test)+".txt");
+    else
+        listasparametros.append(files_old+"HVTable_Cabezal_"+QString::number(cab_test)+".txt");
+
     // listasparametros.append("*"); // El asterisco no funciona......
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
@@ -74,7 +79,6 @@ void Validate_Cal::on_buttonBox_accepted()
         this->~Validate_Cal();
         return;
     }
-
 
     // Copio al servidor
     programa = "/bin/cp";
@@ -106,6 +110,8 @@ void Validate_Cal::on_buttonBox_accepted()
     listasparametros.append(files_old+"Cy_Cabezal_"+QString::number(cab_test)+".txt");
     listasparametros.append(files_old+"Log_Cabezal_"+QString::number(cab_test)+".txt");
     listasparametros.append(files_old+"Tiempos_Cabezal_"+QString::number(cab_test)+".txt");
+    if(Send_HV)
+        listasparametros.append(files_old+"HVTable_Cabezal_"+QString::number(cab_test)+".txt");
     proceso->start(programa,listasparametros);
     proceso->waitForFinished();
 
@@ -118,7 +124,6 @@ void Validate_Cal::on_buttonBox_accepted()
         this->~Validate_Cal();
         return;
     }
-
 
     // Copio los nuevos archivos
 
@@ -229,6 +234,23 @@ void Validate_Cal::on_buttonBox_accepted()
         return;
     }
 
+    if(Send_HV)
+    {
+        listasparametros.clear();
+        // listasparametros.append("*"); // El asterisco no funciona......
+        listasparametros.append(files_new+"HVTable_Cabezal_"+QString::number(cab_test)+".txt");
+        listasparametros.append(files_old);
+        proceso->start(programa,listasparametros);
+        proceso->waitForFinished();
+        error_flag = proceso->exitCode();
+        if (error_flag != 0)
+        {
+            cout<<"ABORTANDO - No se pudo copiar el archivo "<<listasparametros[0].toStdString()<<" al directorio local."<<endl;
+            QMessageBox::critical(this,tr("ABORTANDO"),tr((string("No se pudo copiar el archivo "+listasparametros[0].toStdString()+" al directorio local.")).c_str()));
+            this->~Validate_Cal();
+            return;
+        }
+    }
 
     // Escribo en el log
     QFile file(files_back+"Log_Global_Calibraciones.txt");
@@ -238,6 +260,23 @@ void Validate_Cal::on_buttonBox_accepted()
     file.close();
 
     cout<<"Backupeado"<<endl;
+
+    if(Delete_Salidas)
+    {
+        bool result = true;
+
+        QDir Dir(files_new);
+
+        if (Dir.exists()) {
+            Q_FOREACH(QFileInfo info, Dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+                result = QFile::remove(info.absoluteFilePath());
+            }
+            result = QDir().rmdir(files_new);
+        }
+
+        if(result)
+            qDebug()<<"Carpeta Salidas borrada con éxito";
+    }
 
     // Finalmente destruyo la ventana.
     this->~Validate_Cal();
@@ -250,12 +289,15 @@ void Validate_Cal::on_buttonBox_rejected()
 }
 
 
-void Validate_Cal::load_data(int checked_Cab, QString Path_Calib_Actual, QString Path_Calib_Base, QString path_files_back)
+void Validate_Cal::load_data(int checked_Cab, QString Path_Calib_Actual, QString Path_Calib_Base, QString path_files_back,bool include_HV,bool Delete_Output)
 {
+    Send_HV = include_HV;
+    Delete_Salidas = Delete_Output;
 
-    if ( Path_Calib_Actual.left(Path_Calib_Actual.length() - 1) != "/") {Path_Calib_Actual = Path_Calib_Actual+"/";}
-    if ( Path_Calib_Base.left(Path_Calib_Base.length() - 1) != "/") {Path_Calib_Base = Path_Calib_Base+"/";}
-    if ( path_files_back.left(path_files_back.length() - 1) != "/") {path_files_back = path_files_back+"/";}
+    QString a =  Path_Calib_Actual.right(1);
+    if ( Path_Calib_Actual.right(1) != "/") {Path_Calib_Actual = Path_Calib_Actual+"/";}
+    if ( Path_Calib_Base.right(1) != "/") {Path_Calib_Base = Path_Calib_Base+"/";}
+    if ( path_files_back.right(1) != "/") {path_files_back = path_files_back+"/";}
 
     cab_test = checked_Cab;
     files_old = Path_Calib_Base+"cabezal_"+QString::number(cab_test)+"/Constantes/";

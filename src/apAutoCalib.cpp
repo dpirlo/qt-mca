@@ -541,7 +541,7 @@ bool AutoCalib::calibrar_fina(void)
                 calibrar_count_skimming(cab_num_act, plot_all);
 
                 // Muestro el nuevo almohadon
-                mostrar_almohadon(cab_num_act,1,1);
+                mostrar_almohadon(cab_num_act,1,1, !plot_all);
 
 
 
@@ -1989,9 +1989,8 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act, bool plotear)
     // Calculo el alhoadon
     calcular_almohadon(cab_num_act);
 
-    if(plotear)
-        // Dibujo el almohadon en pantalla
-        mostrar_almohadon(cab_num_act,1,0);
+    // Dibujo el almohadon en pantalla
+    mostrar_almohadon(cab_num_act,1,0,!plotear);
 
 
     vec vec_log = arma::conv_to<vec>::from(Cx_arma);
@@ -2713,11 +2712,11 @@ bool AutoCalib::visualizar_planar(void)
                     qApp->processEvents();
                     break;
                 case 2:    // Mostrar planar
-                    mostrar_almohadon(cab_num_act,0,0);
+                    mostrar_almohadon(cab_num_act,0,0,0);
                     qApp->processEvents();
                     break;
                 case 3:    // Mostrar planar con count skimming
-                    mostrar_almohadon(cab_num_act,0,1);
+                    mostrar_almohadon(cab_num_act,0,1,0);
                     qApp->processEvents();
                     break;
                 default:
@@ -3407,7 +3406,7 @@ bool AutoCalib::plotear_espectro(int cab_num_act,  bool calibrado)
 
 
 
-bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
+bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm, bool gen_image_only)
 {
 
     mat grilla;
@@ -3536,19 +3535,23 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
 
 
     // Las muestro
-    QPixmap file(nombre_almohadon);
-    if (skimm)
+    if (!gen_image_only)
     {
-        Almohadon_emergente_skimmed[cab_num_act].setPixmap(file);
-        Almohadon_emergente_skimmed[cab_num_act].show();
-        Almohadon_emergente_skimmed[cab_num_act].setScaledContents(true);
+        QPixmap file(nombre_almohadon);
+        if (skimm)
+        {
+            Almohadon_emergente_skimmed[cab_num_act].setPixmap(file);
+            Almohadon_emergente_skimmed[cab_num_act].show();
+            Almohadon_emergente_skimmed[cab_num_act].setScaledContents(true);
+        }
+        else
+        {
+            Almohadon_emergente[cab_num_act].setPixmap(file);
+            Almohadon_emergente[cab_num_act].show();
+            Almohadon_emergente[cab_num_act].setScaledContents(true);
+        }
     }
-    else
-    {
-        Almohadon_emergente[cab_num_act].setPixmap(file);
-        Almohadon_emergente[cab_num_act].show();
-        Almohadon_emergente[cab_num_act].setScaledContents(true);
-    }
+
 
 
 
