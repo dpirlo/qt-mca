@@ -100,6 +100,16 @@ MainWindow::~MainWindow()
     delete calib_th;
     delete calib_wr;
 
+    calibFina_wr->abort();
+    calibFina_th->wait();
+    delete calibFina_th;
+    delete calibFina_wr;
+
+    calibFinaProgress_wr->abort();
+    calibFinaProgress_th->wait();
+    delete calibFinaProgress_th;
+    delete calibFinaProgress_wr;
+
     delete pref;
     delete pmt_select;
     delete pmt_select_autocalib;
@@ -137,6 +147,14 @@ void MainWindow::setInitialConfigurations()
     calib_th = new QThread();
     calib_wr = new AutoCalibThread(calibrador, &mMutex);
     calib_wr->moveToThread(calib_th);
+
+    calibFina_th = new QThread();
+    calibFina_wr = new AutoCalibThread(calibrador, &mMutex);
+    calibFina_wr->moveToThread(calibFina_th);
+
+    calibFinaProgress_th = new QThread();
+    calibFinaProgress_wr = new AutoCalibThread(calibrador, &mMutex);
+    calibFinaProgress_wr->moveToThread(calibFinaProgress_th);
 
     thread_fpga = new QThread();
     worker_fpga = new Thread(arpet, &Mutex_fpga);
@@ -212,6 +230,8 @@ void MainWindow::setInitialConfigurations()
     ui->label_Calib_Fina->setEnabled(false);
     ui->RoundBar_Adq->setRange(0,MAX_MB_CALIB);
     ui->RoundBar_Adq->hide();
+    ui->RoundBar_CalibFina->setRange(0,MAX_PROGRESS_CALIBFINA);
+    ui->RoundBar_CalibFina->hide();
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -376,6 +396,19 @@ void MainWindow::connectSlots()
     connect(calib_wr, SIGNAL(sendHitsTiempos(QVector<double>, int, QString, int, bool)),this,SLOT(receivedHitsTiempos(QVector<double>, int, QString, int, bool)));
     connect(calib_wr, SIGNAL(sendValuesMCACalib(int, int, int)),this,SLOT(receivedValuesMCACalib(int, int, int)));
     connect(calib_wr, SIGNAL(clearGraphsCalib()),this,SLOT(clearSpecCalibGraphs()));
+
+    connect(calibFina_wr, SIGNAL(CalibFinaRequested()), calibFina_th, SLOT(start()));
+    connect(calibFina_th, SIGNAL(started()), calibFina_wr, SLOT(getCalibFina()));
+    connect(calibFina_wr, SIGNAL(finished()), calibFina_th, SLOT(quit()), Qt::DirectConnection);
+    connect(calibFina_wr, SIGNAL(sendCalibFinaReady(bool)), this, SLOT(CalibFinaReady(bool)));
+    connect(this, SIGNAL(sendCalibFinaAbortCommand(bool)),calib_wr,SLOT(setAbortBool(bool)));
+
+    connect(calibFinaProgress_wr, SIGNAL(CalibFinaProgressRequested()), calibFinaProgress_th, SLOT(start()));
+    connect(calibFinaProgress_th, SIGNAL(started()), calibFinaProgress_wr, SLOT(getCalibFinaProgress()));
+    connect(calibFinaProgress_wr, SIGNAL(finished()), calibFinaProgress_th, SLOT(quit()), Qt::DirectConnection);
+    connect(calibFinaProgress_wr, SIGNAL(sendSetCalibFinaProgress(double)), this, SLOT(SetCalibFinaProgress(double)));
+    connect(calibFinaProgress_wr, SIGNAL(sendTerminandoCalibFina()), this, SLOT(TerminandoCalibFina()));
+    connect(this, SIGNAL(sendCalibFinaProgressAbortCommand(bool)),calibFinaProgress_wr,SLOT(setAbortBool(bool)));
 
     /* THREAD FPGA*/
     connect(worker_fpga, SIGNAL(StatusFinishFPGA(bool )),this,SLOT(checkStatusFPGA(bool )));
@@ -8190,7 +8223,6 @@ void MainWindow::on_pushButton_FPGA_2_clicked()
             ui->label_gif_2->show();
         }
      }
-
 }
 
 void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
@@ -8231,7 +8263,6 @@ void MainWindow::checkStatusMoveToServer(bool status){
         thread_adq->exit(0);
         usleep(500);
 
-
         worker_copy->abort();
         thread_copy->exit(0);
         usleep(5000);
@@ -8268,7 +8299,6 @@ void MainWindow::checkStatusMoveToServer(bool status){
 
     if (archivos == 0)
     {
-
         image.load(icon_ok);
 
         if(calibrador->AutoCalibBackground)
@@ -8298,7 +8328,6 @@ void MainWindow::checkStatusMoveToServer(bool status){
             checkStatusAdq(true);
             finish_adquirir=false;
          }
-
     }
 }
 
@@ -8320,8 +8349,6 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
     if(checked)
     {
-
-
         if(adq_running)
         {
             QMessageBox::critical(this,tr("Error"),tr("Se está adquiriendo en otra pestaña."));
@@ -8355,6 +8382,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             ui->label_gif_Calib_Fina->setVisible(false);
             ui->label_Calib_Fina->setEnabled(false);
+            ui->RoundBar_CalibFina->setVisible(false);
 
             qApp->processEvents();
 
@@ -8802,16 +8830,64 @@ void MainWindow::CopyAdqReady(bool state)
     calibrador->path_salida = "Salidas/";
     calibrador->reset_plotear();
 
+//    ui->label_gif_Calib_Fina->setVisible(true);
+//    ui->label_gif_Calib_Fina->setMovie(movie_cargando);
+//    movie_cargando->start();
+//    ui->label_gif_Calib_Fina->setScaledContents(false);
+//    ui->label_gif_Calib_Fina->show();
+
+    calibFina_wr->abort();
+    calibFina_th->wait();
+    usleep(500);
+    calibFina_wr->requestCalibFina();
+
+    setIsAbortCalibFinaProgressFlag(false);
+
+    calibFinaProgress_wr->abort();
+    calibFinaProgress_th->wait();
+    usleep(500);
+    calibFinaProgress_wr->requestCalibFinaProgress();
+
     ui->label_Calib_Fina->setEnabled(true);
-    ui->label_gif_Calib_Fina->setVisible(true);
-    ui->label_gif_Calib_Fina->setMovie(movie_cargando);
-    movie_cargando->start();
-    ui->label_gif_Calib_Fina->setScaledContents(false);
-    ui->label_gif_Calib_Fina->show();
+    ui->RoundBar_CalibFina->setVisible(true);
 
     qApp->processEvents();
 
-    if(!calibrador->calibrar_fina())
+}
+
+void MainWindow::CalibFinaReady(bool state)
+{
+    QPixmap image;
+    int head = 5;//ui->comboBox_head_select_graph_4->currentIndex()+1;
+
+    ui->label_gif_Calib_Fina->setVisible(true);
+
+    emit sendCalibFinaAbortCommand(true);
+    emit sendCalibFinaProgressAbortCommand(true);
+    setIsAbortCalibFinaProgressFlag(true);
+
+//    @myThread->m_abort = true; //Tell the thread to abort
+//    if(!myThread->wait(5000)) //Wait until it actually has terminated (max. 5 sec)
+//    {
+//    qWarning("Thread deadlock detected, bad things may happen !!!");
+//    myThread->terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
+//    myThread->wait(); //Note: We have to wait again here!
+//    }@
+
+//    calibFina_wr->abort();
+//    calibFina_th->wait();
+//    delete calibFina_th;
+//    delete calibFina_wr;
+
+//    calibFinaProgress_wr->abort();
+//    //calibFinaProgress_th->wait();
+//    usleep(5000);
+
+//    calibFina_wr->abort();
+//    //calibFina_th->wait();
+//    usleep(5000);
+
+    if(!state)
     {
         image.load(icon_notok);
         ui->label_gif_Calib_Fina->setPixmap(image);
@@ -8827,7 +8903,7 @@ void MainWindow::CopyAdqReady(bool state)
 
     // Llamo a la ventana de validación para cada uno de los cabezales calibrados
     Validate_Cal *validacion = new Validate_Cal();
-    validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta,true,true); // El true es para que sume a las tablas backupeadas el HV
+    validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta,true,false); // El true es para que sume a las tablas backupeadas el HV
     //validacion->show();
     validacion->exec(); // Para que sea bloqueante
 
@@ -8843,9 +8919,28 @@ void MainWindow::CopyAdqReady(bool state)
     ui->pb_Calibrar_Cabezal->blockSignals(false);
 }
 
+void MainWindow::SetCalibFinaProgress(double progress)
+{
+    ui->RoundBar_CalibFina->setValue(progress);
+}
+
+void MainWindow::TerminandoCalibFina()
+{
+    ui->RoundBar_CalibFina->setVisible(false);
+
+    ui->label_gif_Calib_Fina->setVisible(true);
+    ui->label_gif_Calib_Fina->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Calib_Fina->setScaledContents(false);
+    ui->label_gif_Calib_Fina->show();
+}
+
 void MainWindow::CancelCalib()
 {
     setIsAbortCalibFlag(true);
+    emit sendCalibFinaAbortCommand(true);
+    setIsAbortCalibFinaProgressFlag(true);
+    emit sendCalibFinaProgressAbortCommand(true);
     adq_running = false;
 
     arpet->portDisconnect();
@@ -8861,8 +8956,10 @@ void MainWindow::CancelCalib()
     ui->label_Calib_Config->setEnabled(false);
     ui->label_Calib_Calib_Gruesa->setEnabled(false);
     ui->label_Adquisicion->setEnabled(false);
+    ui->RoundBar_Adq->setVisible(false);
     ui->label_Copiando->setEnabled(false);
     ui->label_Calib_Fina->setEnabled(false);
+    ui->RoundBar_CalibFina->setVisible(false);
 
     QProcess killall;
     killall.waitForStarted();
@@ -8877,15 +8974,75 @@ void MainWindow::CancelCalib()
     }
 
     adq_running = false;
+
     worker_copy->abort();
     thread_copy->exit(0);
     usleep(5000);
+
     calib_wr->abort();
+    //calib_th->wait();
     calib_th->exit(0);
+    usleep(5000);
+
+//    calibFina_wr->abort();
+//    //calibFina_th->wait();
+//    delete calibFina_th;
+//    delete calibFina_wr;
+
+    calibFina_wr->abort();
+    //calibFina_th->wait();
+    //calibFina_th->terminate();
+    calibFina_th->exit(0);
+    usleep(5000);
+
+//    calibFinaProgress_wr->abort();
+//    //calibFina_th->wait();
+//    delete calibFinaProgress_th;
+//    delete calibFinaProgress_wr;
+
+    calibFinaProgress_wr->abort();
+    //calibFinaProgress_th->terminate();
+//    calibFinaProgress_th->wait();
+    calibFinaProgress_th->exit(0);
     usleep(5000);
 }
 
-//void MainWindow::on_pb_Calibrar_Cabezal_clicked()
-//{
 
-//}
+void MainWindow::on_pb_Calibrar_Cabezal_2_clicked()
+{
+    QDir mDir;
+    QPixmap image;
+
+
+    if (!mDir.exists(calibrador->path_salida))
+    {
+        mDir.mkpath(calibrador->path_salida);
+        qDebug() <<"Creada carpeta de Salidas";
+    }
+    else if (mDir.exists(calibrador->path_salida))
+    {
+        qDebug() <<"Carpeta de Salidas ya existía";
+    }
+    else
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Config->setPixmap(image);
+        ui->label_gif_Calib_Config->setScaledContents(true);
+        ui->label_gif_Calib_Config->show();
+
+        CancelCalib();
+        qDebug()<<"Carpeta de Salidas no pudo ser creada";
+        return;
+    }
+
+//    calibFina_wr->abort();
+//    calibFina_th->wait();
+//    delete calibFina_th;
+//    delete calibFina_wr;
+
+//    calibFina_th = new QThread();
+//    calibFina_wr = new AutoCalibThread(calibrador, &mMutex);
+//    calibFina_wr->moveToThread(calibFina_th);
+
+    CopyAdqReady(true);
+}

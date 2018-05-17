@@ -19,6 +19,7 @@ void AutoCalibThread::abort()
     if (_calibing)
     {
         _abort = true;
+        calibrador->_abort=true;
         if (debug) cout<<"Se aborta la operación en el AutoCalibThread: "<<thread()->currentThreadId()<<endl;
     }
     mutex->unlock();
@@ -34,10 +35,33 @@ void AutoCalibThread::requestCalib()
 {
     mutex->lock();
     _calibing = true;
+    calibrador->_abort=false;
     _abort = false;
     mutex->unlock();
 
     emit CalibRequested();
+}
+
+void AutoCalibThread::requestCalibFina()
+{
+    mutex->lock();
+    _calibing = true;
+    calibrador->_abort=false;
+    _abort = false;
+    mutex->unlock();
+
+    emit CalibFinaRequested();
+}
+
+void AutoCalibThread::requestCalibFinaProgress()
+{
+    mutex->lock();
+    _calibing = true;
+    calibrador->_abort=false;
+    _abort = false;
+    mutex->unlock();
+
+    emit CalibFinaProgressRequested();
 }
 
 void AutoCalibThread::getCalib()
@@ -194,5 +218,35 @@ void AutoCalibThread::getCalib()
     emit finished();
 }
 
+void AutoCalibThread::getCalibFina()
+{
+    if(!calibrador->calibrar_fina())
+    {
+        cout<<"salio mal de calib fina"<<endl;
+        emit sendCalibFinaReady(false);
+    }
+    else
+    {
+        cout<<"salio bien de calib fina"<<endl;
+        emit sendCalibFinaReady(true);
+    }
 
+    calibrador->Energia_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->Tiempos_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->Tiempos_full_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->TimeStamp_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    //_calibing = false;
+
+    calibrador->_abort=false;
+
+    emit finished();
+}
+
+void AutoCalibThread::getCalibFinaProgress()
+{
+    while(_calibing && !calibrador->is_abort_calibFinaProgress && !_abort && calibrador->calibFinaProgress < MAX_PROGRESS_CALIBFINA)
+        emit sendSetCalibFinaProgress(calibrador->calibFinaProgress);
+    emit sendTerminandoCalibFina();
+    emit finished();
+}
 

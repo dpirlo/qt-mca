@@ -19,6 +19,8 @@ namespace ap {
   public:
       explicit AutoCalibThread(shared_ptr<AutoCalib> _calibrador, QMutex *_mutex, QObject *parent = 0);
       void requestCalib();
+      void requestCalibFina();
+      void requestCalibFinaProgress();
       void abort();
 
   private:
@@ -31,6 +33,8 @@ namespace ap {
 
   signals:
       void CalibRequested();
+      void CalibFinaRequested();
+      void CalibFinaProgressRequested();
       void finished();
       void sendConnectPortArpet();
       void sendOffButtonCalib();
@@ -40,10 +44,15 @@ namespace ap {
       void sendValuesMCACalib(int umbral,int pico, int FWHM);
       void sendAutocalibReady(bool state,int pmt_roto=0);
       void clearGraphsCalib();
+      void sendCalibFinaReady(bool state);
+      void sendSetCalibFinaProgress(double progress);
+      void sendTerminandoCalibFina();
 
   public slots:
       void setAbortBool(bool abort);
       void getCalib();
+      void getCalibFina();
+      void getCalibFinaProgress();
 
   public:
       void setPMTSelectedList(QList<QString> list) {pmt_selected_list = list;}
