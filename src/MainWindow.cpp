@@ -8848,6 +8848,8 @@ void MainWindow::CopyAdqReady(bool state)
     usleep(500);
     calibFinaProgress_wr->requestCalibFinaProgress();
 
+    ui->RoundBar_CalibFina->setValue(0);
+
     ui->label_Calib_Fina->setEnabled(true);
     ui->RoundBar_CalibFina->setVisible(true);
 

@@ -1331,7 +1331,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
         // Calculo la diferencia de tiempo entre el PMT actual y todo el resto.
         for (int i = 0 ; i < CANTIDADdEpMTS && !_abort; i ++)
         {
-            //calibFinaProgress += 1;
+            calibFinaProgress += 1;
 
             // Le resto a todos los PMT la referencia actual
             rowvec dist_aux = Tiempos_max_PMT.row(i)-Tiempos_max_PMT.row(index_PMT_cent);

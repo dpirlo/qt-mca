@@ -111,7 +111,7 @@
 #define     EST_BINES_ESPACIAL_Y_COIN           65
 #define     EST_ANCHO_BIN_ESPACIALES_COIN       5.0
 
-#define     MAX_PROGRESS_CALIBFINA              4*48+5
+#define     MAX_PROGRESS_CALIBFINA              60
 
 using namespace arma;
 
@@ -237,6 +237,7 @@ namespace ap {
             mat Tiempos_calib[CANTIDADdEcABEZALES];
             mat Tiempos_full_calib[CANTIDADdEcABEZALES];
             mat TimeStamp_calib[CANTIDADdEcABEZALES];
+            QList<int> Cab_List;
 
             // Plot control
             void set_plotear() {plot_all = 1;}
@@ -254,7 +255,6 @@ namespace ap {
 
             // Datos calibracion
 //            QList<int> PMTs_List;
-            QList<int> Cab_List;
             QList<int> Vis_List;
             int  Canal_Obj, tiempo_adq;
 
