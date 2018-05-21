@@ -279,13 +279,15 @@ void Validate_Cal::on_buttonBox_accepted()
     }
 
     // Finalmente destruyo la ventana.
-    this->~Validate_Cal();
+    QDialog::accept();
+//    this->~Validate_Cal(); // Lo saco porque sino no me toma el evento al terminar el exec....
 }
 
 void Validate_Cal::on_buttonBox_rejected()
 {
     // No hago nada, solo destruyo la ventana.
-    this->~Validate_Cal();
+    QDialog::reject();
+//    this->~Validate_Cal(); // Lo saco porque sino no me toma el evento al terminar el exec....
 }
 
 

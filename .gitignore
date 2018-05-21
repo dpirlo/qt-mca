@@ -6,3 +6,5 @@ moc_*
 moc_*
 ui_*
 qrc_style.cpp
+LOG_*.txt
+log_ETH.info

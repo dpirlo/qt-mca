@@ -655,9 +655,11 @@ void MainWindow::checkStatusAdq(bool status)
            ui->label_gif_Calib_Adq->show();
            AutoAdqReady(true);
         }
-
-        worker_copy->requestMoveToServer();
-        copying=true;
+        else
+        {
+            worker_copy->requestMoveToServer();
+            copying=true;
+        }
 
         adq_running = false;
         cant_archivos =1;
@@ -8347,6 +8349,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
     commands_calib.clear();
 
+    debug_calib = false;
+
     if(checked)
     {
         if(adq_running)
@@ -8403,7 +8407,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-
+                CancelCalibExcuse = "Carpeta de Salidas no pudo ser creada";
                 CancelCalib();
                 qDebug()<<"Carpeta de Salidas no pudo ser creada";
                 return;
@@ -8415,6 +8419,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             {
                 messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
                 messageBox.setFixedSize(500,200);
+                CancelCalibExcuse = "Tiempo adquisicion fuera de los limites fijados.";
                 CancelCalib();
                 return;
             }
@@ -8423,7 +8428,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             /* CONFIGURACIÓN CABEZAL (SE PRENDE LA ALTA), LAS TABLAS PARA CONFIGURACIÓN NO IMPORTAN */
             /********************************************************************************************************/
 
-            //    ui->label_gif_Calib_Config->setVisible(true);
+            ui->label_gif_Calib_Config->setVisible(true);
             ui->label_gif_Calib_Config->setMovie(movie_cargando);
             movie_cargando->start();
             ui->label_gif_Calib_Config->setScaledContents(false);
@@ -8442,10 +8447,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
-                Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                throw exception_Cabezal_Apagado;
+                CancelCalibExcuse = "Cabezal apagado.";
                 CancelCalib();
-
                 error = true;
                 return;
             }
@@ -8455,8 +8458,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
+                CancelCalibExcuse = "Cabezal "+QString::number(head)+ " todavía no iniciado.";
                 CancelCalib();
-                ui->label_data_output->setText("Cabezal "+QString::number(head)+ " todavía no iniciado");
                 error = true;
                 return;
             }
@@ -8465,8 +8468,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 ui->label_gif_Calib_Config->setPixmap(image);
                 ui->label_gif_Calib_Config->setScaledContents(true);
                 ui->label_gif_Calib_Config->show();
+                CancelCalibExcuse ="PMTs no responden.";
                 CancelCalib();
-                ui->label_data_output->setText("PMTs no responden");
                 error = true;
                 return;
             }
@@ -8499,18 +8502,18 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
+                CancelCalibExcuse = "Error comunicación con Coincidencias";
                 CancelCalib();
-                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
                 image.load(icon_notok);
                 ui->label_gif_Calib_Adq->setPixmap(image);
                 ui->label_gif_Calib_Adq->setScaledContents(true);
                 ui->label_gif_Calib_Adq->show();
-                throw exception_Cabezal_Apagado;
+                return;
             }
 
             if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                CancelCalibExcuse = "Error Init con Coincidencias.";
                 CancelCalib();
-                Exceptions exception_Cabezal_Apagado("Error Init con Coincidencias");
                 image.load(icon_notok);
                 ui->label_gif_Calib_Adq->setPixmap(image);
                 ui->label_gif_Calib_Adq->setScaledContents(true);
@@ -8532,6 +8535,8 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             qApp->processEvents();
 
+            setIsAbortCalibFlag(false);
+
         }
         catch(Exceptions & ex)
         {
@@ -8539,12 +8544,11 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             ui->label_gif_Calib_Config->setPixmap(image);
             ui->label_gif_Calib_Config->setScaledContents(true);
             ui->label_gif_Calib_Config->show();
-            QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
             error = true;
             ui->pb_Calibrar_Cabezal->blockSignals(true);
             ui->pb_Calibrar_Cabezal->setChecked(false);
             ui->pb_Calibrar_Cabezal->blockSignals(false);
-
+            CancelCalibExcuse = QString::fromStdString("La rutina de AutoCalibración no está funcando. Error: "+string(ex.excdesc));
             CancelCalib();
         }
 
@@ -8570,7 +8574,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 arpet->portDisconnect();
 
 
-                ui->label_gif_Calib_Calib_Gruesa->setEnabled(true);
+                ui->label_Calib_Calib_Gruesa->setEnabled(true);
                 ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
                 movie_cargando->start();
                 ui->label_gif_Calib_Calib_Gruesa->setScaledContents(false);
@@ -8591,6 +8595,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
             QMessageBox::critical(this,tr("Atención"),tr((string("La rutina de AutoCalibración no está funcando. Error: ")+string(ex.excdesc)).c_str()));
             setIsAbortCalibFlag(true);
             calibrador->setAutoCalibBackground(false);
+            AutocalibReady(false);
         }
     }
     else
@@ -8603,17 +8608,17 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
         ui->label_gif_Copiando->setVisible(false);
         ui->label_gif_Calib_Fina->setVisible(false);
 
+        CancelCalibExcuse = "Cancelado manualmente.";
         CancelCalib();
 
         if(commands_calib.length()>2)
-            QFile::remove("./acquire_c*");
+            QFile::remove(commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw");
     }
 
 }
 
 void MainWindow::AutocalibReady(bool state,int pmt_roto)
 {
-    error_code error_code;
     QPixmap image;
 
     emit sendCalibAbortCommand(true);
@@ -8624,10 +8629,6 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
         ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
-
-        CancelCalib();
-
-        ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
 
         if(pmt_roto < 0){
             QVector<double> aux_hist;
@@ -8646,10 +8647,12 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
 
             validate_autocalib->exec();
 
-            CancelCalib();
-
-            ui->label_data_output->setText("Problema en PMT "+QString::number(pmt_roto*-1));
+            CancelCalibExcuse = "Problema en PMT "+QString::number(pmt_roto*-1);
         }
+        else
+            CancelCalibExcuse = "Error en Calibración Gruesa (AutoCalib).";
+
+        CancelCalib();
 
         return;
     }
@@ -8665,9 +8668,8 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
 
+        CancelCalibExcuse = "Se rechazó la Calibración Gruesa";
         CancelCalib();
-
-        ui->label_data_output->setText("Se rechazó la Calibración Gruesa");
 
         return;
     }
@@ -8765,9 +8767,9 @@ void MainWindow::AutoAdqReady(bool state)
         ui->label_gif_Calib_Adq->setScaledContents(true);
         ui->label_gif_Calib_Adq->show();
 
+        CancelCalibExcuse = "Error en Adquisición.";
         CancelCalib();
 
-        ui->label_data_output->setText("Error en Adquisición");
         return;
     }
 
@@ -8778,63 +8780,19 @@ void MainWindow::AutoAdqReady(bool state)
     ui->label_gif_Calib_Adq->show();
 
     qApp->processEvents();
-    ui->label_Copiando->setEnabled(true);
-    ui->label_gif_Copiando->setVisible(true);
-    ui->label_gif_Copiando->setMovie(movie_cargando);
-    movie_cargando->start();
-    ui->label_gif_Copiando->setScaledContents(false);
-    ui->label_gif_Copiando->show();
-
-    qApp->processEvents();
-}
-
-void MainWindow::CopyAdqReady(bool state)
-{
-    QPixmap image;
-
-    calibrador->setAutoCalibBackground(false);
-
-    if(!state)
-    {
-        image.load(icon_notok);
-        ui->label_gif_Copiando->setPixmap(image);
-        ui->label_gif_Copiando->setScaledContents(true);
-        ui->label_gif_Copiando->show();
-
-        CancelCalib();
-
-        ui->label_data_output->setText("Error en Adquisición");
-
-        return;
-    }
-
-    image.load(icon_ok);
-    ui->label_gif_Copiando->setPixmap(image);
-    ui->label_gif_Copiando->setScaledContents(true);
-    ui->label_gif_Copiando->show();
-
-    qApp->processEvents();
 
     QList<int> checked_Cab;
-    int head = 5;//ui->comboBox_head_select_graph_4->currentIndex()+1;
+    int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
 
     checked_Cab.append(head);
 
     calibrador->setCab_List(checked_Cab);
 
-    //ruta_archivo_adquisicion = commands_calib.at(1)+"/"+commands_calib.at(4)+"/"+commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw";
-    ruta_archivo_adquisicion = "/media/arpet/pet/calibraciones/campo_inundado/03-info/2018-05-16/acquire_calib_5_2018-05-16-16-09_1.raw";
-
+    if(!debug_calib) ruta_archivo_adquisicion = commands_calib.at(2)+ "_"+commands_calib.at(5)+"_"+commands_calib.at(6)+".raw";
 
     calibrador->setAdq_Cab(ruta_archivo_adquisicion.toStdString(),head);
     calibrador->path_salida = "Salidas/";
     calibrador->reset_plotear();
-
-//    ui->label_gif_Calib_Fina->setVisible(true);
-//    ui->label_gif_Calib_Fina->setMovie(movie_cargando);
-//    movie_cargando->start();
-//    ui->label_gif_Calib_Fina->setScaledContents(false);
-//    ui->label_gif_Calib_Fina->show();
 
     calibFina_wr->abort();
     calibFina_th->wait();
@@ -8860,34 +8818,13 @@ void MainWindow::CopyAdqReady(bool state)
 void MainWindow::CalibFinaReady(bool state)
 {
     QPixmap image;
-    int head = 5;//ui->comboBox_head_select_graph_4->currentIndex()+1;
+    int head = ui->comboBox_head_select_graph_4->currentIndex()+1;
 
     ui->label_gif_Calib_Fina->setVisible(true);
 
     emit sendCalibFinaAbortCommand(true);
     emit sendCalibFinaProgressAbortCommand(true);
     setIsAbortCalibFinaProgressFlag(true);
-
-//    @myThread->m_abort = true; //Tell the thread to abort
-//    if(!myThread->wait(5000)) //Wait until it actually has terminated (max. 5 sec)
-//    {
-//    qWarning("Thread deadlock detected, bad things may happen !!!");
-//    myThread->terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
-//    myThread->wait(); //Note: We have to wait again here!
-//    }@
-
-//    calibFina_wr->abort();
-//    calibFina_th->wait();
-//    delete calibFina_th;
-//    delete calibFina_wr;
-
-//    calibFinaProgress_wr->abort();
-//    //calibFinaProgress_th->wait();
-//    usleep(5000);
-
-//    calibFina_wr->abort();
-//    //calibFina_th->wait();
-//    usleep(5000);
 
     if(!state)
     {
@@ -8896,9 +8833,8 @@ void MainWindow::CalibFinaReady(bool state)
         ui->label_gif_Calib_Fina->setScaledContents(true);
         ui->label_gif_Calib_Fina->show();
 
+        CancelCalibExcuse = "Error en Calibraócin fina";
         CancelCalib();
-
-        ui->label_data_output->setText("Error en Calibraócin fina");
 
         return;
     }
@@ -8907,7 +8843,21 @@ void MainWindow::CalibFinaReady(bool state)
     Validate_Cal *validacion = new Validate_Cal();
     validacion->load_data(head, calibrador->getPathSalida(), this->root_config_path_posta, this->root_server_path_posta,true,false); // El true es para que sume a las tablas backupeadas el HV
     //validacion->show();
-    validacion->exec(); // Para que sea bloqueante
+    //validacion->exec(); // Para que sea bloqueante
+
+    int ret = validacion->exec(); // Bloqueante y devuelve QDialog
+
+    if(ret == QDialog::Rejected)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Calib_Fina->setPixmap(image);
+        ui->label_gif_Calib_Fina->setScaledContents(true);
+        ui->label_gif_Calib_Fina->show();
+
+        ui->label_data_output->setText("Se rechazó la Calibración Fina");
+
+        return;
+    }
 
     image.load(icon_ok);
     ui->label_gif_Calib_Fina->setPixmap(image);
@@ -8916,9 +8866,50 @@ void MainWindow::CalibFinaReady(bool state)
 
     qApp->processEvents();
 
+    worker_copy->requestMoveToServer();
+    copying=true;
+
+    ui->label_Copiando->setEnabled(true);
+    ui->label_gif_Copiando->setVisible(true);
+    ui->label_gif_Copiando->setMovie(movie_cargando);
+    movie_cargando->start();
+    ui->label_gif_Copiando->setScaledContents(false);
+    ui->label_gif_Copiando->show();
+
+    qApp->processEvents();
+}
+
+void MainWindow::CopyAdqReady(bool state)
+{
+    QPixmap image;
+
+    calibrador->setAutoCalibBackground(false);
+
+    if(!state)
+    {
+        image.load(icon_notok);
+        ui->label_gif_Copiando->setPixmap(image);
+        ui->label_gif_Copiando->setScaledContents(true);
+        ui->label_gif_Copiando->show();
+
+        CancelCalibExcuse = "Error en copia de adquisición al server.";
+        CancelCalib();
+
+        return;
+    }
+
+    image.load(icon_ok);
+    ui->label_gif_Copiando->setPixmap(image);
+    ui->label_gif_Copiando->setScaledContents(true);
+    ui->label_gif_Copiando->show();
+
+    qApp->processEvents();
+
     ui->pb_Calibrar_Cabezal->blockSignals(true);
     ui->pb_Calibrar_Cabezal->setChecked(false);
     ui->pb_Calibrar_Cabezal->blockSignals(false);
+
+    ui->label_data_output->setText("Calibración finalizada.");
 }
 
 void MainWindow::SetCalibFinaProgress(double progress)
@@ -8947,7 +8938,7 @@ void MainWindow::CancelCalib()
 
     arpet->portDisconnect();
 
-    ui->label_data_output->setText("Calibración cancelada");
+    ui->label_data_output->setText(CancelCalibExcuse.toStdString().c_str());
 
     calibrador->setAutoCalibBackground(false);
 
@@ -8971,7 +8962,8 @@ void MainWindow::CancelCalib()
     QFile logger(ruta_log_adquisicion);
     if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        logger.write("Se cancela la adquisición manualmente \n");
+        string cancel_text = "Calibración cancelada por: "+CancelCalibExcuse.toStdString()+"\n";
+        logger.write(cancel_text.c_str());
         logger.close();
     }
 
@@ -8981,40 +8973,24 @@ void MainWindow::CancelCalib()
     thread_copy->exit(0);
     usleep(5000);
 
-    calib_wr->abort();
-    //calib_th->wait();
-    calib_th->exit(0);
-    usleep(5000);
-
-//    calibFina_wr->abort();
-//    //calibFina_th->wait();
-//    delete calibFina_th;
-//    delete calibFina_wr;
-
     calibFina_wr->abort();
-    //calibFina_th->wait();
-    //calibFina_th->terminate();
     calibFina_th->exit(0);
     usleep(5000);
 
-//    calibFinaProgress_wr->abort();
-//    //calibFina_th->wait();
-//    delete calibFinaProgress_th;
-//    delete calibFinaProgress_wr;
-
     calibFinaProgress_wr->abort();
-    //calibFinaProgress_th->terminate();
-//    calibFinaProgress_th->wait();
     calibFinaProgress_th->exit(0);
     usleep(5000);
 }
 
 
-void MainWindow::on_pb_Calibrar_Cabezal_2_clicked()
-{
-    QDir mDir;
-    QPixmap image;
 
+
+void MainWindow::on_pb_Debug_clicked()
+{
+
+    debug_calib = true;
+
+    QDir mDir;
 
     if (!mDir.exists(calibrador->path_salida))
     {
@@ -9027,24 +9003,14 @@ void MainWindow::on_pb_Calibrar_Cabezal_2_clicked()
     }
     else
     {
-        image.load(icon_notok);
-        ui->label_gif_Calib_Config->setPixmap(image);
-        ui->label_gif_Calib_Config->setScaledContents(true);
-        ui->label_gif_Calib_Config->show();
-
-        CancelCalib();
         qDebug()<<"Carpeta de Salidas no pudo ser creada";
         return;
     }
 
-//    calibFina_wr->abort();
-//    calibFina_th->wait();
-//    delete calibFina_th;
-//    delete calibFina_wr;
 
-//    calibFina_th = new QThread();
-//    calibFina_wr = new AutoCalibThread(calibrador, &mMutex);
-//    calibFina_wr->moveToThread(calibFina_th);
+    ruta_archivo_adquisicion = "/media/arpet/pet/calibraciones/campo_inundado/03-info/2018-05-21/acquire_calib_1_2018-05-21-11-41_1.raw";
 
-    CopyAdqReady(true);
+    AutoAdqReady(true);
+
+    return;
 }

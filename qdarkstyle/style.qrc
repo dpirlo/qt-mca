@@ -43,6 +43,7 @@
         <file>rc/ic_check_circle.png</file>
         <file>rc/cargando2.gif</file>
         <file>rc/icono_alpha.jpeg</file>
+        <file>rc/grilla.dat</file>
     </qresource>
     <qresource prefix="/qdarkstyle">
         <file>style.qss</file>

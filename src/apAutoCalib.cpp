@@ -1225,7 +1225,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
     // Busco los elementos centroides de cada PMT
     for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
-        calibFinaProgress += 1;
+        //calibFinaProgress += 1;
 
         stream<<endl;
         stream<<" %---------------------- EVENTOS POR PMT ------------------------------"<<endl;
@@ -1331,7 +1331,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
         // Calculo la diferencia de tiempo entre el PMT actual y todo el resto.
         for (int i = 0 ; i < CANTIDADdEpMTS && !_abort; i ++)
         {
-            calibFinaProgress += 1;
+            //calibFinaProgress += 1;
 
             // Le resto a todos los PMT la referencia actual
             rowvec dist_aux = Tiempos_max_PMT.row(i)-Tiempos_max_PMT.row(index_PMT_cent);
@@ -1461,7 +1461,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
     for(int iter_act = 0 ; iter_act < MAX_ITER_ENERGIA ; iter_act ++)
     {
 
-        calibFinaProgress += 5;
+        calibFinaProgress += 2;
 
         // Recorto los eventos dentro del FWTM de la matriz de eventos pre-calibrada
         mat Energia_calib_FWHM;
@@ -1552,7 +1552,6 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
         stream<<"       Ce_paso_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
         // que no se apague la pantalla
-        calibFinaProgress = MAX_PROGRESS_CALIBFINA;
         //qApp->processEvents();
 
 
@@ -1596,6 +1595,8 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------SALIDA DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    calibFinaProgress = MAX_PROGRESS_CALIBFINA;
 
     return 1;
 }
@@ -3452,8 +3453,16 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm, bool 
 
     mat grilla;
     grilla.set_size(306,306);
-    grilla.load("../../images/grilla.dat", raw_ascii);
 
+    // Esta chanchada es para poder dejar el path relativo de la grilla en la carpeta rc/ donde están los íconos
+    QTemporaryDir tempDir;
+    if (tempDir.isValid()) {
+        const QString tempFile = tempDir.path() + "/grilla.dat";
+        if (QFile::copy(grilla_dat, tempFile))
+            grilla.load(tempFile.toStdString(), raw_ascii);
+    }
+    else
+        return false;
 
     // Almohadon auxiliar para presentar
     mat almohadon_aux = almohadon[cab_num_act];

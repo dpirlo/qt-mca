@@ -31,10 +31,8 @@
 #include "qcustomplot.h"
 #include "SetPreferences.h"
 #include "SetPMTs.h"
-//#include "inc/QRoundProgressBar.h"
 #include "../ui/Validate.h"
 #include "apMCAE.hpp"
-//#include "apAutoCalib.hpp"
 #include "apRecon.hpp"
 #include "apThread.hpp"
 #include "apAutoCalibThread.hpp"
@@ -44,6 +42,7 @@
 #include <QPixmap>
 #include <QTextStream>
 #include <inc/QRoundProgressBar.h>
+#include "ui_MainWindow.h"
 
 
 #define MONOHEAD 0
@@ -89,7 +88,7 @@
 #define CANTIDAD_ELEMENTOS_PLANAR 97
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
 
-#define MAX_MB_CALIB 1024
+#define MAX_MB_CALIB 512//1024
 #define MAX_PROGRESS_CALIBFINA 60
 
 
@@ -354,7 +353,7 @@ private slots:
 
     void on_pb_Autocalib_Tiempos_Reset_clicked();
 
-    void on_pb_Calibrar_Cabezal_2_clicked();
+    void on_pb_Debug_clicked();
 
 private:
     QString openConfigurationFile();
@@ -531,6 +530,7 @@ private:
     QString port_name;
     QString root_config_path_posta;
     QString root_server_path_posta;
+    QString CancelCalibExcuse;
 
     QVector< QVector<int> > qcp_pmt_parameters, qcp_head_parameters, qcp_pmt_calib_parameters;
     int  AT, LowLimit[6], Target;
@@ -552,6 +552,7 @@ private:
     QString size_archivo_adq;
     bool adq_running = false;
     bool copying= false;
+    bool debug_calib= false;
 
     QStringList commands_calib;
 
@@ -560,7 +561,6 @@ private:
 
     QGraphicsScene *scene;
     /* Area de prueba/testing */
-
 
 public:
     /**

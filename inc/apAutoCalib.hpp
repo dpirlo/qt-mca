@@ -113,6 +113,8 @@
 
 #define     MAX_PROGRESS_CALIBFINA              60
 
+#define     grilla_dat      ":/qss_icons/rc/grilla.dat"
+
 using namespace arma;
 
 namespace ap {
