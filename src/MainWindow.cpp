@@ -3,7 +3,6 @@
 #include "ui_SetPreferences.h"
 #include "ui_SetPMTs.h"
 #include "ui/validate_cal.hpp"
-#include <QFileInfo>
 
 /**
  * @brief MainWindow::MainWindow
@@ -39,16 +38,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_aqd_file_open->hide();
     ui->cb_Calib_Cab->hide();
     ui->lineEdit_aqd_file_size->clear();
-
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
     QTimer *timerw = new QTimer(this);
     connect(timerw, SIGNAL(timeout()), this, SLOT(updateCaption()));
-
     CargoTemaOscuro();
-
+    ui->calendarWidget->setMaximumDate(QDate::currentDate());
+    Busca_Logs(QDate::currentDate().year(),QDate::currentDate().month());
+    ui->frame_multihead_graph_2->hide();
     timerw->start(1000);
-    //parseConfigurationFile(true, "0");
 
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
@@ -329,7 +327,6 @@ void MainWindow::checkCombosStatus()
     connect(ui->checkBox_c_5 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead5ToMCA(bool)));
     connect(ui->checkBox_c_6 ,SIGNAL(toggled(bool)),this,SLOT(syncCheckBoxHead6ToMCA(bool)));
     connect(ui->comboBox_head_mode_select_graph_2 ,SIGNAL(currentIndexChanged (int)),this,SLOT(setTabLog(int)));
-
 }
 /**
  * @brief MainWindow::connectSlots
@@ -338,38 +335,27 @@ void MainWindow::connectSlots()
 {
     /* Threads signals/slots */
     connect(worker, SIGNAL(sendRatesValues(int, int, int, int)), this, SLOT(writeRatesToLog(int,  int, int, int)));
-
     connect(worker, SIGNAL(sendRatesValuesCoin(int, int, int,int,int,int,int,int,int)), this, SLOT(writeRatesCoinToLog(  int, int, int,int,int,int,int,int,int)));
-    //connect(thread_FPGA, SIGNAL( Grabo_OK(bool)),this , SLOT(image_button(bool)) );
     connect(worker, SIGNAL(sendresetHeads()), this, SLOT(recieveresetheads()));
-
-
-
     connect(worker, SIGNAL(sendTempValues(int, double, double, double)), this, SLOT(writeTempToLog(int,  double, double, double)));
     connect(worker, SIGNAL(sendOffSetValues(int, int *)), this, SLOT(writeOffSetToLog(int,  int *)));
     connect(worker, SIGNAL(logRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(getLogWork()));
-
     connect(worker_fpga, SIGNAL(GrabarFPGArequested()), thread_fpga, SLOT(start()));
     connect(thread_fpga, SIGNAL(started()), worker_fpga, SLOT(GrabarFPGA()));
-
     connect(worker_adq, SIGNAL(AdquisicionRequested()), thread_adq, SLOT(start()));
     connect(thread_adq, SIGNAL(started()), worker_adq, SLOT(Adquirir_handler()));
-
     connect(worker_copy, SIGNAL(MoveToServerRequested()), thread_copy, SLOT(start()));
     connect(thread_copy, SIGNAL(started()), worker_copy, SLOT(MoveToServer_handler()));
-
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(this,   SIGNAL(sendAbortCommand(bool)),worker,SLOT(setAbortBool(bool)));
     connect(worker, SIGNAL(sendLogErrorCommand()),this,SLOT(getLogErrorThread()));
-
     connect(worker, SIGNAL(startElapsedTime()), etime_th, SLOT(start()), Qt::DirectConnection);
     connect(worker, SIGNAL(finishedElapsedTime(bool)), etime_wr, SLOT(cancelLogging(bool)));
     connect(etime_th, SIGNAL(started()), etime_wr, SLOT(getElapsedTime()));
     connect(etime_wr, SIGNAL(finished()), etime_th, SLOT(quit()), Qt::DirectConnection);
     connect(etime_wr, SIGNAL(sendElapsedTimeString(QString)),this,SLOT(receivedElapsedTimeString(QString)));
     connect(etime_wr, SIGNAL(sendFinalElapsedTimeString(QString)),worker,SLOT(receivedFinalElapsedTimeString(QString)));
-
     connect(mcae_wr, SIGNAL(mcaRequested()), mcae_th, SLOT(start()));
     connect(mcae_th, SIGNAL(started()), mcae_wr, SLOT(getMCA()));
     connect(mcae_wr, SIGNAL(finished()), mcae_th, SLOT(quit()), Qt::DirectConnection);
@@ -379,11 +365,9 @@ void MainWindow::connectSlots()
     connect(worker, SIGNAL(sendSaturated(int , double * )),this, SLOT( recievedSaturated(int , double *)));
     connect(worker, SIGNAL(sendPicosLog(struct Pico_espectro ,int)),this, SLOT( recievedPicosLog(struct Pico_espectro ,int)));
     connect(mcae_wr, SIGNAL(sendPicosMCA(struct Pico_espectro ,int)),this, SLOT( recievedPicosMCA(struct Pico_espectro ,int)));
-
     connect(mcae_wr, SIGNAL(sendValuesMCA(long long, int, int, int, bool)),this,SLOT(receivedValuesMCA(long long, int, int, int, bool)));
     connect(mcae_wr, SIGNAL(clearGraphsPMTs()),this,SLOT(clearSpecPMTsGraphs()));
     connect(mcae_wr, SIGNAL(clearGraphsHeads()),this,SLOT(clearSpecHeadsGraphs()));
-
     connect(calib_wr, SIGNAL(CalibRequested()), calib_th, SLOT(start()));
     connect(calib_th, SIGNAL(started()), calib_wr, SLOT(getCalib()));
     connect(calib_wr, SIGNAL(finished()), calib_th, SLOT(quit()), Qt::DirectConnection);
@@ -414,12 +398,8 @@ void MainWindow::connectSlots()
     connect(worker_fpga, SIGNAL(StatusFinishFPGA(bool )),this,SLOT(checkStatusFPGA(bool )));
 
     /* THREAD ADQ */
-
     connect(worker_adq, SIGNAL(StatusFinishAdq(bool )),this,SLOT(checkStatusAdq(bool)));
-
-
     connect(worker_copy, SIGNAL(StatusFinishMoveToServer(bool )),this,SLOT(checkStatusMoveToServer(bool)));
-
 
     /* Objetos */
     connect(this, SIGNAL(ToPushButtonAdquirir(bool)),ui->pushButton_adquirir,SLOT(setChecked(bool)));
@@ -6349,7 +6329,7 @@ void MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged(int in
     switch (index) {
     case 0:
         ui->comboBox_head_select_graph_3->show();
-       // ui->frame_multihead_graph_2->hide();
+        ui->frame_multihead_graph_2->hide();
         break;
     case 1:
         ui->comboBox_head_select_graph_3->hide();
@@ -6804,7 +6784,7 @@ void MainWindow::on_calendarWidget_selectionChanged()
         graph++;
       }
         else {
-            QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+            //QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
         }
       }
 
@@ -6862,7 +6842,7 @@ void MainWindow::on_calendarWidget_selectionChanged()
           lista.clear();
         }
         else {
-             QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+             //QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
         }
       }
 
@@ -6922,7 +6902,7 @@ void MainWindow::on_calendarWidget_selectionChanged()
 
         }
         else {
-             QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+             //QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
         }
       }
 
@@ -6977,7 +6957,7 @@ void MainWindow::on_calendarWidget_selectionChanged()
           graph++;
         }
         else {
-             QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
+             //QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
         }
       }
   }
@@ -8333,6 +8313,44 @@ void MainWindow::checkStatusMoveToServer(bool status){
     }
 }
 
+void MainWindow::on_calendarWidget_currentPageChanged(int year, int month)
+{
+    Busca_Logs(year,month);
+}
+
+void MainWindow::Busca_Logs(int year,int month){
+    QTime hora(0, 0, 0);
+    QString initfile;
+    QDate DateIterativo;
+    QBrush brush;
+    QTextCharFormat cf;
+
+    DateIterativo.setDate(year,month,1);
+
+    for (int i=0;i<= DateIterativo.daysInMonth();i++) {
+        for(int i=0;i<24;i++){
+           hora.setHMS(i,0,0);
+           initfile=root_log_path+"/"+"LOG"+DateIterativo.toString("yyyyMMdd")+hora.toString("hh")+".log";
+           if(fileExists(initfile)){
+
+               brush.setColor( QColor(61,174,233) );
+               cf = ui->calendarWidget->dateTextFormat( DateIterativo );
+               //cf.setBackground( brush );
+               cf.setForeground(brush);
+               cf.setFontWeight(QFont::Bold);
+               ui->calendarWidget->setDateTextFormat( DateIterativo, cf );
+           }else{
+               //brush.setColor( QColor(42,41,41) ); gris ar-pet
+               cf = ui->calendarWidget->dateTextFormat( DateIterativo );
+
+               //cf.setForeground(brush);
+           }
+           ui->calendarWidget->setDateTextFormat( DateIterativo, cf );
+        }
+        DateIterativo.setDate(year,month,i+1);
+    }
+}
+
 /**
  * @brief MainWindow::on_pb_Calibrar_Cabezal_clicked
  */
@@ -8629,6 +8647,10 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
         ui->label_gif_Calib_Calib_Gruesa->setPixmap(image);
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
+
+        CancelCalib();
+
+        ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
 
         if(pmt_roto < 0){
             QVector<double> aux_hist;
