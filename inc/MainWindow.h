@@ -42,8 +42,12 @@
 #include <cstdio>
 #include <QString>
 #include <QPixmap>
+#include <QFileInfo>
 #include <QTextStream>
 #include <inc/QRoundProgressBar.h>
+#include <inc/calendarmanager.h>
+#include "ui_MainWindow.h"
+
 
 
 #define MONOHEAD 0
@@ -119,6 +123,8 @@ public:
     void checkCombosStatus();
     ~MainWindow();
     void resetHitsValues(QString head);
+    bool fileExists(QString path);
+
 
     /* Area de prueba/testing */
 
@@ -350,6 +356,8 @@ private slots:
 
     void on_pb_Autocalib_Tiempos_Reset_clicked();
 
+    void on_calendarWidget_currentPageChanged(int year, int month);
+
 private:
     QString openConfigurationFile();
     QString openLogFile();
@@ -364,7 +372,6 @@ private:
     QString setCalibTable(string head, string function, QVector<double> table, string msg_compare);
     QString setTime(string head, double time_value, string pmt);
     QString getPSOCAlta(QLineEdit *line_edit);
-    bool fileExists(QString path);
     bool resetHeads();
     bool resetHead(QString Cabezal);
     bool resetPMTs();
@@ -440,7 +447,7 @@ private:
     void setPMTCustomPlotEnvironment(QList<QString> qlist);
     void setPMTCalibCustomPlotEnvironment(QList<int> qlist);
     void setHeadCustomPlotEnvironment();
-
+    void Busca_Logs(int year,int month);
 signals:
     void sendAbortCommand(bool abort);
     void sendCalibAbortCommand(bool abort);
@@ -457,6 +464,7 @@ private:
     shared_ptr<MCAE> arpet;
     shared_ptr<AutoCalib> calibrador;
     shared_ptr<Reconstructor> recon_externa;
+
     QMutex mMutex, bMutex, Mutex_fpga,Mutex_adq,Mutex_copy;
     QThread *thread;
     Thread *worker;
@@ -540,9 +548,7 @@ private:
     QString size_archivo_adq;
     bool adq_running = false;
     bool copying= false;
-
     QStringList commands_calib;
-
     QString ruta_log_adquisicion="";
     QString ruta_archivo_adquisicion="";
 
@@ -656,6 +662,7 @@ public:
      */
     int getTarget() const {return Target;}
     void setCommandsAdquire();
+    QString get_root_log_path(){return root_log_path;}
 };
 
 #endif // MAINWINDOW_H
