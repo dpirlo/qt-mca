@@ -38,20 +38,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_aqd_file_open->hide();
     ui->cb_Calib_Cab->hide();
     ui->lineEdit_aqd_file_size->clear();
-
     ui->frame_multihead_graph_2->show();
     ui->tabWidget_mca->setCurrentIndex(1);
     QTimer *timerw = new QTimer(this);
     connect(timerw, SIGNAL(timeout()), this, SLOT(updateCaption()));
-
-
-
     CargoTemaOscuro();
     ui->calendarWidget->setMaximumDate(QDate::currentDate());
-//    m_manager->set_root_log_path(root_log_path);
-//    m_manager->set_month(ui->calendarWidget->monthShown());
+    Busca_Logs(QDate::currentDate().year(),QDate::currentDate().month());
+    ui->frame_multihead_graph_2->hide();
     timerw->start(1000);
-    //parseConfigurationFile(true, "0");
 
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
@@ -6332,7 +6327,7 @@ void MainWindow::on_comboBox_head_mode_select_graph_2_currentIndexChanged(int in
     switch (index) {
     case 0:
         ui->comboBox_head_select_graph_3->show();
-       // ui->frame_multihead_graph_2->hide();
+        ui->frame_multihead_graph_2->hide();
         break;
     case 1:
         ui->comboBox_head_select_graph_3->hide();
@@ -8998,19 +8993,15 @@ void MainWindow::CancelCalib()
 
 void MainWindow::on_calendarWidget_currentPageChanged(int year, int month)
 {
-
-   // m_manager->getDates();
-    QBrush brush;
-    brush.setColor( Qt::green );
-    QTextCharFormat cf = ui->calendarWidget->dateTextFormat( QDate::currentDate() );
-    cf.setBackground( brush );
-    ui->calendarWidget->setDateTextFormat( QDate::currentDate(), cf );
     Busca_Logs(year,month);
 }
 void MainWindow::Busca_Logs(int year,int month){
     QTime hora(0, 0, 0);
     QString initfile;
     QDate DateIterativo;
+    QBrush brush;
+    QTextCharFormat cf;
+
     DateIterativo.setDate(year,month,1);
 
     for (int i=0;i<= DateIterativo.daysInMonth();i++) {
@@ -9019,12 +9010,19 @@ void MainWindow::Busca_Logs(int year,int month){
            initfile=root_log_path+"/"+"LOG"+DateIterativo.toString("yyyyMMdd")+hora.toString("hh")+".log";
            if(fileExists(initfile)){
 
-               QBrush brush;
                brush.setColor( QColor(61,174,233) );
-               QTextCharFormat cf = ui->calendarWidget->dateTextFormat( DateIterativo );
-               cf.setBackground( brush );
+               cf = ui->calendarWidget->dateTextFormat( DateIterativo );
+               //cf.setBackground( brush );
+               cf.setForeground(brush);
+               cf.setFontWeight(QFont::Bold);
                ui->calendarWidget->setDateTextFormat( DateIterativo, cf );
+           }else{
+               //brush.setColor( QColor(42,41,41) ); gris ar-pet
+               cf = ui->calendarWidget->dateTextFormat( DateIterativo );
+
+               //cf.setForeground(brush);
            }
+           ui->calendarWidget->setDateTextFormat( DateIterativo, cf );
         }
         DateIterativo.setDate(year,month,i+1);
     }
