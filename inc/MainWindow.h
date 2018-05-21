@@ -45,7 +45,6 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <inc/QRoundProgressBar.h>
-#include <inc/calendarmanager.h>
 #include "ui_MainWindow.h"
 
 
@@ -94,6 +93,7 @@
 #define CANTIDAD_ELEMENTOS_COINCIDENCIA 1
 
 #define MAX_MB_CALIB 1024
+#define MAX_PROGRESS_CALIBFINA 60
 
 
 
@@ -186,6 +186,9 @@ private slots:
     void AutocalibReady(bool state, int pmt_roto=0);
     void AutoAdqReady(bool state);
     void CopyAdqReady(bool state);
+    void CalibFinaReady(bool state);
+    void SetCalibFinaProgress(double progress);
+    void TerminandoCalibFina();
     void CancelCalib();
     void recievedSaturated(int Cabezal, double *Saturados);
     int loadCalibrationTables(QString head);
@@ -358,6 +361,8 @@ private slots:
 
     void on_calendarWidget_currentPageChanged(int year, int month);
 
+    void on_pb_Calibrar_Cabezal_2_clicked();
+
 private:
     QString openConfigurationFile();
     QString openLogFile();
@@ -451,6 +456,8 @@ private:
 signals:
     void sendAbortCommand(bool abort);
     void sendCalibAbortCommand(bool abort);
+    void sendCalibFinaAbortCommand(bool abort);
+    void sendCalibFinaProgressAbortCommand(bool abort);
     void sendAbortMCAECommand(bool abort);
     void ToPushButtonAdquirir(bool toggle);
     void ToPushButtonLogger(bool toggle);
@@ -480,6 +487,10 @@ private:
     Thread *mcae_wr;
     AutoCalibThread *calib_wr;
     QThread *calib_th;
+    AutoCalibThread *calibFina_wr;
+    QThread *calibFina_th;
+    AutoCalibThread *calibFinaProgress_wr;
+    QThread *calibFinaProgress_th;
     bool is_abort_mcae, is_abort_log, is_abort_calib;
     QString initfile, root_config_path, root_calib_path,root_log_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
@@ -614,6 +625,8 @@ public:
      */
     void setIsAbortMCAEFlag(bool flag) { is_abort_mcae = flag; }
     void setIsAbortCalibFlag(bool flag) { is_abort_calib = flag; }
+    void setIsAbortCalibFinaProgressFlag(bool flag) { calibrador->is_abort_calibFinaProgress = flag; }
+
     /**
      * @brief setIsAbortLogFlag
      *

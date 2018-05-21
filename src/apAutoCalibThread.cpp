@@ -19,6 +19,7 @@ void AutoCalibThread::abort()
     if (_calibing)
     {
         _abort = true;
+        calibrador->_abort=true;
         if (debug) cout<<"Se aborta la operación en el AutoCalibThread: "<<thread()->currentThreadId()<<endl;
     }
     mutex->unlock();
@@ -34,10 +35,33 @@ void AutoCalibThread::requestCalib()
 {
     mutex->lock();
     _calibing = true;
+    calibrador->_abort=false;
     _abort = false;
     mutex->unlock();
 
     emit CalibRequested();
+}
+
+void AutoCalibThread::requestCalibFina()
+{
+    mutex->lock();
+    _calibing = true;
+    calibrador->_abort=false;
+    _abort = false;
+    mutex->unlock();
+
+    emit CalibFinaRequested();
+}
+
+void AutoCalibThread::requestCalibFinaProgress()
+{
+    mutex->lock();
+    _calibing = true;
+    calibrador->_abort=false;
+    _abort = false;
+    mutex->unlock();
+
+    emit CalibFinaProgressRequested();
 }
 
 void AutoCalibThread::getCalib()
@@ -117,10 +141,23 @@ void AutoCalibThread::getCalib()
 
                 if(calibrador->PMTsEnPico == calibrador->PMTs_List.length())
                 {
-                    cout<<"Lista calibrada para copiar a archivo:"<<endl;
+                    //cout<<"Lista calibrada para copiar a archivo:"<<endl;
                     for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
                     {
-                        cout<<calibrador->PMTs_List[i]<<'\t'<<calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1]<<endl;
+                        QFile HvFile("Salidas/HVTable_Cabezal_"+QString::number(calibrador->Cab_actual)+".txt");
+                        QString HvAux;
+                        HvFile.open(QIODevice::WriteOnly | QIODevice::Append);
+
+                        for (int j=0;j<PMTs;j++){
+                            HvAux.append(QString::number(j)+"\t");
+                            HvAux.append(QString::number(calibrador->Dinodos_PMT[j])+"\t");
+                            HvAux.append("\n");
+                        }
+
+                        HvFile.write(HvAux.toUtf8());
+                        HvFile.close();
+
+                        //cout<<calibrador->PMTs_List[i]<<'\t'<<calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1]<<endl;
                     }
 
                     if(calibrador->PMTs_List.length() == PMTs)
@@ -181,5 +218,35 @@ void AutoCalibThread::getCalib()
     emit finished();
 }
 
+void AutoCalibThread::getCalibFina()
+{
+    if(!calibrador->calibrar_fina())
+    {
+        cout<<"salio mal de calib fina"<<endl;
+        emit sendCalibFinaReady(false);
+    }
+    else
+    {
+        cout<<"salio bien de calib fina"<<endl;
+        emit sendCalibFinaReady(true);
+    }
 
+    calibrador->Energia_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->Tiempos_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->Tiempos_full_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    calibrador->TimeStamp_calib[calibrador->Cab_List[0]].set_size(1, 1);
+    //_calibing = false;
+
+    calibrador->_abort=false;
+
+    emit finished();
+}
+
+void AutoCalibThread::getCalibFinaProgress()
+{
+    while(_calibing && !calibrador->is_abort_calibFinaProgress && !_abort && calibrador->calibFinaProgress < MAX_PROGRESS_CALIBFINA)
+        emit sendSetCalibFinaProgress(calibrador->calibFinaProgress);
+    emit sendTerminandoCalibFina();
+    emit finished();
+}
 

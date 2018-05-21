@@ -111,6 +111,8 @@
 #define     EST_BINES_ESPACIAL_Y_COIN           65
 #define     EST_ANCHO_BIN_ESPACIALES_COIN       5.0
 
+#define     MAX_PROGRESS_CALIBFINA              60
+
 using namespace arma;
 
 namespace ap {
@@ -228,6 +230,14 @@ namespace ap {
             double Pico_MIN;
             double Dinodo_MAX;
             double Dinodo_MIN;
+            double calibFinaProgress;
+            bool is_abort_calibFinaProgress;
+            bool _abort;
+            mat Energia_calib[CANTIDADdEcABEZALES];
+            mat Tiempos_calib[CANTIDADdEcABEZALES];
+            mat Tiempos_full_calib[CANTIDADdEcABEZALES];
+            mat TimeStamp_calib[CANTIDADdEcABEZALES];
+            QList<int> Cab_List;
 
             // Plot control
             void set_plotear() {plot_all = 1;}
@@ -245,7 +255,6 @@ namespace ap {
 
             // Datos calibracion
 //            QList<int> PMTs_List;
-            QList<int> Cab_List;
             QList<int> Vis_List;
             int  Canal_Obj, tiempo_adq;
 
@@ -290,10 +299,6 @@ namespace ap {
             QString path_entrada;
 
             // Archivos parseados
-            mat Energia_calib[CANTIDADdEcABEZALES];
-            mat Tiempos_calib[CANTIDADdEcABEZALES];
-            mat Tiempos_full_calib[CANTIDADdEcABEZALES];
-            mat TimeStamp_calib[CANTIDADdEcABEZALES];
             mat Tiempos_inter_cab;
             double Tiempo_medicion[CANTIDADdEcABEZALES];
 
@@ -348,7 +353,7 @@ namespace ap {
             // Calcular alohadon
             bool calcular_almohadon(int cab_num_act);
             // Mostrar almohadon
-            bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm);
+            bool mostrar_almohadon(int cab_num_act, bool calib, bool skimm, bool gen_image_only);
 
             // Calcular Count skimming
             bool calibrar_count_skimming(int cab_num_act, bool plotear);

@@ -428,6 +428,8 @@ int AutoCalib::calibrar_tiempos(){
 
 bool AutoCalib::calibrar_fina(void)
 {
+    calibFinaProgress = 0;
+
     // Para todos los cabezales que se seleccionaron
     for(int i = 0 ; i < Cab_List.length() ; i++)
     {
@@ -441,6 +443,8 @@ bool AutoCalib::calibrar_fina(void)
 
             // Convierto de numero de cabezal a indce (-1)
             int cab_num_act = Cab_List[i]-1;
+
+            calibFinaProgress = 1;
 
             // Abro un archivo de log
             QString nombre_cab = QString::number(cab_num_act+1);
@@ -478,24 +482,31 @@ bool AutoCalib::calibrar_fina(void)
                 stream<<"% Se leeran "<<cant_archivos<<" archivos"<<endl;
             }
 
-
             // Cargo el cabezal actual en memoria
-            LevantarArchivo_Planar(cab_num_act);
+            if(!LevantarArchivo_Planar(cab_num_act) || _abort)
+                return false;
 
             // Busco eventos promedio y calculo la posición del pico
-            preprocesar_info_planar(cab_num_act, plot_all);
+            if(!preprocesar_info_planar(cab_num_act, plot_all) || _abort) //4*48
+                return false;
 
             // Calculo un paso previo de calibración donde ajusto el espectro individual del PMT centroide
-            Pre_calibrar_aleta(cab_num_act, plot_all);
+            if(!Pre_calibrar_aleta(cab_num_act, plot_all) || _abort) //2*48
+                return false;
 
-            // Calibro energía
-            calibrar_fina_energia(cab_num_act, plot_all);
+            if(!_abort)
+            {
+                // Calibro energía
+                calibrar_fina_energia(cab_num_act, plot_all);
 
-            // Calibro en tiempos
-            calibrar_fina_tiempos(cab_num_act, plot_all);
+                // Calibro en tiempos
+                calibrar_fina_tiempos(cab_num_act, plot_all);
 
-            // Calibro en posicion
-            calibrar_fina_posiciones(cab_num_act, plot_all);
+                // Calibro en posicion
+                calibrar_fina_posiciones(cab_num_act, plot_all);
+            }
+            else
+                return false;
 
             // Libero la memoria del cabezal actual
             if (IsLowRAM)
@@ -541,7 +552,7 @@ bool AutoCalib::calibrar_fina(void)
                 calibrar_count_skimming(cab_num_act, plot_all);
 
                 // Muestro el nuevo almohadon
-                mostrar_almohadon(cab_num_act,1,1);
+                mostrar_almohadon(cab_num_act,1,1, !plot_all);
 
 
 
@@ -617,7 +628,7 @@ bool AutoCalib::calibrar_fina(void)
 
         stream<<" %Log finalizado: "<<asctime(timeinfo)<<endl;
 
-    }
+    }    
 
     return 1;
 
@@ -626,6 +637,8 @@ bool AutoCalib::calibrar_fina(void)
 
 bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 {
+    if(_abort) return false;
+
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------INICIO DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -719,8 +732,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     urowvec indices_maximo_PMT;
     mat Eventos_max_PMT;
     rowvec Fila_max_PMT;
-    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
+        calibFinaProgress += 1;
 
         stream<<" %   PMT : "<<(index_PMT_cent+1)<<endl;
 
@@ -802,6 +816,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
 
     }
+
+    if(_abort) return false;
+
     // Borro los espectros completos para dar paso a los filtrados
     Espectro_PMT_emergente[cab_num_act].clearGraphs();
 
@@ -818,8 +835,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     vec Tasa_PMT(CANTIDADdEpMTS);
     vec Porcentaje_PMT(CANTIDADdEpMTS);
     // Busco los elementos centroides de cada PMT
-    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
+
         stream<<endl;
         stream<<" %---------------------- EVENTOS POR PMT ------------------------------"<<endl;
         stream<<endl;
@@ -923,6 +941,8 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         // Calculo la diferencia de tiempo entre el PMT actual y todo el resto.
         for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
         {
+//            calibFinaProgress += 1;
+
             // Le resto a todos los PMT la referencia actual
             rowvec dist_aux = Tiempos_max_PMT.row(i)-Tiempos_max_PMT.row(index_PMT_cent);
 
@@ -976,6 +996,8 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
     }
 
+    if(_abort) return false;
+
     // Guardo las tasas
     stream<<"               Porcentaje_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
     stream<<"               Tasa_PMT_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Tasa_PMT)<<endl;
@@ -993,8 +1015,9 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     // TEST
     // Calculo el Ce loco
     double canal_medio_zona[3] = {0, 0, 0};
-    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
+        //calibFinaProgress += 1;
         // Esquina
         if ( (index_PMT_cent == 0 || index_PMT_cent == 7 || index_PMT_cent == 40 || index_PMT_cent == 47 ) )
         {
@@ -1015,8 +1038,10 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
         }
     }
     stream<<" %Canales Normalizados: "<<canal_medio_zona[0]<<" - "<<canal_medio_zona[1]<<" - "<<canal_medio_zona[2]<<endl;
-    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
+        //calibFinaProgress += 1;
+
         // Esquina
         if ( (index_PMT_cent == 0 || index_PMT_cent == 7 || index_PMT_cent == 40 || index_PMT_cent == 47 ) )
         {
@@ -1038,10 +1063,13 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
 
     }
 
+    if(_abort) return false;
+
     stream<<"               Ce_pre_cal_"<<cab_num_act+1<<" = ["<< Ce_pre[cab_num_act][0];
     for (int i_log = 1 ; i_log < CANTIDADdEpMTS ; i_log++) stream<<" , "<< Ce_pre[cab_num_act][i_log];
     stream<<"];"<<endl;
 
+    if(_abort) return false;
 
 
 
@@ -1053,11 +1081,15 @@ bool AutoCalib::preprocesar_info_planar(int cab_num_act,  bool plotear)
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------SALIDA DE: preprocesar_info_planar ------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
+
+    return 1;
 }
 
 
 bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
 {
+
+    if(_abort) return false;
 
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------INICIO DE: Pre_calibrar_aleta ------------------------------------------------------------ "<<endl;
@@ -1191,8 +1223,10 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
     vec Tasa_PMT(CANTIDADdEpMTS);
     vec Porcentaje_PMT(CANTIDADdEpMTS);
     // Busco los elementos centroides de cada PMT
-    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS ; index_PMT_cent ++)
+    for (int index_PMT_cent = 0 ; index_PMT_cent < CANTIDADdEpMTS && !_abort; index_PMT_cent ++)
     {
+        calibFinaProgress += 1;
+
         stream<<endl;
         stream<<" %---------------------- EVENTOS POR PMT ------------------------------"<<endl;
         stream<<endl;
@@ -1295,8 +1329,10 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
 
 
         // Calculo la diferencia de tiempo entre el PMT actual y todo el resto.
-        for (int i = 0 ; i < CANTIDADdEpMTS ; i ++)
+        for (int i = 0 ; i < CANTIDADdEpMTS && !_abort; i ++)
         {
+            calibFinaProgress += 1;
+
             // Le resto a todos los PMT la referencia actual
             rowvec dist_aux = Tiempos_max_PMT.row(i)-Tiempos_max_PMT.row(index_PMT_cent);
 
@@ -1334,6 +1370,7 @@ bool AutoCalib::Pre_calibrar_aleta(int cab_num_act, bool plotear)
 
     }
 
+    if(_abort) return false;
 
     // Guardo las tasas
     stream<<"               Porcentaje_PMT_Pre_Cal_"<<cab_num_act+1<<" = "<<guardar_vector_stream(Porcentaje_PMT)<<endl;
@@ -1424,6 +1461,8 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
     for(int iter_act = 0 ; iter_act < MAX_ITER_ENERGIA ; iter_act ++)
     {
 
+        calibFinaProgress += 5;
+
         // Recorto los eventos dentro del FWTM de la matriz de eventos pre-calibrada
         mat Energia_calib_FWHM;
         uvec indices_aux = find(Energia_calib_suma > centros_hist(pico_calib.limites_FWTM[0]));
@@ -1513,7 +1552,8 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
         stream<<"       Ce_paso_"<<cab_num_act+1<<" = "<<guardar_vector_stream(vec_log)<<endl;
 
         // que no se apague la pantalla
-        qApp->processEvents();
+        calibFinaProgress = MAX_PROGRESS_CALIBFINA;
+        //qApp->processEvents();
 
 
     }
@@ -1557,6 +1597,7 @@ bool AutoCalib::calibrar_fina_energia(int cab_num_act, bool plotear)
     stream<<" %----------------------------------SALIDA DE: calibrar_fina_energia --------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
+    return 1;
 }
 
 
@@ -1989,9 +2030,8 @@ bool AutoCalib::calibrar_fina_posiciones(int cab_num_act, bool plotear)
     // Calculo el alhoadon
     calcular_almohadon(cab_num_act);
 
-    if(plotear)
-        // Dibujo el almohadon en pantalla
-        mostrar_almohadon(cab_num_act,1,0);
+    // Dibujo el almohadon en pantalla
+    mostrar_almohadon(cab_num_act,1,0,!plotear);
 
 
     vec vec_log = arma::conv_to<vec>::from(Cx_arma);
@@ -2713,11 +2753,11 @@ bool AutoCalib::visualizar_planar(void)
                     qApp->processEvents();
                     break;
                 case 2:    // Mostrar planar
-                    mostrar_almohadon(cab_num_act,0,0);
+                    mostrar_almohadon(cab_num_act,0,0,0);
                     qApp->processEvents();
                     break;
                 case 3:    // Mostrar planar con count skimming
-                    mostrar_almohadon(cab_num_act,0,1);
+                    mostrar_almohadon(cab_num_act,0,1,0);
                     qApp->processEvents();
                     break;
                 default:
@@ -3407,7 +3447,7 @@ bool AutoCalib::plotear_espectro(int cab_num_act,  bool calibrado)
 
 
 
-bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
+bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm, bool gen_image_only)
 {
 
     mat grilla;
@@ -3536,19 +3576,23 @@ bool AutoCalib::mostrar_almohadon(int cab_num_act, bool calib, bool skimm)
 
 
     // Las muestro
-    QPixmap file(nombre_almohadon);
-    if (skimm)
+    if (!gen_image_only)
     {
-        Almohadon_emergente_skimmed[cab_num_act].setPixmap(file);
-        Almohadon_emergente_skimmed[cab_num_act].show();
-        Almohadon_emergente_skimmed[cab_num_act].setScaledContents(true);
+        QPixmap file(nombre_almohadon);
+        if (skimm)
+        {
+            Almohadon_emergente_skimmed[cab_num_act].setPixmap(file);
+            Almohadon_emergente_skimmed[cab_num_act].show();
+            Almohadon_emergente_skimmed[cab_num_act].setScaledContents(true);
+        }
+        else
+        {
+            Almohadon_emergente[cab_num_act].setPixmap(file);
+            Almohadon_emergente[cab_num_act].show();
+            Almohadon_emergente[cab_num_act].setScaledContents(true);
+        }
     }
-    else
-    {
-        Almohadon_emergente[cab_num_act].setPixmap(file);
-        Almohadon_emergente[cab_num_act].show();
-        Almohadon_emergente[cab_num_act].setScaledContents(true);
-    }
+
 
 
 
@@ -3832,6 +3876,8 @@ void AutoCalib::plot_MCA(QVector<double> hits, QVector<double> channels_ui, QCus
 bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
 {
 
+    if(_abort) return false;
+
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
     stream<<" %----------------------------------INICIO DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
@@ -3892,6 +3938,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     t.tm_sec = seg;
     time_t timeSinceEpoch = mktime(&t);
 
+    if(_abort) return false;
 
     // Calculo el tamaño del archivo
     fseek(archivo, 0, SEEK_END);
@@ -3899,6 +3946,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     rewind(archivo);
     stream <<" %Se leeran "<<BytesLeer<<" Bytes"<< endl;
 
+    if(_abort) return false;
 
     // Leo todo a memoria
     unsigned char * entrada = (unsigned char *) malloc(BytesLeer);
@@ -3930,15 +3978,17 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
 
     // Parseo todas las tramas y las guardo en las matrices
     //int trama_actual = 0;
-    for (int trama_actual = 0 ; trama_actual < num_columnas ; trama_actual ++)
+    for (int trama_actual = 0 ; trama_actual < num_columnas && !_abort; trama_actual ++)
     {
         // Saco la trama parseada e invierto el orden
         unsigned char vectorSalidaInv[CANTiNFO];
 
-        for (int i=CANTiNFO-1 ; i >= 0 ; i--)
+        for (int i=CANTiNFO-1 ; i >= 0  && !_abort; i--)
         {
             vectorSalidaInv[CANTiNFO - 1 - i] = vectorSalida[i + (trama_actual*CANTiNFO)];
         }
+
+        if(_abort) break;
 
         // Recupero el time stamp del evento
         double aux_very_high = vectorSalidaInv[0]<<24   & 0xFF000000;
@@ -3950,14 +4000,14 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         // Me quedo con la energia y el tiempo
         unsigned char Energia_Tiempo[CANTIDAdEbYTESeNERGIAyTIEMPO];
 
-        for (int i=0 ; i < CANTIDAdEbYTESeNERGIAyTIEMPO ; i++)
+        for (int i=0 ; i < CANTIDAdEbYTESeNERGIAyTIEMPO  && !_abort; i++)
         {
             Energia_Tiempo[i] = vectorSalidaInv[CANTIDADdEbYTEStIMEsTAMP+i];
         }
 
 
         // Saco la energía por PMT
-        for (int i=0 ; i < CANTIDADdEpMTS ; i++)
+        for (int i=0 ; i < CANTIDADdEpMTS  && !_abort; i++)
         {
             aux_high = Energia_Tiempo[i*(CANTIDAdEbYTESeNERGIAyTIEMPO/CANTIDADdEpMTS)] << 4;
             aux_low =  (Energia_Tiempo[ (i*(CANTIDAdEbYTESeNERGIAyTIEMPO/CANTIDADdEpMTS))+1 ] & 0xF0 ) >> 4 ;
@@ -3966,7 +4016,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         }
 
         // Saco el tiempo por PMT
-        for (int i=0 ; i < CANTIDADdEpMTS ; i++)
+        for (int i=0 ; i < CANTIDADdEpMTS  && !_abort; i++)
         {
             aux_high = (Energia_Tiempo[i*(CANTIDAdEbYTESeNERGIAyTIEMPO/CANTIDADdEpMTS) + 1] & 0x0F) << 16;
             aux_mid =  Energia_Tiempo[i*(CANTIDAdEbYTESeNERGIAyTIEMPO/CANTIDADdEpMTS) + 2] << 8;
@@ -3977,6 +4027,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
 
         }
 
+        if(_abort) break;
         // Filtro segun el time stamp del centroide (máximo)
 
         // busco el maximo
@@ -3984,7 +4035,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         // me fijo el time stamp del mismo
         double tiempo_max = Tiempos_calib[cab_num_act](index_max,trama_actual);
         // Elimino aquellos fuera de la ventana de tiempo
-        for (int i=0 ; i < CANTIDADdEpMTS ; i++)
+        for (int i=0 ; i < CANTIDADdEpMTS  && !_abort; i++)
         {
             double aux = Tiempos_calib[cab_num_act](i,trama_actual) - tiempo_max;
 
@@ -3994,6 +4045,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
             }
         }
 
+        if(_abort) break;
 
 
         /**************************************** HEREDADO DEL MATLAB DE AUTOR DESCONOCIDO  ***********************************************/
@@ -4014,7 +4066,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
         TimeStamp_calib[cab_num_act](trama_actual) = cantidadDeOverFlows * pow(2,CANTIDADdEbITSeNTEROSsPARTAN) + tiempo_max;
     }
 
-
+    if(_abort) return false;
 
     Tiempo_medicion[cab_num_act] = modification - timeSinceEpoch;
 
@@ -4031,7 +4083,7 @@ bool AutoCalib::LevantarArchivo_Planar(int cab_num_act)
     stream<<" %----------------------------------SALIDA DE: LevantarArchivo_Planar -------------------------------------------------------- "<<endl;
     stream<<" %---------------------------------------------------------------------------------------------------------------------------- "<<endl;
 
-
+    return 1;
 
 }
 
