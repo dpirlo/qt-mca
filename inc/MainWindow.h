@@ -73,14 +73,16 @@
 #define Tab8 8
 #define Tab9 9
 #define WAIT_MICROSECONDS 1000000
-#define Cab1 "/dev/UART_Cab1"
-#define Cab2 "/dev/UART_Cab2"
-#define Cab3 "/dev/UART_Cab3"
-#define Cab4 "/dev/UART_Cab4"
-#define Cab5 "/dev/UART_Cab5"
-#define Cab6 "/dev/UART_Cab6"
-#define Cab  "/dev/UART_Cab"
-#define Coin "/dev/UART_Coin"
+#define DEV_PATH "/dev/"
+
+#define CAB1 "UART_Cab1"
+#define CAB2 "UART_Cab2"
+#define CAB3 "UART_Cab3"
+#define CAB4 "UART_Cab4"
+#define CAB5 "UART_Cab5"
+#define CAB6 "UART_Cab6"
+#define CAB  "UART_Cab"
+#define COIN "UART_Coin"
 
 #define icon_notok      ":/qss_icons/rc/ic_cancel.png"
 #define icon_ok         ":/qss_icons/rc/ic_check_circle.png"

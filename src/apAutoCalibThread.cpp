@@ -143,7 +143,7 @@ void AutoCalibThread::getCalib()
                 {
                     QFile HvFile("Salidas/HVTable_Cabezal_"+QString::number(calibrador->Cab_actual)+".txt");
                     QString HvAux;
-                    HvFile.open(QIODevice::WriteOnly | QIODevice::Append);
+                    HvFile.open(QIODevice::WriteOnly);
 
                     //cout<<"Lista calibrada para copiar a archivo:"<<endl;
                     for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)

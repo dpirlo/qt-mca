@@ -1278,7 +1278,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_NORMAL:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1298,7 +1298,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_AUTOCOINCIDENCE:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1312,7 +1312,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_AVANCED:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1323,7 +1323,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
             }
             break;
         case COIN_CALIB:
-            port_name=Cab+QString::number(head.toInt());
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head.toInt());
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1333,7 +1333,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
             arpet->portDisconnect();
             break;
         case COIN_VERIF:
-            port_name=Cab+QString::number(head.toInt());
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head.toInt());
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1346,7 +1346,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_INTER_CABEZAL:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1395,7 +1395,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         try
         {
 
-            port_name=Cab+QString::number(head_index);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
             writeFooterAndHeaderDebug(true);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
@@ -1522,7 +1522,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
     {
         arpet->portDisconnect();
 
-        port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
         calibrador->setPort_Name((port_name));
         worker->setPortName((port_name));
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -1567,7 +1567,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
 
     arpet->portDisconnect();
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
 
     try
     {
@@ -1612,7 +1612,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
     arpet->portDisconnect();
     string msg;
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
     try
     {
         calibrador->setPort_Name((port_name));
@@ -1655,7 +1655,7 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     string msg;
     error_code error_code;
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
     try
     {
         calibrador->setPort_Name((port_name));
@@ -1724,7 +1724,8 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
 
     try
     {
-        error_code=arpet->portConnect("/dev/UART_Coin");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+        error_code=arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
             Exceptions exception_Cabezal_Apagado("Está Coincidencia apagado");
@@ -1765,7 +1766,7 @@ void MainWindow::initCoincidenceMode()
     /* Inicializo nuevamente todos los cabezales */
         for ( int i = 0; i < Estado_Cabezales.length(); i++ )
         {
-            port_name=Cab+QString::number(Estado_Cabezales.at(i));
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1776,7 +1777,7 @@ void MainWindow::initCoincidenceMode()
             arpet->portDisconnect();
 
         }
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1820,7 +1821,7 @@ void MainWindow::setCalibrationMode(QString head)
     try
     {
 
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1860,7 +1861,7 @@ void MainWindow::setCalibrationMode(QString head)
         setMCAEDataStream(head.toStdString());
         cout<<"Configuro el Cabezal"<<endl;
         arpet->portDisconnect();
-        port_name=Cab+head;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+head;
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1909,7 +1910,7 @@ void MainWindow::setCoincidenceModeWindowTime(bool calib)
 
     try
     {
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -2236,7 +2237,7 @@ void MainWindow::drawTemperatureBoard()
     try
     {
         //QString Cabezal = QString::number(checkedHeads.at(0));
-        port_name=Cab+getHead("mca");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+getHead("mca");
         arpet->portConnect(port_name.toStdString().c_str());
         if(debug) cout<<"Conecto puerto sp3"<<endl;
 
@@ -2327,7 +2328,7 @@ void MainWindow::drawAlmohada()
         {
             int head_index=checkedHeads.at(i);
 
-            port_name=Cab+QString::number(head_index);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
 
             qDebug()<<port_name;
 
@@ -2929,7 +2930,7 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
     try{
         if (!coin)
         {
-            port_name=Cab+QString::fromStdString(head);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::fromStdString(head);
             cout<<port_name.toStdString()<<endl;
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -2943,7 +2944,7 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
         }
         else
         {
-            port_name="/dev/UART_Coin";
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -2984,12 +2985,12 @@ int MainWindow::setPSOCDataStream(string head, string size_received, string func
  */
 void MainWindow::resetHitsValues(QString head)
 {
-    QString Cabezal = Cab +head;
     arpet->resetHitsMCA();
     setHitsInit(true);
     if (debug) cout<<"Reinicio los graficos"<<endl;
     arpet->portDisconnect();
-    arpet->portConnect(Cabezal.toStdString().c_str());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+head;
+    arpet->portConnect(port_name.toStdString().c_str());
     LoadHVPMT(head.toInt());
     arpet->portDisconnect();
 
@@ -3005,7 +3006,7 @@ bool MainWindow::resetHeads()
     for (int i=0;i < Estado_Cabezales.length();i++)
     {
         arpet->portDisconnect();
-        port_name=Cab+QString::number(Estado_Cabezales.at(i));
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
         arpet->portConnect(port_name.toStdString().c_str());
         parseConfigurationFile(true, QString::number(Estado_Cabezales.at(i)));
 
@@ -3038,7 +3039,7 @@ bool MainWindow::resetHead(QString Cabezal)
     bool status = true;
 
     arpet->portDisconnect();
-    port_name=Cab+Cabezal;
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+Cabezal;
     arpet->portConnect(port_name.toStdString().c_str());
     parseConfigurationFile(true, Cabezal);
 
@@ -3172,7 +3173,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
-    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ ui->comboBox_head_select_graph->currentText();
 
     if (pmt_selected_list.isEmpty())
     {
@@ -3220,7 +3221,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 void MainWindow::on_pushButton_l_5_clicked()
 {
     error_code error_code;
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
@@ -3271,7 +3272,7 @@ void MainWindow::on_pushButton_l_5_clicked()
 void MainWindow::on_pushButton_l_10_clicked()
 {
     error_code error_code;
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
@@ -3325,7 +3326,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3377,7 +3378,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3430,7 +3431,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3482,7 +3483,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3908,7 +3909,8 @@ QStringList MainWindow::availablePortsName()
 
     QStringList portsName;
     int portavailable;
-    QDir dir("/dev/");
+    //QDir dir("/dev/");
+    QDir dir(DEV_PATH);
     QStringList filters;
     try {
         filters << "UART*";
@@ -4235,11 +4237,11 @@ void MainWindow::on_pushButton_send_terminal_clicked()
 
         if (Cabezal == "Coin")
         {
-            port_name="/dev/UART_Coin";
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         }else{
 
             if (Estado_Cabezales.contains(Cabezal.toInt())){
-                port_name=Cab+Cabezal;
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+Cabezal;
 
             }
             else{
@@ -4890,7 +4892,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
 
     head_index=ui->comboBox_head_select_graph_2->currentText().toInt();
 
-    port_name=Cab+QString::number(head_index);
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
 
     if(debug) cout<<"Cabezal: "<< QString::number(head_index).toStdString()<<endl;
     try{
@@ -5063,7 +5065,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
                 ui->label_data_output->setText("");
 
             arpet->portDisconnect();
-            port_name=Coin;
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
             calibrador->setPort_Name(port_name);
             worker->setPortName(port_name);
@@ -5107,7 +5109,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
                 int head_index=i+1;
                 /* Inicialización del Cabezal */
 
-                port_name=Cab+QString::number(head_index);
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
                 worker->setPortName((port_name));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -5159,7 +5161,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
             }
 
         arpet->portDisconnect();
-        port_name=Coin;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
         calibrador->setPort_Name(port_name);
         worker->setPortName(port_name);
@@ -5183,53 +5185,6 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
         // Seteo intercabezal en cero, es decir, solo envío intracabezal
 
         setTimeModeCoin(COIN_NORMAL,true);
-
-
-
-
-
-// Usar esto para ir modificando los tiempos
-        // Mandar después de esto un reset mca a coin
-
-//        arpet->portDisconnect();
-//        error_code error_code;
-//        QString ignore;
-//        QString Cabezal;
-
-//        for ( int i = 0; i < 6; i++ )
-//        {
-//            port_name=Cab+QString::number(Estado_Cabezales.at(i));
-//            error_code= arpet->portConnect(port_name.toStdString().c_str());
-//            if (error_code.value()!=0){
-//                arpet->portDisconnect();
-//                Exceptions exception_Cabezal_Apagado("Está coincidencia y los cabezales apagados! Revise las conexiones");
-//                throw exception_Cabezal_Apagado;
-//            }
-//            for(int pmt = 0; pmt < PMTs; pmt++){
-//                Cabezal=QString::number(Estado_Cabezales.at(i));
-//                ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt], QString::number(pmt+1).toStdString());
-//            }
-//            arpet->portDisconnect();
-//        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5270,7 +5225,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_Reset_clicked()
     error_code error_code;
 
     arpet->portDisconnect();
-    port_name=Coin;
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
     error_code= arpet->portConnect(port_name.toStdString().c_str());
     if (error_code.value()!=0){
@@ -5314,7 +5269,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
         try{
 
             arpet->portDisconnect();
-            port_name=Coin;
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
@@ -6455,7 +6410,7 @@ QStringList MainWindow::getLogFromFiles(QString filename,QRegExp rx, string pars
 void MainWindow::on_pushButton_p_51_clicked()
 {
     error_code error_code;
-    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -6502,7 +6457,7 @@ void MainWindow::on_RATECAB1_clicked()
 
     try{
         arpet->portDisconnect();
-        port_name=Cab1;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB1);
         arpet->portConnect(port_name.toStdString().c_str());
         rates = arpet->getRate(QString::number(1).toStdString(), port_name.toStdString());
         ui->label_CAB1->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6518,7 +6473,7 @@ void MainWindow::on_RATECAB2_clicked()
     vector<int> rates(3);
     try{
         arpet->portDisconnect();
-        port_name=Cab2;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB2);
         arpet->portConnect(port_name.toStdString().c_str());
         rates = arpet->getRate(QString::number(2).toStdString(), port_name.toStdString());
         ui->label_CAB2->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6535,7 +6490,7 @@ void MainWindow::on_RATECAB3_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab3;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB3);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(3).toStdString(), port_name.toStdString());
       ui->label_CAB3->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6552,7 +6507,7 @@ void MainWindow::on_RATECAB4_clicked()
 
   try{
       arpet->portDisconnect();
-      port_name=Cab4;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB4);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(4).toStdString(), port_name.toStdString());
       ui->label_CAB4->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6568,7 +6523,7 @@ void MainWindow::on_RATECAB5_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab5;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB5);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(5).toStdString(), port_name.toStdString());
       ui->label_CAB5->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6584,7 +6539,7 @@ void MainWindow::on_RATECAB6_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab6;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB6);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
       ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6987,7 +6942,8 @@ bool MainWindow::fileExists(QString path) {
  */
 void MainWindow::updateCaption(){
 
-    QDir dir("/dev/");
+    //QDir dir("/dev/");
+    QDir dir(DEV_PATH);
     QString numerocabezal;
     QStringList filters;
     static QVector<int> Estado_Aux_Cabezales;
@@ -7187,7 +7143,7 @@ void MainWindow::Cabezal_On_Off(int Cabezal, bool estado){
     for (int i=0;i<6;i++){Cabezales.push_back("0");}
     try{
         arpet->portDisconnect();
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -7238,7 +7194,7 @@ void MainWindow::Cabezales_On_Off(bool estado){
     error_code error_code;
     try{
         arpet->portDisconnect();
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -7591,7 +7547,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
 
 
-                port_name=Cab+QString::number(head_index);
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
                 worker->setPortName((port_name));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -8364,6 +8320,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
     QList<int> checked_PMTs;
     QList<int> checked_Cab;
     bool error=false;
+    setIsAbortCalibFlag(false);
 
     commands_calib.clear();
 
@@ -8456,7 +8413,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             arpet->portDisconnect();
 
-            port_name=Cab+QString::number(head);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -8515,7 +8472,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             usleep(500);
 
-            port_name=Coin;
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
             arpet->portDisconnect();
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -8591,7 +8548,6 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
                 arpet->portDisconnect();
 
-
                 ui->label_Calib_Calib_Gruesa->setEnabled(true);
                 ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
                 movie_cargando->start();
@@ -8648,10 +8604,6 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
         ui->label_gif_Calib_Calib_Gruesa->setScaledContents(true);
         ui->label_gif_Calib_Calib_Gruesa->show();
 
-        CancelCalib();
-
-        ui->label_data_output->setText("Error en Calibración Gruesa (AutoCalib)");
-
         if(pmt_roto < 0){
             QVector<double> aux_hist;
             QVector<double> channels;
@@ -8703,6 +8655,7 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
 
     qApp->processEvents();
 
+    ui->RoundBar_Adq->setValue(0);
     ui->label_Adquisicion->setEnabled(true);
     ui->RoundBar_Adq->setVisible(true);
 
@@ -8844,9 +8797,9 @@ void MainWindow::CalibFinaReady(bool state)
 
     ui->label_gif_Calib_Fina->setVisible(true);
 
-    emit sendCalibFinaAbortCommand(true);
-    emit sendCalibFinaProgressAbortCommand(true);
-    setIsAbortCalibFinaProgressFlag(true);
+//    emit sendCalibFinaAbortCommand(true);
+//    emit sendCalibFinaProgressAbortCommand(true);
+//    setIsAbortCalibFinaProgressFlag(true);
 
     if(!state)
     {
@@ -8952,10 +8905,10 @@ void MainWindow::TerminandoCalibFina()
 
 void MainWindow::CancelCalib()
 {
-    setIsAbortCalibFlag(true);
-    emit sendCalibFinaAbortCommand(true);
-    setIsAbortCalibFinaProgressFlag(true);
-    emit sendCalibFinaProgressAbortCommand(true);
+//    setIsAbortCalibFlag(true);
+//    emit sendCalibFinaAbortCommand(true);
+//    setIsAbortCalibFinaProgressFlag(true);
+//    emit sendCalibFinaProgressAbortCommand(true);
     adq_running = false;
 
     arpet->portDisconnect();
@@ -8991,17 +8944,17 @@ void MainWindow::CancelCalib()
 
     adq_running = false;
 
-    worker_copy->abort();
-    thread_copy->exit(0);
-    usleep(5000);
+//    worker_copy->abort();
+//    thread_copy->exit(0);
+//    usleep(5000);
 
-    calibFina_wr->abort();
-    calibFina_th->exit(0);
-    usleep(5000);
+//    calibFina_wr->abort();
+//    calibFina_th->exit(0);
+//    usleep(5000);
 
-    calibFinaProgress_wr->abort();
-    calibFinaProgress_th->exit(0);
-    usleep(5000);
+//    calibFinaProgress_wr->abort();
+//    calibFinaProgress_th->exit(0);
+//    usleep(5000);
 }
 
 
