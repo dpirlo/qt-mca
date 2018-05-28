@@ -212,6 +212,8 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
 
+    ui->Comentarios_Adquisicion->setText("MEDICION Nº: \n  \nFuente:  \nActividad de la Fuente:  \nDistancia al cabezal:  \nObservaciones: ");
+
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);

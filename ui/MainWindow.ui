@@ -111,7 +111,7 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -4095,6 +4095,9 @@ calibrar</string>
          <width>591</width>
          <height>321</height>
         </rect>
+       </property>
+       <property name="documentTitle">
+        <string/>
        </property>
       </widget>
      </widget>
