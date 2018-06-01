@@ -569,7 +569,7 @@ void MCAE::getMCAHitsData(QByteArray data_mca)
     long hits;
 
     channels_id.resize(data_mca.length());
-    hits_mca.resize(data_mca.length());
+    hits_mca.resize(data_mca.length()/6);
 
     channels_id.fill(0);
     hits_mca.fill(0);

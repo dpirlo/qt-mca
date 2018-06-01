@@ -111,7 +111,7 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -955,7 +955,7 @@
         <x>10</x>
         <y>340</y>
         <width>981</width>
-        <height>241</height>
+        <height>231</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -970,7 +970,7 @@
          <x>860</x>
          <y>10</y>
          <width>111</width>
-         <height>221</height>
+         <height>211</height>
         </rect>
        </property>
        <property name="font">
@@ -1934,12 +1934,48 @@ calibrar</string>
        </widget>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pushButton_Socatear">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>580</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Socatear</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Socatear">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>580</y>
+        <width>190</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
      <zorder>frame_2</zorder>
      <zorder>frame_status</zorder>
      <zorder>frame_heads</zorder>
      <zorder>frame_hv</zorder>
      <zorder>frame_adquid_mode</zorder>
      <zorder>frame_calib_tables</zorder>
+     <zorder>label_Socatear</zorder>
+     <zorder>pushButton_Socatear</zorder>
     </widget>
     <widget class="QWidget" name="mca">
      <property name="sizePolicy">
@@ -1970,7 +2006,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -4533,14 +4569,14 @@ calibrar</string>
      <widget class="QPushButton" name="pb_Autocalib_Tiempos_Debug">
       <property name="geometry">
        <rect>
-        <x>700</x>
+        <x>690</x>
         <y>180</y>
-        <width>111</width>
+        <width>101</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>Ver Tiempos</string>
+       <string>Front Times</string>
       </property>
       <property name="shortcut">
        <string/>
@@ -4552,14 +4588,33 @@ calibrar</string>
      <widget class="QPushButton" name="pb_Autocalib_Tiempos_Reset">
       <property name="geometry">
        <rect>
-        <x>830</x>
+        <x>890</x>
         <y>180</y>
-        <width>111</width>
+        <width>101</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
        <string>Reset Tiempos</string>
+      </property>
+      <property name="shortcut">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pb_Autocalib_Tiempos_Debug_2">
+      <property name="geometry">
+       <rect>
+        <x>790</x>
+        <y>180</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cross Times</string>
       </property>
       <property name="shortcut">
        <string/>
@@ -9068,7 +9123,7 @@ calibrar</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">

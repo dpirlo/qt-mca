@@ -2433,7 +2433,7 @@ void MainWindow::setAdquireMode(int index)
             ui->frame_HV->show();
             ui->frame_MCA->show();
             ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
-            ui->checkBox_espectro_calibrado->hide();
+            ui->checkBox_espectro_calibrado->show();
             ui->comboBox_head_select_graph->show();
             ui->frame_multihead_graph->hide();
             break;
@@ -4994,7 +4994,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
 }
 
 /* Autocalib Tiempos*/
-void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
+void MainWindow::on_pb_Autocalib_Tiempos_clicked()
 {
 
     error_code error_code;
@@ -5012,211 +5012,265 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
     // en Matlab y hacerlo hasta que los picos estén a una tolerancia del cero (debería converger rápido)
 
 
+    //    QList<int> checked_PMTs;
 
-    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
+    //    // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
 
-    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
-    {
+    //    for(int i = 1;  i<10 ; i++ ) // Acá tienen que ir todos menos el 2 el 5 y el 8
+    //    {
+    //       checked_PMTs.append(i);
+    //    }
 
-        QList<int> checked_PMTs;
-        QMessageBox messageBox;
+    //    setPMTCalibCustomPlotEnvironment(checked_PMTs);
 
-        cout<<"Autocalibrando Tiempos"<<endl;
+    //    try{
 
-        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+    //        arpet->portDisconnect();
+    //        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
-        for(int i = 0;  i< 9 ; i++ )
-        {
-            checked_PMTs.append(i+1);
-            //cout<<checked_PMTs[i]<<endl;
-        }
-        calibrador->setPMT_List(checked_PMTs);
+    //        error_code= arpet->portConnect(port_name.toStdString().c_str());
+    //        if (error_code.value()!=0){
+    //            arpet->portDisconnect();
+    //            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+    //            throw exception_Cabezal_Apagado;
+    //        }
 
-        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
+    //        if (QString::fromStdString(initHead(7)).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+    //            ui->label_data_output->setText("Coincidencias todavía no iniciado");
+    //            return;
+    //        }
 
-        // Recupero el tiempo de adquisicion
-        QString Tiempo_adq = ui->Tiempo_adq_box->text();
-        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
-        {
-            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
-            messageBox.setFixedSize(500,200);
-            setButtonCalibTiemposState(false);
-            setIsAbortCalibFlag(false);
-            setButtonCalibTiemposState(true,true);
-            return;
-        }
+    //        clearSpecCalibGraphs();
 
-        try{
+    //        for (int i=0 ; i<checked_PMTs.length() ; i++)
+    //        {
+    //            //getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
+    //            string msg;
+    //            msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+    //            struct Pico_espectro aux;
+    //            QVector<double> aux_hits;
+    //            double aux_hits_double[CHANNELS];
+    //            aux_hits = arpet->getHitsMCA();
+    //            for (int j = 0 ; j < CHANNELS ; j++)
+    //                aux_hits_double[j] = aux_hits[j];
+    //            aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+    //            cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+    ////            addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+    //        }
 
+    ////            setButtonVerTiemposState(true,true);
 
+    //    }
+    //    catch(Exceptions & ex)
+    //    {
+    //        QMessageBox::critical(this,tr("Atención"),tr((string("Coincidencias no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
 
+    //        if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+    //    }
 
-            // Acá veo que todos estén inicializados y con MCA
-            //for (int i=0;i<6;i++)
-            //  if (!Estado_Cabezales.contains(i+1))
-            if(Estado_Cabezales.length()<6){
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Para hacer calibración de tiempos deben estar todos los cabezales encendidos.");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                return;
-            }
-            else
-                ui->label_data_output->setText("");
-
-            arpet->portDisconnect();
-            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
-
-            calibrador->setPort_Name(port_name);
-            worker->setPortName(port_name);
-
-            error_code= arpet->portConnect(port_name.toStdString().c_str());
-            if (error_code.value()!=0){
-                arpet->portDisconnect();
-                setButtonCalibTiemposState(false);
-                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                throw exception_Cabezal_Apagado;
-            }
-
-            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                return;
-            }
-
-            arpet->portDisconnect();
-
-            // Estaría bueno pedirle a Coincidencias que hay AND entre los LVDS de los cabezales para corroborrar que están con CLK externo
-            // Esto lo poídra devolver Coincidencias en el Init con solamente un campo tipo flag
-
-
-            // Si todo esto está listo procedo a la configuración de los cabezales
+    //    }
 
 
 
-            string msg;
-            QString psoc_alta_Tabla;
 
 
-            /////////////// CONFIGURACION Y CARGA DE TABLAS
-            for (int i=0;i<6;i++) // Se exige que estén los 6 cabezales para calibrar tiempos
-            {
+//    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
 
-                int head_index=i+1;
-                /* Inicialización del Cabezal */
+//    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+//    {
 
-                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
+//        QList<int> checked_PMTs;
+//        QMessageBox messageBox;
 
-                if (initHead(head_index).length()==0){
-                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
-                    return;
-                }
-                if(initSP3(head_index).length()==0){
-                    ui->label_data_output->setText("PMTs no responden");
-                    return;
-                }
-                parseConfigurationFile(true, QString::number(head_index));
+//        cout<<"Autocalibrando Tiempos"<<endl;
 
-                usleep(500);
-                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+//        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
 
-                psoc_alta_Tabla = QString::number(AT);
+//        for(int i = 0;  i< 9 ; i++ )
+//        {
+//            checked_PMTs.append(i+1);
+//            //cout<<checked_PMTs[i]<<endl;
+//        }
+//        calibrador->setPMT_List(checked_PMTs);
 
-                usleep(500);
+//        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
 
-                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+//        // Recupero el tiempo de adquisicion
+//        QString Tiempo_adq = ui->Tiempo_adq_box->text();
+//        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+//        {
+//            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+//            messageBox.setFixedSize(500,200);
+//            setButtonCalibTiemposState(false);
+//            setIsAbortCalibFlag(false);
+//            setButtonCalibTiemposState(true,true);
+//            return;
+//        }
 
-                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-                usleep(500);
-                msg = readString();
-                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-                usleep(500);
+//        try{
 
-                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+//            // Acá veo que todos estén inicializados y con MCA
+//            //for (int i=0;i<6;i++)
+//            //  if (!Estado_Cabezales.contains(i+1))
+//            if(Estado_Cabezales.length()<6){
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Para hacer calibración de tiempos deben estar todos los cabezales encendidos.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
+//            }
+//            else
+//                ui->label_data_output->setText("");
 
-                if(debug) cout<<"Cabezal: "<<head_index<<endl;
+//            arpet->portDisconnect();
+//            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
-                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-                msg = readString(CHAR_LF);
+//            calibrador->setPort_Name(port_name);
+//            worker->setPortName(port_name);
 
-                usleep(500);
-                //hv_status_table[head_index-1]->setText(psoc_alta);
+//            error_code= arpet->portConnect(port_name.toStdString().c_str());
+//            if (error_code.value()!=0){
+//                arpet->portDisconnect();
+//                setButtonCalibTiemposState(false);
+//                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                throw exception_Cabezal_Apagado;
+//            }
 
-                setCalibrationTables(head_index);
+//            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
+//            }
 
-                arpet->portDisconnect();
+//            arpet->portDisconnect();
 
-            }
+//            // Estaría bueno pedirle a Coincidencias que hay AND entre los LVDS de los cabezales para corroborrar que están con CLK externo
+//            // Esto lo poídra devolver Coincidencias en el Init con solamente un campo tipo flag
 
-        arpet->portDisconnect();
-        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+//            // Si todo esto está listo procedo a la configuración de los cabezales
 
-        calibrador->setPort_Name(port_name);
-        worker->setPortName(port_name);
+//            string msg;
+//            QString psoc_alta_Tabla;
 
-        error_code= arpet->portConnect(port_name.toStdString().c_str());
-        if (error_code.value()!=0){
-            arpet->portDisconnect();
-            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-            throw exception_Cabezal_Apagado;
-        }
+//            /////////////// CONFIGURACION Y CARGA DE TABLAS
+//            for (int i=0;i<6;i++) // Se exige que estén los 6 cabezales para calibrar tiempos
+//            {
 
-        // Configuro Coincidencias
+//                int head_index=i+1;
+//                /* Inicialización del Cabezal */
 
-        initCoincidenceMode();
-        usleep(5000);
-        setCoincidenceModeWindowTime(true);
-        usleep(5000);
-        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-        usleep(5000);
+//                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
+//                calibrador->setPort_Name((port_name));
+//                worker->setPortName((port_name));
+//                error_code= arpet->portConnect(port_name.toStdString().c_str());
+//                if (error_code.value()!=0){
+//                    arpet->portDisconnect();
+//                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+//                    throw exception_Cabezal_Apagado;
+//                }
 
-        // Seteo intercabezal en cero, es decir, solo envío intracabezal
+//                if (initHead(head_index).length()==0){
+//                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
+//                    return;
+//                }
+//                if(initSP3(head_index).length()==0){
+//                    ui->label_data_output->setText("PMTs no responden");
+//                    return;
+//                }
+//                parseConfigurationFile(true, QString::number(head_index));
 
-        setTimeModeCoin(COIN_NORMAL,true);
+//                usleep(500);
+//                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+
+//                psoc_alta_Tabla = QString::number(AT);
+
+//                usleep(500);
+
+//                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+//                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+//                usleep(500);
+//                msg = readString();
+//                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+//                usleep(500);
+
+//                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+//                if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+//                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+//                msg = readString(CHAR_LF);
+
+//                usleep(500);
+//                //hv_status_table[head_index-1]->setText(psoc_alta);
+
+//                setCalibrationTables(head_index);
+
+//                arpet->portDisconnect();
+
+//            }
+
+//        arpet->portDisconnect();
+//        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+
+//        calibrador->setPort_Name(port_name);
+//        worker->setPortName(port_name);
+
+//        error_code= arpet->portConnect(port_name.toStdString().c_str());
+//        if (error_code.value()!=0){
+//            arpet->portDisconnect();
+//            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+//            throw exception_Cabezal_Apagado;
+//        }
+
+//        // Configuro Coincidencias
+
+//        initCoincidenceMode();
+//        usleep(5000);
+//        setCoincidenceModeWindowTime(true);
+//        usleep(5000);
+//        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
+//        usleep(5000);
+
+//        // Seteo intercabezal en cero, es decir, solo envío intracabezal
+
+//        setTimeModeCoin(COIN_INTER_CABEZAL,true);
 
 
 
-            arpet->portDisconnect();
+//        arpet->portDisconnect();
 
-            calibrador->setTiempo_adq(Tiempo_adq.toInt());
-            calibrador->setMode_AutoCalibTiempos(true);
-            calibrador->setAutoCalibBackground(false);
+//        calibrador->setTiempo_adq(Tiempo_adq.toInt());
+//        calibrador->setMode_AutoCalibTiempos(true);
+//        calibrador->setAutoCalibBackground(false);
 
-            calib_wr->abort();
-            calib_th->wait();
-	    usleep(500);
-            calib_wr->requestCalib();
-        }
-        catch(Exceptions & ex)
-        {
-            QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+//        calib_wr->abort();
+//        calib_th->wait();
+//        usleep(500);
+//        calib_wr->requestCalib();
+//        }
+//        catch(Exceptions & ex)
+//        {
+//            QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
 
-            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
-        }
+//            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+//        }
 
-        }
-        else
-        {
-            setButtonCalibTiemposState(true,true);
-            if (is_abort_calib)
-            {
-                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
-                emit sendCalibAbortCommand(true);
-            }
-            setIsAbortCalibFlag(true);
-        }
+//        }
+//        else
+//        {
+//            setButtonCalibTiemposState(true,true);
+//            if (is_abort_calib)
+//            {
+//                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+//                emit sendCalibAbortCommand(true);
+//            }
+//            setIsAbortCalibFlag(true);
+//        }
 }
 
 
@@ -5259,9 +5313,9 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
         // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
 
-        for(int i = 0;  i< 9 ; i++ )
+        for(int i = 2;  i< 5 ; i++ )
         {
-            checked_PMTs.append(i+1);
+            checked_PMTs.append((i-2)*3+2); // 2 - 5 - 8, son las máquinas de cabezales enfrentados
         }
 
         setPMTCalibCustomPlotEnvironment(checked_PMTs);
@@ -5287,8 +5341,17 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
             for (int i=0 ; i<checked_PMTs.length() ; i++)
             {
-                getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
-                addGraph_Tiempos(arpet->getHitsMCA(), ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+                string msg;
+                msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+                struct Pico_espectro aux;
+                QVector<double> aux_hits;
+                double aux_hits_double[CHANNELS];
+                aux_hits = arpet->getHitsMCA();
+                for (int j = 0 ; j < CHANNELS ; j++)
+                    aux_hits_double[j] = aux_hits[j];
+                aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+                cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+                addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
             }
 
 //            setButtonVerTiemposState(true,true);
@@ -5315,6 +5378,88 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
 
 }
+
+void MainWindow::on_pb_Autocalib_Tiempos_Debug_2_clicked()
+{
+    error_code error_code;
+
+    if(debug) cout<<"Ver espectros para AutoCalib de Tiempos"<<endl;
+
+//    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+    {
+
+        QList<int> checked_PMTs;
+
+        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+
+        for(int i = 1;  i<10 ; i++ ) // Acá tienen que ir todos menos el 2 el 5 y el 8
+        {
+            if(i!=2 && i!=5 && i!=8)
+                checked_PMTs.append(i);
+        }
+
+        setPMTCalibCustomPlotEnvironment(checked_PMTs);
+
+        try{
+
+            arpet->portDisconnect();
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (QString::fromStdString(initHead(7)).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                ui->label_data_output->setText("Coincidencias todavía no iniciado");
+                return;
+            }
+
+            clearSpecCalibGraphs();
+
+            for (int i=0 ; i<checked_PMTs.length() ; i++)
+            {
+                //getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
+                string msg;
+                msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+                struct Pico_espectro aux;
+                QVector<double> aux_hits;
+                double aux_hits_double[CHANNELS];
+                aux_hits = arpet->getHitsMCA();
+                for (int j = 0 ; j < CHANNELS ; j++)
+                    aux_hits_double[j] = aux_hits[j];
+                aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+                cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+                addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+            }
+
+//            setButtonVerTiemposState(true,true);
+
+        }
+        catch(Exceptions & ex)
+        {
+            QMessageBox::critical(this,tr("Atención"),tr((string("Coincidencias no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+
+        }
+//        else
+//        {
+//            setButtonVerTiemposState(true,true);
+//            if (is_abort_calib)
+//            {
+//                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+//                emit sendCalibAbortCommand(true);
+//            }
+//            setIsAbortCalibFlag(true);
+//        }
+
+
+}
+
 void MainWindow::connectPortArpet()
 {
     arpet->portConnect(port_name.toStdString().c_str());
@@ -6588,6 +6733,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
               mcae_wr->setPMTSelectedList(pmt_selected_list);
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(true);
+              mcae_wr->setModeCabCalib(espectro_calib);
               mcae_wr->setCentroidMode(centroide);
               mcae_th->wait();
               mcae_wr->requestMCA();
@@ -8989,3 +9135,28 @@ void MainWindow::on_pb_Debug_clicked()
 
     return;
 }
+
+void MainWindow::on_pushButton_Socatear_toggled(bool checked)
+{
+    if(checked)
+    {
+//        QProcess socatear;
+//        ver_tasa.waitForStarted();
+//        ver_tasa.start("cat ./log_ETH.info");
+//        ver_tasa.waitForFinished(-1);
+
+        QProcess pide_ip;
+        pide_ip.waitForStarted();
+        pide_ip.start("bash",QStringList() << "-c" << "ifconfig | grep '192.168' | head --bytes=34 | tail --bytes=14");
+        pide_ip.waitForFinished(-1);
+
+        QString output = pide_ip.readAllStandardOutput();
+
+        ui->label_Socatear->setText(output);
+    }
+    else
+    {
+        ui->label_Socatear->setText("");
+    }
+}
+

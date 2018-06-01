@@ -250,7 +250,7 @@ private slots:
 
     /* AutoCalib */
     void on_pb_Autocalib_toggled(bool checked);
-    void on_pb_Autocalib_Tiempos_toggled(bool checked);
+    void on_pb_Autocalib_Tiempos_clicked();
     void on_pb_Autocalib_Tiempos_Debug_clicked();
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
@@ -360,6 +360,10 @@ private slots:
     void on_calendarWidget_currentPageChanged(int year, int month);
 
     void on_pb_Debug_clicked();
+
+    void on_pushButton_Socatear_toggled(bool checked);
+
+    void on_pb_Autocalib_Tiempos_Debug_2_clicked();
 
 private:
     QString openConfigurationFile();

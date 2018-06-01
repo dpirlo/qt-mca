@@ -374,9 +374,9 @@ void Thread::getMCA()
                     arpet->portDisconnect();
                     QString Cabezal_conectado="/dev/UART_Cab"+ QString::number( checkedHeads.at(0));
                     arpet->portConnect(Cabezal_conectado.toStdString().c_str());
-                    pmt = pmt_selected_list.at(index).toStdString();
+                    pmt = _CabCalib && _centroid? QString::number(pmt_selected_list.at(index).toInt()+50).toStdString() : pmt_selected_list.at(index).toStdString();
                     string msg = arpet->getMCA(pmt, pmt_function, QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                    if(debug)
+                    if(debug && !_CabCalib)
                     {
                         cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
 //                        cout<<"PMT: "<<pmt<<" "<<endl;
@@ -403,7 +403,7 @@ void Thread::getMCA()
                     error_code error_code=arpet->portConnect(Cabezal_conectado.toStdString().c_str());
                     if(debug) cout<<"error code serie: "<<error_code<<endl;
 
-                    pmt = _CabCalib==true ? "49" : "0";           
+                    pmt = _CabCalib==true ? "49" : "0";
 
                     string msg = arpet->getMCA(pmt, arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
