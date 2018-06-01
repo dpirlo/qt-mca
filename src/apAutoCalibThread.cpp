@@ -141,24 +141,21 @@ void AutoCalibThread::getCalib()
 
                 if(calibrador->PMTsEnPico == calibrador->PMTs_List.length())
                 {
+                    QFile HvFile("Salidas/HVTable_Cabezal_"+QString::number(calibrador->Cab_actual)+".txt");
+                    QString HvAux;
+                    HvFile.open(QIODevice::WriteOnly | QIODevice::Append);
+
                     //cout<<"Lista calibrada para copiar a archivo:"<<endl;
                     for (int i=0 ; i<calibrador->PMTs_List.length() ; i++)
                     {
-                        QFile HvFile("Salidas/HVTable_Cabezal_"+QString::number(calibrador->Cab_actual)+".txt");
-                        QString HvAux;
-                        HvFile.open(QIODevice::WriteOnly | QIODevice::Append);
-
-                        for (int j=0;j<PMTs;j++){
-                            HvAux.append(QString::number(j)+"\t");
-                            HvAux.append(QString::number(calibrador->Dinodos_PMT[j])+"\t");
-                            HvAux.append("\n");
-                        }
-
-                        HvFile.write(HvAux.toUtf8());
-                        HvFile.close();
+                        HvAux.append(QString::number(calibrador->PMTs_List[i])+"\t");
+                        HvAux.append(QString::number(calibrador->Dinodos_PMT[i])+"\t");
+                        HvAux.append("\n");
 
                         //cout<<calibrador->PMTs_List[i]<<'\t'<<calibrador->Dinodos_PMT[calibrador->PMTs_List[i]-1]<<endl;
                     }
+                    HvFile.write(HvAux.toUtf8());
+                    HvFile.close();
 
                     if(calibrador->PMTs_List.length() == PMTs)
                     {

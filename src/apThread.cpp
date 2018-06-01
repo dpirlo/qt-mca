@@ -118,7 +118,6 @@ void Thread::getLogWork() {
     AutoCalib InitBuscaPico;
     struct Pico_espectro aux;
 
-
     if(debug)
     {
         cout<<"[LOG-DBG-THR] "<<getLocalDateAndTime()<<" ============================="<<endl;
@@ -133,7 +132,6 @@ void Thread::getLogWork() {
     {
         pmt_function = arpet->getFunCSP3();
     }
-
 
     int try_error_count = 0;
     emit startElapsedTime();
@@ -207,29 +205,12 @@ void Thread::getLogWork() {
                     emit sendPicosLog(aux, head_index);
 
                     // FIN PICO //////////////////
-                    //////////////////////////////
-                    // TASA///////////////////////
-    //                for (int j=0;j<48;j++){
-    //                    if (debug) cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
-
-    //                    for(int k=0;k<255;k++){
-    //                        CuentasTotales+=arpet->getHitsMCA()[k];
-    //                    }
-    //                    Saturados[j]=(arpet->getHitsMCA()[255]/CuentasTotales)*100;
-    //                    if (debug) cout<<"PMT: "<<QString::number( j+1).toStdString()<<" "<<"Saturados "<<": " << QString::number(Saturados[j]).toStdString()<<endl;
-
-    //                }
-    //                emit sendSaturated(QString::number(head_index).toInt(), Saturados);
-                    //// FIN TASA
-                    /////////////////////////
 
                     arpet->portDisconnect();
 
                   }
                   port_name="/dev/UART_Coin";
                   arpet->portConnect(port_name.toStdString().c_str());
-                  if (debug) cout<<"Aca llega"<<endl;
-
                   rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
                   emit sendRatesValuesCoin( rates.at(0), rates.at(1), rates.at(2),rates.at(3),rates.at(4),rates.at(5),rates.at(6),rates.at(7),rates.at(8));
                   if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;

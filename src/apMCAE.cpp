@@ -90,6 +90,7 @@ MCAE::MCAE(size_t timeout)
       Temp_MCA("74000"),
       Set_Time_MCA("80"),
       Rate_MCA("0060"),
+      Rate_MCA_Demo("0061"),
 
       /* ENCABEZADO DE ENCENDIDO Y APAGADO DE CABEZALES*/
       Cab_On_Off("#C701090009$CAB")
@@ -899,7 +900,7 @@ void MCAE::setCoinStream(string function, string data_one, string data_two, bool
     string stream;
     if (time)
     {
-        stream = function + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_two).toInt())) + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertToTwoComplement(QString::fromStdString(data_one).toInt()));
+        stream = function + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_two).toInt())) + formatMCAEStreamSize(COIN_BUFFER_SIZE, convertDecToHex(QString::fromStdString(data_one).toInt()));
     }
     else
     {
@@ -1516,6 +1517,29 @@ vector<int> MCAE::getRateCoin(string head, string port_name)
     sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
     msg = readString(delimeter, port_name);
     cout<<msg<<endl;
-    //cout<<parserRateStreamCoin(msg)<<endl;
+    return parserRateStreamCoin(msg);
+}
+/**
+ * @brief MCAE::getRateCoinDemo
+ * @param head
+ * @param port_name
+ * @return
+ */
+vector<int> MCAE::getRateCoinDemo(string head, string port_name)
+{
+    setHeader_MCAE(getHead_MCAE() + head + getFunCHead());
+    string rate_stream = getMCAFormatStream(getRate_MCA_Demo());
+    int size_rate=(int)(rate_stream.size());
+    string size_sended=formatMCAEStreamSize(SENDED_BUFFER_SIZE,to_string(size_rate));
+    string size_received=formatMCAEStreamSize(RECEIVED_BUFFER_SIZE,to_string(size_rate+45));
+    string stream = getHeader_MCAE() + size_sended + size_received + rate_stream;
+    setTrama_MCAE(stream);
+
+    char delimeter='\r';
+    string msg;
+
+    sendString(getTrama_MCAE(), getEnd_MCA(), port_name);
+    msg = readString(delimeter, port_name);
+    cout<<msg<<endl;
     return parserRateStreamCoin(msg);
 }

@@ -109,6 +109,7 @@ namespace ap {
     string getAlmohada(string head, string port_name);
     vector<int> getRate(string head, string port_name);
     vector<int> getRateCoin(string head, string port_name);
+    vector<int> getRateCoinDemo(string head, string port_name);
     QVector<QString> parserPSOCStream(string stream);
     double getPMTTemperature(string temp_stream);
     bool isPortOpen();
@@ -190,7 +191,7 @@ namespace ap {
 
   private:
     string FunCHead, FunCSP3, FunCPSOC, BrCst;
-    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA, SetHVMCA_MCA;
+    string Init_Calib_MCAE, Init_MCA, Data_MCA, SetHV_MCA, Temp_MCA, Set_Time_MCA, Rate_MCA, SetHVMCA_MCA,Rate_MCA_Demo;
     string Head_Calib_Coin, Head_MCAE, End_MCA, End_PSOC;
     string Header_MCAE, Trama_MCAE, Trama_MCA, Trama_PSOC, Trama_Calib, Trama_Coin;
     string PSOC_OFF, PSOC_ON, PSOC_SET, PSOC_STA, PSOC_ANS, PSOC_SIZE_SENDED, PSOC_SIZE_RECEIVED, PSOC_SIZE_RECEIVED_ALL;
@@ -409,6 +410,11 @@ namespace ap {
          * @return
          */
     string getRate_MCA() const { return Rate_MCA; }
+    /**
+     * @brief getRate_MCA_Demo
+     * @return
+     */
+    string getRate_MCA_Demo() const { return Rate_MCA_Demo; }
     /**
          * @brief getData_MCA
          * @return Data_MCA
