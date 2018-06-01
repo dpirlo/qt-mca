@@ -111,7 +111,7 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -160,7 +160,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>80</y>
+         <y>90</y>
          <width>66</width>
          <height>31</height>
         </rect>
@@ -173,7 +173,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>110</y>
+         <y>120</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -186,7 +186,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>8</y>
+         <y>20</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -206,7 +206,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>50</y>
+         <y>60</y>
          <width>66</width>
          <height>31</height>
         </rect>
@@ -218,8 +218,8 @@
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>120</x>
-         <y>50</y>
+         <x>130</x>
+         <y>60</y>
          <width>361</width>
          <height>118</height>
         </rect>
@@ -630,7 +630,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>140</y>
+         <y>150</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -642,8 +642,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_1">
        <property name="geometry">
         <rect>
-         <x>120</x>
-         <y>10</y>
+         <x>130</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -661,8 +661,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_2">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>10</y>
+         <x>190</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -683,8 +683,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_3">
        <property name="geometry">
         <rect>
-         <x>240</x>
-         <y>10</y>
+         <x>250</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -705,8 +705,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_4">
        <property name="geometry">
         <rect>
-         <x>300</x>
-         <y>10</y>
+         <x>310</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -727,8 +727,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_5">
        <property name="geometry">
         <rect>
-         <x>360</x>
-         <y>10</y>
+         <x>370</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -749,8 +749,8 @@
       <widget class="QPushButton" name="pushButton_Encendido_6">
        <property name="geometry">
         <rect>
-         <x>420</x>
-         <y>10</y>
+         <x>430</x>
+         <y>20</y>
          <width>61</width>
          <height>31</height>
         </rect>
@@ -771,8 +771,8 @@
       <widget class="QPushButton" name="pushButton_On_Off_Cabs">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>10</y>
+         <x>80</x>
+         <y>20</y>
          <width>51</width>
          <height>31</height>
         </rect>
@@ -955,7 +955,7 @@
         <x>10</x>
         <y>340</y>
         <width>981</width>
-        <height>231</height>
+        <height>241</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -970,7 +970,7 @@
          <x>860</x>
          <y>10</y>
          <width>111</width>
-         <height>211</height>
+         <height>221</height>
         </rect>
        </property>
        <property name="font">
@@ -985,6 +985,184 @@
  Cabezales</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="pushButton_aqd_file_open_2">
+       <property name="geometry">
+        <rect>
+         <x>530</x>
+         <y>120</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Abrir</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_aqd_file_size_2">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>80</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="inputMask">
+        <string>9999</string>
+       </property>
+       <property name="text">
+        <string>10</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos_2">
+       <property name="geometry">
+        <rect>
+         <x>530</x>
+         <y>80</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="inputMask">
+        <string>9999</string>
+       </property>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_aqd_path_file_2">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>120</y>
+         <width>391</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_Titulo_Medicion_2">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>40</y>
+         <width>361</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>40</y>
+         <width>211</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Título de la medición:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_112">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>80</y>
+         <width>141</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Cant. de Archivos</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_108">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>221</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tamaño del archivo en MB:</string>
+       </property>
+      </widget>
+      <widget class="QProgressBar" name="progressBar_Adq_Config">
+       <property name="geometry">
+        <rect>
+         <x>650</x>
+         <y>40</y>
+         <width>181</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pbAdquirir_Config">
+       <property name="geometry">
+        <rect>
+         <x>650</x>
+         <y>130</y>
+         <width>181</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Adquirir</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_114">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>120</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Path:</string>
+       </property>
+      </widget>
+      <zorder>pushButton_initialize</zorder>
+      <zorder>pushButton_aqd_file_open_2</zorder>
+      <zorder>lineEdit_Titulo_Medicion_2</zorder>
+      <zorder>label_6</zorder>
+      <zorder>label_112</zorder>
+      <zorder>label_108</zorder>
+      <zorder>progressBar_Adq_Config</zorder>
+      <zorder>pbAdquirir_Config</zorder>
+      <zorder>lineEdit_aqd_file_size_2</zorder>
+      <zorder>lineEdit_aqd_path_file_2</zorder>
+      <zorder>lineEdit_aqd_cant_archivos_2</zorder>
+      <zorder>label_114</zorder>
      </widget>
      <widget class="QFrame" name="frame_hv">
       <property name="geometry">
@@ -1004,9 +1182,9 @@
       <widget class="QLabel" name="label_9">
        <property name="geometry">
         <rect>
-         <x>110</x>
+         <x>150</x>
          <y>10</y>
-         <width>61</width>
+         <width>51</width>
          <height>31</height>
         </rect>
        </property>
@@ -1018,7 +1196,7 @@ Tensión: </string>
       <widget class="QLabel" name="label_22">
        <property name="geometry">
         <rect>
-         <x>70</x>
+         <x>110</x>
          <y>10</y>
          <width>31</width>
          <height>31</height>
@@ -1058,7 +1236,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_hv_set">
        <property name="geometry">
         <rect>
-         <x>284</x>
+         <x>310</x>
          <y>10</y>
          <width>41</width>
          <height>31</height>
@@ -1071,10 +1249,10 @@ Tensión: </string>
       <widget class="QLineEdit" name="lineEdit_alta">
        <property name="geometry">
         <rect>
-         <x>184</x>
+         <x>210</x>
          <y>10</y>
          <width>91</width>
-         <height>33</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -1087,9 +1265,9 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_hv_estado">
        <property name="geometry">
         <rect>
-         <x>406</x>
+         <x>430</x>
          <y>10</y>
-         <width>95</width>
+         <width>81</width>
          <height>31</height>
         </rect>
        </property>
@@ -1100,7 +1278,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_hv_off">
        <property name="geometry">
         <rect>
-         <x>366</x>
+         <x>390</x>
          <y>10</y>
          <width>41</width>
          <height>31</height>
@@ -1113,7 +1291,7 @@ Tensión: </string>
       <widget class="QPushButton" name="pushButton_hv_on">
        <property name="geometry">
         <rect>
-         <x>325</x>
+         <x>350</x>
          <y>10</y>
          <width>41</width>
          <height>31</height>
@@ -1188,9 +1366,9 @@ Tensión: </string>
       <widget class="QLabel" name="label_40">
        <property name="geometry">
         <rect>
-         <x>60</x>
+         <x>30</x>
          <y>10</y>
-         <width>161</width>
+         <width>221</width>
          <height>21</height>
         </rect>
        </property>
@@ -1203,6 +1381,9 @@ Tensión: </string>
        </property>
        <property name="text">
         <string>Modo de Adquisición</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_configure">
@@ -1279,8 +1460,8 @@ Tensión: </string>
        <widget class="QLineEdit" name="lineEdit_WN">
         <property name="geometry">
          <rect>
-          <x>50</x>
-          <y>40</y>
+          <x>140</x>
+          <y>80</y>
           <width>51</width>
           <height>31</height>
          </rect>
@@ -1292,7 +1473,7 @@ Tensión: </string>
          <string/>
         </property>
         <property name="text">
-         <string>1</string>
+         <string>15</string>
         </property>
         <property name="placeholderText">
          <string/>
@@ -1301,7 +1482,7 @@ Tensión: </string>
        <widget class="QLineEdit" name="lineEdit_WP">
         <property name="geometry">
          <rect>
-          <x>150</x>
+          <x>140</x>
           <y>40</y>
           <width>51</width>
           <height>31</height>
@@ -1311,33 +1492,33 @@ Tensión: </string>
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Valor positivo de ventana. Rango: 1-128.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>1</string>
+         <string>15</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_43">
         <property name="geometry">
          <rect>
-          <x>10</x>
-          <y>40</y>
-          <width>31</width>
+          <x>40</x>
+          <y>80</y>
+          <width>51</width>
           <height>31</height>
          </rect>
         </property>
         <property name="text">
-         <string>WN:</string>
+         <string>Offset:</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_51">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>40</x>
           <y>40</y>
-          <width>31</width>
+          <width>71</width>
           <height>31</height>
          </rect>
         </property>
         <property name="text">
-         <string>WP:</string>
+         <string>Ventana:</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_52">
@@ -1349,31 +1530,14 @@ Tensión: </string>
           <height>21</height>
          </rect>
         </property>
-        <property name="text">
-         <string>Ventana de coincidencia</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_window_interval">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>90</y>
-          <width>191</width>
-          <height>21</height>
-         </rect>
-        </property>
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
         <property name="text">
-         <string/>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <string>Ventana de coincidencia</string>
         </property>
        </widget>
       </widget>
@@ -1402,10 +1566,10 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>170</x>
+         <x>140</x>
          <y>120</y>
-         <width>51</width>
-         <height>29</height>
+         <width>91</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="currentIndex">
@@ -1448,9 +1612,9 @@ Tensión: </string>
        </property>
        <property name="geometry">
         <rect>
-         <x>60</x>
+         <x>40</x>
          <y>110</y>
-         <width>101</width>
+         <width>71</width>
          <height>51</height>
         </rect>
        </property>
@@ -1496,7 +1660,7 @@ calibrar</string>
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>161</width>
+         <width>151</width>
          <height>301</height>
         </rect>
        </property>
@@ -1509,9 +1673,9 @@ calibrar</string>
        <widget class="QWidget" name="gridLayoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>-10</x>
-          <y>3</y>
-          <width>171</width>
+          <x>0</x>
+          <y>0</y>
+          <width>158</width>
           <height>301</height>
          </rect>
         </property>
@@ -1974,6 +2138,7 @@ calibrar</string>
      <zorder>frame_hv</zorder>
      <zorder>frame_adquid_mode</zorder>
      <zorder>frame_calib_tables</zorder>
+     <zorder>frame_2</zorder>
      <zorder>label_Socatear</zorder>
      <zorder>pushButton_Socatear</zorder>
     </widget>
@@ -2006,7 +2171,7 @@ calibrar</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -4158,9 +4323,9 @@ calibrar</string>
      <widget class="QProgressBar" name="progressBar">
       <property name="geometry">
        <rect>
-        <x>640</x>
+        <x>630</x>
         <y>530</y>
-        <width>161</width>
+        <width>171</width>
         <height>51</height>
        </rect>
       </property>
@@ -7186,7 +7351,7 @@ calibrar</string>
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>190</y>
+        <y>170</y>
         <width>571</width>
         <height>61</height>
        </rect>
@@ -7224,9 +7389,9 @@ calibrar</string>
      <widget class="QLineEdit" name="lineEdit_terminal">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>10</x>
         <y>50</y>
-        <width>461</width>
+        <width>511</width>
         <height>33</height>
        </rect>
       </property>
@@ -7864,6 +8029,111 @@ calibrar</string>
        <string>CAB5</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_Tasa_Coin_Demo">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>240</y>
+        <width>91</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA VENT. 
+DEMO.</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_Tasa_Coin">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>240</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TASA COIN</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin1">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>240</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin2">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>280</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin3">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>320</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin3_DEMO">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>320</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin2_DEMO">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>280</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Coin1_DEMO">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>240</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
      <zorder>pushButton_send_terminal</zorder>
      <zorder>label_received_terminal</zorder>
      <zorder>label_size_terminal</zorder>
@@ -7890,6 +8160,14 @@ calibrar</string>
      <zorder>label_CAB5</zorder>
      <zorder>label_CAB4</zorder>
      <zorder>label_CAB6</zorder>
+     <zorder>pushButton_Tasa_Coin_Demo</zorder>
+     <zorder>pushButton_Tasa_Coin</zorder>
+     <zorder>label_Coin1</zorder>
+     <zorder>label_Coin2</zorder>
+     <zorder>label_Coin3</zorder>
+     <zorder>label_Coin3_DEMO</zorder>
+     <zorder>label_Coin2_DEMO</zorder>
+     <zorder>label_Coin1_DEMO</zorder>
     </widget>
     <widget class="QWidget" name="UserTab">
      <attribute name="title">

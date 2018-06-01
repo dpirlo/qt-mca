@@ -146,7 +146,9 @@ private slots:
     void moveLegendPMT();
     void moveLegendHead();
     void mousePressPMT();
+    void mousePressGraphsLog();
     void mousePressHead();
+    void selectionChangedLogGraph();
     void mouseWheelPMT();
     void mouseWheelHead();
     void selectionChangedPMT();
@@ -364,6 +366,10 @@ private slots:
     void on_pushButton_Socatear_toggled(bool checked);
 
     void on_pb_Autocalib_Tiempos_Debug_2_clicked();
+
+    void on_pushButton_Tasa_Coin_clicked();
+
+    void on_pushButton_Tasa_Coin_Demo_clicked();
 
 private:
     QString openConfigurationFile();

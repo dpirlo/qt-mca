@@ -212,6 +212,8 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
 
+    ui->Comentarios_Adquisicion->setText("MEDICION Nº: \n  \nFuente:  \nActividad de la Fuente:  \nDistancia al cabezal:  \nObservaciones: ");
+
     setQListElements();
     SetQCustomPlotConfiguration(ui->specPMTs, CHANNELS_PMT);
     SetQCustomPlotConfiguration(ui->specHead, CHANNELS);
@@ -287,6 +289,10 @@ void MainWindow::SetQCustomPlotSlots(string title_pmt_str, string title_head_str
     ui->specPMTs->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->specPMTs, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequestPMT(QPoint)));
     ui->specPMTs->plotLayout()->addElement(0, 0, title_pmt);
+
+    connect(ui->specPMTs_3, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    connect(ui->specPMTs_3, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePressGraphsLog()));
+    connect(ui->specPMTs_3, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChangedLogGraph()));
 
     /* Slots para Head */
     QCPTextElement *title_head = new QCPTextElement(ui->specHead, title_head_str.c_str(), QFont("sans", 16, QFont::Bold));
@@ -599,7 +605,7 @@ void MainWindow::checkStatusAdq(bool status)
         worker_adq->setCantArchivos(cant_archivos);
         cant_archivos++;
     }
-    else if(cant_arch_aux.toInt()>cant_archivos){
+    else if(cant_arch_aux.toInt()+1>cant_archivos){
 
         copying=true;
         worker_adq->abort();
@@ -1897,10 +1903,10 @@ void MainWindow::setCalibrationMode(QString head)
  */
 void MainWindow::setCoincidenceModeWindowTime(bool calib)
 {
-    string vn="-"+ui->lineEdit_WN->text().toStdString();
+    string vn=ui->lineEdit_WN->text().toStdString();
     string vp=ui->lineEdit_WP->text().toStdString();
     if(calib)
-        setMCAEDataStream(arpet->getWindow_Time_Coin(),"-127","127",true);
+        return;//setMCAEDataStream(arpet->getWindow_Time_Coin(),"127","127",true); // esta linea no tiene razon de ser
     else
         setMCAEDataStream(arpet->getWindow_Time_Coin(),vn,vp,true);
     string msg_ans;
@@ -1919,8 +1925,7 @@ void MainWindow::setCoincidenceModeWindowTime(bool calib)
         }
         sendString(arpet->getTrama_MCAE(),arpet->getEnd_MCA());
         msg_ans = readString();
-        QString q_label_text="<span style='font-weight:600; color: blue'>"+QString::fromStdString("[" + vn + "," + vp + "]" )+"<br></span>";
-        ui->label_window_interval->setText(q_label_text);
+
     }
     catch(Exceptions & ex)
     {
@@ -3909,7 +3914,6 @@ QStringList MainWindow::availablePortsName()
 
     QStringList portsName;
     int portavailable;
-    //QDir dir("/dev/");
     QDir dir(DEV_PATH);
     QStringList filters;
     try {
@@ -4719,6 +4723,19 @@ void MainWindow::mousePressPMT()
     else
         ui->specPMTs->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
 }
+
+/**
+ * @brief MainWindow::mousePressGraphsLog
+ */
+void MainWindow::mousePressGraphsLog()
+{
+    if (ui->specPMTs_3->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs_3->axisRect()->setRangeDrag(ui->specPMTs->xAxis->orientation());
+    else if (ui->specPMTs_3->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        ui->specPMTs_3->axisRect()->setRangeDrag(ui->specPMTs->yAxis->orientation());
+    else
+        ui->specPMTs_3->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+}
 /**
  * @brief MainWindow::mousePressHead
  */
@@ -4822,6 +4839,32 @@ void MainWindow::selectionChangedPMT()
         }
     }
 }
+void MainWindow::selectionChangedLogGraph(){
+    if (ui->specPMTs_3->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs_3->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specPMTs_3->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs_3->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+    {
+        ui->specPMTs_3->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specPMTs_3->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    }
+
+    if (ui->specPMTs_3->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs_3->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+            ui->specPMTs_3->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->specPMTs_3->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+    {
+        ui->specPMTs_3->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+        ui->specPMTs_3->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    }
+    for (int i=0; i<ui->specPMTs_3->graphCount(); ++i)
+    {
+        QCPGraph *graph = ui->specPMTs_3->graph(i);
+        QCPPlottableLegendItem *item = ui->specPMTs_3->legend->itemWithPlottable(graph);
+        if (item->selected() || graph->selected())
+        {
+            item->setSelected(true);
+            graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+        }
+    }
+}
+
 /**
  * @brief MainWindow::selectionChangedHead
  */
@@ -5070,9 +5113,29 @@ void MainWindow::on_pb_Autocalib_Tiempos_clicked()
 
     //    }
 
+//            arpet->portDisconnect();
+//            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
+//            calibrador->setPort_Name(port_name);
+//            worker->setPortName(port_name);
 
+//            error_code= arpet->portConnect(port_name.toStdString().c_str());
+//            if (error_code.value()!=0){
+//                arpet->portDisconnect();
+//                setButtonCalibTiemposState(false);
+//                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                throw exception_Cabezal_Apagado;
+//            }
 
+//            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
+//            }
 
 //    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
 
@@ -5223,20 +5286,10 @@ void MainWindow::on_pb_Autocalib_Tiempos_clicked()
 //        error_code= arpet->portConnect(port_name.toStdString().c_str());
 //        if (error_code.value()!=0){
 //            arpet->portDisconnect();
-//            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-//            throw exception_Cabezal_Apagado;
 //        }
 
-//        // Configuro Coincidencias
 
-//        initCoincidenceMode();
-//        usleep(5000);
-//        setCoincidenceModeWindowTime(true);
-//        usleep(5000);
-//        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-//        usleep(5000);
 
-//        // Seteo intercabezal en cero, es decir, solo envío intracabezal
 
 //        setTimeModeCoin(COIN_INTER_CABEZAL,true);
 
@@ -6949,6 +7002,9 @@ void MainWindow::on_calendarWidget_selectionChanged()
 
     if (ui->checkBox_Rate_Coin->isChecked()){
 
+        QVector<double>x,llenado_maquinas ;
+
+        QVector< QVector<double> > Matrix_Maquinas;
         for(int i=0;i<24;i++){
            hora.setHMS(i,0,0);
            initfile=root_log_path+"/"+"LOG"+nombreunivoco.toString("yyyyMMdd")+hora.toString("hh")+".log";
@@ -6960,52 +7016,91 @@ void MainWindow::on_calendarWidget_selectionChanged()
 
         if (lista.length()!=0){
 
-          /////////////////////////////////////////////////////////////////////////////////////////////////
-          // Configuracion de la trama:
-          ///   ENCABEZADO-----FECHA--------------------MAQUINAS
-          //    [LOG-RATECOIN],Thu Oct 26 12:59:45 2017,0,0,0,0,0,0,0,0,0
-          /////////////////////////////////////////////////////////////////////////////////////////////////
-          cout<<"---------------------------------";
-          cout<<"fecha: "+lista.at(1).toStdString();
-          cout<<"---------------------------------";
+            /////////////////////////////////////////////////////////////////////////////////////////////////
+            // Configuracion de la trama:
+            ///   ENCABEZADO-----FECHA--------------------MAQUINAS
+            //    [LOG-RATECOIN],Thu Oct 26 12:59:45 2017,0,0,0,0,0,0,0,0,0
+            /////////////////////////////////////////////////////////////////////////////////////////////////
 
-          QVector<double>x ,y,fwhm;
-          QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
-          dateTicker->setDateTimeFormat("ddd MMM d HH:mm:ss yyyy");
-          ui->specPMTs_3->xAxis->setTicker(dateTicker);
+            QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+            dateTicker->setDateTimeFormat("ddd MMM d HH:mm:ss yyyy");
+            ui->specPMTs_3->xAxis->setTicker(dateTicker);
 
-          for (int i=0; i<(lista.length()/7); i++){
-              if (QString(lista.at(3+i*7)).toInt()==ui->comboBox_head_select_graph_3->currentText().toInt()){
-                QDateTime tmp = QDateTime::fromString((lista.at(1+i*7)),"ddd MMM d HH:mm:ss yyyy");
+            for (int i=0; i<(lista.length()/11); i++){
+                QDateTime tmp = QDateTime::fromString((lista.at(1+i*11)),"ddd MMM d HH:mm:ss yyyy");
                 x.append(QCPAxisTickerDateTime::dateTimeToKey(tmp));
-                y.append( QString(lista.at(4+i*7)).toDouble());
-                fwhm.append(QString(lista.at(5+i*7)).toDouble());
+            }
+
+            for (int var = 0; var < 9; var++) {
+                for (int i=0; i<(lista.length()/11); i++){
+                    llenado_maquinas.append( QString(lista.at(var+2+i*11)).toDouble());
                 }
-          }
-  //        // create graph and assign data to it:
-          ui->specPMTs_3->clearGraphs();
-          ui->specPMTs_3->addGraph();
+                Matrix_Maquinas.append(llenado_maquinas);
+                llenado_maquinas.clear();
+            }
 
-          ui->specPMTs_3->graph(0)->setData(x, y);
-          ui->specPMTs_3->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
-          QCPErrorBars *errorBars = new QCPErrorBars(ui->specPMTs_3->xAxis, ui->specPMTs_3->yAxis);
-          errorBars->removeFromLegend();
-          ////void QCPErrorBars::setData ( const QVector< double > &  errorMinus, const QVector< double > &  errorPlus  )
-          errorBars->setData(fwhm,fwhm);
-          errorBars->setDataPlottable(ui->specPMTs_3->graph(0));
-          // give the axes some labels:
-          ui->specPMTs_3->xAxis->setLabel("Tiempo");
-          ui->specPMTs_3->yAxis->setLabel("Tasa");
-          // set axes ranges, so we see all data:
-          ui->specPMTs_3->rescaleAxes();
-          ui->specPMTs_3->replot();
-          lista.clear();
+
+            ui->specPMTs_3->clearGraphs();
+            for (int var = 0; var < 9; var++) {
+              ui->specPMTs_3->addGraph();
+              ui->specPMTs_3->graph(var)->setData(x, Matrix_Maquinas[var]);
+              switch (var) {
+              case 0:
+                  ui->specPMTs_3->graph(var)->setName("CAB1-CAB3");
+                  break;
+              case 1:
+                  ui->specPMTs_3->graph(var)->setName("CAB1-CAB4");
+                  break;
+              case 2:
+                  ui->specPMTs_3->graph(var)->setName("CAB1-CAB5");
+                  break;
+              case 3:
+                  ui->specPMTs_3->graph(var)->setName("CAB2-CAB4");
+                  break;
+              case 4:
+                  ui->specPMTs_3->graph(var)->setName("CAB2-CAB5");
+                  break;
+              case 5:
+                  ui->specPMTs_3->graph(var)->setName("CAB2-CAB6");
+                  break;
+              case 6:
+                  ui->specPMTs_3->graph(var)->setName("CAB3-CAB5");
+                  break;
+              case 7:
+                  ui->specPMTs_3->graph(var)->setName("CAB3-CAB6");
+                  break;
+              case 8:
+                  ui->specPMTs_3->graph(var)->setName("CAB4-CAB6");
+                  break;
+              default:
+                  break;
+              }
+              QPen graphPen;
+              graphPen.setColor(QColor(rand() % 255, rand() % 255, rand() % 255));
+              //graphPen.setWidthF(param[5]);
+              ui->specPMTs_3->graph(var)->setPen(graphPen);
+
+
+            }
+            //ui->specPMTs_3->
+            ui->specPMTs_3->legend->setVisible(true);
+            ui->specPMTs_3->legend->setWrap(3);
+            ui->specPMTs_3->legend->setRowSpacing(3);
+            ui->specPMTs_3->legend->setColumnSpacing(3);
+            // give the axes some labels:
+            ui->specPMTs_3->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                                              QCP::iSelectLegend | QCP::iSelectPlottables);
+            ui->specPMTs_3->xAxis->setLabel("Tiempo");
+            ui->specPMTs_3->yAxis->setLabel("Tasa");
+            // set axes ranges, so we see all data:
+            ui->specPMTs_3->rescaleAxes();
+            ui->specPMTs_3->replot();
+            lista.clear();
 
         }
-        else {
-             //QMessageBox::critical(this,tr("Atención"),tr(string("No se encuentra el archivo o está vacio:" +QString(initfile).toStdString()).c_str()));
-        }
-      }
+    }
+
+
 
     if (ui->ChechBox_Pico->isChecked()){
 
@@ -7088,7 +7183,6 @@ bool MainWindow::fileExists(QString path) {
  */
 void MainWindow::updateCaption(){
 
-    //QDir dir("/dev/");
     QDir dir(DEV_PATH);
     QString numerocabezal;
     QStringList filters;
@@ -7348,9 +7442,9 @@ void MainWindow::Cabezales_On_Off(bool estado){
             throw exception_Cabezal_Apagado;
         }
         if (estado){
-//            sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
-//            usleep(50000);
-//            sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
+            sendString(arpet->getInit_on_off()+"11100009",arpet->getEnd_MCA());
+            usleep(50000);
+            sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
         if (Estado_Cabezales.length()>2)    {
             sendString(arpet->getInit_on_off()+"1111110<",arpet->getEnd_MCA());
         }else{
@@ -7514,7 +7608,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     QString log;
     QString logFileAdq;
 
-
   //  Cabezales_On_Off(checked);
 
     if(calibrador->AutoCalibBackground){
@@ -7599,8 +7692,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
         }
 
-
-
         ui->progressBar->setRange(0,size_archivo_adq.toInt());
 
         commands_calib.append(NombredeArchivo);
@@ -7621,8 +7712,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         //                          9no registra o no la medicion segun path alternativo
         ///////////////////////////////////////////////////////////////////////////////////////
 
-
-
         QFile logger("./LOG_Adquisicion_"+time+".txt");
         logFileAdq = "./LOG_Adquisicion_"+time+".txt";
 
@@ -7631,16 +7720,9 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         log.append(ui->lineEdit_Titulo_Medicion->text()+"\n");
         log.append(ui->Comentarios_Adquisicion->toPlainText()+"\n");
 
-
-
-
-
-
-
         //return;
 
         /////////////////////////Fin de verificacion previa antes de configurar y adquirir//////////////////////////
-
 
         /////////////// CONFIGURACION Y CARGA DE TABLAS
         for (int i=0;i<Cabezales.length();i++)
@@ -7650,8 +7732,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             /* Inicialización del Cabezal */
             try
             {
-
-
                 log.append("[CAB-"+QString::number(head_index)+"]\t");
                 log.append("[HV]\t");
                 if(ui->comboBox_aqd_mode->currentIndex()!=1){
@@ -7677,7 +7757,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
                 log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head_index-1])+"\n");
 
-
                 if(ui->comboBox_aqd_mode->currentIndex()!=1){
                     log.append("[VENTANAS-ENERGIA]\n");
                     //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
@@ -7689,9 +7768,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                     log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
                             +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
                 }
-
-
-
 
                 port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
@@ -7801,9 +7877,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
     }
     else
     {
-
-
-
         QFile logger(ruta_log_adquisicion);
         if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
         {
@@ -7815,9 +7888,6 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         worker_copy->abort();
         thread_copy->exit(0);
         usleep(5000);
-
-
-
     }
 }
 
@@ -7826,11 +7896,9 @@ void MainWindow::UncheckHeads(){
 
     QList<int> checkedHeads=getCheckedHeads();
 
-
     for (int i=0;i<checkedHeads.length();i++)
     {
         int head_index=checkedHeads.at(i);
-
         setLabelState(false, hv_status_table[head_index-1], true);
         setLabelState(false, pmt_status_table[head_index-1], true);
         setLabelState(false, head_status_table[head_index-1], true);
@@ -7858,12 +7926,9 @@ void MainWindow::on_pushButton_FPGA_4_clicked()
        QProcess read_device;
 
         command = "xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] ;
-
         read_device.waitForStarted();
         read_device.start(command);
         read_device.waitForFinished(-1);
-
-
         output=(read_device.readAllStandardError());
         output =  output.mid(output.indexOf(filtro));
         device_list = output.split("\n");
@@ -7886,8 +7951,6 @@ void MainWindow::on_pushButton_FPGA_4_clicked()
 
     read_device.close();
 
-
-
     if(device_list.length() == Cantidad_elementos + 1 && !error )
        image.load(icon_ok);
     else
@@ -7895,7 +7958,6 @@ void MainWindow::on_pushButton_FPGA_4_clicked()
 
     ui->label_gif->setVisible(false);
     ui->label_gif_2->setVisible(true);
-
     ui->label_gif_2->setPixmap(image);
     ui->label_gif_2->setScaledContents( true );
     ui->label_gif_2->show();
@@ -7918,11 +7980,6 @@ void MainWindow::on_pushButton_FPGA_1_clicked()
          return;
      }
 
-
-    //QString content = file.readAll();
-
-
-
     QTextStream in (&file);
     QString line;
     QString filtro;
@@ -7941,10 +7998,7 @@ void MainWindow::on_pushButton_FPGA_1_clicked()
             correcto = true;
        }while (!line.isNull());
 
-
-
     file.close();
-
 
     if(correcto)
     {
@@ -7957,9 +8011,6 @@ void MainWindow::on_pushButton_FPGA_1_clicked()
         ui->text_FPGA_1->setText("");
         return;
     }
-
-
-
 }
 /**
  * @brief MainWindow::on_pushButton_FPGA_3_clicked
@@ -8029,8 +8080,6 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
     QString command_check = "";                                                                              /// Comando a enviar por consola
     QString output  = "";                                                                                    /// Salida que retorna el XC3SPROG
     QString Options = "";                                                                                    /// Agrega opciones a los comandos
-
-
 
         // Diferancio el Target y guardo los parametros a utilizar
             if(ui->comboBox_FPGA_Cab->currentIndex() != 6)
@@ -8125,9 +8174,6 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
             file.close();
        }
 
-
-
-
         // Identifico los dispositivos conectados y los listo
 
             QProcess read_device;
@@ -8158,8 +8204,6 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
 
             read_device.close();
 
-
-
         // Grabado de dispositivos
 
 
@@ -8169,27 +8213,6 @@ QStringList MainWindow::Mensaje_Grabar_FPGA(int modo)
                         if ( device_list[PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM] == device)
                         {
                             command.append( Dispositivo[ui->comboBox_FPGA_Cab->currentIndex()] + " PMT= " + array_PMT[i] + "#" +"xc3sprog -c " + JTAG[ui->comboBox_FPGA_Cab->currentIndex()] + Options + QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM)  + " " + path);
-
-                            //cout << command.toStdString() << endl;
-                            //QProcess prog_fpga;
-                            //prog_fpga.waitForStarted();
-                            //prog_fpga.start(command);
-                            //prog_fpga.waitForFinished(-1);
-                            //output=(prog_fpga.readAllStandardError());
-                            //prog_fpga.close();
-
-                            //if (output.contains("done"))
-                            //{
-                            //    output =  output.mid(output.indexOf("done"));
-                            //    output =  output.left(output.indexOf("\n"));
-                            //    cout << "PMT= "  << array_PMT[i].toStdString() << " " << output.toStdString() << endl;
-                            //}
-                            //else
-                            //{
-                            //   cout << output.toStdString() << endl;
-                            //     return null;
-                            // }
-
                         }
                         else
                         {
@@ -8326,8 +8349,6 @@ void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
              cout << array_PMT[i].toStdString() << " Pos_JTAG: " << QString::number(PMT_posJTAG[array_PMT[i].toInt() - 1].toInt() + offset_MEM).toStdString() << endl;
         }
     }
-
-
 }
 void MainWindow::checkStatusMoveToServer(bool status){
     QPixmap image;
@@ -9103,9 +9124,6 @@ void MainWindow::CancelCalib()
 //    usleep(5000);
 }
 
-
-
-
 void MainWindow::on_pb_Debug_clicked()
 {
 
@@ -9127,12 +9145,8 @@ void MainWindow::on_pb_Debug_clicked()
         qDebug()<<"Carpeta de Salidas no pudo ser creada";
         return;
     }
-
-
     ruta_archivo_adquisicion = "/media/arpet/pet/calibraciones/campo_inundado/03-info/2018-05-21/acquire_calib_1_2018-05-21-11-41_1.raw";
-
     AutoAdqReady(true);
-
     return;
 }
 
@@ -9160,3 +9174,26 @@ void MainWindow::on_pushButton_Socatear_toggled(bool checked)
     }
 }
 
+void MainWindow::on_pushButton_Tasa_Coin_clicked()
+{
+    vector<int> rates(9);
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+    arpet->portConnect(port_name.toStdString().c_str());
+    rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
+    if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
+    ui->label_Coin1->setText(QString::number(rates.at(0))+"\t"+QString::number(rates.at(1))+"\t"+QString::number(rates.at(2)));
+    ui->label_Coin2->setText(QString::number(rates.at(3))+"\t"+QString::number(rates.at(4))+"\t"+QString::number(rates.at(5)));
+    ui->label_Coin3->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
+}
+
+void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
+{
+    vector<int> rates(9);
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+    arpet->portConnect(port_name.toStdString().c_str());
+    rates = arpet->getRateCoinDemo(QString::number(7).toStdString(), port_name.toStdString());
+    if (debug) cout<<"Tasas COIN Demorada: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
+    ui->label_Coin1_DEMO->setText(QString::number(rates.at(0))+"\t"+QString::number(rates.at(1))+"\t"+QString::number(rates.at(2)));
+    ui->label_Coin2_DEMO->setText(QString::number(rates.at(3))+"\t"+QString::number(rates.at(4))+"\t"+QString::number(rates.at(5)));
+    ui->label_Coin3_DEMO->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
+}
