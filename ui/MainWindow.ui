@@ -948,29 +948,13 @@
         </property>
        </widget>
       </widget>
-     </widget>
-     <widget class="QFrame" name="frame_calib_tables">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>340</y>
-        <width>981</width>
-        <height>241</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
       <widget class="QPushButton" name="pushButton_initialize">
        <property name="geometry">
         <rect>
-         <x>860</x>
+         <x>120</x>
          <y>10</y>
          <width>111</width>
-         <height>221</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -980,30 +964,44 @@
         </font>
        </property>
        <property name="text">
-        <string>Configuración
- de
- Cabezales</string>
+        <string>SET</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QFrame" name="frame_calib_tables">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>340</y>
+        <width>451</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
       <widget class="QPushButton" name="pushButton_aqd_file_open_2">
        <property name="geometry">
         <rect>
-         <x>530</x>
+         <x>410</x>
          <y>120</y>
-         <width>91</width>
+         <width>21</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>Abrir</string>
+        <string>...</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_aqd_file_size_2">
        <property name="geometry">
         <rect>
-         <x>260</x>
+         <x>230</x>
          <y>80</y>
-         <width>101</width>
+         <width>61</width>
          <height>31</height>
         </rect>
        </property>
@@ -1017,9 +1015,9 @@
       <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos_2">
        <property name="geometry">
         <rect>
-         <x>530</x>
+         <x>390</x>
          <y>80</y>
-         <width>91</width>
+         <width>41</width>
          <height>31</height>
         </rect>
        </property>
@@ -1033,9 +1031,9 @@
       <widget class="QLineEdit" name="lineEdit_aqd_path_file_2">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>60</x>
          <y>120</y>
-         <width>391</width>
+         <width>341</width>
          <height>31</height>
         </rect>
        </property>
@@ -1043,9 +1041,9 @@
       <widget class="QLineEdit" name="lineEdit_Titulo_Medicion_2">
        <property name="geometry">
         <rect>
-         <x>260</x>
+         <x>230</x>
          <y>40</y>
-         <width>361</width>
+         <width>201</width>
          <height>31</height>
         </rect>
        </property>
@@ -1053,7 +1051,7 @@
       <widget class="QLabel" name="label_6">
        <property name="geometry">
         <rect>
-         <x>30</x>
+         <x>10</x>
          <y>40</y>
          <width>211</width>
          <height>31</height>
@@ -1071,9 +1069,9 @@
       <widget class="QLabel" name="label_112">
        <property name="geometry">
         <rect>
-         <x>380</x>
+         <x>300</x>
          <y>80</y>
-         <width>141</width>
+         <width>91</width>
          <height>31</height>
         </rect>
        </property>
@@ -1083,13 +1081,13 @@
         </font>
        </property>
        <property name="text">
-        <string>Cant. de Archivos</string>
+        <string>Cantidad</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_108">
        <property name="geometry">
         <rect>
-         <x>30</x>
+         <x>10</x>
          <y>80</y>
          <width>221</width>
          <height>31</height>
@@ -1107,10 +1105,10 @@
       <widget class="QProgressBar" name="progressBar_Adq_Config">
        <property name="geometry">
         <rect>
-         <x>650</x>
-         <y>40</y>
+         <x>10</x>
+         <y>160</y>
          <width>181</width>
-         <height>71</height>
+         <height>51</height>
         </rect>
        </property>
        <property name="value">
@@ -1120,10 +1118,10 @@
       <widget class="QPushButton" name="pbAdquirir_Config">
        <property name="geometry">
         <rect>
-         <x>650</x>
-         <y>130</y>
-         <width>181</width>
-         <height>71</height>
+         <x>240</x>
+         <y>160</y>
+         <width>191</width>
+         <height>51</height>
         </rect>
        </property>
        <property name="text">
@@ -1136,7 +1134,7 @@
       <widget class="QLabel" name="label_114">
        <property name="geometry">
         <rect>
-         <x>30</x>
+         <x>10</x>
          <y>120</y>
          <width>51</width>
          <height>31</height>
@@ -1151,7 +1149,6 @@
         <string>Path:</string>
        </property>
       </widget>
-      <zorder>pushButton_initialize</zorder>
       <zorder>pushButton_aqd_file_open_2</zorder>
       <zorder>lineEdit_Titulo_Medicion_2</zorder>
       <zorder>label_6</zorder>
@@ -2117,7 +2114,7 @@ calibrar</string>
      <widget class="QLabel" name="label_Socatear">
       <property name="geometry">
        <rect>
-        <x>120</x>
+        <x>110</x>
         <y>580</y>
         <width>190</width>
         <height>31</height>
@@ -2132,7 +2129,22 @@ calibrar</string>
        <string/>
       </property>
      </widget>
-     <zorder>frame_2</zorder>
+     <widget class="QFrame" name="frame_calib_tables_2">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>340</y>
+        <width>451</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
      <zorder>frame_status</zorder>
      <zorder>frame_heads</zorder>
      <zorder>frame_hv</zorder>
@@ -2141,6 +2153,7 @@ calibrar</string>
      <zorder>frame_2</zorder>
      <zorder>label_Socatear</zorder>
      <zorder>pushButton_Socatear</zorder>
+     <zorder>frame_calib_tables_2</zorder>
     </widget>
     <widget class="QWidget" name="mca">
      <property name="sizePolicy">
