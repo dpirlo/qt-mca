@@ -83,6 +83,7 @@
 #define CAB6 "UART_Cab6"
 #define CAB  "UART_Cab"
 #define COIN "UART_Coin"
+#define CARCASA "UART_Carcasa"
 
 #define icon_notok      ":/qss_icons/rc/ic_cancel.png"
 #define icon_ok         ":/qss_icons/rc/ic_check_circle.png"
@@ -370,6 +371,8 @@ private slots:
     void on_pushButton_Tasa_Coin_clicked();
 
     void on_pushButton_Tasa_Coin_Demo_clicked();
+
+    void on_pb_send_camilla_clicked();
 
 private:
     QString openConfigurationFile();

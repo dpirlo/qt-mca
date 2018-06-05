@@ -9197,3 +9197,20 @@ void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
     ui->label_Coin2_DEMO->setText(QString::number(rates.at(3))+"\t"+QString::number(rates.at(4))+"\t"+QString::number(rates.at(5)));
     ui->label_Coin3_DEMO->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
 }
+
+void MainWindow::on_pb_send_camilla_clicked()
+{
+    try
+    {
+        ui->label_data_output->setText("");
+        ui->label_send_camilla->setText("");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        arpet->portConnect(port_name.toStdString().c_str());
+        string command = "#CARCASA02@HORIZONTAL,STOP,0,0,0";
+        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+    }
+    catch(Exceptions & ex)
+    {
+        ui->label_data_output->setText("Error Camilla");
+    }
+}

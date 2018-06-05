@@ -1543,3 +1543,14 @@ vector<int> MCAE::getRateCoinDemo(string head, string port_name)
     cout<<msg<<endl;
     return parserRateStreamCoin(msg);
 }
+
+string MCAE::sendCamilla(string command, string port_name)
+{
+    char delimeter='\r';
+    sendString(command, getEnd_MCA(), port_name);
+    string msg;
+
+    msg = readString(delimeter, port_name);
+
+    return msg;
+}

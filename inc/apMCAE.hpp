@@ -110,6 +110,7 @@ namespace ap {
     vector<int> getRate(string head, string port_name);
     vector<int> getRateCoin(string head, string port_name);
     vector<int> getRateCoinDemo(string head, string port_name);
+    string sendCamilla(string command, string port_name);
     QVector<QString> parserPSOCStream(string stream);
     double getPMTTemperature(string temp_stream);
     bool isPortOpen();
