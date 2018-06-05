@@ -48,6 +48,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->frame_multihead_graph_2->hide();
     timerw->start(1000);
 
+    ui->label_giro->setText(QString::number(0)+"%");
+    ui->giro_horizontalSlider->setRange(0,100);
+    ui->giro_horizontalSlider->setSingleStep(5);
+
+    ui->label_mas->setText(QString::number(0)+"%");
+    ui->mas_horizontalSlider->setRange(0,100);
+    ui->mas_horizontalSlider->setSingleStep(5);
+
+    ui->label_menos->setText(QString::number(0)+"%");
+    ui->menos_horizontalSlider->setRange(0,100);
+    ui->menos_horizontalSlider->setSingleStep(5);
+
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
             break;
@@ -9202,7 +9214,6 @@ void MainWindow::on_pb_send_camilla_clicked()
 {
     try
     {
-        ui->label_data_output->setText("");
         ui->label_send_camilla->setText("");
         port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
         arpet->portConnect(port_name.toStdString().c_str());
@@ -9211,6 +9222,147 @@ void MainWindow::on_pb_send_camilla_clicked()
     }
     catch(Exceptions & ex)
     {
-        ui->label_data_output->setText("Error Camilla");
+        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+    }
+}
+
+void MainWindow::on_pb_send_giro_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->giro_horizontalSlider->setEnabled(true);
+    }
+    else
+    {
+        try
+        {
+            ui->label_send_camilla->setText("");
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+            arpet->portConnect(port_name.toStdString().c_str());
+            string command = "#CARCASA02@GIRO,1,0,0,0";
+            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+            ui->giro_horizontalSlider->setValue(0);
+            ui->giro_horizontalSlider->setEnabled(false);
+        }
+        catch(Exceptions & ex)
+        {
+            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        }
+
+    }
+}
+
+void MainWindow::on_giro_horizontalSlider_valueChanged(int value)
+{
+    try
+    {
+        string command;
+        ui->label_send_camilla->setText("");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        arpet->portConnect(port_name.toStdString().c_str());
+        if(value > 0)
+            command = "#CARCASA02@GIRO,0,"+QString::number(value).toStdString()+"0,0,0,0";
+        else
+            command = "#CARCASA02@GIRO,1,0,0,0";
+        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+        ui->label_giro->setText(QString::number(value)+"%");
+    }
+    catch(Exceptions & ex)
+    {
+        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+    }
+}
+
+void MainWindow::on_pb_send_mas_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->mas_horizontalSlider->setEnabled(true);
+    }
+    else
+    {
+        try
+        {
+            ui->label_send_camilla->setText("");
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+            arpet->portConnect(port_name.toStdString().c_str());
+            string command = "#CARCASA02@HORIZONTAL,1,0,0,0";
+            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+            ui->mas_horizontalSlider->setValue(0);
+            ui->mas_horizontalSlider->setEnabled(false);
+        }
+        catch(Exceptions & ex)
+        {
+            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        }
+
+    }
+}
+
+void MainWindow::on_mas_horizontalSlider_valueChanged(int value)
+{
+    try
+    {
+        string command;
+        ui->label_send_camilla->setText("");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        arpet->portConnect(port_name.toStdString().c_str());
+        if(value > 0)
+            command = "#CARCASA02@HORIZONTAL,0,"+QString::number(value).toStdString()+"0,0,0,0";
+        else
+            command = "#CARCASA02@HORIZONTAL,1,0,0,0";
+        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+        ui->label_mas->setText(QString::number(value)+"%");
+    }
+    catch(Exceptions & ex)
+    {
+        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+    }
+}
+
+void MainWindow::on_pb_send_menos_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->menos_horizontalSlider->setEnabled(true);
+    }
+    else
+    {
+        try
+        {
+            ui->label_send_camilla->setText("");
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+            arpet->portConnect(port_name.toStdString().c_str());
+            string command = "#CARCASA02@GIRO,1,0,0,0";
+            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+            ui->menos_horizontalSlider->setValue(0);
+            ui->menos_horizontalSlider->setEnabled(false);
+        }
+        catch(Exceptions & ex)
+        {
+            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        }
+
+    }
+}
+
+void MainWindow::on_menos_horizontalSlider_valueChanged(int value)
+{
+    try
+    {
+        string command;
+        ui->label_send_camilla->setText("");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        arpet->portConnect(port_name.toStdString().c_str());
+        if(value > 0)
+            command = "#CARCASA02@HORIZONTAL,0,0,"+QString::number(value).toStdString()+"0,0,0";
+        else
+            command = "#CARCASA02@HORIZONTAL,1,0,0,0";
+        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+        ui->label_menos->setText(QString::number(value)+"%");
+    }
+    catch(Exceptions & ex)
+    {
+        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
     }
 }

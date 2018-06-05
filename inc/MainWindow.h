@@ -374,6 +374,18 @@ private slots:
 
     void on_pb_send_camilla_clicked();
 
+    void on_pb_send_giro_toggled(bool checked);
+
+    void on_giro_horizontalSlider_valueChanged(int value);
+
+    void on_pb_send_mas_toggled(bool checked);
+
+    void on_pb_send_menos_toggled(bool checked);
+
+    void on_mas_horizontalSlider_valueChanged(int value);
+
+    void on_menos_horizontalSlider_valueChanged(int value);
+
 private:
     QString openConfigurationFile();
     QString openLogFile();
