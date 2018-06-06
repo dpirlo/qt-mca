@@ -229,6 +229,10 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_pmt_hv_terminal->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->posX->setValidator( new QIntValidator(MIN_POS_X, MAX_POS_X, this) );
+    ui->velX->setValidator( new QIntValidator(MIN_VEL_X, MAX_VEL_X, this) );
+    ui->posY->setValidator( new QIntValidator(MIN_POS_Y, MAX_POS_Y, this) );
+    ui->velY->setValidator( new QIntValidator(MIN_VEL_Y, MAX_VEL_Y, this) );
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
 
@@ -9232,7 +9236,7 @@ bool MainWindow::sendCamilla(string command, QString port_name)
     }
     catch(Exceptions & ex)
     {
-        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        ui->label_send_camilla->setText("Error Camilla: "+QString::fromStdString(string(ex.excdesc)));
         return false;
     }
     arpet->portDisconnect();
@@ -9502,4 +9506,54 @@ void MainWindow::on_pb_send_menos_V_2_released()
         if(sendCamilla(command,port_name))
             is_moving = false;
     }
+}
+
+void MainWindow::on_pb_set_camilla_clicked()
+{
+    int posX = ui->posX->text().toInt();
+    int velX = ui->velX->text().toInt();
+    int posY = ui->posY->text().toInt();
+    int velY = ui->velY->text().toInt();
+
+    ui->label_send_camilla->setText("");
+    if(posX<=MAX_POS_X && posX>=MIN_POS_X && velX<=MAX_VEL_X && velX>=MIN_VEL_X)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,0,0,"+QString::number(posX).toStdString()+","+QString::number(velX).toStdString()+"0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->posX->setText("");
+            ui->velX->setText("");
+            // No anda lo que quiero hacer con los Labels
+            ui->posX->setStyleSheet("QLabel { background-color : #3daee9; }");
+            ui->velX->setStyleSheet("QLabel { background-color : #3daee9; }");
+        }
+        else
+        {
+            ui->posX->setStyleSheet("QLabel { background-color : red;  }");
+            ui->velX->setStyleSheet("QLabel { background-color : red;  }");
+        }
+    }
+    else if(posX>0 && velX>0)
+        ui->label_send_camilla->setText("Media pila con los valores de X");
+
+    if(posY<=MAX_POS_Y && posY>=MIN_POS_Y && velY<=MAX_VEL_Y && velY>=MIN_VEL_Y)
+    {
+        string command = "#CARCASA02@VERTICAL,0,0,0,"+QString::number(posY).toStdString()+","+QString::number(velY).toStdString()+"0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->posY->setText("");
+            ui->velY->setText("");
+            ui->posY->setStyleSheet("QLabel { background-color : #3daee9; }");
+            ui->velY->setStyleSheet("QLabel { background-color : #3daee9; }");
+        }
+        else
+        {
+            ui->posY->setStyleSheet("QLabel { background-color : red;  }");
+            ui->velY->setStyleSheet("QLabel { background-color : red;  }");
+        }
+    }
+    else if(posY>0 && velY>0)
+        ui->label_send_camilla->setText("Media pila con los valores de Y");
 }

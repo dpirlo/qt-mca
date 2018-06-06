@@ -412,6 +412,8 @@ private slots:
 
     void on_pb_send_menos_V_2_released();
 
+    void on_pb_set_camilla_clicked();
+
 private:
     QString openConfigurationFile();
     QString openLogFile();

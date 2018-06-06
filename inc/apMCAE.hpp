@@ -56,7 +56,14 @@ using namespace boost::system;
 #define COIN_BUFFER_SIZE 2
 #define COIN_BYTES_ADV 9
 #define MIN_TEMPERATURE 20
-
+#define MAX_POS_X 2048
+#define MAX_VEL_X 100
+#define MAX_POS_Y 1024
+#define MAX_VEL_Y 100
+#define MIN_POS_X 0
+#define MIN_VEL_X 50
+#define MIN_POS_Y 0
+#define MIN_VEL_Y 50
 /**
  * @brief serial_port_ptr
  *
