@@ -52,13 +52,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->giro_horizontalSlider->setRange(0,100);
     ui->giro_horizontalSlider->setSingleStep(5);
 
-    ui->label_mas->setText(QString::number(0)+"%");
-    ui->mas_horizontalSlider->setRange(0,100);
-    ui->mas_horizontalSlider->setSingleStep(5);
+    ui->label_mas_H->setText(QString::number(0)+"%");
+    ui->mas_horizontalSlider_H->setRange(0,100);
+    ui->mas_horizontalSlider_H->setSingleStep(5);
 
-    ui->label_menos->setText(QString::number(0)+"%");
-    ui->menos_horizontalSlider->setRange(0,100);
-    ui->menos_horizontalSlider->setSingleStep(5);
+    ui->label_menos_H->setText(QString::number(0)+"%");
+    ui->menos_horizontalSlider_H->setRange(0,100);
+    ui->menos_horizontalSlider_H->setSingleStep(5);
+
+    ui->label_mas_V->setText(QString::number(0)+"%");
+    ui->mas_horizontalSlider_V->setRange(0,100);
+    ui->mas_horizontalSlider_V->setSingleStep(5);
+
+    ui->label_menos_V->setText(QString::number(0)+"%");
+    ui->menos_horizontalSlider_V->setRange(0,100);
+    ui->menos_horizontalSlider_V->setSingleStep(5);
 
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
@@ -244,6 +252,8 @@ void MainWindow::setInitialConfigurations()
     ui->RoundBar_Adq->hide();
     ui->RoundBar_CalibFina->setRange(0,MAX_PROGRESS_CALIBFINA);
     ui->RoundBar_CalibFina->hide();
+
+    is_moving = false;
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -9210,19 +9220,37 @@ void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
     ui->label_Coin3_DEMO->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
 }
 
-void MainWindow::on_pb_send_camilla_clicked()
+/*** CAMILLA ***/
+
+bool MainWindow::sendCamilla(string command, QString port_name)
 {
     try
     {
         ui->label_send_camilla->setText("");
-        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
         arpet->portConnect(port_name.toStdString().c_str());
-        string command = "#CARCASA02@HORIZONTAL,STOP,0,0,0";
         ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
     }
     catch(Exceptions & ex)
     {
         ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        return false;
+    }
+    arpet->portDisconnect();
+
+    return true;
+}
+
+void MainWindow::on_pb_stop_camilla_clicked()
+{
+    string command = "#CARCASA02@STOP,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->pb_send_giro->setChecked(false);
+        ui->pb_send_mas_H->setChecked(false);
+        ui->pb_send_menos_H->setChecked(false);
+        ui->pb_send_mas_V->setChecked(false);
+        ui->pb_send_menos_V->setChecked(false);
     }
 }
 
@@ -9234,135 +9262,244 @@ void MainWindow::on_pb_send_giro_toggled(bool checked)
     }
     else
     {
-        try
+        string command = "#CARCASA02@GIRO,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
         {
-            ui->label_send_camilla->setText("");
-            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-            arpet->portConnect(port_name.toStdString().c_str());
-            string command = "#CARCASA02@GIRO,1,0,0,0";
-            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
             ui->giro_horizontalSlider->setValue(0);
             ui->giro_horizontalSlider->setEnabled(false);
         }
-        catch(Exceptions & ex)
-        {
-            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
-        }
-
     }
 }
 
 void MainWindow::on_giro_horizontalSlider_valueChanged(int value)
 {
-    try
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@GIRO,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@GIRO,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
     {
-        string command;
-        ui->label_send_camilla->setText("");
-        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-        arpet->portConnect(port_name.toStdString().c_str());
-        if(value > 0)
-            command = "#CARCASA02@GIRO,0,"+QString::number(value).toStdString()+"0,0,0,0";
-        else
-            command = "#CARCASA02@GIRO,1,0,0,0";
-        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
         ui->label_giro->setText(QString::number(value)+"%");
     }
-    catch(Exceptions & ex)
-    {
-        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
-    }
 }
 
-void MainWindow::on_pb_send_mas_toggled(bool checked)
+/*** HORIZONTAL ***/
+void MainWindow::on_pb_send_mas_H_toggled(bool checked)
 {
     if (checked)
     {
-        ui->mas_horizontalSlider->setEnabled(true);
+        ui->mas_horizontalSlider_H->setEnabled(true);
     }
     else
     {
-        try
-        {
-            ui->label_send_camilla->setText("");
-            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-            arpet->portConnect(port_name.toStdString().c_str());
-            string command = "#CARCASA02@HORIZONTAL,1,0,0,0";
-            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
-            ui->mas_horizontalSlider->setValue(0);
-            ui->mas_horizontalSlider->setEnabled(false);
-        }
-        catch(Exceptions & ex)
-        {
-            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
-        }
-
-    }
-}
-
-void MainWindow::on_mas_horizontalSlider_valueChanged(int value)
-{
-    try
-    {
-        string command;
-        ui->label_send_camilla->setText("");
+        string command = "#CARCASA02@HORIZONTAL,1,";
         port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-        arpet->portConnect(port_name.toStdString().c_str());
-        if(value > 0)
-            command = "#CARCASA02@HORIZONTAL,0,"+QString::number(value).toStdString()+"0,0,0,0";
-        else
-            command = "#CARCASA02@HORIZONTAL,1,0,0,0";
-        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
-        ui->label_mas->setText(QString::number(value)+"%");
-    }
-    catch(Exceptions & ex)
-    {
-        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        if(sendCamilla(command,port_name))
+        {
+            ui->mas_horizontalSlider_H->setValue(0);
+            ui->mas_horizontalSlider_H->setEnabled(false);
+        }
     }
 }
 
-void MainWindow::on_pb_send_menos_toggled(bool checked)
+void MainWindow::on_mas_horizontalSlider_H_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@HORIZONTAL,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@HORIZONTAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_mas_H->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_toggled(bool checked)
 {
     if (checked)
     {
-        ui->menos_horizontalSlider->setEnabled(true);
+        ui->menos_horizontalSlider_H->setEnabled(true);
     }
     else
     {
-        try
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
         {
-            ui->label_send_camilla->setText("");
-            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-            arpet->portConnect(port_name.toStdString().c_str());
-            string command = "#CARCASA02@GIRO,1,0,0,0";
-            ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
-            ui->menos_horizontalSlider->setValue(0);
-            ui->menos_horizontalSlider->setEnabled(false);
+            ui->menos_horizontalSlider_H->setValue(0);
+            ui->menos_horizontalSlider_H->setEnabled(false);
         }
-        catch(Exceptions & ex)
-        {
-            ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
-        }
-
     }
 }
 
-void MainWindow::on_menos_horizontalSlider_valueChanged(int value)
+void MainWindow::on_menos_horizontalSlider_H_valueChanged(int value)
 {
-    try
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@HORIZONTAL,0,0,"+QString::number(value).toStdString()+"0,0,0,";
+    else
+        command = "#CARCASA02@HORIZONTAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
     {
-        string command;
-        ui->label_send_camilla->setText("");
-        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
-        arpet->portConnect(port_name.toStdString().c_str());
-        if(value > 0)
-            command = "#CARCASA02@HORIZONTAL,0,0,"+QString::number(value).toStdString()+"0,0,0";
-        else
-            command = "#CARCASA02@HORIZONTAL,1,0,0,0";
-        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
-        ui->label_menos->setText(QString::number(value)+"%");
+        ui->label_menos_H->setText(QString::number(value)+"%");
     }
-    catch(Exceptions & ex)
+}
+
+/*** VERTICAL ***/
+void MainWindow::on_pb_send_mas_V_toggled(bool checked)
+{
+    if (checked)
     {
-        ui->label_send_camilla->setText("Error Camilla"+QString::fromStdString(string(ex.excdesc)));
+        ui->mas_horizontalSlider_V->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->mas_horizontalSlider_V->setValue(0);
+            ui->mas_horizontalSlider_V->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_mas_horizontalSlider_V_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@VERTICAL,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@VERTICAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_mas_V->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->menos_horizontalSlider_V->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->menos_horizontalSlider_V->setValue(0);
+            ui->menos_horizontalSlider_V->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_menos_horizontalSlider_V_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@VERTICAL,0,0,"+QString::number(value).toStdString()+"0,0,0,";
+    else
+        command = "#CARCASA02@VERTICAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_menos_V->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_mas_H_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,700,0,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_mas_H_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,0,700,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_mas_V_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,0,700,0,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_mas_V_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,0,0,700,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
     }
 }

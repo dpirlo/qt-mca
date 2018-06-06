@@ -372,19 +372,45 @@ private slots:
 
     void on_pushButton_Tasa_Coin_Demo_clicked();
 
-    void on_pb_send_camilla_clicked();
+    bool sendCamilla(string command, QString port_name);
+
+    void on_pb_stop_camilla_clicked();
 
     void on_pb_send_giro_toggled(bool checked);
 
     void on_giro_horizontalSlider_valueChanged(int value);
 
-    void on_pb_send_mas_toggled(bool checked);
+    void on_pb_send_mas_H_toggled(bool checked);
 
-    void on_pb_send_menos_toggled(bool checked);
+    void on_pb_send_menos_H_toggled(bool checked);
 
-    void on_mas_horizontalSlider_valueChanged(int value);
+    void on_mas_horizontalSlider_H_valueChanged(int value);
 
-    void on_menos_horizontalSlider_valueChanged(int value);
+    void on_menos_horizontalSlider_H_valueChanged(int value);
+
+    void on_pb_send_mas_V_toggled(bool checked);
+
+    void on_pb_send_menos_V_toggled(bool checked);
+
+    void on_mas_horizontalSlider_V_valueChanged(int value);
+
+    void on_menos_horizontalSlider_V_valueChanged(int value);
+
+    void on_pb_send_mas_H_2_pressed();
+
+    void on_pb_send_mas_H_2_released();
+
+    void on_pb_send_menos_H_2_pressed();
+
+    void on_pb_send_menos_H_2_released();
+
+    void on_pb_send_mas_V_2_pressed();
+
+    void on_pb_send_mas_V_2_released();
+
+    void on_pb_send_menos_V_2_pressed();
+
+    void on_pb_send_menos_V_2_released();
 
 private:
     QString openConfigurationFile();
@@ -514,7 +540,7 @@ private:
     QThread *calibFina_th;
     AutoCalibThread *calibFinaProgress_wr;
     QThread *calibFinaProgress_th;
-    bool is_abort_mcae, is_abort_log, is_abort_calib;
+    bool is_abort_mcae, is_abort_log, is_abort_calib, is_moving;
     QString initfile, root_config_path, root_calib_path,root_log_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;

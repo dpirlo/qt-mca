@@ -2132,9 +2132,9 @@ calibrar</string>
      <widget class="QFrame" name="frame_calib_tables_2">
       <property name="geometry">
        <rect>
-        <x>540</x>
+        <x>480</x>
         <y>340</y>
-        <width>451</width>
+        <width>511</width>
         <height>231</height>
        </rect>
       </property>
@@ -2144,17 +2144,17 @@ calibrar</string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QPushButton" name="pb_send_camilla">
+      <widget class="QPushButton" name="pb_stop_camilla">
        <property name="geometry">
         <rect>
-         <x>170</x>
-         <y>140</y>
+         <x>20</x>
+         <y>190</y>
          <width>81</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>SEND</string>
+        <string>STOP</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_send_camilla">
@@ -2182,7 +2182,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>20</y>
+         <y>10</y>
          <width>160</width>
          <height>29</height>
         </rect>
@@ -2195,7 +2195,7 @@ calibrar</string>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>20</y>
+         <y>10</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2210,8 +2210,8 @@ calibrar</string>
       <widget class="QLabel" name="label_giro">
        <property name="geometry">
         <rect>
-         <x>329</x>
-         <y>20</y>
+         <x>300</x>
+         <y>10</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2225,10 +2225,10 @@ calibrar</string>
         <string/>
        </property>
       </widget>
-      <widget class="QLabel" name="label_mas">
+      <widget class="QLabel" name="label_mas_H">
        <property name="geometry">
         <rect>
-         <x>329</x>
+         <x>300</x>
          <y>50</y>
          <width>81</width>
          <height>31</height>
@@ -2243,7 +2243,7 @@ calibrar</string>
         <string/>
        </property>
       </widget>
-      <widget class="QSlider" name="mas_horizontalSlider">
+      <widget class="QSlider" name="mas_horizontalSlider_H">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -2259,7 +2259,7 @@ calibrar</string>
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
-      <widget class="QPushButton" name="pb_send_mas">
+      <widget class="QPushButton" name="pb_send_mas_H">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2269,16 +2269,16 @@ calibrar</string>
         </rect>
        </property>
        <property name="text">
-        <string>+</string>
+        <string>&gt;</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QLabel" name="label_menos">
+      <widget class="QLabel" name="label_menos_H">
        <property name="geometry">
         <rect>
-         <x>329</x>
+         <x>300</x>
          <y>80</y>
          <width>81</width>
          <height>31</height>
@@ -2293,7 +2293,7 @@ calibrar</string>
         <string/>
        </property>
       </widget>
-      <widget class="QSlider" name="menos_horizontalSlider">
+      <widget class="QSlider" name="menos_horizontalSlider_H">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -2309,7 +2309,7 @@ calibrar</string>
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
-      <widget class="QPushButton" name="pb_send_menos">
+      <widget class="QPushButton" name="pb_send_menos_H">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2319,10 +2319,183 @@ calibrar</string>
         </rect>
        </property>
        <property name="text">
-        <string>-</string>
+        <string>&lt;</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_V">
+       <property name="geometry">
+        <rect>
+         <x>21</x>
+         <y>150</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>v</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_V">
+       <property name="geometry">
+        <rect>
+         <x>21</x>
+         <y>120</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>^</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QSlider" name="mas_horizontalSlider_V">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>131</x>
+         <y>120</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_mas_V">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>120</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QSlider" name="menos_horizontalSlider_V">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>131</x>
+         <y>150</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_menos_V">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>150</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_H_2">
+       <property name="geometry">
+        <rect>
+         <x>409</x>
+         <y>100</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_H_2">
+       <property name="geometry">
+        <rect>
+         <x>449</x>
+         <y>100</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_V_2">
+       <property name="geometry">
+        <rect>
+         <x>430</x>
+         <y>70</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>^</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoRepeat">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_V_2">
+       <property name="geometry">
+        <rect>
+         <x>430</x>
+         <y>130</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>v</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoRepeat">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
        </property>
       </widget>
      </widget>
@@ -9595,7 +9768,7 @@ DEMO.</string>
      <x>0</x>
      <y>0</y>
      <width>1031</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArchivo">
