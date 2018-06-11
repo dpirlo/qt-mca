@@ -81,6 +81,8 @@
 #define Cab6 "/dev/UART_Cab6"
 #define Cab  "/dev/UART_Cab"
 #define Coin "/dev/UART_Coin"
+#define adq_config  1
+#define adq_none    0
 
 #define icon_notok      ":/qss_icons/rc/ic_cancel.png"
 #define icon_ok         ":/qss_icons/rc/ic_check_circle.png"
@@ -365,6 +367,10 @@ private slots:
 
     void on_pushButton_Tasa_Coin_Demo_clicked();
 
+    void on_pbAdquirir_Config_toggled(bool checked);
+
+    void on_pushButton_aqd_file_open_Config_clicked();
+
 private:
     QString openConfigurationFile();
     QString openLogFile();
@@ -394,6 +400,7 @@ private:
     string initSP3(int head);
     string getLocalDateAndTime();
     int getPMT(QLineEdit *line_edit);
+    int Adq_zone;
     int parseConfigurationFile(bool mode, QString head="");
     int writePreferencesFile(QString pref, QString filename, bool force=false);
     int setPSOCDataStream(string head, string size_received, string function, QString psoc_value="");

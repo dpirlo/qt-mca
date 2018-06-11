@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Busca_Logs(QDate::currentDate().year(),QDate::currentDate().month());
     ui->frame_multihead_graph_2->hide();
     timerw->start(1000);
+    ui->lineEdit_aqd_file_size_Config->setText("");
 
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
@@ -209,9 +210,12 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_pmt_hv_terminal->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->lineEdit_aqd_cant_archivos->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS, this) );
+    ui->lineEdit_aqd_file_size->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS_SIZE, this) );
+    ui->lineEdit_aqd_file_size_Config->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS_SIZE, this) );
+    ui->lineEdit_aqd_cant_archivos_Config->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS, this) );
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
-
     ui->Comentarios_Adquisicion->setText("MEDICION Nº: \n  \nFuente:  \nActividad de la Fuente:  \nDistancia al cabezal:  \nObservaciones: ");
 
     setQListElements();
@@ -7110,10 +7114,12 @@ void MainWindow::updateCaption(){
             tasa=output.left(output.indexOf("Tramas"));
             if(tasa.toInt() > 0 )
             ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
+            ui->label_adq_tasa_config->setText(tasa + "Tramas/seg");
             error=output.mid(output.indexOf("con") + 3);
             error = error.left(error.indexOf("\n"));
             if(!error.isEmpty())
             ui->label_adq_error_2->setText(error);
+            ui->label_adq_error_config->setText(error);
             ver_tasa.close();
 
             QProcess size_of_adq;
@@ -7128,6 +7134,7 @@ void MainWindow::updateCaption(){
             size_of_adq.close();
             if(output.toInt() > 0 )
                 ui->progressBar->setValue(output.toInt());
+                ui->progressBar_Adq_Config->setValue(output.toInt());
         }
     }
 
@@ -8249,6 +8256,8 @@ void MainWindow::checkStatusMoveToServer(bool status){
     int archivos = cant_arch_aux.toInt() - cant_archivos_copiados;
     QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
     ui->label_cant_archivos->setText(mensaje);
+    ui->label_cant_archivos_config->setText(mensaje);
+
     qApp->processEvents();
 
     copying=false;
@@ -8279,11 +8288,27 @@ void MainWindow::checkStatusMoveToServer(bool status){
             ui->label_gif_Calib_Adq->show();
             CopyAdqReady(false);
          }
+         else if (Adq_zone==adq_config){
+             ui->label_gif_config_ok_no->setPixmap(image);
+             ui->label_gif_config_ok_no->setScaledContents( true );
+             ui->label_gif_config_ok_no->show();
+             ui->pbAdquirir_Config->blockSignals(true);
+             ui->pbAdquirir_Config->setChecked(false);
+             ui->pbAdquirir_Config->blockSignals(false);
+             ui->pushButton_initialize->setEnabled(true);
+             ui->pushButton_hv_off->setEnabled(true);
+             ui->pushButton_configure->setEnabled(true);
+             ui->pushButton_hv_set->setEnabled(true);
+             ui->pushButton_hv_on->setEnabled(true);
+             Adq_zone=adq_none;
+         }
          else
          {
             ui->label_gif_3->setVisible(false);
             ui->label_gif_4->setVisible(true);
-
+            ui->pbAdquirir->blockSignals(true);
+            ui->pbAdquirir->setChecked(false);
+            ui->pbAdquirir->blockSignals(false);
             ui->label_gif_4->setPixmap(image);
             ui->label_gif_4->setScaledContents( true );
             ui->label_gif_4->show();
@@ -8302,6 +8327,20 @@ void MainWindow::checkStatusMoveToServer(bool status){
            ui->label_gif_Copiando->setScaledContents(true);
            ui->label_gif_Copiando->show();
            CopyAdqReady(true);
+        }
+        else if (Adq_zone==adq_config){
+            ui->label_gif_config_ok_no->setPixmap(image);
+            ui->label_gif_config_ok_no->setScaledContents( true );
+            ui->label_gif_config_ok_no->show();
+            ui->pbAdquirir_Config->blockSignals(true);
+            ui->pbAdquirir_Config->setChecked(false);
+            ui->pbAdquirir_Config->blockSignals(false);
+            ui->pushButton_initialize->setEnabled(true);
+            ui->pushButton_configure->setEnabled(true);
+            ui->pushButton_hv_off->setEnabled(true);
+            ui->pushButton_hv_set->setEnabled(true);
+            ui->pushButton_hv_on->setEnabled(true);
+            Adq_zone=adq_none;
         }
         else
         {
@@ -9065,4 +9104,233 @@ void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
     ui->label_Coin1_DEMO->setText(QString::number(rates.at(0))+"\t"+QString::number(rates.at(1))+"\t"+QString::number(rates.at(2)));
     ui->label_Coin2_DEMO->setText(QString::number(rates.at(3))+"\t"+QString::number(rates.at(4))+"\t"+QString::number(rates.at(5)));
     ui->label_Coin3_DEMO->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
+}
+
+void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
+{
+    Adq_zone =adq_config;
+    error_code error_code;
+    string msg;
+    QString psoc_alta_Tabla;
+    //static QStringList commands;
+    QString NombredeArchivo;
+    QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
+    arpet->portDisconnect();
+    QVector<int> Cabezales;
+
+    QString log;
+    QString logFileAdq;
+
+  //  Cabezales_On_Off(checked);
+    ui->label_gif_config_ok_no->hide();
+
+    if(calibrador->AutoCalibBackground){
+        QMessageBox::critical(this,tr("Error"),tr("Se está corriendo rutina automática de Calibración."));
+        ui->pbAdquirir_Config->blockSignals(true);
+        ui->pbAdquirir_Config->setChecked(false);
+        ui->pbAdquirir_Config->blockSignals(false);
+        return;
+    }
+
+
+
+    QProcess killall;
+    killall.waitForStarted();
+    killall.execute("pkill recvRawEth");
+    killall.waitForFinished(1000);
+    cout<<killall.readAll().toStdString()<<endl;
+
+    if (checked){
+
+
+        // bloqueo el resto de los botones asi no perjudican la adquisicion
+        ui->pushButton_initialize->setEnabled(false);
+        ui->pushButton_hv_off->setEnabled(false);
+        ui->pushButton_hv_set->setEnabled(false);
+        ui->pushButton_hv_on->setEnabled(false);
+        ui->pushButton_configure->setEnabled(false);
+
+        commands_calib.clear();
+        cant_archivos=1;
+        cant_archivos_copiados=0;
+        /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
+        int archivos = ui->lineEdit_aqd_cant_archivos_Config->text().toInt() - cant_archivos + 1;
+        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+        ui->label_cant_archivos->setText(mensaje);
+
+        if (ui->lineEdit_Titulo_Medicion_Config->text().isEmpty()){
+            QMessageBox::critical(this,tr("Error"),tr("La medición debe contener un título."));
+            return;
+        }
+
+        if (ui->lineEdit_aqd_file_size_Config->text().isEmpty()){
+            QMessageBox::critical(this,tr("Error"),tr("Se debe definir un tamaño de archivo de adquisición."));
+            return;
+        }else{
+            commands_calib.append(ui->lineEdit_aqd_file_size_Config->text());
+            size_archivo_adq = ui->lineEdit_aqd_file_size_Config->text();
+        }
+
+        if(ui->lineEdit_aqd_path_file_Config->text().isEmpty()){
+            QMessageBox::critical(this,tr("Error"),tr("Se debe definir una ruta específica si se definió ."));
+            return;
+        }else{
+            commands_calib.append(ui->lineEdit_aqd_path_file_Config->text());
+            //nombre_archivo_adq = ui->lineEdit_aqd_path_file->text();
+            if(ui->comboBox_adquire_mode_coin->currentIndex()==3||ui->comboBox_adquire_mode_coin->currentIndex()==4){
+                NombredeArchivo="acquire_calib_"+ui->comboBox_head_select_calib->currentText();
+                Cabezales.append(ui->comboBox_head_select_calib->currentText().toInt());
+            }else{
+                NombredeArchivo="acquire_coin";
+                Cabezales=Estado_Cabezales;
+            }
+        }
+
+
+        ui->progressBar_Adq_Config->setRange(0,size_archivo_adq.toInt());
+
+        commands_calib.append(NombredeArchivo);
+        nombre_archivo_adq =  NombredeArchivo ;
+        worker_adq->abort();
+        thread_adq->exit(0);
+        usleep(500);
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // commands Parametros:     1er valor Cantidad de MB de medicion
+        //                          2do valor Path Coincidencia/Calibracion
+        //                          3er valor Nombre de Archivo
+        //                          4to nombre de log
+        //                          5to valor Fecha formato yyyy-MM-dd
+        //                          6to valor Fecha formato yyyy-MM-dd-hh-mm
+        //                          7to valor cantidad de archivos
+        //                          8vo titulo de medicion
+        //                          9no registra o no la medicion segun path alternativo
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        QFile logger("./LOG_Adquisicion_"+time+".txt");
+        logFileAdq = "./LOG_Adquisicion_"+time+".txt";
+
+        logger.open(QIODevice::WriteOnly | QIODevice::Append);
+
+        log.append(ui->lineEdit_Titulo_Medicion_Config->text()+"\n");
+        log.append("\n"); // espacio donde irian los comentarios
+
+        /////////////////////////Fin de verificacion previa antes de configurar y adquirir//////////////////////////
+
+        /////////////// CONFIGURACION Y CARGA DE TABLAS
+        for (int i=0;i<Cabezales.length();i++)
+        {
+
+            int head_index=Cabezales.at(i);
+            /* Inicialización del Cabezal */
+            try
+            {
+                log.append("[CAB-"+QString::number(head_index)+"]\t");
+                log.append("[HV]\t");
+                if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                    log.append("[EN]\t");
+                    log.append("[XPOS]\t");
+                    log.append("[YPOS]\t");
+                    log.append("[TIME]\t");
+                }
+                log.append("\n");
+
+                for (int j=0;j<PMTs;j++){
+                    log.append(QString::number(j)+"\t");
+                    log.append(QString::number(hvtable_values[head_index-1][j])+"\t");
+                    if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                        log.append(QString::number(Matrix_coefenerg_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefx_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefy_values[head_index-1][j])+"\t");
+                        log.append(QString::number(Matrix_coefT_values[head_index-1][j])+"\t");
+                    }
+                    log.append("\n");
+                }
+
+                log.append("[LOW-LIMIT], "+ QString::number(LowLimit[head_index-1])+"\n");
+
+                if(ui->comboBox_aqd_mode->currentIndex()!=1){
+                    log.append("[VENTANAS-ENERGIA]\n");
+                    //log.append(QString::number(Matrix_coefest_values[0][i])+", ");
+                    log.append("Vent. Inf.: "+QString::number(Matrix_coefest_values[head_index-1][0])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][1])+"\n");
+                    log.append("Vent. Med.: "+QString::number(Matrix_coefest_values[head_index-1][2])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][3])+"\n");
+                    log.append("Vent. Sup.: "+QString::number(Matrix_coefest_values[head_index-1][4])+"-"
+                            +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
+                }
+
+                port_name=Cab+QString::number(head_index);
+                calibrador->setPort_Name(port_name);
+                worker->setPortName(port_name);
+                error_code= arpet->portConnect(port_name.toStdString().c_str());
+                if (error_code.value()!=0){
+                    arpet->portDisconnect();
+                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+                    throw exception_Cabezal_Apagado;
+                }
+            }
+            catch(Exceptions & ex)
+            {
+                QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+                if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+                setLabelState(false, hv_status_table[head_index-1], true);
+            }
+        }
+
+        if(ui->comboBox_aqd_mode->currentIndex()!=1){
+            log.append("[TIEMPOS-INTER-CAB]\n");
+            log.append("CAB1: "+QString::number(coefTInter_values[0])+"\n");
+            log.append("CAB2: "+QString::number(coefTInter_values[1])+"\n");
+            log.append("CAB3: "+QString::number(coefTInter_values[2])+"\n");
+            log.append("CAB4: "+QString::number(coefTInter_values[3])+"\n");
+            log.append("CAB5: "+QString::number(coefTInter_values[4])+"\n");
+            log.append("CAB6: "+QString::number(coefTInter_values[5])+"\n");
+        }
+
+        logger.write( log.toUtf8());
+        logger.close();
+        commands_calib.append(logFileAdq);
+        commands_calib.append(QDate::currentDate().toString("yyyy-MM-dd"));
+        commands_calib.append(QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm"));
+        commands_calib.append(ui->lineEdit_aqd_cant_archivos_Config->text());
+        commands_calib.append(ui->lineEdit_Titulo_Medicion_Config->text());
+        if( ui->cb_Path_alternativo_adq->isChecked()){
+            commands_calib.append(" ");
+        }else{
+            commands_calib.append("Registrar");
+        }
+        ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
+        worker_adq->setCommands(commands_calib);
+        worker_copy->setCommands(commands_calib);
+
+        checkStatusAdq(true);
+        adq_running = true;
+        ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
+    }
+    else
+    {
+        QFile logger(ruta_log_adquisicion);
+        if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
+        {
+            logger.write("Se cancela la adquisición manualmente \n");
+            logger.close();
+        }
+        // habilito devuelta los botones
+        ui->pushButton_initialize->setEnabled(true);
+        ui->pushButton_hv_off->setEnabled(true);
+        ui->pushButton_hv_set->setEnabled(true);
+        ui->pushButton_hv_on->setEnabled(true);
+        adq_running = false;
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
+    }
+}
+
+void MainWindow::on_pushButton_aqd_file_open_Config_clicked()
+{
+    QString directory = openDirectory();
+    ui->lineEdit_aqd_path_file_Config->setText(directory);
 }

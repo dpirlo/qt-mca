@@ -111,7 +111,7 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">
@@ -985,7 +985,7 @@
  Cabezales</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_aqd_file_open_2">
+      <widget class="QPushButton" name="pushButton_aqd_file_open_Config">
        <property name="geometry">
         <rect>
          <x>530</x>
@@ -998,7 +998,7 @@
         <string>Abrir</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_aqd_file_size_2">
+      <widget class="QLineEdit" name="lineEdit_aqd_file_size_Config">
        <property name="geometry">
         <rect>
          <x>260</x>
@@ -1008,13 +1008,13 @@
         </rect>
        </property>
        <property name="inputMask">
-        <string>9999</string>
+        <string/>
        </property>
        <property name="text">
-        <string>10</string>
+        <string/>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos_2">
+      <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos_Config">
        <property name="geometry">
         <rect>
          <x>530</x>
@@ -1024,13 +1024,13 @@
         </rect>
        </property>
        <property name="inputMask">
-        <string>9999</string>
+        <string/>
        </property>
        <property name="text">
         <string>1</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_aqd_path_file_2">
+      <widget class="QLineEdit" name="lineEdit_aqd_path_file_Config">
        <property name="geometry">
         <rect>
          <x>130</x>
@@ -1040,7 +1040,7 @@
         </rect>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_Titulo_Medicion_2">
+      <widget class="QLineEdit" name="lineEdit_Titulo_Medicion_Config">
        <property name="geometry">
         <rect>
          <x>260</x>
@@ -1110,7 +1110,7 @@
          <x>650</x>
          <y>40</y>
          <width>181</width>
-         <height>71</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="value">
@@ -1121,9 +1121,9 @@
        <property name="geometry">
         <rect>
          <x>650</x>
-         <y>130</y>
+         <y>140</y>
          <width>181</width>
-         <height>71</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="text">
@@ -1151,18 +1151,127 @@
         <string>Path:</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_adq_error_config">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>190</y>
+         <width>130</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>%</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_adq_error_4">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>160</y>
+         <width>171</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Error en tramas</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_adq_tasa_3">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>160</y>
+         <width>171</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tasa de adquisición</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_adq_tasa_config">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>190</y>
+         <width>190</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tramas/seg</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_gif_config_ok_no">
+       <property name="geometry">
+        <rect>
+         <x>540</x>
+         <y>160</y>
+         <width>70</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_cant_archivos_config">
+       <property name="geometry">
+        <rect>
+         <x>650</x>
+         <y>110</y>
+         <width>181</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
       <zorder>pushButton_initialize</zorder>
-      <zorder>pushButton_aqd_file_open_2</zorder>
-      <zorder>lineEdit_Titulo_Medicion_2</zorder>
+      <zorder>pushButton_aqd_file_open_Config</zorder>
+      <zorder>lineEdit_Titulo_Medicion_Config</zorder>
       <zorder>label_6</zorder>
       <zorder>label_112</zorder>
       <zorder>label_108</zorder>
       <zorder>progressBar_Adq_Config</zorder>
       <zorder>pbAdquirir_Config</zorder>
-      <zorder>lineEdit_aqd_file_size_2</zorder>
-      <zorder>lineEdit_aqd_path_file_2</zorder>
-      <zorder>lineEdit_aqd_cant_archivos_2</zorder>
+      <zorder>lineEdit_aqd_file_size_Config</zorder>
+      <zorder>lineEdit_aqd_path_file_Config</zorder>
+      <zorder>lineEdit_aqd_cant_archivos_Config</zorder>
       <zorder>label_114</zorder>
+      <zorder>label_adq_error_config</zorder>
+      <zorder>label_adq_error_4</zorder>
+      <zorder>label_adq_tasa_3</zorder>
+      <zorder>label_adq_tasa_config</zorder>
+      <zorder>label_gif_config_ok_no</zorder>
+      <zorder>label_cant_archivos_config</zorder>
      </widget>
      <widget class="QFrame" name="frame_hv">
       <property name="geometry">
@@ -4049,10 +4158,10 @@ calibrar</string>
        </rect>
       </property>
       <property name="inputMask">
-       <string>9999</string>
+       <string/>
       </property>
       <property name="text">
-       <string>10</string>
+       <string/>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineEdit_aqd_path_file">
@@ -4350,7 +4459,7 @@ calibrar</string>
        </rect>
       </property>
       <property name="inputMask">
-       <string>9999</string>
+       <string/>
       </property>
       <property name="text">
        <string>1</string>

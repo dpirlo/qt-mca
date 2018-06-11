@@ -56,7 +56,9 @@ using namespace boost::system;
 #define COIN_BUFFER_SIZE 2
 #define COIN_BYTES_ADV 9
 #define MIN_TEMPERATURE 20
-
+#define MAX_ARCHIVOS 99
+#define MIN_ARCHIVOS 1
+#define MAX_ARCHIVOS_SIZE 1024
 /**
  * @brief serial_port_ptr
  *
