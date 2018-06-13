@@ -73,14 +73,17 @@
 #define Tab8 8
 #define Tab9 9
 #define WAIT_MICROSECONDS 1000000
-#define Cab1 "/dev/UART_Cab1"
-#define Cab2 "/dev/UART_Cab2"
-#define Cab3 "/dev/UART_Cab3"
-#define Cab4 "/dev/UART_Cab4"
-#define Cab5 "/dev/UART_Cab5"
-#define Cab6 "/dev/UART_Cab6"
-#define Cab  "/dev/UART_Cab"
-#define Coin "/dev/UART_Coin"
+#define DEV_PATH "/dev/"
+
+#define CAB1 "UART_Cab1"
+#define CAB2 "UART_Cab2"
+#define CAB3 "UART_Cab3"
+#define CAB4 "UART_Cab4"
+#define CAB5 "UART_Cab5"
+#define CAB6 "UART_Cab6"
+#define CAB  "UART_Cab"
+#define COIN "UART_Coin"
+#define CARCASA "UART_Carcasa"
 #define adq_config  1
 #define adq_none    0
 
@@ -92,8 +95,6 @@
 
 #define MAX_MB_CALIB 512//1024
 #define MAX_PROGRESS_CALIBFINA 60
-
-
 
 using namespace ap;
 
@@ -122,8 +123,6 @@ public:
     ~MainWindow();
     void resetHitsValues(QString head);
     bool fileExists(QString path);
-
-
     /* Area de prueba/testing */
 
 private slots:
@@ -252,7 +251,6 @@ private slots:
 
     /* AutoCalib */
     void on_pb_Autocalib_toggled(bool checked);
-    void on_pb_Autocalib_Tiempos_toggled(bool checked);
     void on_pb_Autocalib_Tiempos_Debug_clicked();
     void on_pushButton_triple_ventana_2_clicked();
     void on_pushButton_triple_ventana_3_clicked();
@@ -363,6 +361,55 @@ private slots:
 
     void on_pb_Debug_clicked();
 
+    void on_pushButton_Socatear_toggled(bool checked);
+
+    void on_pb_Autocalib_Tiempos_Debug_2_clicked();
+
+    bool sendCamilla(string command, QString port_name);
+
+    void on_pb_stop_camilla_clicked();
+
+    void on_pb_send_giro_toggled(bool checked);
+
+    void on_giro_horizontalSlider_valueChanged(int value);
+
+    void on_pb_send_mas_H_toggled(bool checked);
+
+    void on_pb_send_menos_H_toggled(bool checked);
+
+    void on_mas_horizontalSlider_H_valueChanged(int value);
+
+    void on_menos_horizontalSlider_H_valueChanged(int value);
+
+    void on_pb_Autocalib_Tiempos_clicked();
+
+
+    void on_pb_send_mas_V_toggled(bool checked);
+
+    void on_pb_send_menos_V_toggled(bool checked);
+
+    void on_mas_horizontalSlider_V_valueChanged(int value);
+
+    void on_menos_horizontalSlider_V_valueChanged(int value);
+
+    void on_pb_send_mas_H_2_pressed();
+
+    void on_pb_send_mas_H_2_released();
+
+    void on_pb_send_menos_H_2_pressed();
+
+    void on_pb_send_menos_H_2_released();
+
+    void on_pb_send_mas_V_2_pressed();
+
+    void on_pb_send_mas_V_2_released();
+
+    void on_pb_send_menos_V_2_pressed();
+
+    void on_pb_send_menos_V_2_released();
+
+    void on_pb_set_camilla_clicked();
+
     void on_pushButton_Tasa_Coin_clicked();
 
     void on_pushButton_Tasa_Coin_Demo_clicked();
@@ -370,7 +417,6 @@ private slots:
     void on_pbAdquirir_Config_toggled(bool checked);
 
     void on_pushButton_aqd_file_open_Config_clicked();
-
 private:
     QString openConfigurationFile();
     QString openLogFile();
@@ -500,7 +546,7 @@ private:
     QThread *calibFina_th;
     AutoCalibThread *calibFinaProgress_wr;
     QThread *calibFinaProgress_th;
-    bool is_abort_mcae, is_abort_log, is_abort_calib;
+    bool is_abort_mcae, is_abort_log, is_abort_calib, is_moving;
     QString initfile, root_config_path, root_calib_path,root_log_path, preferencesdir, preferencesfile;
     QList<QComboBox*> heads_coin_table;
     QList<QLabel*> pmt_label_table;

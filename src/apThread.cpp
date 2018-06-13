@@ -355,9 +355,9 @@ void Thread::getMCA()
                     arpet->portDisconnect();
                     QString Cabezal_conectado="/dev/UART_Cab"+ QString::number( checkedHeads.at(0));
                     arpet->portConnect(Cabezal_conectado.toStdString().c_str());
-                    pmt = pmt_selected_list.at(index).toStdString();
+                    pmt = _CabCalib && _centroid? QString::number(pmt_selected_list.at(index).toInt()+50).toStdString() : pmt_selected_list.at(index).toStdString();
                     string msg = arpet->getMCA(pmt, pmt_function, QString::number(checkedHeads.at(0)).toStdString(),CHANNELS_PMT, port_name.toStdString());
-                    if(debug)
+                    if(debug && !_CabCalib)
                     {
                         cout<<"Cabezal: "<<checkedHeads.at(0)<<endl;
 //                        cout<<"PMT: "<<pmt<<" "<<endl;
@@ -384,7 +384,7 @@ void Thread::getMCA()
                     error_code error_code=arpet->portConnect(Cabezal_conectado.toStdString().c_str());
                     if(debug) cout<<"error code serie: "<<error_code<<endl;
 
-                    pmt = _CabCalib==true ? "49" : "0";           
+                    pmt = _CabCalib==true ? "49" : "0";
 
                     string msg = arpet->getMCA(pmt, arpet->getFunCHead() , QString::number(checkedHeads.at(index)).toStdString(),CHANNELS, port_name.toStdString());
                     if(debug)
@@ -591,6 +591,8 @@ bool Thread::MoveToServer(){
     date =commands.at(4);
     time =commands.at(5);
     QString mpath=commands.at(1)+"/"+date;
+    QFile targetlog(mpath+"/"+commands.at(3));
+    QFile targetadq(mpath+"/"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw");
     if (!mDir.exists(mpath))
     {
         mDir.mkpath(mpath);
@@ -607,6 +609,9 @@ bool Thread::MoveToServer(){
     }
     try
     {
+        if (targetadq.exists()){
+            targetadq.remove();
+        }
         if (QFile::copy("./" +commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw",mpath+"/"+commands.at(2)+ "_"+time+"_"+QString::number(cantidad_archivos)+".raw"))
         {
             qDebug() <<"Copiado adquisicion";
@@ -616,6 +621,9 @@ bool Thread::MoveToServer(){
                 qDebug() <<"Adquisicion eliminada";
                 if (cantidad_archivos==1)
                 {
+                    if (targetlog.exists()){
+                        targetlog.remove();
+                    }
                     if (QFile::copy("./"+commands.at(3),mpath+"/"+commands.at(3)))
                     {
                         qDebug() <<"Copiado log";

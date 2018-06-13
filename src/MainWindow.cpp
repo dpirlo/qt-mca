@@ -48,7 +48,26 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->frame_multihead_graph_2->hide();
     timerw->start(1000);
     ui->lineEdit_aqd_file_size_Config->setText("");
+   
+    ui->label_giro->setText(QString::number(0)+"%");
+    ui->giro_horizontalSlider->setRange(0,100);
+    ui->giro_horizontalSlider->setSingleStep(5);
 
+    ui->label_mas_H->setText(QString::number(0)+"%");
+    ui->mas_horizontalSlider_H->setRange(0,100);
+    ui->mas_horizontalSlider_H->setSingleStep(5);
+
+    ui->label_menos_H->setText(QString::number(0)+"%");
+    ui->menos_horizontalSlider_H->setRange(0,100);
+    ui->menos_horizontalSlider_H->setSingleStep(5);
+
+    ui->label_mas_V->setText(QString::number(0)+"%");
+    ui->mas_horizontalSlider_V->setRange(0,100);
+    ui->mas_horizontalSlider_V->setSingleStep(5);
+
+    ui->label_menos_V->setText(QString::number(0)+"%");
+    ui->menos_horizontalSlider_V->setRange(0,100);
+    ui->menos_horizontalSlider_V->setSingleStep(5);
     for (int i=1;i<=6;i++){
         if (loadCalibrationTables(QString::number(i))){
             break;
@@ -210,12 +229,18 @@ void MainWindow::setInitialConfigurations()
     ui->lineEdit_hv_value->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_pmt_hv_terminal->setValidator( new QIntValidator(0, MAX_HV_VALUE, this) );
     ui->lineEdit_alta->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
+    ui->posX->setValidator( new QIntValidator(MIN_POS_X, MAX_POS_X, this) );
+    ui->velX->setValidator( new QIntValidator(MIN_VEL_X, MAX_VEL_X, this) );
+    ui->posY->setValidator( new QIntValidator(MIN_POS_Y, MAX_POS_Y, this) );
+    ui->velY->setValidator( new QIntValidator(MIN_VEL_Y, MAX_VEL_Y, this) );
     ui->lineEdit_aqd_cant_archivos->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS, this) );
     ui->lineEdit_aqd_file_size->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS_SIZE, this) );
     ui->lineEdit_aqd_file_size_Config->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS_SIZE, this) );
     ui->lineEdit_aqd_cant_archivos_Config->setValidator( new QIntValidator(MIN_ARCHIVOS, MAX_ARCHIVOS, this) );
+    
     ui->lineEdit_psoc_hv_terminal->setValidator( new QIntValidator(MIN_HIGH_HV_VOLTAGE, MAX_HIGH_HV_VOLTAGE, this) );
     ui->tabWidget_general->setCurrentWidget(ui->config);
+
     ui->Comentarios_Adquisicion->setText("MEDICION Nº: \n  \nFuente:  \nActividad de la Fuente:  \nDistancia al cabezal:  \nObservaciones: ");
 
     setQListElements();
@@ -236,6 +261,12 @@ void MainWindow::setInitialConfigurations()
     ui->RoundBar_Adq->hide();
     ui->RoundBar_CalibFina->setRange(0,MAX_PROGRESS_CALIBFINA);
     ui->RoundBar_CalibFina->hide();
+
+    ui->label_gif_config_ok_no->hide();
+    ui->label_adq_tasa_config->setVisible(false);
+    ui->label_adq_error_config->setVisible(false);
+
+    is_moving = false;
 }
 /**
  * @brief MainWindow::setPreferencesConfiguration
@@ -560,6 +591,12 @@ void MainWindow::clearSpecCalibGraphs()
 void MainWindow::checkStatusAdq(bool status)
 {
 
+    if(!adq_running) {
+        finish_adquirir=false;
+        copying=false;
+
+        return;
+    }
 
     if (!status)
     {
@@ -1288,7 +1325,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_NORMAL:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1308,7 +1345,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_AUTOCOINCIDENCE:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1322,7 +1359,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_AVANCED:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1333,7 +1370,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
             }
             break;
         case COIN_CALIB:
-            port_name=Cab+QString::number(head.toInt());
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head.toInt());
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1343,7 +1380,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
             arpet->portDisconnect();
             break;
         case COIN_VERIF:
-            port_name=Cab+QString::number(head.toInt());
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head.toInt());
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1356,7 +1393,7 @@ void MainWindow::setTimeModeCoin(int modo, bool cero, QString head){
         case COIN_INTER_CABEZAL:
             for ( int i = 0; i < Estado_Cabezales.length(); i++ )
             {
-                port_name=Cab+QString::number(Estado_Cabezales.at(i));
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
                 if (error_code.value()!=0){
                     arpet->portDisconnect();
@@ -1405,7 +1442,7 @@ void MainWindow::on_pushButton_initialize_clicked()
         try
         {
 
-            port_name=Cab+QString::number(head_index);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
             writeFooterAndHeaderDebug(true);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
@@ -1532,7 +1569,7 @@ void MainWindow::on_pushButton_hv_set_clicked()
     {
         arpet->portDisconnect();
 
-        port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
         calibrador->setPort_Name((port_name));
         worker->setPortName((port_name));
         error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -1577,7 +1614,7 @@ void MainWindow::on_pushButton_hv_on_clicked()
 
     arpet->portDisconnect();
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
 
     try
     {
@@ -1622,7 +1659,7 @@ void MainWindow::on_pushButton_hv_off_clicked()
     arpet->portDisconnect();
     string msg;
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
     try
     {
         calibrador->setPort_Name((port_name));
@@ -1664,8 +1701,9 @@ void MainWindow::on_pushButton_hv_estado_clicked()
     writeFooterAndHeaderDebug(true);
     string msg;
     error_code error_code;
+    arpet->portDisconnect();
 
-    port_name=Cab+QString::number(ui->comboBox_head_select_config->currentText().toInt());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(ui->comboBox_head_select_config->currentText().toInt());
     try
     {
         calibrador->setPort_Name((port_name));
@@ -1734,7 +1772,8 @@ void MainWindow::setCoincidenceModeDataStream(string stream)
 
     try
     {
-        error_code=arpet->portConnect("/dev/UART_Coin");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+        error_code=arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
             Exceptions exception_Cabezal_Apagado("Está Coincidencia apagado");
@@ -1775,7 +1814,7 @@ void MainWindow::initCoincidenceMode()
     /* Inicializo nuevamente todos los cabezales */
         for ( int i = 0; i < Estado_Cabezales.length(); i++ )
         {
-            port_name=Cab+QString::number(Estado_Cabezales.at(i));
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -1786,7 +1825,7 @@ void MainWindow::initCoincidenceMode()
             arpet->portDisconnect();
 
         }
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1830,7 +1869,7 @@ void MainWindow::setCalibrationMode(QString head)
     try
     {
 
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1870,7 +1909,7 @@ void MainWindow::setCalibrationMode(QString head)
         setMCAEDataStream(head.toStdString());
         cout<<"Configuro el Cabezal"<<endl;
         arpet->portDisconnect();
-        port_name=Cab+head;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+head;
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -1919,7 +1958,7 @@ void MainWindow::setCoincidenceModeWindowTime(bool calib)
 
     try
     {
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -2245,7 +2284,7 @@ void MainWindow::drawTemperatureBoard()
     try
     {
         //QString Cabezal = QString::number(checkedHeads.at(0));
-        port_name=Cab+getHead("mca");
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+getHead("mca");
         arpet->portConnect(port_name.toStdString().c_str());
         if(debug) cout<<"Conecto puerto sp3"<<endl;
 
@@ -2336,7 +2375,7 @@ void MainWindow::drawAlmohada()
         {
             int head_index=checkedHeads.at(i);
 
-            port_name=Cab+QString::number(head_index);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
 
             qDebug()<<port_name;
 
@@ -2441,7 +2480,7 @@ void MainWindow::setAdquireMode(int index)
             ui->frame_HV->show();
             ui->frame_MCA->show();
             ui->tabWidget_mca->setCurrentWidget(ui->tab_esp_1);
-            ui->checkBox_espectro_calibrado->hide();
+            ui->checkBox_espectro_calibrado->show();
             ui->comboBox_head_select_graph->show();
             ui->frame_multihead_graph->hide();
             break;
@@ -2938,7 +2977,7 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
     try{
         if (!coin)
         {
-            port_name=Cab+QString::fromStdString(head);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::fromStdString(head);
             cout<<port_name.toStdString()<<endl;
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -2952,7 +2991,7 @@ void MainWindow::setMCAEDataStream(string head, bool coin)
         }
         else
         {
-            port_name="/dev/UART_Coin";
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
                 arpet->portDisconnect();
@@ -2993,12 +3032,12 @@ int MainWindow::setPSOCDataStream(string head, string size_received, string func
  */
 void MainWindow::resetHitsValues(QString head)
 {
-    QString Cabezal = Cab +head;
     arpet->resetHitsMCA();
     setHitsInit(true);
     if (debug) cout<<"Reinicio los graficos"<<endl;
     arpet->portDisconnect();
-    arpet->portConnect(Cabezal.toStdString().c_str());
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+head;
+    arpet->portConnect(port_name.toStdString().c_str());
     LoadHVPMT(head.toInt());
     arpet->portDisconnect();
 
@@ -3014,7 +3053,7 @@ bool MainWindow::resetHeads()
     for (int i=0;i < Estado_Cabezales.length();i++)
     {
         arpet->portDisconnect();
-        port_name=Cab+QString::number(Estado_Cabezales.at(i));
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(Estado_Cabezales.at(i));
         arpet->portConnect(port_name.toStdString().c_str());
         parseConfigurationFile(true, QString::number(Estado_Cabezales.at(i)));
 
@@ -3047,7 +3086,7 @@ bool MainWindow::resetHead(QString Cabezal)
     bool status = true;
 
     arpet->portDisconnect();
-    port_name=Cab+Cabezal;
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+Cabezal;
     arpet->portConnect(port_name.toStdString().c_str());
     parseConfigurationFile(true, Cabezal);
 
@@ -3181,7 +3220,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
-    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ ui->comboBox_head_select_graph->currentText();
 
     if (pmt_selected_list.isEmpty())
     {
@@ -3229,7 +3268,7 @@ void MainWindow::on_pushButton_hv_configure_clicked()
 void MainWindow::on_pushButton_l_5_clicked()
 {
     error_code error_code;
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
@@ -3280,7 +3319,7 @@ void MainWindow::on_pushButton_l_5_clicked()
 void MainWindow::on_pushButton_l_10_clicked()
 {
     error_code error_code;
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     arpet->portDisconnect();
 
     writeFooterAndHeaderDebug(true);
@@ -3334,7 +3373,7 @@ void MainWindow::on_pushButton_l_50_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3386,7 +3425,7 @@ void MainWindow::on_pushButton_p_5_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3439,7 +3478,7 @@ void MainWindow::on_pushButton_p_10_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3491,7 +3530,7 @@ void MainWindow::on_pushButton_p_50_clicked()
     error_code error_code;
     arpet->portDisconnect();
 
-    port_name = Cab+ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -3917,7 +3956,7 @@ QStringList MainWindow::availablePortsName()
 
     QStringList portsName;
     int portavailable;
-    QDir dir("/dev/");
+    QDir dir(DEV_PATH);
     QStringList filters;
     try {
         filters << "UART*";
@@ -4244,11 +4283,11 @@ void MainWindow::on_pushButton_send_terminal_clicked()
 
         if (Cabezal == "Coin")
         {
-            port_name="/dev/UART_Coin";
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         }else{
 
             if (Estado_Cabezales.contains(Cabezal.toInt())){
-                port_name=Cab+Cabezal;
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+Cabezal;
 
             }
             else{
@@ -4938,7 +4977,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
 
     head_index=ui->comboBox_head_select_graph_2->currentText().toInt();
 
-    port_name=Cab+QString::number(head_index);
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
 
     if(debug) cout<<"Cabezal: "<< QString::number(head_index).toStdString()<<endl;
     try{
@@ -5040,7 +5079,7 @@ void MainWindow::on_pb_Autocalib_toggled(bool checked)
 }
 
 /* Autocalib Tiempos*/
-void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
+void MainWindow::on_pb_Autocalib_Tiempos_clicked()
 {
 
     error_code error_code;
@@ -5058,258 +5097,275 @@ void MainWindow::on_pb_Autocalib_Tiempos_toggled(bool checked)
     // en Matlab y hacerlo hasta que los picos estén a una tolerancia del cero (debería converger rápido)
 
 
+    //    QList<int> checked_PMTs;
 
-    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
+    //    // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
 
-    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
-    {
+    //    for(int i = 1;  i<10 ; i++ ) // Acá tienen que ir todos menos el 2 el 5 y el 8
+    //    {
+    //       checked_PMTs.append(i);
+    //    }
 
-        QList<int> checked_PMTs;
-        QMessageBox messageBox;
+    //    setPMTCalibCustomPlotEnvironment(checked_PMTs);
 
-        cout<<"Autocalibrando Tiempos"<<endl;
+    //    try{
 
-        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+    //        arpet->portDisconnect();
+    //        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
-        for(int i = 0;  i< 9 ; i++ )
-        {
-            checked_PMTs.append(i+1);
-            //cout<<checked_PMTs[i]<<endl;
-        }
-        calibrador->setPMT_List(checked_PMTs);
+    //        error_code= arpet->portConnect(port_name.toStdString().c_str());
+    //        if (error_code.value()!=0){
+    //            arpet->portDisconnect();
+    //            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+    //            throw exception_Cabezal_Apagado;
+    //        }
 
-        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
+    //        if (QString::fromStdString(initHead(7)).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+    //            ui->label_data_output->setText("Coincidencias todavía no iniciado");
+    //            return;
+    //        }
 
-        // Recupero el tiempo de adquisicion
-        QString Tiempo_adq = ui->Tiempo_adq_box->text();
-        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
-        {
-            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
-            messageBox.setFixedSize(500,200);
-            setButtonCalibTiemposState(false);
-            setIsAbortCalibFlag(false);
-            setButtonCalibTiemposState(true,true);
-            return;
-        }
+    //        clearSpecCalibGraphs();
 
-        try{
+    //        for (int i=0 ; i<checked_PMTs.length() ; i++)
+    //        {
+    //            //getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
+    //            string msg;
+    //            msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+    //            struct Pico_espectro aux;
+    //            QVector<double> aux_hits;
+    //            double aux_hits_double[CHANNELS];
+    //            aux_hits = arpet->getHitsMCA();
+    //            for (int j = 0 ; j < CHANNELS ; j++)
+    //                aux_hits_double[j] = aux_hits[j];
+    //            aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+    //            cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+    ////            addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+    //        }
 
+    ////            setButtonVerTiemposState(true,true);
 
+    //    }
+    //    catch(Exceptions & ex)
+    //    {
+    //        QMessageBox::critical(this,tr("Atención"),tr((string("Coincidencias no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
 
+    //        if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+    //    }
 
-            // Acá veo que todos estén inicializados y con MCA
-            //for (int i=0;i<6;i++)
-            //  if (!Estado_Cabezales.contains(i+1))
-            if(Estado_Cabezales.length()<6){
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Para hacer calibración de tiempos deben estar todos los cabezales encendidos.");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                return;
-            }
-            else
-                ui->label_data_output->setText("");
+    //    }
 
-            arpet->portDisconnect();
-            port_name=Coin;
+//            arpet->portDisconnect();
+//            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
-            calibrador->setPort_Name(port_name);
-            worker->setPortName(port_name);
+//            calibrador->setPort_Name(port_name);
+//            worker->setPortName(port_name);
 
-            error_code= arpet->portConnect(port_name.toStdString().c_str());
-            if (error_code.value()!=0){
-                arpet->portDisconnect();
-                setButtonCalibTiemposState(false);
-                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                throw exception_Cabezal_Apagado;
-            }
-
-            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
-                setButtonCalibTiemposState(false);
-                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
-                setIsAbortCalibFlag(false);
-                setButtonCalibTiemposState(true,true);
-                return;
-            }
-
-            arpet->portDisconnect();
-
-            // Estaría bueno pedirle a Coincidencias que hay AND entre los LVDS de los cabezales para corroborrar que están con CLK externo
-            // Esto lo poídra devolver Coincidencias en el Init con solamente un campo tipo flag
-
-
-            // Si todo esto está listo procedo a la configuración de los cabezales
-
-
-
-            string msg;
-            QString psoc_alta_Tabla;
-
-
-            /////////////// CONFIGURACION Y CARGA DE TABLAS
-            for (int i=0;i<6;i++) // Se exige que estén los 6 cabezales para calibrar tiempos
-            {
-
-                int head_index=i+1;
-                /* Inicialización del Cabezal */
-
-                port_name=Cab+QString::number(head_index);
-                calibrador->setPort_Name((port_name));
-                worker->setPortName((port_name));
-                error_code= arpet->portConnect(port_name.toStdString().c_str());
-                if (error_code.value()!=0){
-                    arpet->portDisconnect();
-                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
-                    throw exception_Cabezal_Apagado;
-                }
-
-                if (initHead(head_index).length()==0){
-                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
-                    return;
-                }
-                if(initSP3(head_index).length()==0){
-                    ui->label_data_output->setText("PMTs no responden");
-                    return;
-                }
-                parseConfigurationFile(true, QString::number(head_index));
-
-                usleep(500);
-                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
-
-                psoc_alta_Tabla = QString::number(AT);
-
-                usleep(500);
-
-                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
-
-                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-                usleep(500);
-                msg = readString();
-                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
-                usleep(500);
-
-                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
-
-                if(debug) cout<<"Cabezal: "<<head_index<<endl;
-
-                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
-                msg = readString(CHAR_LF);
-
-                usleep(500);
-                //hv_status_table[head_index-1]->setText(psoc_alta);
-
-                setCalibrationTables(head_index);
-
-                arpet->portDisconnect();
-
-            }
-
-        arpet->portDisconnect();
-        port_name=Coin;
-
-        calibrador->setPort_Name(port_name);
-        worker->setPortName(port_name);
-
-        error_code= arpet->portConnect(port_name.toStdString().c_str());
-        if (error_code.value()!=0){
-            arpet->portDisconnect();
-            Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
-            throw exception_Cabezal_Apagado;
-        }
-
-        // Configuro Coincidencias
-
-        initCoincidenceMode();
-        usleep(5000);
-        setCoincidenceModeWindowTime(true);
-        usleep(5000);
-        setCoincidenceModeDataStream(arpet->getNormal_Coin_Mode());
-        usleep(5000);
-
-        // Seteo intercabezal en cero, es decir, solo envío intracabezal
-
-        setTimeModeCoin(COIN_NORMAL,true);
-
-
-
-
-
-// Usar esto para ir modificando los tiempos
-        // Mandar después de esto un reset mca a coin
-
-//        arpet->portDisconnect();
-//        error_code error_code;
-//        QString ignore;
-//        QString Cabezal;
-
-//        for ( int i = 0; i < 6; i++ )
-//        {
-//            port_name=Cab+QString::number(Estado_Cabezales.at(i));
 //            error_code= arpet->portConnect(port_name.toStdString().c_str());
 //            if (error_code.value()!=0){
 //                arpet->portDisconnect();
-//                Exceptions exception_Cabezal_Apagado("Está coincidencia y los cabezales apagados! Revise las conexiones");
+//                setButtonCalibTiemposState(false);
+//                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
 //                throw exception_Cabezal_Apagado;
 //            }
-//            for(int pmt = 0; pmt < PMTs; pmt++){
-//                Cabezal=QString::number(Estado_Cabezales.at(i));
-//                ignore=setTime(Cabezal.toStdString(), Matrix_coefT_values[Estado_Cabezales.at(i)-1][pmt], QString::number(pmt+1).toStdString());
+
+//            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
 //            }
+
+//    if(debug) cout<<"Coincidencias para AutoCalib de Tiempos"<<endl;
+
+//    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+//    {
+
+//        QList<int> checked_PMTs;
+//        QMessageBox messageBox;
+
+//        cout<<"Autocalibrando Tiempos"<<endl;
+
+//        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+
+//        for(int i = 0;  i< 9 ; i++ )
+//        {
+//            checked_PMTs.append(i+1);
+//            //cout<<checked_PMTs[i]<<endl;
+//        }
+//        calibrador->setPMT_List(checked_PMTs);
+
+//        setPMTCalibCustomPlotEnvironment(calibrador->PMTs_List);// checked_PMTs);
+
+//        // Recupero el tiempo de adquisicion
+//        QString Tiempo_adq = ui->Tiempo_adq_box->text();
+//        if(Tiempo_adq.toInt() < 0 || Tiempo_adq.toInt() > 360)
+//        {
+//            messageBox.critical(0,"Error","Tiempo adquisicion fuera de los limites fijados.");
+//            messageBox.setFixedSize(500,200);
+//            setButtonCalibTiemposState(false);
+//            setIsAbortCalibFlag(false);
+//            setButtonCalibTiemposState(true,true);
+//            return;
+//        }
+
+//        try{
+
+//            // Acá veo que todos estén inicializados y con MCA
+//            //for (int i=0;i<6;i++)
+//            //  if (!Estado_Cabezales.contains(i+1))
+//            if(Estado_Cabezales.length()<6){
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Para hacer calibración de tiempos deben estar todos los cabezales encendidos.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
+//            }
+//            else
+//                ui->label_data_output->setText("");
+
+//            arpet->portDisconnect();
+//            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+
+//            calibrador->setPort_Name(port_name);
+//            worker->setPortName(port_name);
+
+//            error_code= arpet->portConnect(port_name.toStdString().c_str());
+//            if (error_code.value()!=0){
+//                arpet->portDisconnect();
+//                setButtonCalibTiemposState(false);
+//                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                throw exception_Cabezal_Apagado;
+//            }
+
+//            if (initHead(7).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+//                setButtonCalibTiemposState(false);
+//                messageBox.critical(0,"Error","Coincidencias todavía no iniciado.");
+//                setIsAbortCalibFlag(false);
+//                setButtonCalibTiemposState(true,true);
+//                return;
+//            }
+
+//            arpet->portDisconnect();
+
+//            // Estaría bueno pedirle a Coincidencias que hay AND entre los LVDS de los cabezales para corroborrar que están con CLK externo
+//            // Esto lo poídra devolver Coincidencias en el Init con solamente un campo tipo flag
+
+//            // Si todo esto está listo procedo a la configuración de los cabezales
+
+//            string msg;
+//            QString psoc_alta_Tabla;
+
+//            /////////////// CONFIGURACION Y CARGA DE TABLAS
+//            for (int i=0;i<6;i++) // Se exige que estén los 6 cabezales para calibrar tiempos
+//            {
+
+//                int head_index=i+1;
+//                /* Inicialización del Cabezal */
+
+//                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
+//                calibrador->setPort_Name((port_name));
+//                worker->setPortName((port_name));
+//                error_code= arpet->portConnect(port_name.toStdString().c_str());
+//                if (error_code.value()!=0){
+//                    arpet->portDisconnect();
+//                    Exceptions exception_Cabezal_Apagado("Está el cabezal apagado");
+//                    throw exception_Cabezal_Apagado;
+//                }
+
+//                if (initHead(head_index).length()==0){
+//                    ui->label_data_output->setText("Cabezal "+QString::number(head_index)+ " todavía no iniciado");
+//                    return;
+//                }
+//                if(initSP3(head_index).length()==0){
+//                    ui->label_data_output->setText("PMTs no responden");
+//                    return;
+//                }
+//                parseConfigurationFile(true, QString::number(head_index));
+
+//                usleep(500);
+//                QString q_msg = setHV(QString::number(head_index).toStdString(),QString::number(LowLimit[head_index-1]).toStdString());
+
+//                psoc_alta_Tabla = QString::number(AT);
+
+//                usleep(500);
+
+//                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_ON());
+
+//                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+//                usleep(500);
+//                msg = readString();
+//                //setLabelState(arpet->verifyMCAEStream(msg,arpet->getPSOC_ANS()), hv_status_table[head_index-1]);
+//                usleep(500);
+
+//                setPSOCDataStream(QString::number(head_index).toStdString(), arpet->getPSOC_SIZE_RECEIVED_ALL(), arpet->getPSOC_SET(),psoc_alta_Tabla);
+
+//                if(debug) cout<<"Cabezal: "<<head_index<<endl;
+
+//                sendString(arpet->getTrama_MCAE(),arpet->getEnd_PSOC());
+//                msg = readString(CHAR_LF);
+
+//                usleep(500);
+//                //hv_status_table[head_index-1]->setText(psoc_alta);
+
+//                setCalibrationTables(head_index);
+
+//                arpet->portDisconnect();
+
+//            }
+
+//        arpet->portDisconnect();
+//        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+
+//        calibrador->setPort_Name(port_name);
+//        worker->setPortName(port_name);
+
+//        error_code= arpet->portConnect(port_name.toStdString().c_str());
+//        if (error_code.value()!=0){
 //            arpet->portDisconnect();
 //        }
 
 
 
 
+//        setTimeModeCoin(COIN_INTER_CABEZAL,true);
 
 
 
+//        arpet->portDisconnect();
 
+//        calibrador->setTiempo_adq(Tiempo_adq.toInt());
+//        calibrador->setMode_AutoCalibTiempos(true);
+//        calibrador->setAutoCalibBackground(false);
 
+//        calib_wr->abort();
+//        calib_th->wait();
+//        usleep(500);
+//        calib_wr->requestCalib();
+//        }
+//        catch(Exceptions & ex)
+//        {
+//            QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
 
+//            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+//        }
 
-
-
-
-
-
-
-
-
-
-
-
-            arpet->portDisconnect();
-
-            calibrador->setTiempo_adq(Tiempo_adq.toInt());
-            calibrador->setMode_AutoCalibTiempos(true);
-            calibrador->setAutoCalibBackground(false);
-
-            calib_wr->abort();
-            calib_th->wait();
-	    usleep(500);
-            calib_wr->requestCalib();
-        }
-        catch(Exceptions & ex)
-        {
-            QMessageBox::critical(this,tr("Atención"),tr((string("El Cabezal no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
-
-            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
-        }
-
-        }
-        else
-        {
-            setButtonCalibTiemposState(true,true);
-            if (is_abort_calib)
-            {
-                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
-                emit sendCalibAbortCommand(true);
-            }
-            setIsAbortCalibFlag(true);
-        }
+//        }
+//        else
+//        {
+//            setButtonCalibTiemposState(true,true);
+//            if (is_abort_calib)
+//            {
+//                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+//                emit sendCalibAbortCommand(true);
+//            }
+//            setIsAbortCalibFlag(true);
+//        }
 }
 
 
@@ -5318,7 +5374,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_Reset_clicked()
     error_code error_code;
 
     arpet->portDisconnect();
-    port_name=Coin;
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
     error_code= arpet->portConnect(port_name.toStdString().c_str());
     if (error_code.value()!=0){
@@ -5352,9 +5408,9 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
         // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
 
-        for(int i = 0;  i< 9 ; i++ )
+        for(int i = 2;  i< 5 ; i++ )
         {
-            checked_PMTs.append(i+1);
+            checked_PMTs.append((i-2)*3+2); // 2 - 5 - 8, son las máquinas de cabezales enfrentados
         }
 
         setPMTCalibCustomPlotEnvironment(checked_PMTs);
@@ -5362,7 +5418,7 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
         try{
 
             arpet->portDisconnect();
-            port_name=Coin;
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
             if (error_code.value()!=0){
@@ -5380,8 +5436,17 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
             for (int i=0 ; i<checked_PMTs.length() ; i++)
             {
-                getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
-                addGraph_Tiempos(arpet->getHitsMCA(), ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+                string msg;
+                msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+                struct Pico_espectro aux;
+                QVector<double> aux_hits;
+                double aux_hits_double[CHANNELS];
+                aux_hits = arpet->getHitsMCA();
+                for (int j = 0 ; j < CHANNELS ; j++)
+                    aux_hits_double[j] = aux_hits[j];
+                aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+                cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+                addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
             }
 
 //            setButtonVerTiemposState(true,true);
@@ -5408,6 +5473,88 @@ void MainWindow::on_pb_Autocalib_Tiempos_Debug_clicked()
 
 
 }
+
+void MainWindow::on_pb_Autocalib_Tiempos_Debug_2_clicked()
+{
+    error_code error_code;
+
+    if(debug) cout<<"Ver espectros para AutoCalib de Tiempos"<<endl;
+
+//    if (checked) // Evento mientras se mantiene apretado el botón (inicialización de cosas)
+    {
+
+        QList<int> checked_PMTs;
+
+        // Genero una lista mentirosa de 9 PMT para usar las propiedades de los colores y eso
+
+        for(int i = 1;  i<10 ; i++ ) // Acá tienen que ir todos menos el 2 el 5 y el 8
+        {
+            if(i!=2 && i!=5 && i!=8)
+                checked_PMTs.append(i);
+        }
+
+        setPMTCalibCustomPlotEnvironment(checked_PMTs);
+
+        try{
+
+            arpet->portDisconnect();
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
+
+            error_code= arpet->portConnect(port_name.toStdString().c_str());
+            if (error_code.value()!=0){
+                arpet->portDisconnect();
+                Exceptions exception_Cabezal_Apagado("Error comunicación con Coincidencias");
+                throw exception_Cabezal_Apagado;
+            }
+
+            if (QString::fromStdString(initHead(7)).length()==0){ // Pruebo conectividad Init MCA con Coincidencias
+                ui->label_data_output->setText("Coincidencias todavía no iniciado");
+                return;
+            }
+
+            clearSpecCalibGraphs();
+
+            for (int i=0 ; i<checked_PMTs.length() ; i++)
+            {
+                //getMCA("7", arpet->getFunCHead(), false, CHANNELS, QString::number(checked_PMTs.at(i)).toStdString());
+                string msg;
+                msg = arpet->getMCA(QString::number(checked_PMTs.at(i)).toStdString(), arpet->getFunCHead(), "7", CHANNELS, port_name.toStdString());
+                struct Pico_espectro aux;
+                QVector<double> aux_hits;
+                double aux_hits_double[CHANNELS];
+                aux_hits = arpet->getHitsMCA();
+                for (int j = 0 ; j < CHANNELS ; j++)
+                    aux_hits_double[j] = aux_hits[j];
+                aux = calibrador->Buscar_Pico(aux_hits_double, CHANNELS);
+                cout<<"Pico Máquina "<< checked_PMTs[i] << ": " <<aux.canal_pico-128<<endl;
+                addGraph_Tiempos(aux_hits, ui->specPMTs_2, CHANNELS, QString::number(checked_PMTs.at(i)), qcp_pmt_calib_parameters[i],true);
+            }
+
+//            setButtonVerTiemposState(true,true);
+
+        }
+        catch(Exceptions & ex)
+        {
+            QMessageBox::critical(this,tr("Atención"),tr((string("Coincidencias no está respondiendo. Error: ")+string(ex.excdesc)).c_str()));
+
+            if (debug) cout<<"No se puede Configurar: "<<ex.excdesc<<arpet->getTrama_MCAE()<<arpet->getEnd_PSOC() <<endl;
+        }
+
+        }
+//        else
+//        {
+//            setButtonVerTiemposState(true,true);
+//            if (is_abort_calib)
+//            {
+//                if (debug) cout<<"Atención!! Se emitió una señal de aborto al AutoCalibThread en Tiempos: "<<mcae_th->currentThreadId()<<endl;
+//                emit sendCalibAbortCommand(true);
+//            }
+//            setIsAbortCalibFlag(true);
+//        }
+
+
+}
+
 void MainWindow::connectPortArpet()
 {
     arpet->portConnect(port_name.toStdString().c_str());
@@ -6503,7 +6650,7 @@ QStringList MainWindow::getLogFromFiles(QString filename,QRegExp rx, string pars
 void MainWindow::on_pushButton_p_51_clicked()
 {
     error_code error_code;
-    port_name=Cab+ ui->comboBox_head_select_graph->currentText();
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+ ui->comboBox_head_select_graph->currentText();
     writeFooterAndHeaderDebug(true);
 
     if (pmt_selected_list.isEmpty())
@@ -6550,7 +6697,7 @@ void MainWindow::on_RATECAB1_clicked()
 
     try{
         arpet->portDisconnect();
-        port_name=Cab1;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB1);
         arpet->portConnect(port_name.toStdString().c_str());
         rates = arpet->getRate(QString::number(1).toStdString(), port_name.toStdString());
         ui->label_CAB1->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6566,7 +6713,7 @@ void MainWindow::on_RATECAB2_clicked()
     vector<int> rates(3);
     try{
         arpet->portDisconnect();
-        port_name=Cab2;
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB2);
         arpet->portConnect(port_name.toStdString().c_str());
         rates = arpet->getRate(QString::number(2).toStdString(), port_name.toStdString());
         ui->label_CAB2->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6583,7 +6730,7 @@ void MainWindow::on_RATECAB3_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab3;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB3);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(3).toStdString(), port_name.toStdString());
       ui->label_CAB3->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6600,7 +6747,7 @@ void MainWindow::on_RATECAB4_clicked()
 
   try{
       arpet->portDisconnect();
-      port_name=Cab4;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB4);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(4).toStdString(), port_name.toStdString());
       ui->label_CAB4->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6616,7 +6763,7 @@ void MainWindow::on_RATECAB5_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab5;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB5);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(5).toStdString(), port_name.toStdString());
       ui->label_CAB5->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6632,7 +6779,7 @@ void MainWindow::on_RATECAB6_clicked()
   vector<int> rates(3);
   try{
       arpet->portDisconnect();
-      port_name=Cab6;
+      port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB6);
       arpet->portConnect(port_name.toStdString().c_str());
       rates = arpet->getRate(QString::number(6).toStdString(), port_name.toStdString());
       ui->label_CAB6->setText(QString::number(rates.at(0)) + " "+QString::number(rates.at(1))+" "+QString::number(rates.at(2)));
@@ -6681,6 +6828,7 @@ void MainWindow::on_pushButton_adquirir_clicked()
               mcae_wr->setPMTSelectedList(pmt_selected_list);
               mcae_wr->setDebugMode(debug);
               mcae_wr->setModeBool(true);
+              mcae_wr->setModeCabCalib(espectro_calib);
               mcae_wr->setCentroidMode(centroide);
               mcae_th->wait();
               mcae_wr->requestMCA();
@@ -7077,7 +7225,7 @@ bool MainWindow::fileExists(QString path) {
  */
 void MainWindow::updateCaption(){
 
-    QDir dir("/dev/");
+    QDir dir(DEV_PATH);
     QString numerocabezal;
     QStringList filters;
     static QVector<int> Estado_Aux_Cabezales;
@@ -7115,7 +7263,7 @@ void MainWindow::updateCaption(){
             if(tasa.toInt() > 0 )
             ui->label_adq_tasa_2->setText(tasa + "Tramas/seg");
             ui->label_adq_tasa_config->setText(tasa + "Tramas/seg");
-            error=output.mid(output.indexOf("con") + 3);
+            error=output.mid(output.indexOf("con") + 4);
             error = error.left(error.indexOf("\n"));
             if(!error.isEmpty())
             ui->label_adq_error_2->setText(error);
@@ -7280,7 +7428,7 @@ void MainWindow::Cabezal_On_Off(int Cabezal, bool estado){
     for (int i=0;i<6;i++){Cabezales.push_back("0");}
     try{
         arpet->portDisconnect();
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -7331,7 +7479,7 @@ void MainWindow::Cabezales_On_Off(bool estado){
     error_code error_code;
     try{
         arpet->portDisconnect();
-        port_name="/dev/UART_Coin";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
         error_code= arpet->portConnect(port_name.toStdString().c_str());
         if (error_code.value()!=0){
             arpet->portDisconnect();
@@ -7517,9 +7665,16 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
 
     QProcess killall;
     killall.waitForStarted();
-    killall.execute("pkill recvRawEth");
-    killall.waitForFinished(1000);
-    cout<<killall.readAll().toStdString()<<endl;
+    killall.start("ps -C recvRawEth");
+    QString output;
+    while(killall.waitForReadyRead(1000)) output+=killall.readAll();
+
+    if(output.contains("recvRawEth"))
+    {
+        killall.execute("pkill recvRawEth");
+        killall.waitForFinished(1000);
+        cout<<killall.readAll().toStdString()<<endl;
+    }
 
     if (checked){
 
@@ -7666,7 +7821,7 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
                             +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
                 }
 
-                port_name=Cab+QString::number(head_index);
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
                 calibrador->setPort_Name((port_name));
                 worker->setPortName((port_name));
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -7767,9 +7922,9 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
         ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
         worker_adq->setCommands(commands_calib);
         worker_copy->setCommands(commands_calib);
+        adq_running = true;
 
         checkStatusAdq(true);
-        adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else
@@ -7781,9 +7936,14 @@ void MainWindow::on_pbAdquirir_toggled(bool checked)
             logger.close();
         }
 
+        ui->label_gif_4->hide();
+        ui->label_gif_3->hide();
         adq_running = false;
         worker_copy->abort();
         thread_copy->exit(0);
+        usleep(5000);
+        worker_adq->abort();
+        thread_adq->exit(0);
         usleep(5000);
     }
 }
@@ -8249,7 +8409,6 @@ void MainWindow::on_comboBox_FPGA_DISP_activated(int index)
 }
 void MainWindow::checkStatusMoveToServer(bool status){
     QPixmap image;
-    //adq_running = false;
 
     cant_archivos_copiados = cant_archivos_copiados + 1;
     QString cant_arch_aux = commands_calib.at(6);
@@ -8296,10 +8455,14 @@ void MainWindow::checkStatusMoveToServer(bool status){
              ui->pbAdquirir_Config->setChecked(false);
              ui->pbAdquirir_Config->blockSignals(false);
              ui->pushButton_initialize->setEnabled(true);
+             ui->pushButton_configure->setEnabled(true);
              ui->pushButton_hv_off->setEnabled(true);
              ui->pushButton_configure->setEnabled(true);
              ui->pushButton_hv_set->setEnabled(true);
              ui->pushButton_hv_on->setEnabled(true);
+             ui->label_adq_tasa_config->setVisible(false);
+             ui->label_adq_error_config->setVisible(false);
+             ui->progressBar_Adq_Config->setValue(0);
              Adq_zone=adq_none;
          }
          else
@@ -8320,6 +8483,7 @@ void MainWindow::checkStatusMoveToServer(bool status){
     if (archivos == 0)
     {
         image.load(icon_ok);
+        adq_running = false;
 
         if(calibrador->AutoCalibBackground)
         {
@@ -8337,9 +8501,13 @@ void MainWindow::checkStatusMoveToServer(bool status){
             ui->pbAdquirir_Config->blockSignals(false);
             ui->pushButton_initialize->setEnabled(true);
             ui->pushButton_configure->setEnabled(true);
+            ui->pushButton_configure->setEnabled(true);
             ui->pushButton_hv_off->setEnabled(true);
             ui->pushButton_hv_set->setEnabled(true);
             ui->pushButton_hv_on->setEnabled(true);
+            ui->label_adq_tasa_config->setVisible(false);
+            ui->label_adq_error_config->setVisible(false);
+            ui->progressBar_Adq_Config->setValue(0);
             Adq_zone=adq_none;
         }
         else
@@ -8416,6 +8584,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
     QList<int> checked_PMTs;
     QList<int> checked_Cab;
     bool error=false;
+    setIsAbortCalibFlag(false);
 
     commands_calib.clear();
 
@@ -8508,7 +8677,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             arpet->portDisconnect();
 
-            port_name=Cab+QString::number(head);
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head);
             calibrador->setPort_Name((port_name));
             worker->setPortName((port_name));
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -8567,7 +8736,7 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 
             usleep(500);
 
-            port_name=Coin;
+            port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
             arpet->portDisconnect();
 
             error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -8642,7 +8811,6 @@ void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
                 calibrador->setAutoCalibBackground(true);
 
                 arpet->portDisconnect();
-
 
                 ui->label_Calib_Calib_Gruesa->setEnabled(true);
                 ui->label_gif_Calib_Calib_Gruesa->setMovie(movie_cargando);
@@ -8755,6 +8923,7 @@ void MainWindow::AutocalibReady(bool state,int pmt_roto)
 
     qApp->processEvents();
 
+    ui->RoundBar_Adq->setValue(0);
     ui->label_Adquisicion->setEnabled(true);
     ui->RoundBar_Adq->setVisible(true);
 
@@ -8825,9 +8994,9 @@ void MainWindow::setCommandsAdquire()
     ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
     worker_adq->setCommands(commands_calib);
     worker_copy->setCommands(commands_calib);
+    adq_running = true;
 
     checkStatusAdq(true);
-    adq_running = true;
 }
 
 void MainWindow::AutoAdqReady(bool state)
@@ -8896,9 +9065,9 @@ void MainWindow::CalibFinaReady(bool state)
 
     ui->label_gif_Calib_Fina->setVisible(true);
 
-    emit sendCalibFinaAbortCommand(true);
-    emit sendCalibFinaProgressAbortCommand(true);
-    setIsAbortCalibFinaProgressFlag(true);
+//    emit sendCalibFinaAbortCommand(true);
+//    emit sendCalibFinaProgressAbortCommand(true);
+//    setIsAbortCalibFinaProgressFlag(true);
 
     if(!state)
     {
@@ -9004,10 +9173,10 @@ void MainWindow::TerminandoCalibFina()
 
 void MainWindow::CancelCalib()
 {
-    setIsAbortCalibFlag(true);
-    emit sendCalibFinaAbortCommand(true);
-    setIsAbortCalibFinaProgressFlag(true);
-    emit sendCalibFinaProgressAbortCommand(true);
+//    setIsAbortCalibFlag(true);
+//    emit sendCalibFinaAbortCommand(true);
+//    setIsAbortCalibFinaProgressFlag(true);
+//    emit sendCalibFinaProgressAbortCommand(true);
     adq_running = false;
 
     arpet->portDisconnect();
@@ -9030,9 +9199,18 @@ void MainWindow::CancelCalib()
 
     QProcess killall;
     killall.waitForStarted();
-    killall.execute("pkill recvRawEth");
-    killall.waitForFinished(1000);
+    killall.start("ps -C recvRawEth");
+    QString output;
+    while(killall.waitForReadyRead(1000)) {
+        output+=killall.readAll();
+    }
 
+    if(output.contains("recvRawEth"))
+    {
+        killall.execute("pkill recvRawEth");
+        killall.waitForFinished(1000);
+        //cout<<killall.readAll().toStdString()<<endl;
+    }
     QFile logger(ruta_log_adquisicion);
     if(logger.open(QIODevice::WriteOnly | QIODevice::Append))
     {
@@ -9043,17 +9221,17 @@ void MainWindow::CancelCalib()
 
     adq_running = false;
 
-    worker_copy->abort();
-    thread_copy->exit(0);
-    usleep(5000);
+//    worker_copy->abort();
+//    thread_copy->exit(0);
+//    usleep(5000);
 
-    calibFina_wr->abort();
-    calibFina_th->exit(0);
-    usleep(5000);
+//    calibFina_wr->abort();
+//    calibFina_th->exit(0);
+//    usleep(5000);
 
-    calibFinaProgress_wr->abort();
-    calibFinaProgress_th->exit(0);
-    usleep(5000);
+//    calibFinaProgress_wr->abort();
+//    calibFinaProgress_th->exit(0);
+//    usleep(5000);
 }
 
 void MainWindow::on_pb_Debug_clicked()
@@ -9082,10 +9260,34 @@ void MainWindow::on_pb_Debug_clicked()
     return;
 }
 
+void MainWindow::on_pushButton_Socatear_toggled(bool checked)
+{
+    if(checked)
+    {
+//        QProcess socatear;
+//        ver_tasa.waitForStarted();
+//        ver_tasa.start("cat ./log_ETH.info");
+//        ver_tasa.waitForFinished(-1);
+
+        QProcess pide_ip;
+        pide_ip.waitForStarted();
+        pide_ip.start("bash",QStringList() << "-c" << "ifconfig | grep '192.168' | head --bytes=34 | tail --bytes=14");
+        pide_ip.waitForFinished(-1);
+
+        QString output = pide_ip.readAllStandardOutput();
+
+        ui->label_Socatear->setText(output);
+    }
+    else
+    {
+        ui->label_Socatear->setText("");
+    }
+}
+
 void MainWindow::on_pushButton_Tasa_Coin_clicked()
 {
     vector<int> rates(9);
-    port_name="/dev/UART_Coin";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
     arpet->portConnect(port_name.toStdString().c_str());
     rates = arpet->getRateCoin(QString::number(7).toStdString(), port_name.toStdString());
     if (debug) cout<<"Tasas COIN: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
@@ -9097,7 +9299,7 @@ void MainWindow::on_pushButton_Tasa_Coin_clicked()
 void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
 {
     vector<int> rates(9);
-    port_name="/dev/UART_Coin";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(COIN);
     arpet->portConnect(port_name.toStdString().c_str());
     rates = arpet->getRateCoinDemo(QString::number(7).toStdString(), port_name.toStdString());
     if (debug) cout<<"Tasas COIN Demorada: "<<rates.at(0)<<","<<rates.at(1)<<","<<rates.at(2)<<","<<rates.at(3)<<","<<rates.at(4)<<","<<rates.at(5)<<","<<rates.at(6)<<","<<rates.at(7)<<","<<rates.at(8)<<" | "<<arpet->getTrama_MCAE()<<endl;
@@ -9115,14 +9317,14 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
     //static QStringList commands;
     QString NombredeArchivo;
     QString time =QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm");
-    arpet->portDisconnect();
     QVector<int> Cabezales;
 
     QString log;
     QString logFileAdq;
 
-  //  Cabezales_On_Off(checked);
     ui->label_gif_config_ok_no->hide();
+    ui->label_adq_tasa_config->setVisible(true);
+    ui->label_adq_error_config->setVisible(true);
 
     if(calibrador->AutoCalibBackground){
         QMessageBox::critical(this,tr("Error"),tr("Se está corriendo rutina automática de Calibración."));
@@ -9132,16 +9334,28 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         return;
     }
 
-
-
     QProcess killall;
     killall.waitForStarted();
-    killall.execute("pkill recvRawEth");
-    killall.waitForFinished(1000);
-    cout<<killall.readAll().toStdString()<<endl;
+    killall.start("ps -C recvRawEth");
+    QString output;
+    while(killall.waitForReadyRead(1000))   output+=killall.readAll();
+
+    if(output.contains("recvRawEth"))
+    {
+        killall.execute("pkill recvRawEth");
+        killall.waitForFinished(1000);
+    }
 
     if (checked){
 
+        if(adq_running)
+        {
+            QMessageBox::critical(this,tr("Error"),tr("Se está adquiriendo en otra pestaña."));
+            ui->pbAdquirir_Config->blockSignals(true);
+            ui->pbAdquirir_Config->setChecked(false);
+            ui->pbAdquirir_Config->blockSignals(false);
+            return;
+        }
 
         // bloqueo el resto de los botones asi no perjudican la adquisicion
         ui->pushButton_initialize->setEnabled(false);
@@ -9154,17 +9368,20 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         cant_archivos=1;
         cant_archivos_copiados=0;
         /////////////////////////Verificacion previa antes de configurar y adquirir//////////////////////////
-        int archivos = ui->lineEdit_aqd_cant_archivos_Config->text().toInt() - cant_archivos + 1;
-        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
-        ui->label_cant_archivos->setText(mensaje);
 
         if (ui->lineEdit_Titulo_Medicion_Config->text().isEmpty()){
             QMessageBox::critical(this,tr("Error"),tr("La medición debe contener un título."));
+            ui->pbAdquirir_Config->blockSignals(true);
+            ui->pbAdquirir_Config->setChecked(false);
+            ui->pbAdquirir_Config->blockSignals(false);
             return;
         }
 
         if (ui->lineEdit_aqd_file_size_Config->text().isEmpty()){
             QMessageBox::critical(this,tr("Error"),tr("Se debe definir un tamaño de archivo de adquisición."));
+            ui->pbAdquirir_Config->blockSignals(true);
+            ui->pbAdquirir_Config->setChecked(false);
+            ui->pbAdquirir_Config->blockSignals(false);
             return;
         }else{
             commands_calib.append(ui->lineEdit_aqd_file_size_Config->text());
@@ -9173,6 +9390,9 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
 
         if(ui->lineEdit_aqd_path_file_Config->text().isEmpty()){
             QMessageBox::critical(this,tr("Error"),tr("Se debe definir una ruta específica si se definió ."));
+            ui->pbAdquirir_Config->blockSignals(true);
+            ui->pbAdquirir_Config->setChecked(false);
+            ui->pbAdquirir_Config->blockSignals(false);
             return;
         }else{
             commands_calib.append(ui->lineEdit_aqd_path_file_Config->text());
@@ -9186,6 +9406,9 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
             }
         }
 
+        int archivos = ui->lineEdit_aqd_cant_archivos_Config->text().toInt() - cant_archivos + 1;
+        QString mensaje= "Restan: " + QString::number(archivos) + " archivos";
+        ui->label_cant_archivos_config->setText(mensaje);
 
         ui->progressBar_Adq_Config->setRange(0,size_archivo_adq.toInt());
 
@@ -9193,7 +9416,10 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         nombre_archivo_adq =  NombredeArchivo ;
         worker_adq->abort();
         thread_adq->exit(0);
-        usleep(500);
+        usleep(5000);
+        worker_copy->abort();
+        thread_copy->exit(0);
+        usleep(5000);
 
         ///////////////////////////////////////////////////////////////////////////////////////
         // commands Parametros:     1er valor Cantidad de MB de medicion
@@ -9220,7 +9446,7 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         /////////////// CONFIGURACION Y CARGA DE TABLAS
         for (int i=0;i<Cabezales.length();i++)
         {
-
+            arpet->portDisconnect();
             int head_index=Cabezales.at(i);
             /* Inicialización del Cabezal */
             try
@@ -9260,7 +9486,8 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
                             +QString::number(Matrix_coefest_values[head_index-1][5])+"\n");
                 }
 
-                port_name=Cab+QString::number(head_index);
+                port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CAB)+QString::number(head_index);
+
                 calibrador->setPort_Name(port_name);
                 worker->setPortName(port_name);
                 error_code= arpet->portConnect(port_name.toStdString().c_str());
@@ -9290,6 +9517,7 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         }
 
         logger.write( log.toUtf8());
+        log.clear();
         logger.close();
         commands_calib.append(logFileAdq);
         commands_calib.append(QDate::currentDate().toString("yyyy-MM-dd"));
@@ -9304,9 +9532,9 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         ruta_log_adquisicion = commands_calib.at(1) + "/" + commands_calib.at(4) + "/" + logFileAdq;
         worker_adq->setCommands(commands_calib);
         worker_copy->setCommands(commands_calib);
+        adq_running = true;
 
         checkStatusAdq(true);
-        adq_running = true;
         ///////// FIN DE CONFIGURACION Y CARGA DE TABLAS
     }
     else
@@ -9320,11 +9548,17 @@ void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
         // habilito devuelta los botones
         ui->pushButton_initialize->setEnabled(true);
         ui->pushButton_hv_off->setEnabled(true);
+        ui->pushButton_configure->setEnabled(true);
         ui->pushButton_hv_set->setEnabled(true);
         ui->pushButton_hv_on->setEnabled(true);
         adq_running = false;
+        finish_adquirir=false;
+        copying=false;
         worker_copy->abort();
         thread_copy->exit(0);
+        usleep(5000);
+        worker_adq->abort();
+        thread_adq->exit(0);
         usleep(5000);
     }
 }
@@ -9333,4 +9567,337 @@ void MainWindow::on_pushButton_aqd_file_open_Config_clicked()
 {
     QString directory = openDirectory();
     ui->lineEdit_aqd_path_file_Config->setText(directory);
+}
+/*** CAMILLA ***/
+
+bool MainWindow::sendCamilla(string command, QString port_name)
+{
+    try
+    {
+        ui->label_send_camilla->setText("");
+        arpet->portConnect(port_name.toStdString().c_str());
+        ui->label_send_camilla->setText(QString::fromStdString(arpet->sendCamilla(command,port_name.toStdString())));
+    }
+    catch(Exceptions & ex)
+    {
+        ui->label_send_camilla->setText("Error Camilla: "+QString::fromStdString(string(ex.excdesc)));
+        return false;
+    }
+    arpet->portDisconnect();
+
+    return true;
+}
+
+void MainWindow::on_pb_stop_camilla_clicked()
+{
+    string command = "#CARCASA02@STOP,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->pb_send_giro->setChecked(false);
+        ui->pb_send_mas_H->setChecked(false);
+        ui->pb_send_menos_H->setChecked(false);
+        ui->pb_send_mas_V->setChecked(false);
+        ui->pb_send_menos_V->setChecked(false);
+    }
+}
+
+void MainWindow::on_pb_send_giro_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->giro_horizontalSlider->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@GIRO,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->giro_horizontalSlider->setValue(0);
+            ui->giro_horizontalSlider->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_giro_horizontalSlider_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@GIRO,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@GIRO,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_giro->setText(QString::number(value)+"%");
+    }
+}
+
+/*** HORIZONTAL ***/
+void MainWindow::on_pb_send_mas_H_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->mas_horizontalSlider_H->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->mas_horizontalSlider_H->setValue(0);
+            ui->mas_horizontalSlider_H->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_mas_horizontalSlider_H_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@HORIZONTAL,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@HORIZONTAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_mas_H->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->menos_horizontalSlider_H->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->menos_horizontalSlider_H->setValue(0);
+            ui->menos_horizontalSlider_H->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_menos_horizontalSlider_H_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@HORIZONTAL,0,0,"+QString::number(value).toStdString()+"0,0,0,";
+    else
+        command = "#CARCASA02@HORIZONTAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_menos_H->setText(QString::number(value)+"%");
+    }
+}
+
+/*** VERTICAL ***/
+void MainWindow::on_pb_send_mas_V_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->mas_horizontalSlider_V->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->mas_horizontalSlider_V->setValue(0);
+            ui->mas_horizontalSlider_V->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_mas_horizontalSlider_V_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@VERTICAL,0,"+QString::number(value).toStdString()+"0,0,0,0,";
+    else
+        command = "#CARCASA02@VERTICAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_mas_V->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->menos_horizontalSlider_V->setEnabled(true);
+    }
+    else
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->menos_horizontalSlider_V->setValue(0);
+            ui->menos_horizontalSlider_V->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_menos_horizontalSlider_V_valueChanged(int value)
+{
+    string command;
+    if(value > 0)
+        command = "#CARCASA02@VERTICAL,0,0,"+QString::number(value).toStdString()+"0,0,0,";
+    else
+        command = "#CARCASA02@VERTICAL,1,";
+    port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+    if(sendCamilla(command,port_name))
+    {
+        ui->label_menos_V->setText(QString::number(value)+"%");
+    }
+}
+
+void MainWindow::on_pb_send_mas_H_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,700,0,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_mas_H_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,0,700,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_menos_H_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@HORIZONTAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_mas_V_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,0,700,0,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_mas_V_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_2_pressed()
+{
+    if(!is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,0,0,700,0,0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = true;
+    }
+}
+
+void MainWindow::on_pb_send_menos_V_2_released()
+{
+    if(is_moving)
+    {
+        string command = "#CARCASA02@VERTICAL,1,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+            is_moving = false;
+    }
+}
+
+void MainWindow::on_pb_set_camilla_clicked()
+{
+    int posX = ui->posX->text().toInt();
+    int velX = ui->velX->text().toInt();
+    int posY = ui->posY->text().toInt();
+    int velY = ui->velY->text().toInt();
+
+    ui->label_send_camilla->setText("");
+    if(posX<=MAX_POS_X && posX>=MIN_POS_X && velX<=MAX_VEL_X && velX>=MIN_VEL_X)
+    {
+        string command = "#CARCASA02@HORIZONTAL,0,0,0,"+QString::number(posX).toStdString()+","+QString::number(velX).toStdString()+"0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->posX->setText("");
+            ui->velX->setText("");
+            // No anda lo que quiero hacer con los Labels
+            ui->posX->setStyleSheet("QLabel { background-color : #3daee9; }");
+            ui->velX->setStyleSheet("QLabel { background-color : #3daee9; }");
+        }
+        else
+        {
+            ui->posX->setStyleSheet("QLabel { background-color : red;  }");
+            ui->velX->setStyleSheet("QLabel { background-color : red;  }");
+        }
+    }
+    else if(posX>0 && velX>0)
+        ui->label_send_camilla->setText("Media pila con los valores de X");
+
+    if(posY<=MAX_POS_Y && posY>=MIN_POS_Y && velY<=MAX_VEL_Y && velY>=MIN_VEL_Y)
+    {
+        string command = "#CARCASA02@VERTICAL,0,0,0,"+QString::number(posY).toStdString()+","+QString::number(velY).toStdString()+"0,";
+        port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
+        if(sendCamilla(command,port_name))
+        {
+            ui->posY->setText("");
+            ui->velY->setText("");
+            ui->posY->setStyleSheet("QLabel { background-color : #3daee9; }");
+            ui->velY->setStyleSheet("QLabel { background-color : #3daee9; }");
+        }
+        else
+        {
+            ui->posY->setStyleSheet("QLabel { background-color : red;  }");
+            ui->velY->setStyleSheet("QLabel { background-color : red;  }");
+        }
+    }
+    else if(posY>0 && velY>0)
+        ui->label_send_camilla->setText("Media pila con los valores de Y");
 }

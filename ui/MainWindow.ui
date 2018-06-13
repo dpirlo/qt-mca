@@ -948,29 +948,13 @@
         </property>
        </widget>
       </widget>
-     </widget>
-     <widget class="QFrame" name="frame_calib_tables">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>340</y>
-        <width>981</width>
-        <height>241</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
       <widget class="QPushButton" name="pushButton_initialize">
        <property name="geometry">
         <rect>
-         <x>860</x>
+         <x>120</x>
          <y>10</y>
          <width>111</width>
-         <height>221</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -980,30 +964,44 @@
         </font>
        </property>
        <property name="text">
-        <string>Configuración
- de
- Cabezales</string>
+        <string>SET</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QFrame" name="frame_calib_tables">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>340</y>
+        <width>451</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
       <widget class="QPushButton" name="pushButton_aqd_file_open_Config">
        <property name="geometry">
         <rect>
-         <x>530</x>
-         <y>120</y>
-         <width>91</width>
+         <x>410</x>
+         <y>90</y>
+         <width>21</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>Abrir</string>
+        <string>...</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_aqd_file_size_Config">
        <property name="geometry">
         <rect>
-         <x>260</x>
-         <y>80</y>
-         <width>101</width>
+         <x>230</x>
+         <y>50</y>
+         <width>61</width>
          <height>31</height>
         </rect>
        </property>
@@ -1017,9 +1015,9 @@
       <widget class="QLineEdit" name="lineEdit_aqd_cant_archivos_Config">
        <property name="geometry">
         <rect>
-         <x>530</x>
-         <y>80</y>
-         <width>91</width>
+         <x>390</x>
+         <y>50</y>
+         <width>41</width>
          <height>31</height>
         </rect>
        </property>
@@ -1033,9 +1031,9 @@
       <widget class="QLineEdit" name="lineEdit_aqd_path_file_Config">
        <property name="geometry">
         <rect>
-         <x>130</x>
-         <y>120</y>
-         <width>391</width>
+         <x>60</x>
+         <y>90</y>
+         <width>341</width>
          <height>31</height>
         </rect>
        </property>
@@ -1043,9 +1041,9 @@
       <widget class="QLineEdit" name="lineEdit_Titulo_Medicion_Config">
        <property name="geometry">
         <rect>
-         <x>260</x>
-         <y>40</y>
-         <width>361</width>
+         <x>230</x>
+         <y>10</y>
+         <width>201</width>
          <height>31</height>
         </rect>
        </property>
@@ -1053,8 +1051,8 @@
       <widget class="QLabel" name="label_6">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>40</y>
+         <x>10</x>
+         <y>10</y>
          <width>211</width>
          <height>31</height>
         </rect>
@@ -1071,9 +1069,9 @@
       <widget class="QLabel" name="label_112">
        <property name="geometry">
         <rect>
-         <x>380</x>
-         <y>80</y>
-         <width>141</width>
+         <x>300</x>
+         <y>50</y>
+         <width>91</width>
          <height>31</height>
         </rect>
        </property>
@@ -1083,14 +1081,14 @@
         </font>
        </property>
        <property name="text">
-        <string>Cant. de Archivos</string>
+        <string>Cantidad</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_108">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>80</y>
+         <x>10</x>
+         <y>50</y>
          <width>221</width>
          <height>31</height>
         </rect>
@@ -1107,10 +1105,10 @@
       <widget class="QProgressBar" name="progressBar_Adq_Config">
        <property name="geometry">
         <rect>
-         <x>650</x>
-         <y>40</y>
-         <width>181</width>
-         <height>61</height>
+         <x>10</x>
+         <y>130</y>
+         <width>191</width>
+         <height>41</height>
         </rect>
        </property>
        <property name="value">
@@ -1120,10 +1118,10 @@
       <widget class="QPushButton" name="pbAdquirir_Config">
        <property name="geometry">
         <rect>
-         <x>650</x>
-         <y>140</y>
-         <width>181</width>
-         <height>61</height>
+         <x>10</x>
+         <y>180</y>
+         <width>191</width>
+         <height>41</height>
         </rect>
        </property>
        <property name="text">
@@ -1136,8 +1134,8 @@
       <widget class="QLabel" name="label_114">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>120</y>
+         <x>10</x>
+         <y>90</y>
          <width>51</width>
          <height>31</height>
         </rect>
@@ -1154,7 +1152,7 @@
       <widget class="QLabel" name="label_adq_error_config">
        <property name="geometry">
         <rect>
-         <x>380</x>
+         <x>250</x>
          <y>190</y>
          <width>130</width>
          <height>31</height>
@@ -1169,47 +1167,11 @@
         <string>%</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_adq_error_4">
-       <property name="geometry">
-        <rect>
-         <x>380</x>
-         <y>160</y>
-         <width>171</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Error en tramas</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_adq_tasa_3">
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>160</y>
-         <width>171</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Tasa de adquisición</string>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_adq_tasa_config">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>190</y>
+         <x>250</x>
+         <y>160</y>
          <width>190</width>
          <height>31</height>
         </rect>
@@ -1226,9 +1188,9 @@
       <widget class="QLabel" name="label_gif_config_ok_no">
        <property name="geometry">
         <rect>
-         <x>540</x>
+         <x>289</x>
          <y>160</y>
-         <width>70</width>
+         <width>71</width>
          <height>70</height>
         </rect>
        </property>
@@ -1239,10 +1201,10 @@
       <widget class="QLabel" name="label_cant_archivos_config">
        <property name="geometry">
         <rect>
-         <x>650</x>
-         <y>110</y>
-         <width>181</width>
-         <height>21</height>
+         <x>250</x>
+         <y>130</y>
+         <width>191</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="font">
@@ -1254,7 +1216,6 @@
         <string/>
        </property>
       </widget>
-      <zorder>pushButton_initialize</zorder>
       <zorder>pushButton_aqd_file_open_Config</zorder>
       <zorder>lineEdit_Titulo_Medicion_Config</zorder>
       <zorder>label_6</zorder>
@@ -1263,15 +1224,13 @@
       <zorder>progressBar_Adq_Config</zorder>
       <zorder>pbAdquirir_Config</zorder>
       <zorder>lineEdit_aqd_file_size_Config</zorder>
-      <zorder>lineEdit_aqd_path_file_Config</zorder>
       <zorder>lineEdit_aqd_cant_archivos_Config</zorder>
       <zorder>label_114</zorder>
       <zorder>label_adq_error_config</zorder>
-      <zorder>label_adq_error_4</zorder>
-      <zorder>label_adq_tasa_3</zorder>
       <zorder>label_adq_tasa_config</zorder>
       <zorder>label_gif_config_ok_no</zorder>
       <zorder>label_cant_archivos_config</zorder>
+      <zorder>lineEdit_aqd_path_file_Config</zorder>
      </widget>
      <widget class="QFrame" name="frame_hv">
       <property name="geometry">
@@ -1456,6 +1415,15 @@ Tensión: </string>
         </property>
        </item>
       </widget>
+      <zorder>label_9</zorder>
+      <zorder>label_22</zorder>
+      <zorder>label_psoc_estado_datos</zorder>
+      <zorder>pushButton_hv_set</zorder>
+      <zorder>lineEdit_alta</zorder>
+      <zorder>pushButton_hv_off</zorder>
+      <zorder>pushButton_hv_on</zorder>
+      <zorder>comboBox_head_select_config</zorder>
+      <zorder>pushButton_hv_estado</zorder>
      </widget>
      <widget class="QFrame" name="frame_adquid_mode">
       <property name="geometry">
@@ -2207,12 +2175,663 @@ calibrar</string>
        </widget>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pushButton_Socatear">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>580</y>
+        <width>95</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Socatear</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_Socatear">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>580</y>
+        <width>190</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frame_calib_tables_2">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>340</y>
+        <width>511</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QPushButton" name="pb_stop_camilla">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>190</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>STOP</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_send_camilla">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>190</y>
+         <width>231</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QSlider" name="giro_horizontalSlider">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>10</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_giro">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>GIRO</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_giro">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>10</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_mas_H">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>50</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+      <widget class="QSlider" name="mas_horizontalSlider_H">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>50</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_H">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>50</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_menos_H">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>80</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+      <widget class="QSlider" name="menos_horizontalSlider_H">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>80</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_H">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>80</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_V">
+       <property name="geometry">
+        <rect>
+         <x>21</x>
+         <y>150</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>v</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_V">
+       <property name="geometry">
+        <rect>
+         <x>21</x>
+         <y>120</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>^</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QSlider" name="mas_horizontalSlider_V">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>131</x>
+         <y>120</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_mas_V">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>120</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+      <widget class="QSlider" name="menos_horizontalSlider_V">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>131</x>
+         <y>150</y>
+         <width>160</width>
+         <height>29</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_menos_V">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>150</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_H_2">
+       <property name="geometry">
+        <rect>
+         <x>400</x>
+         <y>40</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_H_2">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>40</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_mas_V_2">
+       <property name="geometry">
+        <rect>
+         <x>421</x>
+         <y>10</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>^</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoRepeat">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_send_menos_V_2">
+       <property name="geometry">
+        <rect>
+         <x>421</x>
+         <y>70</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>v</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoRepeat">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_25">
+       <property name="geometry">
+        <rect>
+         <x>390</x>
+         <y>100</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>POS</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_26">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>100</y>
+         <width>41</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>VEL</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="posX">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>130</y>
+         <width>61</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="velX">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>130</y>
+         <width>61</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="velY">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>160</y>
+         <width>61</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="posY">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>160</y>
+         <width>61</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pb_set_camilla">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>190</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>SET</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_27">
+       <property name="geometry">
+        <rect>
+         <x>360</x>
+         <y>130</y>
+         <width>21</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>X</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_28">
+       <property name="geometry">
+        <rect>
+         <x>360</x>
+         <y>160</y>
+         <width>21</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Y</string>
+       </property>
+      </widget>
+      <zorder>pb_stop_camilla</zorder>
+      <zorder>label_send_camilla</zorder>
+      <zorder>giro_horizontalSlider</zorder>
+      <zorder>pb_send_giro</zorder>
+      <zorder>label_giro</zorder>
+      <zorder>label_mas_H</zorder>
+      <zorder>mas_horizontalSlider_H</zorder>
+      <zorder>pb_send_mas_H</zorder>
+      <zorder>label_menos_H</zorder>
+      <zorder>menos_horizontalSlider_H</zorder>
+      <zorder>pb_send_menos_H</zorder>
+      <zorder>pb_send_menos_V</zorder>
+      <zorder>pb_send_mas_V</zorder>
+      <zorder>mas_horizontalSlider_V</zorder>
+      <zorder>label_mas_V</zorder>
+      <zorder>menos_horizontalSlider_V</zorder>
+      <zorder>label_menos_V</zorder>
+      <zorder>pb_send_menos_H_2</zorder>
+      <zorder>pb_send_mas_H_2</zorder>
+      <zorder>pb_send_mas_V_2</zorder>
+      <zorder>label_25</zorder>
+      <zorder>label_26</zorder>
+      <zorder>velX</zorder>
+      <zorder>velY</zorder>
+      <zorder>pb_set_camilla</zorder>
+      <zorder>label_27</zorder>
+      <zorder>label_28</zorder>
+      <zorder>pb_send_menos_V_2</zorder>
+      <zorder>posX</zorder>
+      <zorder>posY</zorder>
+     </widget>
      <zorder>frame_status</zorder>
      <zorder>frame_heads</zorder>
      <zorder>frame_hv</zorder>
      <zorder>frame_adquid_mode</zorder>
      <zorder>frame_calib_tables</zorder>
      <zorder>frame_2</zorder>
+     <zorder>label_Socatear</zorder>
+     <zorder>pushButton_Socatear</zorder>
+     <zorder>frame_calib_tables_2</zorder>
     </widget>
     <widget class="QWidget" name="mca">
      <property name="sizePolicy">
@@ -4806,14 +5425,14 @@ calibrar</string>
      <widget class="QPushButton" name="pb_Autocalib_Tiempos_Debug">
       <property name="geometry">
        <rect>
-        <x>700</x>
+        <x>690</x>
         <y>180</y>
-        <width>111</width>
+        <width>101</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>Ver Tiempos</string>
+       <string>Front Times</string>
       </property>
       <property name="shortcut">
        <string/>
@@ -4825,14 +5444,33 @@ calibrar</string>
      <widget class="QPushButton" name="pb_Autocalib_Tiempos_Reset">
       <property name="geometry">
        <rect>
-        <x>830</x>
+        <x>890</x>
         <y>180</y>
-        <width>111</width>
+        <width>101</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
        <string>Reset Tiempos</string>
+      </property>
+      <property name="shortcut">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pb_Autocalib_Tiempos_Debug_2">
+      <property name="geometry">
+       <rect>
+        <x>790</x>
+        <y>180</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cross Times</string>
       </property>
       <property name="shortcut">
        <string/>
@@ -8470,7 +9108,7 @@ DEMO.</string>
        </font>
       </property>
       <property name="text">
-       <string>Tiempo Acumulacion</string>
+       <string>Tiempo Acumulación</string>
       </property>
      </widget>
      <widget class="QRoundProgressBar" name="RoundBar_Adq" native="true">
