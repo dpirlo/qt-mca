@@ -9812,7 +9812,7 @@ void MainWindow::on_pb_send_mas_V_2_pressed()
 {
     if(!is_moving)
     {
-        string command = "#CARCASA02@VERTICAL,0,700,0,0,0,";
+        string command = "#CARCASA02@VERTICAL,0,0,1000,0,0,0,";
         port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
         if(sendCamilla(command,port_name))
             is_moving = true;
@@ -9834,7 +9834,7 @@ void MainWindow::on_pb_send_menos_V_2_pressed()
 {
     if(!is_moving)
     {
-        string command = "#CARCASA02@VERTICAL,0,0,700,0,0,";
+        string command = "#CARCASA02@VERTICAL,0,900,0,0,";
         port_name=QString::fromUtf8(DEV_PATH)+QString::fromUtf8(CARCASA);
         if(sendCamilla(command,port_name))
             is_moving = true;
