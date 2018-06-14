@@ -111,7 +111,7 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>10</number>
     </property>
     <widget class="QWidget" name="config">
      <property name="sizePolicy">

@@ -8572,7 +8572,8 @@ void MainWindow::Busca_Logs(int year,int month){
 }
 
 /**
- * @brief MainWindow::on_pb_Calibrar_Cabezal_clicked
+ * @brief MainWindow::on_pb_Calibrar_Cabezal_toggled
+ * @param checked
  */
 void MainWindow::on_pb_Calibrar_Cabezal_toggled(bool checked)
 {
@@ -9308,8 +9309,7 @@ void MainWindow::on_pushButton_Tasa_Coin_Demo_clicked()
     ui->label_Coin3_DEMO->setText(QString::number(rates.at(6))+"\t"+QString::number(rates.at(7))+"\t"+QString::number(rates.at(8)));
 }
 
-void MainWindow::on_pbAdquirir_Config_toggled(bool checked)
-{
+void MainWindow::on_pbAdquirir_Config_toggled(bool checked){
     Adq_zone =adq_config;
     error_code error_code;
     string msg;

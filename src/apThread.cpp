@@ -525,7 +525,7 @@ bool Thread::Adquirir()
         time =commands.at(5);
         Adquisidor->waitForStarted();
         input=  "recvRawEth -q -s " + commands.at(0); /// "echo Megas: "+commands.at(0)+" path: "+commands.at(1)+" Nombre Archivo: "+commands.at(2);
-
+        cout<<input.toStdString()<<endl;
         Adquisidor->start(input );
 
         Adquisidor->waitForFinished(-1);
